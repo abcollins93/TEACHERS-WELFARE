@@ -753,7 +753,7 @@
         }
 
         function renderDashboard() {
-            if (teachersData.length === 0) {
+            if (teachersData.length === 0 && parseFloat(localStorage.getItem('ntonso_sda_preserved_paid') || '0') === 0) {
                 document.getElementById('statTotalFund').textContent = "GHS 0.00";
                 document.getElementById('statMemberTotal').textContent = "GHS 0.00";
                 document.getElementById('statMemberContribCount').textContent = "0 Payments recorded";
@@ -774,11 +774,12 @@
                 return;
             }
 
-            const currentTeacher = teachersData.find(t => t.id === activeTeacherId) || teachersData.length > 0 ? teachersData[0] : null;
-            if (!currentTeacher) return;
-            activeTeacherId = currentTeacher.id;
+            const currentTeacher = teachersData.find(t => t.id === activeTeacherId) || (teachersData.length > 0 ? teachersData[0] : null);
+            if (currentTeacher) {
+                activeTeacherId = currentTeacher.id;
+            }
 
-            // 1. Calculate Fund Metrics across school
+            // 1. Calculate Fund Metrics across school including preserved totals from removed staff
             let schoolWideTotalPaid = 0;
             let schoolWideTotalWithdrawn = 0;
             let allGlobalWithdrawals = [];
@@ -792,14 +793,24 @@
                     });
                 }
             });
+
+            // Add previously preserved totals from removed staff members
+            const preservedPaid = parseFloat(localStorage.getItem('ntonso_sda_preserved_paid') || '0');
+            const preservedWithdrawn = parseFloat(localStorage.getItem('ntonso_sda_preserved_withdrawn') || '0');
+
+            schoolWideTotalPaid += preservedPaid;
+            schoolWideTotalWithdrawn += preservedWithdrawn;
+
             const schoolWideNet = schoolWideTotalPaid - schoolWideTotalWithdrawn;
 
             let memberTotalPaid = 0;
-            currentTeacher.payments.forEach(p => memberTotalPaid += p.amount);
+            if (currentTeacher) {
+                currentTeacher.payments.forEach(p => memberTotalPaid += p.amount);
+            }
 
             // Find last activity (payment or global withdrawal)
             let allActivities = [
-                ...currentTeacher.payments.map(p => ({ type: 'payment', date: p.date, desc: `Paid GHS ${p.amount.toFixed(2)}` })),
+                ...(currentTeacher ? currentTeacher.payments.map(p => ({ type: 'payment', date: p.date, desc: `Paid GHS ${p.amount.toFixed(2)}` })) : []),
                 ...allGlobalWithdrawals.map(w => ({ type: 'withdrawal', date: w.date, desc: `Fund Payout: GHS ${w.amount.toFixed(2)}` }))
             ].sort((a, b) => b.date.localeCompare(a.date));
 
@@ -808,7 +819,7 @@
             // 2. Update Metric Cards
             document.getElementById('statTotalFund').textContent = `GHS ${schoolWideNet.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
             document.getElementById('statMemberTotal').textContent = `GHS ${memberTotalPaid.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-            document.getElementById('statMemberContribCount').textContent = `${currentTeacher.payments.length} Payments recorded`;
+            document.getElementById('statMemberContribCount').textContent = `${currentTeacher ? currentTeacher.payments.length : 0} Payments recorded`;
             
             if (lastActivity) {
                 document.getElementById('statLastPayment').textContent = lastActivity.desc;
@@ -819,21 +830,23 @@
             }
 
             // 3. Update Active Profile Card
-            document.getElementById('currentTeacherName').textContent = currentTeacher.name;
-            document.getElementById('currentTeacherGrade').textContent = currentTeacher.grade;
-            document.getElementById('currentTeacherStaffId').textContent = currentTeacher.staffId;
-            document.getElementById('currentTeacherPhone').textContent = currentTeacher.phone || 'N/A';
-            document.getElementById('currentTeacherClass').textContent = currentTeacher.classAssigned;
-            document.getElementById('teacherAvatar').textContent = getInitials(currentTeacher.name);
+            if (currentTeacher) {
+                document.getElementById('currentTeacherName').textContent = currentTeacher.name;
+                document.getElementById('currentTeacherGrade').textContent = currentTeacher.grade;
+                document.getElementById('currentTeacherStaffId').textContent = currentTeacher.staffId;
+                document.getElementById('currentTeacherPhone').textContent = currentTeacher.phone || 'N/A';
+                document.getElementById('currentTeacherClass').textContent = currentTeacher.classAssigned;
+                document.getElementById('teacherAvatar').textContent = getInitials(currentTeacher.name);
+            }
 
             // 4. Render Payments Table
-            const sortedPayments = [...currentTeacher.payments].sort((a, b) => b.month.localeCompare(a.month));
             const paymentTbody = document.getElementById('paymentTableBody');
             paymentTbody.innerHTML = '';
 
-            if (sortedPayments.length === 0) {
+            if (!currentTeacher || currentTeacher.payments.length === 0) {
                 paymentTbody.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-slate-400">No payment records found for this teacher.</td></tr>`;
             } else {
+                const sortedPayments = [...currentTeacher.payments].sort((a, b) => b.month.localeCompare(a.month));
                 sortedPayments.forEach(p => {
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors";
@@ -924,9 +937,29 @@
         }
 
         function handleRemoveStaff(teacherId, teacherName) {
-            const confirmed = confirm(`Are you sure you want to remove ${teacherName} from the welfare system?\n\nThis will permanently delete their profile and records from the roster.`);
+            const confirmed = confirm(`Are you sure you want to remove ${teacherName} from the welfare system?\n\nThis will permanently delete their profile while locking their financial contributions into the master fund balance.`);
             if (!confirmed) return;
 
+            // Find the teacher being removed and preserve their financials
+            const teacherToRemove = teachersData.find(t => t.id === teacherId);
+            if (teacherToRemove) {
+                let teacherPaid = 0;
+                teacherToRemove.payments.forEach(p => teacherPaid += p.amount);
+                
+                let teacherWithdrawn = 0;
+                if (teacherToRemove.withdrawals) {
+                    teacherToRemove.withdrawals.forEach(w => teacherWithdrawn += w.amount);
+                }
+
+                // Add to persistent preserved localStorage counters
+                const currentPreservedPaid = parseFloat(localStorage.getItem('ntonso_sda_preserved_paid') || '0');
+                const currentPreservedWithdrawn = parseFloat(localStorage.getItem('ntonso_sda_preserved_withdrawn') || '0');
+
+                localStorage.setItem('ntonso_sda_preserved_paid', currentPreservedPaid + teacherPaid);
+                localStorage.setItem('ntonso_sda_preserved_withdrawn', currentPreservedWithdrawn + teacherWithdrawn);
+            }
+
+            // Filter out the teacher from active roster
             teachersData = teachersData.filter(t => t.id !== teacherId);
             saveTeachersData();
             populateTeacherSelects();
@@ -937,7 +970,7 @@
             }
 
             renderDashboard();
-            showToast(`${teacherName} has been removed from the school roster.`);
+            showToast(`${teacherName} removed. Contributions successfully locked into fund balance.`);
         }
 
         function toggleAdminModal() {
