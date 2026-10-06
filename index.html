@@ -1,827 +1,454 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ntonso SDA Primary 'A' - Teachers Welfare Fund</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- html2pdf.js for generating crisp PDF statements -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        sdaNavy: {
-                            50: '#f0f4f8',
-                            100: '#d9e2ec',
-                            500: '#103057',
-                            700: '#0b203c',
-                            900: '#061224',
-                        },
-                        sdaGold: {
-                            400: '#fbbf24',
-                            500: '#d97706',
-                            600: '#b45309',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        /* Custom print preview styling for PDF generation */
-        .pdf-template {
-            display: none;
-        }
-        .pdf-template.active {
-            display: block;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ntonso SDA Primary 'A' - Executive Admin Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+
+    /* PRINT FIXES TO ENSURE ALL CONTENT IS VISIBLE WHEN PRINTING / SAVING AS PDF */
+    @media print {
+      /* Hide non-printable controls, forms, buttons, and alerts */
+      .no-print, form, button, header, footer {
+        display: none !important;
+      }
+
+      body {
+        background: white !important;
+        color: black !important;
+        font-size: 12pt;
+      }
+
+      /* Force hidden scrollbars and full width container */
+      main, .max-w-7xl {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      /* Allow tables and containers to break naturally across printed pages */
+      .bg-white, .shadow-sm, .rounded-xl {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+        background: transparent !important;
+        page-break-inside: auto;
+      }
+
+      .overflow-x-auto {
+        overflow: visible !important;
+      }
+
+      table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+      }
+
+      th, td {
+        border: 1px solid #ddd !important;
+        padding: 8px !important;
+        color: #000 !important;
+      }
+
+      /* Print Header visible only when printing */
+      .print-only-header {
+        display: block !important;
+        text-align: center;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #000;
+        padding-bottom: 10px;
+      }
+    }
+
+    /* Hide print-only header in normal web view */
+    .print-only-header {
+      display: none;
+    }
+  </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col">
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col">
 
-    <!-- Top Header & Navbar -->
-    <header class="bg-sdaNavy-900 text-white shadow-lg border-b-4 border-sdaGold-500 sticky top-0 z-30">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
-            <div class="flex items-center space-x-3">
-                <div class="bg-sdaGold-500 text-sdaNavy-900 p-2.5 rounded-xl font-black text-xl shadow-inner flex items-center justify-center w-12 h-12">
-                    <i class="fa-solid font-bold fa-graduation-cap"></i>
-                </div>
-                <div>
-                    <h1 class="text-lg sm:text-xl font-extrabold tracking-tight leading-tight text-amber-400">
-                        NTONSO SDA PRIMARY 'A'
-                    </h1>
-                    <p class="text-xs sm:text-sm text-slate-300 font-medium">Teachers Welfare Fund Portal</p>
-                </div>
-            </div>
+  <!-- PRINT ONLY HEADER -->
+  <div class="print-only-header">
+    <h1 class="text-2xl font-bold uppercase">Ntonso SDA Primary 'A'</h1>
+    <p class="text-sm font-semibold">Staff Directory & Financial Records</p>
+    <p class="text-xs italic">Motto: "Do what thy Might"</p>
+  </div>
 
-            <!-- Actions Controls -->
-            <div class="flex items-center space-x-2 sm:space-x-4 ml-auto">
-                <!-- Dark Mode Toggle -->
-                <button id="themeToggle" onclick="toggleDarkMode()" class="p-2.5 rounded-lg bg-sdaNavy-700 hover:bg-sdaNavy-500 text-amber-300 transition-all border border-sdaNavy-500" title="Toggle Theme">
-                    <i id="themeIcon" class="fa-solid fa-moon"></i>
-                </button>
-
-                <!-- Admin Mode Switch -->
-                <button id="adminToggleBtn" onclick="toggleAdminModal()" class="px-3 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-sdaGold-500 hover:bg-sdaGold-600 text-sdaNavy-900 transition-all flex items-center shadow-sm">
-                    <i class="fa-solid fa-lock mr-1.5"></i> <span id="adminBtnText">Admin Access</span>
-                </button>
-            </div>
+  <!-- TOP HEADER -->
+  <header class="bg-indigo-900 text-white shadow-lg border-b-4 border-amber-500 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center text-indigo-900 text-2xl font-black shadow">
+          N
         </div>
-    </header>
-
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-
-        <!-- Banner Announcement -->
-        <div class="mb-6 bg-gradient-to-r from-sdaNavy-700 to-sdaNavy-900 rounded-2xl p-4 sm:p-6 text-white shadow-md relative overflow-hidden border border-sdaNavy-500">
-            <div class="absolute right-0 top-0 bottom-0 opacity-10 flex items-center pr-8 pointer-events-none">
-                <i class="fa-solid fa-hand-holding-hand text-9xl"></i>
-            </div>
-            <div class="relative z-10 max-w-2xl">
-                <span class="bg-amber-400/20 text-amber-300 text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border border-amber-400/30">Official Welfare Hub</span>
-                <h2 class="text-xl sm:text-2xl font-bold mt-2 text-white">Empowering Our Educators Through Solidarity</h2>
-                <p class="text-slate-300 text-xs sm:text-sm mt-1">Providing mutual financial support, social welfare benefits, and standard monthly record keeping for all faculty members at Ntonso SDA Primary 'A'.</p>
-            </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight">Ntonso SDA Primary 'A'</h1>
+          <p class="text-xs text-indigo-200">Executive Administration & Teacher Portal</p>
         </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="window.print()" class="bg-amber-500 hover:bg-amber-600 text-indigo-950 px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 shadow">
+          <i class="fa-solid fa-print"></i> Print / Export PDF
+        </button>
+      </div>
+    </div>
+  </header>
 
-        <!-- Teacher Selector Bar -->
-        <div class="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 mb-6">
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div class="w-full sm:w-auto flex items-center space-x-2 text-slate-700 dark:text-slate-200">
-                    <i class="fa-solid fa-user-check text-sdaGold-500 text-lg"></i>
-                    <label for="teacherSelect" class="font-bold text-sm">Select Teacher / Staff Profile:</label>
-                </div>
-                <div class="w-full sm:w-1/2 md:w-1/3 flex items-center space-x-2">
-                    <select id="teacherSelect" onchange="switchTeacher(this.value)" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-sdaNavy-500 focus:outline-none dark:text-white">
-                        <!-- Options auto populated -->
-                    </select>
-                </div>
-            </div>
+  <!-- MAIN WRAPPER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+    
+    <!-- STATS OVERVIEW -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 no-print">
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Staff Profiles</p>
+          <h3 id="statTotalTeachers" class="text-3xl font-extrabold text-slate-800 mt-1">0</h3>
         </div>
-
-        <!-- Dashboard Stat Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <!-- Card 1: Fund Balance -->
-            <div class="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex items-center">
-                <div class="p-3.5 rounded-xl bg-blue-100 dark:bg-blue-900/40 text-sdaNavy-500 dark:text-blue-300 mr-4">
-                    <i class="fa-solid fa-vault text-2xl"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Fund Balance</p>
-                    <h3 id="statTotalFund" class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-0.5">GHS 0.00</h3>
-                    <p class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium"><i class="fa-solid fa-circle-check"></i> School-wide Accumulated</p>
-                </div>
-            </div>
-
-            <!-- Card 2: Selected Teacher Total -->
-            <div class="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex items-center">
-                <div class="p-3.5 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-sdaGold-600 dark:text-amber-300 mr-4">
-                    <i class="fa-solid fa-hand-holding-dollar text-2xl"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Member's Total Paid</p>
-                    <h3 id="statMemberTotal" class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-0.5">GHS 0.00</h3>
-                    <p id="statMemberContribCount" class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-medium">0 Payments recorded</p>
-                </div>
-            </div>
-
-            <!-- Card 3: Monthly Rate -->
-            <div class="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex items-center">
-                <div class="p-3.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-300 mr-4">
-                    <i class="fa-solid fa-calendar-check text-2xl"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Standard Monthly Dues</p>
-                    <h3 id="statMonthlyRate" class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-0.5">GHS 100.00</h3>
-                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-medium">Approved Flat Rate</p>
-                </div>
-            </div>
-
-            <!-- Card 4: Last Payment -->
-            <div class="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex items-center">
-                <div class="p-3.5 rounded-xl bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300 mr-4">
-                    <i class="fa-solid fa-clock-rotate-left text-2xl"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Last Payment Date</p>
-                    <h3 id="statLastPayment" class="text-base sm:text-lg font-bold text-slate-900 dark:text-white mt-0.5">N/A</h3>
-                    <p id="statLastMonthName" class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-medium">-</p>
-                </div>
-            </div>
+        <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center text-xl">
+          <i class="fa-solid fa-user-tie"></i>
         </div>
+      </div>
 
-        <!-- Active Teacher Profile Overview & PDF Action -->
-        <div class="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div class="flex items-center space-x-4">
-                <div id="teacherAvatar" class="w-14 h-14 rounded-full bg-sdaNavy-500 text-white font-bold text-xl flex items-center justify-center border-2 border-sdaGold-400 shadow-sm">
-                    --
-                </div>
-                <div>
-                    <div class="flex items-center space-x-2">
-                        <h2 id="currentTeacherName" class="text-lg font-bold text-slate-900 dark:text-white">--</h2>
-                        <span id="currentTeacherGrade" class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">--</span>
-                    </div>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                        <span class="font-semibold text-slate-700 dark:text-slate-300">Staff ID:</span> <span id="currentTeacherStaffId">--</span> | 
-                        <span class="font-semibold text-slate-700 dark:text-slate-300">Class Assigned:</span> <span id="currentTeacherClass">--</span>
-                    </p>
-                </div>
-            </div>
-
-            <button onclick="downloadPDF()" class="w-full md:w-auto px-4 py-2.5 bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all flex items-center justify-center space-x-2 border border-sdaNavy-700">
-                <i class="fa-solid fa-file-pdf text-amber-400 text-base"></i>
-                <span>Download Official Statement (PDF)</span>
-            </button>
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Collections</p>
+          <h3 id="statTotalAmount" class="text-3xl font-extrabold text-emerald-600 mt-1">GHS 0.00</h3>
         </div>
-
-        <!-- Payment History Table -->
-        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden mb-6">
-            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-700 flex flex-wrap justify-between items-center gap-2 bg-slate-50/50 dark:bg-slate-800/50">
-                <h3 class="font-bold text-slate-800 dark:text-white text-base flex items-center">
-                    <i class="fa-solid fa-list-check text-sdaGold-500 mr-2"></i> Monthly Contribution Ledger
-                </h3>
-                <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">Session: 2025/2026 Academic Year</span>
-            </div>
-
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left text-slate-600 dark:text-slate-300">
-                    <thead class="text-xs text-slate-700 uppercase bg-slate-100 dark:bg-slate-700/50 dark:text-slate-300">
-                        <tr>
-                            <th scope="col" class="px-6 py-3.5 font-bold">Month / Year</th>
-                            <th scope="col" class="px-6 py-3.5 font-bold">Receipt / Ref No.</th>
-                            <th scope="col" class="px-6 py-3.5 font-bold">Amount Paid (GHS)</th>
-                            <th scope="col" class="px-6 py-3.5 font-bold">Date Paid</th>
-                            <th scope="col" class="px-6 py-3.5 font-bold">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="paymentTableBody" class="divide-y divide-slate-200 dark:divide-slate-700">
-                        <!-- Dynamic payment rows -->
-                    </tbody>
-                </table>
-            </div>
+        <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center text-xl">
+          <i class="fa-solid fa-wallet"></i>
         </div>
+      </div>
 
-        <!-- Admin View Container (Hidden unless logged in as Admin) -->
-        <div id="adminPanelSection" class="hidden space-y-6">
-            <div class="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl p-4 flex justify-between items-center">
-                <div class="flex items-center space-x-2 text-amber-800 dark:text-amber-300">
-                    <i class="fa-solid fa-user-shield text-xl"></i>
-                    <div>
-                        <h4 class="font-bold text-sm">Welfare Executive Admin Mode Active</h4>
-                        <p class="text-xs text-amber-700 dark:text-amber-400">You can record new dues payments and edit contributions for all faculty members.</p>
-                    </div>
-                </div>
-                <button onclick="toggleAdminModal()" class="text-xs bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100 px-3 py-1.5 rounded font-semibold hover:bg-amber-300">
-                    Exit Admin
-                </button>
-            </div>
-
-            <!-- Record New Payment Form -->
-            <div class="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-700">
-                <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4 flex items-center">
-                    <i class="fa-solid fa-plus-circle text-emerald-500 mr-2"></i> Log New Dues Payment
-                </h3>
-                <form id="addPaymentForm" onsubmit="handleRecordPayment(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Target Teacher</label>
-                        <select id="adminTeacherSelect" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-xs font-medium dark:text-white focus:ring-2 focus:ring-sdaNavy-500" required>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Month / Year</label>
-                        <input type="month" id="adminPaymentMonth" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-xs font-medium dark:text-white focus:ring-2 focus:ring-sdaNavy-500" required>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Amount (GHS)</label>
-                        <input type="number" id="adminPaymentAmount" min="10" step="5" value="100" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-xs font-medium dark:text-white focus:ring-2 focus:ring-sdaNavy-500" required>
-                    </div>
-                    <div class="flex items-end">
-                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2.5 px-4 rounded-lg shadow transition-all">
-                            Save Record
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- School-Wide Welfare Master Summary Table -->
-            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-                <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
-                    <h3 class="font-bold text-slate-800 dark:text-white text-base flex items-center">
-                        <i class="fa-solid fa-users-viewfinder text-sdaNavy-500 dark:text-blue-400 mr-2"></i> All Teachers Summary Roster
-                    </h3>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-xs text-left text-slate-600 dark:text-slate-300">
-                        <thead class="text-xs uppercase bg-slate-100 dark:bg-slate-700/50 text-slate-700 dark:text-slate-200">
-                            <tr>
-                                <th class="px-4 py-3 font-bold">Staff ID</th>
-                                <th class="px-4 py-3 font-bold">Teacher Name</th>
-                                <th class="px-4 py-3 font-bold">Class</th>
-                                <th class="px-4 py-3 font-bold">Total Contributions</th>
-                                <th class="px-4 py-3 font-bold">Months Paid</th>
-                                <th class="px-4 py-3 font-bold">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="masterRosterBody" class="divide-y divide-slate-200 dark:divide-slate-700">
-                            <!-- Populated dynamically -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Logged Transactions</p>
+          <h3 id="statTotalTx" class="text-3xl font-extrabold text-slate-800 mt-1">0</h3>
         </div>
-
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-sdaNavy-900 text-slate-400 border-t border-slate-800 py-6 text-xs mt-8">
-        <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
-            <p class="font-semibold text-slate-300">NTONSO SDA PRIMARY 'A' SCHOOL - WELFARE EXECUTIVE COMMITTEE</p>
-            <p>© 2026 Teachers Welfare Fund. All Rights Reserved. Managed for institutional transparency.</p>
-            <p class="text-[11px] text-slate-500">Ntonso, Ashanti Region, Ghana | Seventh-day Adventist Education Unit</p>
+        <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center text-xl">
+          <i class="fa-solid fa-receipt"></i>
         </div>
-    </footer>
-
-    <!-- Admin Login Modal -->
-    <div id="adminModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center">
-                    <i class="fa-solid fa-lock text-sdaGold-500 mr-2"></i> Executive Admin Verification
-                </h3>
-                <button onclick="toggleAdminModal()" class="text-slate-400 hover:text-slate-600 text-sm">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Please enter executive access passcode to switch to portal administration mode.</p>
-            <form onsubmit="handleAdminLogin(event)">
-                <div class="mb-4">
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Passcode</label>
-                    <input type="password" id="adminPasswordInput" placeholder="Enter password (default: sda2026)" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-sdaNavy-500" required>
-                    <p id="adminAuthError" class="text-xs text-rose-500 font-semibold mt-1 hidden">Invalid passcode. Default passcode is: <code class="bg-rose-100 dark:bg-rose-900 px-1 py-0.5 rounded">sda2026</code></p>
-                </div>
-                <div class="flex space-x-2">
-                    <button type="button" onclick="toggleAdminModal()" class="w-1/2 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-lg hover:bg-slate-200">Cancel</button>
-                    <button type="submit" class="w-1/2 py-2 bg-sdaNavy-500 text-white text-xs font-bold rounded-lg hover:bg-sdaNavy-700 shadow">Login</button>
-                </div>
-            </form>
-        </div>
+      </div>
     </div>
 
-    <!-- Clean Printable Template Container for PDF Export (hidden from screen display) -->
-    <div id="pdfExportContainer" class="pdf-template max-w-2xl mx-auto p-8 bg-white text-slate-900 font-sans">
-        <!-- Official Letterhead Header -->
-        <div class="text-center border-b-2 border-slate-800 pb-4 mb-6">
-            <h2 class="text-xl font-extrabold uppercase tracking-wide text-slate-900">GHANA EDUCATION SERVICE</h2>
-            <h1 class="text-2xl font-black text-blue-900 mt-1">NTONSO SDA PRIMARY 'A'</h1>
-            <p class="text-xs font-bold text-amber-700 uppercase tracking-widest mt-0.5">TEACHERS WELFARE FUND EXECUTIVE</p>
-            <p class="text-[11px] text-slate-600">P.O. Box 12, Ntonso-Ashanti, Ghana | Tel: +233 (0) 24 000 0000</p>
-        </div>
-
-        <div class="flex justify-between items-end border-b border-slate-200 pb-3 mb-6 text-xs">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- LEFT COLUMN: FORMS (HIDDEN IN PRINT) -->
+      <div class="space-y-8 no-print">
+        
+        <!-- FORM 1: ADD NEW TEACHER PROFILE -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="bg-indigo-900 px-6 py-4 text-white flex items-center justify-between">
+            <h2 class="font-bold text-base flex items-center gap-2">
+              <i class="fa-solid fa-user-plus text-amber-400"></i> Add Teacher Profile
+            </h2>
+            <span class="text-xs bg-indigo-800 px-2 py-1 rounded text-indigo-200">Admin</span>
+          </div>
+          <form id="addTeacherForm" class="p-6 space-y-4">
             <div>
-                <h3 class="text-sm font-bold text-slate-800 uppercase">OFFICIAL STATEMENT OF CONTRIBUTION</h3>
-                <p class="text-slate-600 mt-0.5">Document ID: <span id="pdfDocId" class="font-mono font-semibold">WEL-2026-0001</span></p>
+              <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Full Name</label>
+              <input type="text" id="teacherName" required placeholder="e.g. Collins Adarkwa Baiden"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
-            <div class="text-right">
-                <p class="text-slate-600">Date Issued: <span id="pdfIssueDate" class="font-semibold">--</span></p>
-                <p class="text-slate-600">Academic Year: <span class="font-semibold">2025/2026</span></p>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Staff ID</label>
+              <input type="text" id="teacherStaffId" required placeholder="e.g. TCH-9942"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Rank / Grade</label>
+                <select id="teacherRank" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  <option value="Senior Supt. II">Senior Supt. II</option>
+                  <option value="Senior Supt. I">Senior Supt. I</option>
+                  <option value="Principal Supt.">Principal Supt.</option>
+                  <option value="Assistant Director II">Assistant Director II</option>
+                  <option value="Assistant Director I">Assistant Director I</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Assigned Class</label>
+                <input type="text" id="teacherClass" placeholder="e.g. Basic 4 / ICT"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              </div>
+            </div>
+
+            <button type="submit"
+              class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg text-sm transition duration-150 flex items-center justify-center gap-2">
+              <i class="fa-solid fa-plus"></i> Save Teacher Profile
+            </button>
+          </form>
         </div>
 
-        <!-- Member Personal Particulars -->
-        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-6 text-xs">
-            <div class="grid grid-cols-2 gap-y-2">
-                <div><span class="font-bold text-slate-700">Member Name:</span> <span id="pdfTeacherName" class="font-semibold">--</span></div>
-                <div><span class="font-bold text-slate-700">Staff ID:</span> <span id="pdfStaffId" class="font-semibold">--</span></div>
-                <div><span class="font-bold text-slate-700">Grade / Rank:</span> <span id="pdfGrade">--</span></div>
-                <div><span class="font-bold text-slate-700">Assigned Class:</span> <span id="pdfClass">--</span></div>
+        <!-- FORM 2: RECORD PAYMENT / TRANSACTION -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="bg-emerald-800 px-6 py-4 text-white flex items-center justify-between">
+            <h2 class="font-bold text-base flex items-center gap-2">
+              <i class="fa-solid fa-credit-card text-emerald-300"></i> Record Payment / Dues
+            </h2>
+            <span class="text-xs bg-emerald-900 px-2 py-1 rounded text-emerald-200">Finance</span>
+          </div>
+          <form id="addPaymentForm" class="p-6 space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Select Teacher</label>
+              <select id="payTeacherSelect" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+              </select>
             </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Category</label>
+                <select id="payCategory" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                  <option value="Welfare Dues">Welfare Dues</option>
+                  <option value="School Fund">School Fund</option>
+                  <option value="Special Contribution">Special Contribution</option>
+                  <option value="Event Levy">Event Levy</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Amount (GHS)</label>
+                <input type="number" step="0.01" id="payAmount" required placeholder="0.00"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Notes / Remarks</label>
+              <input type="text" id="payNotes" placeholder="e.g. October 2026 Monthly Dues"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+
+            <button type="submit"
+              class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-lg text-sm transition duration-150 flex items-center justify-center gap-2">
+              <i class="fa-solid fa-check"></i> Record Transaction
+            </button>
+          </form>
         </div>
 
-        <!-- Summary Totals -->
-        <div class="flex justify-between items-center bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6 text-xs">
-            <span class="font-bold text-blue-900">Cumulative Total Paid to Date:</span>
-            <span id="pdfTotalAmount" class="text-base font-extrabold text-blue-900">GHS 0.00</span>
-        </div>
+      </div>
 
-        <!-- Statement Table -->
-        <table class="w-full text-xs text-left border-collapse border border-slate-300 mb-8">
-            <thead>
-                <tr class="bg-slate-100 text-slate-800 border-b border-slate-300">
-                    <th class="border border-slate-300 px-3 py-2 font-bold">#</th>
-                    <th class="border border-slate-300 px-3 py-2 font-bold">Month / Year</th>
-                    <th class="border border-slate-300 px-3 py-2 font-bold">Receipt Ref</th>
-                    <th class="border border-slate-300 px-3 py-2 font-bold">Date Logged</th>
-                    <th class="border border-slate-300 px-3 py-2 font-bold text-right">Amount (GHS)</th>
+      <!-- RIGHT COLUMN: TABLES (PRINTABLE) -->
+      <div class="lg:col-span-2 space-y-8">
+        
+        <!-- TEACHER ROSTER TABLE -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+            <h3 class="font-bold text-slate-800 flex items-center gap-2">
+              <i class="fa-solid fa-users text-indigo-600 no-print"></i> Teacher Directory & Staff Roster
+            </h3>
+            <span id="teacherCountBadge" class="text-xs bg-indigo-100 text-indigo-800 font-semibold px-2.5 py-0.5 rounded-full no-print">0 Staff</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-slate-100 text-slate-600 uppercase text-[11px] tracking-wider border-b border-slate-200">
+                <tr>
+                  <th class="px-6 py-3 font-semibold">Teacher Name</th>
+                  <th class="px-6 py-3 font-semibold">Staff ID</th>
+                  <th class="px-6 py-3 font-semibold">Rank</th>
+                  <th class="px-6 py-3 font-semibold">Assigned Duty</th>
+                  <th class="px-6 py-3 font-semibold text-right no-print">Action</th>
                 </tr>
-            </thead>
-            <tbody id="pdfTableBody">
-                <!-- Populated dynamically for print -->
-            </tbody>
-        </table>
-
-        <!-- Signatures Footer -->
-        <div class="grid grid-cols-2 gap-8 pt-8 border-t border-slate-300 text-xs">
-            <div class="text-center">
-                <div class="h-10 border-b border-dashed border-slate-400 mb-1"></div>
-                <p class="font-bold text-slate-800">Welfare Financial Secretary</p>
-                <p class="text-[10px] text-slate-500">Signature & Date</p>
-            </div>
-            <div class="text-center">
-                <div class="h-10 border-b border-dashed border-slate-400 mb-1"></div>
-                <p class="font-bold text-slate-800">Headteacher / Patron</p>
-                <p class="text-[10px] text-slate-500">Ntonso SDA Primary 'A'</p>
-            </div>
+              </thead>
+              <tbody id="teachersTableBody" class="divide-y divide-slate-100 text-slate-700">
+                <!-- Dynamic Rows -->
+              </tbody>
+            </table>
+          </div>
         </div>
+
+        <!-- PAYMENT HISTORY TABLE -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+            <h3 class="font-bold text-slate-800 flex items-center gap-2">
+              <i class="fa-solid fa-history text-emerald-600 no-print"></i> Financial Transactions Ledger
+            </h3>
+            <button id="clearDataBtn" class="text-xs text-rose-600 hover:text-rose-800 font-medium no-print">Reset All Data</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-slate-100 text-slate-600 uppercase text-[11px] tracking-wider border-b border-slate-200">
+                <tr>
+                  <th class="px-6 py-3 font-semibold">Date</th>
+                  <th class="px-6 py-3 font-semibold">Teacher</th>
+                  <th class="px-6 py-3 font-semibold">Category</th>
+                  <th class="px-6 py-3 font-semibold">Notes</th>
+                  <th class="px-6 py-3 font-semibold text-right">Amount</th>
+                </tr>
+              </thead>
+              <tbody id="paymentsTableBody" class="divide-y divide-slate-100 text-slate-700">
+                <!-- Dynamic Rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
     </div>
 
-    <script>
-        /* ==========================================================================
-           1. INITIAL PRE-POPULATED DATA (8 TEACHERS WITH REALISTIC RECORDS)
-           ========================================================================== */
-        const DEFAULT_TEACHERS = [
-            {
-                id: "TCH-001",
-                staffId: "GES-108421",
-                name: "Kwaku Mensah",
-                grade: "Senior Superintendent I",
-                classAssigned: "Basic 6",
-                payments: [
-                    { id: "REC-901", month: "2025-09", amount: 100, date: "2025-09-15" },
-                    { id: "REC-902", month: "2025-10", amount: 100, date: "2025-10-12" },
-                    { id: "REC-903", month: "2025-11", amount: 100, date: "2025-11-10" },
-                    { id: "REC-904", month: "2025-12", amount: 100, date: "2025-12-14" },
-                    { id: "REC-905", month: "2026-01", amount: 100, date: "2026-01-18" },
-                    { id: "REC-906", month: "2026-02", amount: 100, date: "2026-02-11" }
-                ]
-            },
-            {
-                id: "TCH-002",
-                staffId: "GES-209115",
-                name: "Abena Serwaa Boateng",
-                grade: "Principal Superintendent",
-                classAssigned: "Basic 1",
-                payments: [
-                    { id: "REC-907", month: "2025-09", amount: 100, date: "2025-09-14" },
-                    { id: "REC-908", month: "2025-10", amount: 100, date: "2025-10-10" },
-                    { id: "REC-909", month: "2025-11", amount: 100, date: "2025-11-15" },
-                    { id: "REC-910", month: "2025-12", amount: 100, date: "2025-12-20" },
-                    { id: "REC-911", month: "2026-01", amount: 100, date: "2026-01-10" },
-                    { id: "REC-912", month: "2026-02", amount: 100, date: "2026-02-14" }
-                ]
-            },
-            {
-                id: "TCH-003",
-                staffId: "GES-311092",
-                name: "Emmanuel Osei Poku",
-                grade: "Headteacher",
-                classAssigned: "Administration",
-                payments: [
-                    { id: "REC-913", month: "2025-09", amount: 100, date: "2025-09-10" },
-                    { id: "REC-914", month: "2025-10", amount: 100, date: "2025-10-11" },
-                    { id: "REC-915", month: "2025-11", amount: 100, date: "2025-11-12" },
-                    { id: "REC-916", month: "2025-12", amount: 100, date: "2025-12-15" },
-                    { id: "REC-917", month: "2026-01", amount: 100, date: "2026-01-08" },
-                    { id: "REC-918", month: "2026-02", amount: 100, date: "2026-02-09" }
-                ]
-            },
-            {
-                id: "TCH-004",
-                staffId: "GES-401882",
-                name: "Grace Yaa Asantewaa",
-                grade: "Superintendent I",
-                classAssigned: "Basic 2",
-                payments: [
-                    { id: "REC-919", month: "2025-09", amount: 100, date: "2025-09-18" },
-                    { id: "REC-920", month: "2025-10", amount: 100, date: "2025-10-19" },
-                    { id: "REC-921", month: "2025-11", amount: 100, date: "2025-11-20" },
-                    { id: "REC-922", month: "2025-12", amount: 100, date: "2025-12-22" },
-                    { id: "REC-923", month: "2026-01", amount: 100, date: "2026-01-25" }
-                ]
-            },
-            {
-                id: "TCH-005",
-                staffId: "GES-554109",
-                name: "Kofi Owusu Ansah",
-                grade: "Senior Superintendent II",
-                classAssigned: "Basic 4",
-                payments: [
-                    { id: "REC-924", month: "2025-09", amount: 100, date: "2025-09-12" },
-                    { id: "REC-925", month: "2025-10", amount: 100, date: "2025-10-14" },
-                    { id: "REC-926", month: "2025-11", amount: 100, date: "2025-11-16" },
-                    { id: "REC-927", month: "2025-12", amount: 100, date: "2025-12-18" },
-                    { id: "REC-928", month: "2026-01", amount: 100, date: "2026-01-19" },
-                    { id: "REC-929", month: "2026-02", amount: 100, date: "2026-02-12" }
-                ]
-            },
-            {
-                id: "TCH-006",
-                staffId: "GES-670921",
-                name: "Dorcas Akosua Agyei",
-                grade: "Superintendent II",
-                classAssigned: "KG 2",
-                payments: [
-                    { id: "REC-930", month: "2025-09", amount: 100, date: "2025-09-20" },
-                    { id: "REC-931", month: "2025-10", amount: 100, date: "2025-10-21" },
-                    { id: "REC-932", month: "2025-11", amount: 100, date: "2025-11-22" },
-                    { id: "REC-933", month: "2026-01", amount: 100, date: "2026-01-28" }
-                ]
-            },
-            {
-                id: "TCH-007",
-                staffId: "GES-712890",
-                name: "Samuel Appiah Nkrumah",
-                grade: "Principal Superintendent",
-                classAssigned: "Basic 5",
-                payments: [
-                    { id: "REC-934", month: "2025-09", amount: 100, date: "2025-09-11" },
-                    { id: "REC-935", month: "2025-10", amount: 100, date: "2025-10-12" },
-                    { id: "REC-936", month: "2025-11", amount: 100, date: "2025-11-14" },
-                    { id: "REC-937", month: "2025-12", amount: 100, date: "2025-12-11" },
-                    { id: "REC-938", month: "2026-01", amount: 100, date: "2026-01-12" },
-                    { id: "REC-939", month: "2026-02", amount: 100, date: "2026-02-10" }
-                ]
-            },
-            {
-                id: "TCH-008",
-                staffId: "GES-834112",
-                name: "Priscilla Adwoa Donkor",
-                grade: "Superintendent I",
-                classAssigned: "Basic 3",
-                payments: [
-                    { id: "REC-940", month: "2025-09", amount: 100, date: "2025-09-16" },
-                    { id: "REC-941", month: "2025-10", amount: 100, date: "2025-10-18" },
-                    { id: "REC-942", month: "2025-11", amount: 100, date: "2025-11-19" },
-                    { id: "REC-943", month: "2025-12", amount: 100, date: "2025-12-21" },
-                    { id: "REC-944", month: "2026-01", amount: 100, date: "2026-01-20" }
-                ]
-            }
-        ];
+  </main>
 
-        let teachersData = [];
-        let activeTeacherId = "";
-        let isAdminLoggedIn = false;
+  <!-- FOOTER -->
+  <footer class="bg-slate-800 text-slate-400 py-6 border-t border-slate-700 mt-auto no-print">
+    <div class="max-w-7xl mx-auto px-4 text-center text-xs space-y-1">
+      <p class="font-semibold text-slate-300">Ntonso SDA Primary 'A' - Official Portal</p>
+      <p>Motto: <span class="italic text-amber-400">"Do what thy Might"</span></p>
+    </div>
+  </footer>
 
-        // Initialize App
-        window.addEventListener('DOMContentLoaded', () => {
-            loadTeachersData();
-            populateTeacherSelects();
-            activeTeacherId = teachersData[0].id;
-            renderDashboard();
-        });
+  <script>
+    const defaultTeachers = [
+      { id: '1', name: 'Collins Adarkwa Baiden', staffId: 'TCH-1029', rank: 'Principal Supt.', assignedClass: 'ICT / Guidance' },
+      { id: '2', name: 'Obeng David', staffId: 'TCH-0001', rank: 'Assistant Director I', assignedClass: 'Headteacher' },
+      { id: '3', name: 'Edwardina Appiah Mensah', staffId: 'TCH-2041', rank: 'Senior Supt. I', assignedClass: 'Basic 3 Teacher' }
+    ];
 
-        // Load data from localStorage or fallback to defaults
-        function loadTeachersData() {
-            const stored = localStorage.getItem('ntonso_sda_teachers');
-            if (stored) {
-                try {
-                    teachersData = JSON.parse(stored);
-                } catch (e) {
-                    teachersData = DEFAULT_TEACHERS;
-                }
-            } else {
-                teachersData = DEFAULT_TEACHERS;
-                saveTeachersData();
-            }
-        }
+    let teachers = JSON.parse(localStorage.getItem('admin_teachers')) || defaultTeachers;
+    let payments = JSON.parse(localStorage.getItem('admin_payments')) || [];
 
-        function saveTeachersData() {
-            localStorage.setItem('ntonso_sda_teachers', JSON.stringify(teachersData));
-        }
+    function saveData() {
+      localStorage.setItem('admin_teachers', JSON.stringify(teachers));
+      localStorage.setItem('admin_payments', JSON.stringify(payments));
+      renderUI();
+    }
 
-        function populateTeacherSelects() {
-            const selectEl = document.getElementById('teacherSelect');
-            const adminSelectEl = document.getElementById('adminTeacherSelect');
-            
-            selectEl.innerHTML = '';
-            adminSelectEl.innerHTML = '';
+    function renderUI() {
+      renderTeachersTable();
+      renderTeacherSelectOptions();
+      renderPaymentsTable();
+      renderStats();
+    }
 
-            teachersData.forEach(t => {
-                const opt = document.createElement('option');
-                opt.value = t.id;
-                opt.textContent = `${t.name} (${t.classAssigned}) - Staff ID: ${t.staffId}`;
-                selectEl.appendChild(opt);
+    function renderStats() {
+      document.getElementById('statTotalTeachers').innerText = teachers.length;
+      const totalAmt = payments.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
+      document.getElementById('statTotalAmount').innerText = `GHS ${totalAmt.toFixed(2)}`;
+      document.getElementById('statTotalTx').innerText = payments.length;
+      document.getElementById('teacherCountBadge').innerText = `${teachers.length} Staff Member${teachers.length === 1 ? '' : 's'}`;
+    }
 
-                const adminOpt = document.createElement('option');
-                adminOpt.value = t.id;
-                adminOpt.textContent = `${t.name} (${t.staffId})`;
-                adminSelectEl.appendChild(adminOpt);
-            });
-        }
+    function renderTeachersTable() {
+      const tbody = document.getElementById('teachersTableBody');
+      tbody.innerHTML = '';
 
-        function switchTeacher(teacherId) {
-            activeTeacherId = teacherId;
-            renderDashboard();
-        }
+      if (teachers.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-slate-400 italic">No teacher profiles found.</td></tr>`;
+        return;
+      }
 
-        function renderDashboard() {
-            const currentTeacher = teachersData.find(t => t.id === activeTeacherId) || teachersData[0];
+      teachers.forEach(t => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 transition-colors';
+        tr.innerHTML = `
+          <td class="px-6 py-3.5 font-medium text-slate-900">${t.name}</td>
+          <td class="px-6 py-3.5 text-slate-500 font-mono text-xs">${t.staffId}</td>
+          <td class="px-6 py-3.5">${t.rank}</td>
+          <td class="px-6 py-3.5 text-slate-600">${t.assignedClass}</td>
+          <td class="px-6 py-3.5 text-right no-print">
+            <button onclick="deleteTeacher('${t.id}')" class="text-rose-500 hover:text-rose-700 p-1 rounded" title="Delete Profile">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
 
-            // 1. Calculate Fund Metrics
-            let schoolWideTotal = 0;
-            teachersData.forEach(t => {
-                t.payments.forEach(p => schoolWideTotal += p.amount);
-            });
+    function renderTeacherSelectOptions() {
+      const select = document.getElementById('payTeacherSelect');
+      select.innerHTML = '';
+      if (teachers.length === 0) {
+        select.innerHTML = `<option value="">No teachers available</option>`;
+        return;
+      }
+      teachers.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.name;
+        opt.textContent = `${t.name} (${t.staffId})`;
+        select.appendChild(opt);
+      });
+    }
 
-            let memberTotal = 0;
-            currentTeacher.payments.forEach(p => memberTotal += p.amount);
+    function renderPaymentsTable() {
+      const tbody = document.getElementById('paymentsTableBody');
+      tbody.innerHTML = '';
+      if (payments.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-slate-400 italic">No payments logged yet.</td></tr>`;
+        return;
+      }
+      payments.slice().reverse().forEach(p => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 transition-colors';
+        tr.innerHTML = `
+          <td class="px-6 py-3 text-slate-500 text-xs">${p.date}</td>
+          <td class="px-6 py-3 font-medium text-slate-800">${p.teacherName}</td>
+          <td class="px-6 py-3">${p.category}</td>
+          <td class="px-6 py-3 text-slate-500 text-xs">${p.notes || '-'}</td>
+          <td class="px-6 py-3 font-bold text-slate-900 text-right">GHS ${parseFloat(p.amount).toFixed(2)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
 
-            // Sort payments by month descending
-            const sortedPayments = [...currentTeacher.payments].sort((a, b) => b.month.localeCompare(a.month));
-            const lastPayment = sortedPayments.length > 0 ? sortedPayments[0] : null;
+    document.getElementById('addTeacherForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('teacherName').value.trim();
+      const staffId = document.getElementById('teacherStaffId').value.trim();
+      const rank = document.getElementById('teacherRank').value;
+      const assignedClass = document.getElementById('teacherClass').value.trim() || 'General Staff';
 
-            // 2. Update Metric Cards
-            document.getElementById('statTotalFund').textContent = `GHS ${schoolWideTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-            document.getElementById('statMemberTotal').textContent = `GHS ${memberTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-            document.getElementById('statMemberContribCount').textContent = `${currentTeacher.payments.length} Month(s) Recorded`;
+      if (!name || !staffId) return;
 
-            if (lastPayment) {
-                document.getElementById('statLastPayment').textContent = `GHS ${lastPayment.amount.toFixed(2)}`;
-                document.getElementById('statLastMonthName').textContent = `Paid for ${formatMonthName(lastPayment.month)}`;
-            } else {
-                document.getElementById('statLastPayment').textContent = `N/A`;
-                document.getElementById('statLastMonthName').textContent = `No payments logged`;
-            }
+      teachers.push({ id: Date.now().toString(), name, staffId, rank, assignedClass });
+      saveData();
+      document.getElementById('addTeacherForm').reset();
+    });
 
-            // 3. Update Active Profile Card
-            document.getElementById('currentTeacherName').textContent = currentTeacher.name;
-            document.getElementById('currentTeacherGrade').textContent = currentTeacher.grade;
-            document.getElementById('currentTeacherStaffId').textContent = currentTeacher.staffId;
-            document.getElementById('currentTeacherClass').textContent = currentTeacher.classAssigned;
-            document.getElementById('teacherAvatar').textContent = getInitials(currentTeacher.name);
+    document.getElementById('addPaymentForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const teacherName = document.getElementById('payTeacherSelect').value;
+      const category = document.getElementById('payCategory').value;
+      const amount = document.getElementById('payAmount').value;
+      const notes = document.getElementById('payNotes').value.trim();
 
-            // 4. Render Payments Table
-            const tbody = document.getElementById('paymentTableBody');
-            tbody.innerHTML = '';
+      if (!teacherName || !amount) return;
 
-            if (sortedPayments.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-slate-400">No payment records found for this teacher.</td></tr>`;
-            } else {
-                sortedPayments.forEach(p => {
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors";
-                    tr.innerHTML = `
-                        <td class="px-6 py-4 font-bold text-slate-900 dark:text-white">${formatMonthName(p.month)}</td>
-                        <td class="px-6 py-4 font-mono text-xs text-slate-600 dark:text-slate-300">${p.id}</td>
-                        <td class="px-6 py-4 font-extrabold text-emerald-600 dark:text-emerald-400">GHS ${p.amount.toFixed(2)}</td>
-                        <td class="px-6 py-4">${p.date}</td>
-                        <td class="px-6 py-4">
-                            <span class="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center w-fit">
-                                <i class="fa-solid fa-circle-check mr-1.5 text-[10px]"></i> Paid
-                            </span>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            }
+      payments.push({
+        id: Date.now().toString(),
+        date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        teacherName, category, amount, notes
+      });
+      saveData();
+      document.getElementById('payAmount').value = '';
+      document.getElementById('payNotes').value = '';
+    });
 
-            // 5. Update Admin Master Roster if admin panel is open
-            if (isAdminLoggedIn) {
-                renderMasterRoster();
-            }
-        }
+    window.deleteTeacher = function(id) {
+      if (confirm("Are you sure you want to remove this teacher's profile?")) {
+        teachers = teachers.filter(t => t.id !== id);
+        saveData();
+      }
+    };
 
-        function renderMasterRoster() {
-            const masterBody = document.getElementById('masterRosterBody');
-            masterBody.innerHTML = '';
+    document.getElementById('clearDataBtn').addEventListener('click', () => {
+      if (confirm("Reset system back to default demo state?")) {
+        localStorage.removeItem('admin_teachers');
+        localStorage.removeItem('admin_payments');
+        teachers = [...defaultTeachers];
+        payments = [];
+        saveData();
+      }
+    });
 
-            teachersData.forEach(t => {
-                let total = 0;
-                t.payments.forEach(p => total += p.amount);
-
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/30";
-                tr.innerHTML = `
-                    <td class="px-4 py-3 font-mono text-slate-600 dark:text-slate-300">${t.staffId}</td>
-                    <td class="px-4 py-3 font-bold text-slate-900 dark:text-white">${t.name}</td>
-                    <td class="px-4 py-3">${t.classAssigned}</td>
-                    <td class="px-4 py-3 font-bold text-emerald-600 dark:text-emerald-400">GHS ${total.toFixed(2)}</td>
-                    <td class="px-4 py-3">${t.payments.length} Months</td>
-                    <td class="px-4 py-3">
-                        <button onclick="selectTeacherFromRoster('${t.id}')" class="text-xs bg-sdaNavy-500 text-white px-2.5 py-1 rounded hover:bg-sdaNavy-700 font-semibold">
-                            View Profile
-                        </button>
-                    </td>
-                `;
-                masterBody.appendChild(tr);
-            });
-        }
-
-        function selectTeacherFromRoster(id) {
-            document.getElementById('teacherSelect').value = id;
-            switchTeacher(id);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function toggleAdminModal() {
-            const modal = document.getElementById('adminModal');
-            document.getElementById('adminAuthError').classList.add('hidden');
-            document.getElementById('adminPasswordInput').value = '';
-
-            if (isAdminLoggedIn) {
-                // Logout Admin
-                isAdminLoggedIn = false;
-                document.getElementById('adminPanelSection').classList.add('hidden');
-                document.getElementById('adminBtnText').textContent = 'Admin Access';
-                document.getElementById('adminToggleBtn').className = "px-3 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-sdaGold-500 hover:bg-sdaGold-600 text-sdaNavy-900 transition-all flex items-center shadow-sm";
-            } else {
-                modal.classList.toggle('hidden');
-            }
-        }
-
-        function handleAdminLogin(e) {
-            e.preventDefault();
-            const password = document.getElementById('adminPasswordInput').value;
-
-            // Default admin password accepted: 'sda2026' or '1234'
-            if (password === 'sda2026' || password === '1234') {
-                isAdminLoggedIn = true;
-                document.getElementById('adminModal').classList.add('hidden');
-                document.getElementById('adminPanelSection').classList.remove('hidden');
-                document.getElementById('adminBtnText').textContent = 'Exit Admin Mode';
-                document.getElementById('adminToggleBtn').className = "px-3 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-rose-600 hover:bg-rose-700 text-white transition-all flex items-center shadow-sm";
-                renderMasterRoster();
-            } else {
-                document.getElementById('adminAuthError').classList.remove('hidden');
-            }
-        }
-
-        function handleRecordPayment(e) {
-            e.preventDefault();
-            const teacherId = document.getElementById('adminTeacherSelect').value;
-            const month = document.getElementById('adminPaymentMonth').value;
-            const amount = parseFloat(document.getElementById('adminPaymentAmount').value);
-
-            if (!teacherId || !month || isNaN(amount)) return;
-
-            const targetTeacher = teachersData.find(t => t.id === teacherId);
-            if (!targetTeacher) return;
-
-            // Check if month already paid
-            const existingIdx = targetTeacher.payments.findIndex(p => p.month === month);
-            const todayStr = new Date().toISOString().split('T')[0];
-            const randomRef = `REC-${Math.floor(100 + Math.random() * 900)}`;
-
-            if (existingIdx !== -1) {
-                // Update existing record
-                targetTeacher.payments[existingIdx].amount = amount;
-                targetTeacher.payments[existingIdx].date = todayStr;
-            } else {
-                // Add new payment entry
-                targetTeacher.payments.push({
-                    id: randomRef,
-                    month: month,
-                    amount: amount,
-                    date: todayStr
-                });
-            }
-
-            saveTeachersData();
-            renderDashboard();
-
-            // Reset Form Month field
-            document.getElementById('adminPaymentMonth').value = '';
-            showToast('Payment record updated successfully!');
-        }
-
-        function downloadPDF() {
-            const currentTeacher = teachersData.find(t => t.id === activeTeacherId) || teachersData[0];
-            
-            // Populate printable template
-            document.getElementById('pdfTeacherName').textContent = currentTeacher.name;
-            document.getElementById('pdfStaffId').textContent = currentTeacher.staffId;
-            document.getElementById('pdfGrade').textContent = currentTeacher.grade;
-            document.getElementById('pdfClass').textContent = currentTeacher.classAssigned;
-            document.getElementById('pdfIssueDate').textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-            document.getElementById('pdfDocId').textContent = `WEL-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-
-            let memberTotal = 0;
-            const sortedPayments = [...currentTeacher.payments].sort((a, b) => a.month.localeCompare(b.month));
-            
-            const pdfTbody = document.getElementById('pdfTableBody');
-            pdfTbody.innerHTML = '';
-
-            sortedPayments.forEach((p, idx) => {
-                memberTotal += p.amount;
-                const tr = document.createElement('tr');
-                tr.className = "border-b border-slate-200";
-                tr.innerHTML = `
-                    <td class="border border-slate-300 px-3 py-1.5">${idx + 1}</td>
-                    <td class="border border-slate-300 px-3 py-1.5 font-bold">${formatMonthName(p.month)}</td>
-                    <td class="border border-slate-300 px-3 py-1.5 font-mono">${p.id}</td>
-                    <td class="border border-slate-300 px-3 py-1.5">${p.date}</td>
-                    <td class="border border-slate-300 px-3 py-1.5 text-right font-bold">GHS ${p.amount.toFixed(2)}</td>
-                `;
-                pdfTbody.appendChild(tr);
-            });
-
-            document.getElementById('pdfTotalAmount').textContent = `GHS ${memberTotal.toFixed(2)}`;
-
-            // Render PDF utilizing html2pdf
-            const element = document.getElementById('pdfExportContainer');
-            element.classList.add('active');
-
-            const opt = {
-                margin:       0.5,
-                filename:     `Welfare_Statement_${currentTeacher.staffId}_${currentTeacher.name.replace(/\s+/g, '_')}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, logging: false },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-            };
-
-            // Generate
-            html2pdf().set(opt).from(element).save().then(() => {
-                element.classList.remove('active');
-            }).catch(err => {
-                console.error("PDF generation error: ", err);
-                element.classList.remove('active');
-            });
-        }
-
-        function formatMonthName(monthStr) {
-            if (!monthStr) return '';
-            const [year, month] = monthStr.split('-');
-            const date = new Date(year, parseInt(month) - 1, 1);
-            return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-        }
-
-        function getInitials(name) {
-            if (!name) return 'TS';
-            const parts = name.split(' ');
-            if (parts.length >= 2) {
-                return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-            }
-            return name.substring(0, 2).toUpperCase();
-        }
-
-        function toggleDarkMode() {
-            const html = document.documentElement;
-            const themeIcon = document.getElementById('themeIcon');
-            if (html.classList.contains('dark')) {
-                html.classList.remove('dark');
-                themeIcon.className = "fa-solid fa-moon";
-            } else {
-                html.classList.add('dark');
-                themeIcon.className = "fa-solid fa-sun";
-            }
-        }
-
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.className = "fixed bottom-5 right-5 bg-slate-900 text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-xl z-50 flex items-center space-x-2 transition-all border border-slate-700";
-            toast.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i> <span>${message}</span>`;
-            document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.remove();
-            }, 3000);
-        }
-    </script>
+    renderUI();
+  </script>
 </body>
 </html>
