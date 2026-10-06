@@ -215,7 +215,7 @@
                     <i class="fa-solid fa-user-shield text-xl"></i>
                     <div>
                         <h4 class="font-bold text-sm">Welfare Executive Admin Mode Active</h4>
-                        <p class="text-xs text-amber-700 dark:text-amber-400">You can register new staff members, record dues payments, and manage contributions.</p>
+                        <p class="text-xs text-amber-700 dark:text-amber-400">You can register new staff members, remove departed staff, record dues payments, and manage contributions.</p>
                     </div>
                 </div>
                 <button onclick="toggleAdminModal()" class="text-xs bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100 px-3 py-1.5 rounded font-semibold hover:bg-amber-300">
@@ -423,7 +423,7 @@
 
     <script>
         /* ==========================================================================
-           1. INITIAL PRE-POPULATED DATA (8 TEACHERS WITH REALISTIC RECORDS)
+           1. INITIAL PRE-POPULATED DATA
            ========================================================================== */
         const DEFAULT_TEACHERS = [
             {
@@ -552,7 +552,9 @@
         window.addEventListener('DOMContentLoaded', () => {
             loadTeachersData();
             populateTeacherSelects();
-            activeTeacherId = teachersData[0].id;
+            if (teachersData.length > 0) {
+                activeTeacherId = teachersData[0].id;
+            }
             renderDashboard();
         });
 
@@ -585,6 +587,15 @@
             selectEl.innerHTML = '';
             adminSelectEl.innerHTML = '';
 
+            if (teachersData.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = "";
+                opt.textContent = "No active staff registered";
+                selectEl.appendChild(opt);
+                adminSelectEl.appendChild(opt.cloneNode(true));
+                return;
+            }
+
             teachersData.forEach(t => {
                 const opt = document.createElement('option');
                 opt.value = t.id;
@@ -597,8 +608,12 @@
                 adminSelectEl.appendChild(adminOpt);
             });
 
-            if (currentSelected) selectEl.value = currentSelected;
-            if (currentAdminSelected) adminSelectEl.value = currentAdminSelected;
+            if (currentSelected && teachersData.some(t => t.id === currentSelected)) {
+                selectEl.value = currentSelected;
+            }
+            if (currentAdminSelected && teachersData.some(t => t.id === currentAdminSelected)) {
+                adminSelectEl.value = currentAdminSelected;
+            }
         }
 
         function switchTeacher(teacherId) {
@@ -607,7 +622,25 @@
         }
 
         function renderDashboard() {
+            if (teachersData.length === 0) {
+                // Clear UI if no staff exists
+                document.getElementById('statTotalFund').textContent = "GHS 0.00";
+                document.getElementById('statMemberTotal').textContent = "GHS 0.00";
+                document.getElementById('statMemberContribCount').textContent = "0 Payments recorded";
+                document.getElementById('statLastPayment').textContent = "N/A";
+                document.getElementById('statLastMonthName').textContent = "-";
+                document.getElementById('currentTeacherName').textContent = "No Staff Registered";
+                document.getElementById('currentTeacherGrade').textContent = "--";
+                document.getElementById('currentTeacherStaffId').textContent = "--";
+                document.getElementById('currentTeacherClass').textContent = "--";
+                document.getElementById('teacherAvatar').textContent = "--";
+                document.getElementById('paymentTableBody').innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-slate-400">No staff accounts exist. Register a teacher using the Admin Panel.</td></tr>`;
+                if (isAdminLoggedIn) renderMasterRoster();
+                return;
+            }
+
             const currentTeacher = teachersData.find(t => t.id === activeTeacherId) || teachersData[0];
+            activeTeacherId = currentTeacher.id;
 
             // 1. Calculate Fund Metrics
             let schoolWideTotal = 0;
@@ -677,6 +710,11 @@
             const masterBody = document.getElementById('masterRosterBody');
             masterBody.innerHTML = '';
 
+            if (teachersData.length === 0) {
+                masterBody.innerHTML = `<tr><td colspan="6" class="px-4 py-6 text-center text-slate-400">No active teachers registered in system.</td></tr>`;
+                return;
+            }
+
             teachersData.forEach(t => {
                 let total = 0;
                 t.payments.forEach(p => total += p.amount);
@@ -690,9 +728,15 @@
                     <td class="px-4 py-3 font-bold text-emerald-600 dark:text-emerald-400">GHS ${total.toFixed(2)}</td>
                     <td class="px-4 py-3">${t.payments.length} Months</td>
                     <td class="px-4 py-3">
-                        <button onclick="selectTeacherFromRoster('${t.id}')" class="text-xs bg-sdaNavy-500 text-white px-2.5 py-1 rounded hover:bg-sdaNavy-700 font-semibold">
-                            View Profile
-                        </button>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="selectTeacherFromRoster('${t.id}')" class="text-xs bg-sdaNavy-500 text-white px-2.5 py-1 rounded hover:bg-sdaNavy-700 font-semibold transition-all">
+                                View Profile
+                            </button>
+                            <button onclick="handleRemoveStaff('${t.id}', '${t.name}')" class="text-xs bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 rounded font-semibold transition-all flex items-center space-x-1" title="Remove Staff Member">
+                                <i class="fa-solid fa-user-minus"></i>
+                                <span>Remove</span>
+                            </button>
+                        </div>
                     </td>
                 `;
                 masterBody.appendChild(tr);
@@ -703,6 +747,26 @@
             document.getElementById('teacherSelect').value = id;
             switchTeacher(id);
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        /* Handler for deleting a staff member from the database */
+        function handleRemoveStaff(teacherId, teacherName) {
+            const confirmed = confirm(`Are you sure you want to remove ${teacherName} from the welfare system?\n\nThis will permanently delete their profile and payment records from the roster.`);
+            if (!confirmed) return;
+
+            // Remove teacher from dataset
+            teachersData = teachersData.filter(t => t.id !== teacherId);
+            saveTeachersData();
+            populateTeacherSelects();
+
+            // Set new active teacher if deleted teacher was selected
+            if (activeTeacherId === teacherId) {
+                activeTeacherId = teachersData.length > 0 ? teachersData[0].id : "";
+                document.getElementById('teacherSelect').value = activeTeacherId;
+            }
+
+            renderDashboard();
+            showToast(`${teacherName} has been removed from the school roster.`);
         }
 
         function toggleAdminModal() {
@@ -725,7 +789,6 @@
             e.preventDefault();
             const password = document.getElementById('adminPasswordInput').value;
 
-            // Default admin password accepted: 'sda2026' or '1234'
             if (password === 'sda2026' || password === '1234') {
                 isAdminLoggedIn = true;
                 document.getElementById('adminModal').classList.add('hidden');
@@ -738,7 +801,6 @@
             }
         }
 
-        // Add New Staff Handler
         function handleAddNewStaff(e) {
             e.preventDefault();
             const staffId = document.getElementById('newStaffId').value.trim();
@@ -748,14 +810,13 @@
 
             if (!staffId || !name || !grade || !classAssigned) return;
 
-            // Check if Staff ID already exists
             const exists = teachersData.some(t => t.staffId.toLowerCase() === staffId.toLowerCase());
             if (exists) {
                 alert("A staff member with this Staff ID already exists.");
                 return;
             }
 
-            const newId = `TCH-${String(teachersData.length + 1).padStart(3, '0')}`;
+            const newId = `TCH-${String(Date.now()).slice(-4)}`;
             const newTeacher = {
                 id: newId,
                 staffId: staffId,
@@ -769,12 +830,10 @@
             saveTeachersData();
             populateTeacherSelects();
 
-            // Switch view to the newly added teacher
             activeTeacherId = newId;
             document.getElementById('teacherSelect').value = newId;
             renderDashboard();
 
-            // Reset Form Fields
             document.getElementById('newStaffId').value = '';
             document.getElementById('newStaffName').value = '';
             document.getElementById('newStaffClass').value = '';
@@ -793,17 +852,14 @@
             const targetTeacher = teachersData.find(t => t.id === teacherId);
             if (!targetTeacher) return;
 
-            // Check if month already paid
             const existingIdx = targetTeacher.payments.findIndex(p => p.month === month);
             const todayStr = new Date().toISOString().split('T')[0];
             const randomRef = `REC-${Math.floor(100 + Math.random() * 900)}`;
 
             if (existingIdx !== -1) {
-                // Update existing record
                 targetTeacher.payments[existingIdx].amount = amount;
                 targetTeacher.payments[existingIdx].date = todayStr;
             } else {
-                // Add new payment entry
                 targetTeacher.payments.push({
                     id: randomRef,
                     month: month,
@@ -815,15 +871,18 @@
             saveTeachersData();
             renderDashboard();
 
-            // Reset Form Month field
             document.getElementById('adminPaymentMonth').value = '';
             showToast('Payment record updated successfully!');
         }
 
         function downloadPDF() {
+            if (teachersData.length === 0) {
+                alert("No active staff profiles to download statement for.");
+                return;
+            }
+
             const currentTeacher = teachersData.find(t => t.id === activeTeacherId) || teachersData[0];
             
-            // Populate printable template
             document.getElementById('pdfTeacherName').textContent = currentTeacher.name;
             document.getElementById('pdfStaffId').textContent = currentTeacher.staffId;
             document.getElementById('pdfGrade').textContent = currentTeacher.grade;
@@ -857,7 +916,6 @@
 
             document.getElementById('pdfTotalAmount').textContent = `GHS ${memberTotal.toFixed(2)}`;
 
-            // Render PDF utilizing html2pdf
             const element = document.getElementById('pdfExportContainer');
             element.classList.add('active');
 
@@ -869,7 +927,6 @@
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
 
-            // Generate
             html2pdf().set(opt).from(element).save().then(() => {
                 element.classList.remove('active');
             }).catch(err => {
