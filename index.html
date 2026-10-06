@@ -68,10 +68,11 @@
                 <button id="themeToggle" onclick="toggleDarkMode()" class="p-2.5 rounded-lg bg-sdaNavy-700 hover:bg-sdaNavy-500 text-amber-300 transition-all border border-sdaNavy-500" title="Toggle Theme">
                     <i id="themeIcon" class="fa-solid fa-moon"></i>
                 </button>
-
+                
                 <!-- Admin Mode Switch -->
                 <button id="adminToggleBtn" onclick="toggleAdminModal()" class="px-3 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-sdaGold-500 hover:bg-sdaGold-600 text-sdaNavy-900 transition-all flex items-center shadow-sm">
-                    <i class="fa-solid fa-lock mr-1.5"></i> <span id="adminBtnText">Admin Access</span>
+                    <i class="fa-solid fa-lock mr-1.5"></i>
+                    <span id="adminBtnText">Admin Access</span>
                 </button>
             </div>
         </div>
@@ -174,7 +175,7 @@
                     </p>
                 </div>
             </div>
-
+            
             <button onclick="downloadPDF()" class="w-full md:w-auto px-4 py-2.5 bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all flex items-center justify-center space-x-2 border border-sdaNavy-700">
                 <i class="fa-solid fa-file-pdf text-amber-400 text-base"></i>
                 <span>Download Official Statement (PDF)</span>
@@ -189,7 +190,6 @@
                 </h3>
                 <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">Session: 2025/2026 Academic Year</span>
             </div>
-
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left text-slate-600 dark:text-slate-300">
                     <thead class="text-xs text-slate-700 uppercase bg-slate-100 dark:bg-slate-700/50 dark:text-slate-300">
@@ -240,13 +240,19 @@
                     <div>
                         <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Grade / Rank</label>
                         <select id="newStaffGrade" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-xs font-medium dark:text-white focus:ring-2 focus:ring-sdaNavy-500" required>
-                            <option value="Senior Superintendent I">Senior Superintendent I</option>
-                            <option value="Senior Superintendent II">Senior Superintendent II</option>
-                            <option value="Principal Superintendent">Principal Superintendent</option>
-                            <option value="Superintendent I">Superintendent I</option>
-                            <option value="Superintendent II">Superintendent II</option>
-                            <option value="Headteacher">Headteacher</option>
-                            <option value="Assistant Headteacher">Assistant Headteacher</option>
+                            <option value="Pupil Teacher">1. Pupil Teacher</option>
+                            <option value="Superintendent II">2. Superintendent II</option>
+                            <option value="Superintendent I">3. Superintendent I</option>
+                            <option value="Senior Superintendent II">4. Senior Superintendent II</option>
+                            <option value="Senior Superintendent I" selected>5. Senior Superintendent I</option>
+                            <option value="Principal Superintendent">6. Principal Superintendent</option>
+                            <option value="Assistant Director II">7. Assistant Director II</option>
+                            <option value="Assistant Director I">8. Assistant Director I</option>
+                            <option value="Deputy Director">9. Deputy Director</option>
+                            <option value="Director II">10. Director II</option>
+                            <option value="Director I">11. Director I</option>
+                            <option value="Deputy Director General">12. Deputy Director General</option>
+                            <option value="Director General">13. Director General</option>
                         </select>
                     </div>
                     <div>
@@ -314,6 +320,7 @@
                     </table>
                 </div>
             </div>
+
         </div>
 
     </main>
@@ -339,6 +346,7 @@
                 </button>
             </div>
             <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Please enter executive access passcode to switch to portal administration mode.</p>
+            
             <form onsubmit="handleAdminLogin(event)">
                 <div class="mb-4">
                     <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Passcode</label>
@@ -460,7 +468,7 @@
                 id: "TCH-003",
                 staffId: "GES-311092",
                 name: "Emmanuel Osei Poku",
-                grade: "Headteacher",
+                grade: "Assistant Director I",
                 classAssigned: "Administration",
                 payments: [
                     { id: "REC-913", month: "2025-09", amount: 100, date: "2025-09-10" },
@@ -532,7 +540,7 @@
                 id: "TCH-008",
                 staffId: "GES-834112",
                 name: "Priscilla Adwoa Donkor",
-                grade: "Superintendent I",
+                grade: "Assistant Director II",
                 classAssigned: "Basic 3",
                 payments: [
                     { id: "REC-940", month: "2025-09", amount: 100, date: "2025-09-16" },
@@ -629,12 +637,15 @@
                 document.getElementById('statMemberContribCount').textContent = "0 Payments recorded";
                 document.getElementById('statLastPayment').textContent = "N/A";
                 document.getElementById('statLastMonthName').textContent = "-";
+                
                 document.getElementById('currentTeacherName').textContent = "No Staff Registered";
                 document.getElementById('currentTeacherGrade').textContent = "--";
                 document.getElementById('currentTeacherStaffId').textContent = "--";
                 document.getElementById('currentTeacherClass').textContent = "--";
                 document.getElementById('teacherAvatar').textContent = "--";
+                
                 document.getElementById('paymentTableBody').innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-slate-400">No staff accounts exist. Register a teacher using the Admin Panel.</td></tr>`;
+                
                 if (isAdminLoggedIn) renderMasterRoster();
                 return;
             }
@@ -659,7 +670,7 @@
             document.getElementById('statTotalFund').textContent = `GHS ${schoolWideTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
             document.getElementById('statMemberTotal').textContent = `GHS ${memberTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
             document.getElementById('statMemberContribCount').textContent = `${currentTeacher.payments.length} Month(s) Recorded`;
-
+            
             if (lastPayment) {
                 document.getElementById('statLastPayment').textContent = `GHS ${lastPayment.amount.toFixed(2)}`;
                 document.getElementById('statLastMonthName').textContent = `Paid for ${formatMonthName(lastPayment.month)}`;
@@ -829,7 +840,7 @@
             teachersData.push(newTeacher);
             saveTeachersData();
             populateTeacherSelects();
-
+            
             activeTeacherId = newId;
             document.getElementById('teacherSelect').value = newId;
             renderDashboard();
@@ -882,7 +893,7 @@
             }
 
             const currentTeacher = teachersData.find(t => t.id === activeTeacherId) || teachersData[0];
-            
+
             document.getElementById('pdfTeacherName').textContent = currentTeacher.name;
             document.getElementById('pdfStaffId').textContent = currentTeacher.staffId;
             document.getElementById('pdfGrade').textContent = currentTeacher.grade;
@@ -892,7 +903,7 @@
 
             let memberTotal = 0;
             const sortedPayments = [...currentTeacher.payments].sort((a, b) => a.month.localeCompare(b.month));
-            
+
             const pdfTbody = document.getElementById('pdfTableBody');
             pdfTbody.innerHTML = '';
 
@@ -975,3 +986,4 @@
     </script>
 </body>
 </html>
+
