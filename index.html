@@ -117,17 +117,17 @@
                 <div>
                     <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Net Fund Balance</p>
                     <h3 id="statTotalFund" class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-0.5">GHS 0.00</h3>
-                    <p class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium"><i class="fa-solid fa-circle-check"></i> After All Payouts</p>
+                    <p class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium"><i class="fa-solid fa-circle-check"></i> After Fund Withdrawals</p>
                 </div>
             </div>
 
-            <!-- Card 2: Selected Teacher Net Balance -->
+            <!-- Card 2: Selected Teacher Total Contributions -->
             <div class="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex items-center">
                 <div class="p-3.5 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-sdaGold-600 dark:text-amber-300 mr-4">
                     <i class="fa-solid fa-hand-holding-dollar text-2xl"></i>
                 </div>
                 <div>
-                    <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Member's Net Balance</p>
+                    <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Member Total Paid</p>
                     <h3 id="statMemberTotal" class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-0.5">GHS 0.00</h3>
                     <p id="statMemberContribCount" class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-medium">0 Payments recorded</p>
                 </div>
@@ -178,16 +178,41 @@
             </div>
             
             <button onclick="downloadPDF()" class="w-full md:w-auto px-4 py-2.5 bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all flex items-center justify-center space-x-2 border border-sdaNavy-700">
-                <i class="fa-solid fa-file-pdf text-amber-400 text-base"></i>
-                <span>Download Official Statement (PDF)</span>
+                <i class="fa-solid fa-file-pdf text-amber-400 text-base"><span>Download Official Statement (PDF)</span>
             </button>
+        </div>
+
+        <!-- GLOBAL FUND DISBURSAL / WITHDRAWALS NOTICE BOARD (Shown on every teacher's page) -->
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden mb-6">
+            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-700 flex flex-wrap justify-between items-center gap-2 bg-rose-50/60 dark:bg-rose-950/20">
+                <h3 class="font-bold text-slate-800 dark:text-white text-base flex items-center">
+                    <i class="fa-solid fa-bullhorn text-rose-500 mr-2"></i> School Welfare Fund Payout Notices (Overall Fund Disbursals)
+                </h3>
+                <span class="text-xs bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200 font-bold px-2.5 py-1 rounded-full">Visible to All Members</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-slate-600 dark:text-slate-300">
+                    <thead class="text-xs text-slate-700 uppercase bg-slate-100 dark:bg-slate-700/50 dark:text-slate-300">
+                        <tr>
+                            <th scope="col" class="px-6 py-3.5 font-bold">Ref No.</th>
+                            <th scope="col" class="px-6 py-3.5 font-bold">Beneficiary / Teacher</th>
+                            <th scope="col" class="px-6 py-3.5 font-bold">Disbursement Reason</th>
+                            <th scope="col" class="px-6 py-3.5 font-bold">Amount Disbursed (GHS)</th>
+                            <th scope="col" class="px-6 py-3.5 font-bold">Date Processed</th>
+                        </tr>
+                    </thead>
+                    <tbody id="globalWithdrawalTableBody" class="divide-y divide-slate-200 dark:divide-slate-700">
+                        <!-- Dynamic global withdrawal rows -->
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Payment History Table -->
         <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden mb-6">
             <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-700 flex flex-wrap justify-between items-center gap-2 bg-slate-50/50 dark:bg-slate-800/50">
                 <h3 class="font-bold text-slate-800 dark:text-white text-base flex items-center">
-                    <i class="fa-solid fa-list-check text-sdaGold-500 mr-2"></i> Monthly Contribution Ledger
+                    <i class="fa-solid fa-list-check text-sdaGold-500 mr-2"></i> Member Monthly Contribution Ledger
                 </h3>
                 <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">Session: 2025/2026 Academic Year</span>
             </div>
@@ -204,32 +229,6 @@
                     </thead>
                     <tbody id="paymentTableBody" class="divide-y divide-slate-200 dark:divide-slate-700">
                         <!-- Dynamic payment rows -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Withdrawal History Table (Visible to all on active teacher profile) -->
-        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden mb-6">
-            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-700 flex flex-wrap justify-between items-center gap-2 bg-slate-50/50 dark:bg-slate-800/50">
-                <h3 class="font-bold text-slate-800 dark:text-white text-base flex items-center">
-                    <i class="fa-solid fa-hand-holding-medical text-rose-500 mr-2"></i> Welfare Payouts & Withdrawal History
-                </h3>
-                <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">Verified Executive Disbursements</span>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left text-slate-600 dark:text-slate-300">
-                    <thead class="text-xs text-slate-700 uppercase bg-slate-100 dark:bg-slate-700/50 dark:text-slate-300">
-                        <tr>
-                            <th scope="col" class="px-6 py-3.5 font-bold">Ref No.</th>
-                            <th scope="col" class="px-6 py-3.5 font-bold">Disbursement Reason</th>
-                            <th scope="col" class="px-6 py-3.5 font-bold">Amount Withdrawn (GHS)</th>
-                            <th scope="col" class="px-6 py-3.5 font-bold">Date Processed</th>
-                            <th scope="col" class="px-6 py-3.5 font-bold">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="withdrawalTableBody" class="divide-y divide-slate-200 dark:divide-slate-700">
-                        <!-- Dynamic withdrawal rows -->
                     </tbody>
                 </table>
             </div>
@@ -330,11 +329,11 @@
                 <!-- SECTION: Process Welfare Withdrawal Form -->
                 <div class="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-700">
                     <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4 flex items-center">
-                        <i class="fa-solid fa-money-bill-transfer text-rose-500 mr-2"></i> Process Welfare Withdrawal / Payout
+                        <i class="fa-solid fa-money-bill-transfer text-rose-500 mr-2"></i> Process Overall Fund Withdrawal / Payout
                     </h3>
                     <form id="addWithdrawalForm" onsubmit="handleRecordWithdrawal(event)" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Target Teacher / Beneficiary</label>
+                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Beneficiary Teacher (Recipient)</label>
                             <select id="adminWithdrawalTeacherSelect" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-xs font-medium dark:text-white focus:ring-2 focus:ring-sdaNavy-500" required>
                             </select>
                         </div>
@@ -355,7 +354,7 @@
                             </div>
                         </div>
                         <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-2.5 px-4 rounded-lg shadow transition-all">
-                            Process Payout / Withdrawal
+                            Process Fund Payout / Withdrawal
                         </button>
                     </form>
                 </div>
@@ -377,8 +376,6 @@
                                 <th class="px-4 py-3 font-bold">Phone</th>
                                 <th class="px-4 py-3 font-bold">Class</th>
                                 <th class="px-4 py-3 font-bold">Total Paid</th>
-                                <th class="px-4 py-3 font-bold">Total Withdrawn</th>
-                                <th class="px-4 py-3 font-bold">Net Balance</th>
                                 <th class="px-4 py-3 font-bold">Actions</th>
                             </tr>
                         </thead>
@@ -441,7 +438,7 @@
 
         <div class="flex justify-between items-end border-b border-slate-200 pb-3 mb-6 text-xs">
             <div>
-                <h3 class="text-sm font-bold text-slate-800 uppercase">OFFICIAL STATEMENT OF CONTRIBUTION & BENEFITS</h3>
+                <h3 class="text-sm font-bold text-slate-800 uppercase">OFFICIAL STATEMENT OF CONTRIBUTION</h3>
                 <p class="text-slate-600 mt-0.5">Document ID: <span id="pdfDocId" class="font-mono font-semibold">WEL-2026-0001</span></p>
             </div>
             <div class="text-right">
@@ -462,24 +459,20 @@
         </div>
 
         <!-- Summary Totals -->
-        <div class="grid grid-cols-3 gap-3 mb-6 text-xs">
+        <div class="grid grid-cols-2 gap-4 mb-6 text-xs">
             <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center">
-                <p class="text-emerald-800 font-bold">Total Paid</p>
-                <p id="pdfTotalPaid" class="text-sm font-extrabold text-emerald-900 mt-0.5">GHS 0.00</p>
-            </div>
-            <div class="bg-rose-50 border border-rose-200 rounded-lg p-3 text-center">
-                <p class="text-rose-800 font-bold">Total Withdrawn</p>
-                <p id="pdfTotalWithdrawn" class="text-sm font-extrabold text-rose-900 mt-0.5">GHS 0.00</p>
+                <p class="text-emerald-800 font-bold">Total Dues Paid</p>
+                <p id="pdfTotalPaid" class="text-base font-extrabold text-emerald-900 mt-0.5">GHS 0.00</p>
             </div>
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
-                <p class="text-blue-800 font-bold">Net Balance</p>
-                <p id="pdfNetBalance" class="text-sm font-extrabold text-blue-900 mt-0.5">GHS 0.00</p>
+                <p class="text-blue-800 font-bold">Overall Net Fund Status</p>
+                <p class="text-base font-extrabold text-blue-900 mt-0.5">Active & In Good Standing</p>
             </div>
         </div>
 
         <!-- Statement Table: Contributions -->
-        <h4 class="text-xs font-bold text-slate-800 uppercase mb-2">1. Monthly Contributions Log</h4>
-        <table class="w-full text-xs text-left border-collapse border border-slate-300 mb-6">
+        <h4 class="text-xs font-bold text-slate-800 uppercase mb-2">Monthly Contributions Log</h4>
+        <table class="w-full text-xs text-left border-collapse border border-slate-300 mb-8">
             <thead>
                 <tr class="bg-slate-100 text-slate-800 border-b border-slate-300">
                     <th class="border border-slate-300 px-3 py-1.5 font-bold">#</th>
@@ -490,23 +483,6 @@
                 </tr>
             </thead>
             <tbody id="pdfTableBody">
-                <!-- Populated dynamically for print -->
-            </tbody>
-        </table>
-
-        <!-- Statement Table: Withdrawals -->
-        <h4 class="text-xs font-bold text-slate-800 uppercase mb-2">2. Welfare Payouts & Withdrawals Log</h4>
-        <table class="w-full text-xs text-left border-collapse border border-slate-300 mb-8">
-            <thead>
-                <tr class="bg-slate-100 text-slate-800 border-b border-slate-300">
-                    <th class="border border-slate-300 px-3 py-1.5 font-bold">#</th>
-                    <th class="border border-slate-300 px-3 py-1.5 font-bold">Disbursement Reason</th>
-                    <th class="border border-slate-300 px-3 py-1.5 font-bold">Ref No.</th>
-                    <th class="border border-slate-300 px-3 py-1.5 font-bold">Date</th>
-                    <th class="border border-slate-300 px-3 py-1.5 font-bold text-right">Amount (GHS)</th>
-                </tr>
-            </thead>
-            <tbody id="pdfWithdrawalTableBody">
                 <!-- Populated dynamically for print -->
             </tbody>
         </table>
@@ -545,9 +521,6 @@
                     { id: "REC-904", month: "2025-12", amount: 100, date: "2025-12-14" },
                     { id: "REC-905", month: "2026-01", amount: 100, date: "2026-01-18" },
                     { id: "REC-906", month: "2026-02", amount: 100, date: "2026-02-11" }
-                ],
-                withdrawals: [
-                    { id: "WTH-501", reason: "Medical Support", amount: 200, date: "2026-01-20" }
                 ]
             },
             {
@@ -564,8 +537,7 @@
                     { id: "REC-910", month: "2025-12", amount: 100, date: "2025-12-20" },
                     { id: "REC-911", month: "2026-01", amount: 100, date: "2026-01-10" },
                     { id: "REC-912", month: "2026-02", amount: 100, date: "2026-02-14" }
-                ],
-                withdrawals: []
+                ]
             },
             {
                 id: "TCH-003",
@@ -581,9 +553,6 @@
                     { id: "REC-916", month: "2025-12", amount: 100, date: "2025-12-15" },
                     { id: "REC-917", month: "2026-01", amount: 100, date: "2026-01-08" },
                     { id: "REC-918", month: "2026-02", amount: 100, date: "2026-02-09" }
-                ],
-                withdrawals: [
-                    { id: "WTH-502", reason: "Bereavement Assistance", amount: 300, date: "2026-02-15" }
                 ]
             },
             {
@@ -599,8 +568,7 @@
                     { id: "REC-921", month: "2025-11", amount: 100, date: "2025-11-20" },
                     { id: "REC-922", month: "2025-12", amount: 100, date: "2025-12-22" },
                     { id: "REC-923", month: "2026-01", amount: 100, date: "2026-01-25" }
-                ],
-                withdrawals: []
+                ]
             },
             {
                 id: "TCH-005",
@@ -616,8 +584,7 @@
                     { id: "REC-927", month: "2025-12", amount: 100, date: "2025-12-18" },
                     { id: "REC-928", month: "2026-01", amount: 100, date: "2026-01-19" },
                     { id: "REC-929", month: "2026-02", amount: 100, date: "2026-02-12" }
-                ],
-                withdrawals: []
+                ]
             },
             {
                 id: "TCH-006",
@@ -631,8 +598,7 @@
                     { id: "REC-931", month: "2025-10", amount: 100, date: "2025-10-21" },
                     { id: "REC-932", month: "2025-11", amount: 100, date: "2025-11-22" },
                     { id: "REC-933", month: "2026-01", amount: 100, date: "2026-01-28" }
-                ],
-                withdrawals: []
+                ]
             },
             {
                 id: "TCH-007",
@@ -648,8 +614,7 @@
                     { id: "REC-937", month: "2025-12", amount: 100, date: "2025-12-11" },
                     { id: "REC-938", month: "2026-01", amount: 100, date: "2026-01-12" },
                     { id: "REC-939", month: "2026-02", amount: 100, date: "2026-02-10" }
-                ],
-                withdrawals: []
+                ]
             },
             {
                 id: "TCH-008",
@@ -664,18 +629,24 @@
                     { id: "REC-942", month: "2025-11", amount: 100, date: "2025-11-19" },
                     { id: "REC-943", month: "2025-12", amount: 100, date: "2025-12-21" },
                     { id: "REC-944", month: "2026-01", amount: 100, date: "2026-01-20" }
-                ],
-                withdrawals: []
+                ]
             }
         ];
 
+        // Overall Global Withdrawals Array (independent of individual teacher dues balances)
+        const DEFAULT_GLOBAL_WITHDRAWALS = [
+            { id: "WTH-501", teacherId: "TCH-001", teacherName: "Kwaku Mensah", reason: "Medical Support", amount: 200, date: "2026-01-20" },
+            { id: "WTH-502", teacherId: "TCH-003", teacherName: "Emmanuel Osei Poku", reason: "Bereavement Assistance", amount: 300, date: "2026-02-15" }
+        ];
+
         let teachersData = [];
+        let globalWithdrawals = [];
         let activeTeacherId = "";
         let isAdminLoggedIn = false;
 
         // Initialize App
         window.addEventListener('DOMContentLoaded', () => {
-            loadTeachersData();
+            loadAppData();
             populateTeacherSelects();
             if (teachersData.length > 0) {
                 activeTeacherId = teachersData[0].id;
@@ -683,25 +654,35 @@
             renderDashboard();
         });
 
-        // Load data from localStorage or fallback to defaults
-        function loadTeachersData() {
-            const stored = localStorage.getItem('ntonso_sda_teachers');
-            if (stored) {
+        function loadAppData() {
+            const storedTeachers = localStorage.getItem('ntonso_sda_teachers');
+            if (storedTeachers) {
                 try {
-                    teachersData = JSON.parse(stored);
-                    // Ensure backward compatibility if withdrawals array is missing on stored records
-                    teachersData = teachersData.map(t => ({ withdrawals: [], phone: "N/A", ...t }));
+                    teachersData = JSON.parse(storedTeachers);
                 } catch (e) {
                     teachersData = DEFAULT_TEACHERS;
                 }
             } else {
                 teachersData = DEFAULT_TEACHERS;
-                saveTeachersData();
+                localStorage.setItem('ntonso_sda_teachers', JSON.stringify(teachersData));
+            }
+
+            const storedWithdrawals = localStorage.getItem('ntonso_sda_withdrawals');
+            if (storedWithdrawals) {
+                try {
+                    globalWithdrawals = JSON.parse(storedWithdrawals);
+                } catch (e) {
+                    globalWithdrawals = DEFAULT_GLOBAL_WITHDRAWALS;
+                }
+            } else {
+                globalWithdrawals = DEFAULT_GLOBAL_WITHDRAWALS;
+                localStorage.setItem('ntonso_sda_withdrawals', JSON.stringify(globalWithdrawals));
             }
         }
 
-        function saveTeachersData() {
+        function saveAppData() {
             localStorage.setItem('ntonso_sda_teachers', JSON.stringify(teachersData));
+            localStorage.setItem('ntonso_sda_withdrawals', JSON.stringify(globalWithdrawals));
         }
 
         function populateTeacherSelects() {
@@ -772,7 +753,7 @@
                 document.getElementById('teacherAvatar').textContent = "--";
                 
                 document.getElementById('paymentTableBody').innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-slate-400">No staff accounts exist. Register a teacher using the Admin Panel.</td></tr>`;
-                document.getElementById('withdrawalTableBody').innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-slate-400">No withdrawal records.</td></tr>`;
+                document.getElementById('globalWithdrawalTableBody').innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-slate-400">No fund withdrawals recorded.</td></tr>`;
                 
                 if (isAdminLoggedIn) renderMasterRoster();
                 return;
@@ -781,35 +762,32 @@
             const currentTeacher = teachersData.find(t => t.id === activeTeacherId) || teachersData[0];
             activeTeacherId = currentTeacher.id;
 
-            // 1. Calculate Fund Metrics across school
+            // 1. Calculate Fund Metrics across school (Total Dues Paid minus Overall Fund Withdrawals)
             let schoolWideTotalPaid = 0;
-            let schoolWideTotalWithdrawn = 0;
             teachersData.forEach(t => {
                 t.payments.forEach(p => schoolWideTotalPaid += p.amount);
-                (t.withdrawals || []).forEach(w => schoolWideTotalWithdrawn += w.amount);
             });
-            const schoolWideNet = schoolWideTotalPaid - schoolWideTotalWithdrawn;
+
+            let schoolWideTotalWithdrawn = 0;
+            globalWithdrawals.forEach(w => schoolWideTotalWithdrawn += w.amount);
+
+            const schoolWideNetFund = schoolWideTotalPaid - schoolWideTotalWithdrawn;
 
             let memberTotalPaid = 0;
             currentTeacher.payments.forEach(p => memberTotalPaid += p.amount);
 
-            let memberTotalWithdrawn = 0;
-            (currentTeacher.withdrawals || []).forEach(w => memberTotalWithdrawn += w.amount);
-
-            let memberNetBalance = memberTotalPaid - memberTotalWithdrawn;
-
-            // Find last activity (payment or withdrawal)
+            // Find last activity (payment or global withdrawal)
             let allActivities = [
                 ...currentTeacher.payments.map(p => ({ type: 'payment', date: p.date, desc: `Paid GHS ${p.amount.toFixed(2)}` })),
-                ...(currentTeacher.withdrawals || []).map(w => ({ type: 'withdrawal', date: w.date, desc: `Withdrew GHS ${w.amount.toFixed(2)}` }))
+                ...globalWithdrawals.filter(w => w.teacherId === currentTeacher.id).map(w => ({ type: 'withdrawal', date: w.date, desc: `Received Payout GHS ${w.amount.toFixed(2)}` }))
             ].sort((a, b) => b.date.localeCompare(a.date));
 
             const lastActivity = allActivities.length > 0 ? allActivities[0] : null;
 
             // 2. Update Metric Cards
-            document.getElementById('statTotalFund').textContent = `GHS ${schoolWideNet.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-            document.getElementById('statMemberTotal').textContent = `GHS ${memberNetBalance.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-            document.getElementById('statMemberContribCount').textContent = `${currentTeacher.payments.length} Payments | ${ (currentTeacher.withdrawals||[]).length } Payouts`;
+            document.getElementById('statTotalFund').textContent = `GHS ${schoolWideNetFund.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            document.getElementById('statMemberTotal').textContent = `GHS ${memberTotalPaid.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            document.getElementById('statMemberContribCount').textContent = `${currentTeacher.payments.length} Dues Payments recorded`;
             
             if (lastActivity) {
                 document.getElementById('statLastPayment').textContent = lastActivity.desc;
@@ -827,7 +805,7 @@
             document.getElementById('currentTeacherClass').textContent = currentTeacher.classAssigned;
             document.getElementById('teacherAvatar').textContent = getInitials(currentTeacher.name);
 
-            // 4. Render Payments Table
+            // 4. Render Payments Table for Member
             const sortedPayments = [...currentTeacher.payments].sort((a, b) => b.month.localeCompare(a.month));
             const paymentTbody = document.getElementById('paymentTableBody');
             paymentTbody.innerHTML = '';
@@ -853,29 +831,25 @@
                 });
             }
 
-            // 5. Render Withdrawals Table
-            const sortedWithdrawals = [...(currentTeacher.withdrawals || [])].sort((a, b) => b.date.localeCompare(a.date));
-            const withdrawalTbody = document.getElementById('withdrawalTableBody');
-            withdrawalTbody.innerHTML = '';
+            // 5. Render Global Withdrawals Table (Visible on every teacher's page)
+            const sortedGlobalWithdrawals = [...globalWithdrawals].sort((a, b) => b.date.localeCompare(a.date));
+            const globalWthTbody = document.getElementById('globalWithdrawalTableBody');
+            globalWthTbody.innerHTML = '';
 
-            if (sortedWithdrawals.length === 0) {
-                withdrawalTbody.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-slate-400">No welfare payouts or withdrawals recorded for this teacher.</td></tr>`;
+            if (sortedGlobalWithdrawals.length === 0) {
+                globalWthTbody.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-slate-400">No fund withdrawals or benefit payouts recorded yet.</td></tr>`;
             } else {
-                sortedWithdrawals.forEach(w => {
+                sortedGlobalWithdrawals.forEach(w => {
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors";
                     tr.innerHTML = `
                         <td class="px-6 py-4 font-mono text-xs text-slate-600 dark:text-slate-300">${w.id}</td>
-                        <td class="px-6 py-4 font-bold text-slate-900 dark:text-white"><i class="fa-solid fa-tag text-rose-500 mr-1.5"></i> ${w.reason}</td>
-                        <td class="px-6 py-4 font-extrabold text-rose-600 dark:text-rose-400">- GHS ${w.amount.toFixed(2)}</td>
+                        <td class="px-6 py-4 font-bold text-slate-900 dark:text-white">${w.teacherName}</td>
+                        <td class="px-6 py-4 font-semibold text-slate-700 dark:text-slate-300"><i class="fa-solid fa-tag text-rose-500 mr-1"></i> ${w.reason}</td>
+                        <td class="px-6 py-4 font-extrabold text-rose-600 dark:text-rose-400">GHS ${w.amount.toFixed(2)}</td>
                         <td class="px-6 py-4">${w.date}</td>
-                        <td class="px-6 py-4">
-                            <span class="bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-300 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center w-fit">
-                                <i class="fa-solid fa-circle-arrow-up mr-1.5 text-[10px]"></i> Disbursed
-                            </span>
-                        </td>
                     `;
-                    withdrawalTbody.appendChild(tr);
+                    globalWthTbody.appendChild(tr);
                 });
             }
 
@@ -890,18 +864,13 @@
             masterBody.innerHTML = '';
 
             if (teachersData.length === 0) {
-                masterBody.innerHTML = `<tr><td colspan="8" class="px-4 py-6 text-center text-slate-400">No active teachers registered in system.</td></tr>`;
+                masterBody.innerHTML = `<tr><td colspan="6" class="px-4 py-6 text-center text-slate-400">No active teachers registered in system.</td></tr>`;
                 return;
             }
 
             teachersData.forEach(t => {
                 let paid = 0;
                 t.payments.forEach(p => paid += p.amount);
-
-                let withdrawn = 0;
-                (t.withdrawals || []).forEach(w => withdrawn += w.amount);
-
-                let net = paid - withdrawn;
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/30";
@@ -911,8 +880,6 @@
                     <td class="px-4 py-3 font-mono text-slate-600 dark:text-slate-300">${t.phone || 'N/A'}</td>
                     <td class="px-4 py-3">${t.classAssigned}</td>
                     <td class="px-4 py-3 font-bold text-emerald-600 dark:text-emerald-400">GHS ${paid.toFixed(2)}</td>
-                    <td class="px-4 py-3 font-bold text-rose-600 dark:text-rose-400">GHS ${withdrawn.toFixed(2)}</td>
-                    <td class="px-4 py-3 font-extrabold text-blue-600 dark:text-blue-400">GHS ${net.toFixed(2)}</td>
                     <td class="px-4 py-3">
                         <div class="flex items-center space-x-2">
                             <button onclick="selectTeacherFromRoster('${t.id}')" class="text-xs bg-sdaNavy-500 text-white px-2.5 py-1 rounded hover:bg-sdaNavy-700 font-semibold transition-all">
@@ -940,7 +907,7 @@
             if (!confirmed) return;
 
             teachersData = teachersData.filter(t => t.id !== teacherId);
-            saveTeachersData();
+            saveAppData();
             populateTeacherSelects();
 
             if (activeTeacherId === teacherId) {
@@ -1007,12 +974,11 @@
                 phone: phone,
                 grade: grade,
                 classAssigned: classAssigned,
-                payments: [],
-                withdrawals: []
+                payments: []
             };
 
             teachersData.push(newTeacher);
-            saveTeachersData();
+            saveAppData();
             populateTeacherSelects();
             
             activeTeacherId = newId;
@@ -1054,7 +1020,7 @@
                 });
             }
 
-            saveTeachersData();
+            saveAppData();
             renderDashboard();
 
             document.getElementById('adminPaymentMonth').value = '';
@@ -1072,25 +1038,23 @@
             const targetTeacher = teachersData.find(t => t.id === teacherId);
             if (!targetTeacher) return;
 
-            if (!targetTeacher.withdrawals) {
-                targetTeacher.withdrawals = [];
-            }
-
             const todayStr = new Date().toISOString().split('T')[0];
             const randomRef = `WTH-${Math.floor(100 + Math.random() * 900)}`;
 
-            targetTeacher.withdrawals.push({
+            globalWithdrawals.push({
                 id: randomRef,
+                teacherId: targetTeacher.id,
+                teacherName: targetTeacher.name,
                 reason: reason,
                 amount: amount,
                 date: todayStr
             });
 
-            saveTeachersData();
+            saveAppData();
             renderDashboard();
 
             document.getElementById('adminWithdrawalAmount').value = '';
-            showToast(`Withdrawal of GHS ${amount.toFixed(2)} recorded for ${targetTeacher.name}!`);
+            showToast(`Overall fund withdrawal of GHS ${amount.toFixed(2)} recorded for ${targetTeacher.name}!`);
         }
 
         function downloadPDF() {
@@ -1132,33 +1096,7 @@
                 });
             }
 
-            let totalWithdrawn = 0;
-            const sortedWithdrawals = [...(currentTeacher.withdrawals || [])].sort((a, b) => a.date.localeCompare(b.date));
-            const pdfWthTbody = document.getElementById('pdfWithdrawalTableBody');
-            pdfWthTbody.innerHTML = '';
-
-            if (sortedWithdrawals.length === 0) {
-                pdfWthTbody.innerHTML = `<tr><td colspan="5" class="border border-slate-300 px-3 py-3 text-center text-slate-500">No withdrawals recorded.</td></tr>`;
-            } else {
-                sortedWithdrawals.forEach((w, idx) => {
-                    totalWithdrawn += w.amount;
-                    const tr = document.createElement('tr');
-                    tr.className = "border-b border-slate-200";
-                    tr.innerHTML = `
-                        <td class="border border-slate-300 px-3 py-1.5">${idx + 1}</td>
-                        <td class="border border-slate-300 px-3 py-1.5 font-bold">${w.reason}</td>
-                        <td class="border border-slate-300 px-3 py-1.5 font-mono">${w.id}</td>
-                        <td class="border border-slate-300 px-3 py-1.5">${w.date}</td>
-                        <td class="border border-slate-300 px-3 py-1.5 text-right font-bold text-rose-700">- GHS ${w.amount.toFixed(2)}</td>
-                    `;
-                    pdfWthTbody.appendChild(tr);
-                });
-            }
-
-            const netBalance = totalPaid - totalWithdrawn;
             document.getElementById('pdfTotalPaid').textContent = `GHS ${totalPaid.toFixed(2)}`;
-            document.getElementById('pdfTotalWithdrawn').textContent = `GHS ${totalWithdrawn.toFixed(2)}`;
-            document.getElementById('pdfNetBalance').textContent = `GHS ${netBalance.toFixed(2)}`;
 
             const element = document.getElementById('pdfExportContainer');
             element.classList.add('active');
