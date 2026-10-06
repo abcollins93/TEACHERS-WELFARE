@@ -215,7 +215,7 @@
                     <i class="fa-solid fa-user-shield text-xl"></i>
                     <div>
                         <h4 class="font-bold text-sm">Welfare Executive Admin Mode Active</h4>
-                        <p class="text-xs text-amber-700 dark:text-amber-400">You can record new dues payments and edit contributions for all faculty members.</p>
+                        <p class="text-xs text-amber-700 dark:text-amber-400">You can register new staff members, record dues payments, and manage contributions.</p>
                     </div>
                 </div>
                 <button onclick="toggleAdminModal()" class="text-xs bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100 px-3 py-1.5 rounded font-semibold hover:bg-amber-300">
@@ -223,7 +223,46 @@
                 </button>
             </div>
 
-            <!-- Record New Payment Form -->
+            <!-- SECTION: Add New Staff Member -->
+            <div class="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-700">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4 flex items-center">
+                    <i class="fa-solid fa-user-plus text-sdaNavy-500 dark:text-blue-400 mr-2"></i> Register New Staff Member
+                </h3>
+                <form id="addStaffForm" onsubmit="handleAddNewStaff(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Staff ID</label>
+                        <input type="text" id="newStaffId" placeholder="e.g. GES-902183" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-xs font-medium dark:text-white focus:ring-2 focus:ring-sdaNavy-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
+                        <input type="text" id="newStaffName" placeholder="e.g. Kwame Mensah" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-xs font-medium dark:text-white focus:ring-2 focus:ring-sdaNavy-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Grade / Rank</label>
+                        <select id="newStaffGrade" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-xs font-medium dark:text-white focus:ring-2 focus:ring-sdaNavy-500" required>
+                            <option value="Senior Superintendent I">Senior Superintendent I</option>
+                            <option value="Senior Superintendent II">Senior Superintendent II</option>
+                            <option value="Principal Superintendent">Principal Superintendent</option>
+                            <option value="Superintendent I">Superintendent I</option>
+                            <option value="Superintendent II">Superintendent II</option>
+                            <option value="Headteacher">Headteacher</option>
+                            <option value="Assistant Headteacher">Assistant Headteacher</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Class Assigned</label>
+                        <input type="text" id="newStaffClass" placeholder="e.g. Basic 4 or KG 1" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-xs font-medium dark:text-white focus:ring-2 focus:ring-sdaNavy-500" required>
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" class="w-full bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white text-xs font-bold py-2.5 px-4 rounded-lg shadow transition-all flex items-center justify-center space-x-1.5">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Add Staff Profile</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- SECTION: Record New Payment Form -->
             <div class="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-700">
                 <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4 flex items-center">
                     <i class="fa-solid fa-plus-circle text-emerald-500 mr-2"></i> Log New Dues Payment
@@ -540,6 +579,9 @@
             const selectEl = document.getElementById('teacherSelect');
             const adminSelectEl = document.getElementById('adminTeacherSelect');
             
+            const currentSelected = selectEl.value;
+            const currentAdminSelected = adminSelectEl.value;
+
             selectEl.innerHTML = '';
             adminSelectEl.innerHTML = '';
 
@@ -554,6 +596,9 @@
                 adminOpt.textContent = `${t.name} (${t.staffId})`;
                 adminSelectEl.appendChild(adminOpt);
             });
+
+            if (currentSelected) selectEl.value = currentSelected;
+            if (currentAdminSelected) adminSelectEl.value = currentAdminSelected;
         }
 
         function switchTeacher(teacherId) {
@@ -693,6 +738,50 @@
             }
         }
 
+        // Add New Staff Handler
+        function handleAddNewStaff(e) {
+            e.preventDefault();
+            const staffId = document.getElementById('newStaffId').value.trim();
+            const name = document.getElementById('newStaffName').value.trim();
+            const grade = document.getElementById('newStaffGrade').value;
+            const classAssigned = document.getElementById('newStaffClass').value.trim();
+
+            if (!staffId || !name || !grade || !classAssigned) return;
+
+            // Check if Staff ID already exists
+            const exists = teachersData.some(t => t.staffId.toLowerCase() === staffId.toLowerCase());
+            if (exists) {
+                alert("A staff member with this Staff ID already exists.");
+                return;
+            }
+
+            const newId = `TCH-${String(teachersData.length + 1).padStart(3, '0')}`;
+            const newTeacher = {
+                id: newId,
+                staffId: staffId,
+                name: name,
+                grade: grade,
+                classAssigned: classAssigned,
+                payments: []
+            };
+
+            teachersData.push(newTeacher);
+            saveTeachersData();
+            populateTeacherSelects();
+
+            // Switch view to the newly added teacher
+            activeTeacherId = newId;
+            document.getElementById('teacherSelect').value = newId;
+            renderDashboard();
+
+            // Reset Form Fields
+            document.getElementById('newStaffId').value = '';
+            document.getElementById('newStaffName').value = '';
+            document.getElementById('newStaffClass').value = '';
+
+            showToast(`New staff profile created for ${name}!`);
+        }
+
         function handleRecordPayment(e) {
             e.preventDefault();
             const teacherId = document.getElementById('adminTeacherSelect').value;
@@ -748,19 +837,23 @@
             const pdfTbody = document.getElementById('pdfTableBody');
             pdfTbody.innerHTML = '';
 
-            sortedPayments.forEach((p, idx) => {
-                memberTotal += p.amount;
-                const tr = document.createElement('tr');
-                tr.className = "border-b border-slate-200";
-                tr.innerHTML = `
-                    <td class="border border-slate-300 px-3 py-1.5">${idx + 1}</td>
-                    <td class="border border-slate-300 px-3 py-1.5 font-bold">${formatMonthName(p.month)}</td>
-                    <td class="border border-slate-300 px-3 py-1.5 font-mono">${p.id}</td>
-                    <td class="border border-slate-300 px-3 py-1.5">${p.date}</td>
-                    <td class="border border-slate-300 px-3 py-1.5 text-right font-bold">GHS ${p.amount.toFixed(2)}</td>
-                `;
-                pdfTbody.appendChild(tr);
-            });
+            if (sortedPayments.length === 0) {
+                pdfTbody.innerHTML = `<tr><td colspan="5" class="border border-slate-300 px-3 py-4 text-center text-slate-500">No payment records found to display.</td></tr>`;
+            } else {
+                sortedPayments.forEach((p, idx) => {
+                    memberTotal += p.amount;
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-slate-200";
+                    tr.innerHTML = `
+                        <td class="border border-slate-300 px-3 py-1.5">${idx + 1}</td>
+                        <td class="border border-slate-300 px-3 py-1.5 font-bold">${formatMonthName(p.month)}</td>
+                        <td class="border border-slate-300 px-3 py-1.5 font-mono">${p.id}</td>
+                        <td class="border border-slate-300 px-3 py-1.5">${p.date}</td>
+                        <td class="border border-slate-300 px-3 py-1.5 text-right font-bold">GHS ${p.amount.toFixed(2)}</td>
+                    `;
+                    pdfTbody.appendChild(tr);
+                });
+            }
 
             document.getElementById('pdfTotalAmount').textContent = `GHS ${memberTotal.toFixed(2)}`;
 
