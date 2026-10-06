@@ -171,7 +171,8 @@
                     </div>
                     <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                         <span class="font-semibold text-slate-700 dark:text-slate-300">Staff ID:</span> <span id="currentTeacherStaffId">--</span> | 
-                        <span class="font-semibold text-slate-700 dark:text-slate-300">Class Assigned:</span> <span id="currentTeacherClass">--</span>
+                        <span class="font-semibold text-slate-700 dark:text-slate-300">Phone:</span> <span id="currentTeacherPhone">--</span> | 
+                        <span class="font-semibold text-slate-700 dark:text-slate-300">Class:</span> <span id="currentTeacherClass">--</span>
                     </p>
                 </div>
             </div>
@@ -228,7 +229,7 @@
                 <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4 flex items-center">
                     <i class="fa-solid fa-user-plus text-sdaNavy-500 dark:text-blue-400 mr-2"></i> Register New Staff Member
                 </h3>
-                <form id="addStaffForm" onsubmit="handleAddNewStaff(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <form id="addStaffForm" onsubmit="handleAddNewStaff(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Staff ID</label>
                         <input type="text" id="newStaffId" placeholder="e.g. GES-902183" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-xs font-medium dark:text-white focus:ring-2 focus:ring-sdaNavy-500" required>
@@ -236,6 +237,10 @@
                     <div>
                         <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
                         <input type="text" id="newStaffName" placeholder="e.g. Kwame Mensah" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-xs font-medium dark:text-white focus:ring-2 focus:ring-sdaNavy-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Phone Number</label>
+                        <input type="tel" id="newStaffPhone" placeholder="e.g. 0241234567" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-xs font-medium dark:text-white focus:ring-2 focus:ring-sdaNavy-500" required>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Grade / Rank</label>
@@ -308,6 +313,7 @@
                             <tr>
                                 <th class="px-4 py-3 font-bold">Staff ID</th>
                                 <th class="px-4 py-3 font-bold">Teacher Name</th>
+                                <th class="px-4 py-3 font-bold">Phone</th>
                                 <th class="px-4 py-3 font-bold">Class</th>
                                 <th class="px-4 py-3 font-bold">Total Contributions</th>
                                 <th class="px-4 py-3 font-bold">Months Paid</th>
@@ -387,8 +393,9 @@
             <div class="grid grid-cols-2 gap-y-2">
                 <div><span class="font-bold text-slate-700">Member Name:</span> <span id="pdfTeacherName" class="font-semibold">--</span></div>
                 <div><span class="font-bold text-slate-700">Staff ID:</span> <span id="pdfStaffId" class="font-semibold">--</span></div>
+                <div><span class="font-bold text-slate-700">Phone Number:</span> <span id="pdfPhone" class="font-semibold">--</span></div>
                 <div><span class="font-bold text-slate-700">Grade / Rank:</span> <span id="pdfGrade">--</span></div>
-                <div><span class="font-bold text-slate-700">Assigned Class:</span> <span id="pdfClass">--</span></div>
+                <div class="col-span-2"><span class="font-bold text-slate-700">Assigned Class:</span> <span id="pdfClass">--</span></div>
             </div>
         </div>
 
@@ -438,6 +445,7 @@
                 id: "TCH-001",
                 staffId: "GES-108421",
                 name: "Kwaku Mensah",
+                phone: "0241112233",
                 grade: "Senior Superintendent I",
                 classAssigned: "Basic 6",
                 payments: [
@@ -453,6 +461,7 @@
                 id: "TCH-002",
                 staffId: "GES-209115",
                 name: "Abena Serwaa Boateng",
+                phone: "0202223344",
                 grade: "Principal Superintendent",
                 classAssigned: "Basic 1",
                 payments: [
@@ -468,6 +477,7 @@
                 id: "TCH-003",
                 staffId: "GES-311092",
                 name: "Emmanuel Osei Poku",
+                phone: "0273334455",
                 grade: "Assistant Director I",
                 classAssigned: "Administration",
                 payments: [
@@ -483,6 +493,7 @@
                 id: "TCH-004",
                 staffId: "GES-401882",
                 name: "Grace Yaa Asantewaa",
+                phone: "0244445566",
                 grade: "Superintendent I",
                 classAssigned: "Basic 2",
                 payments: [
@@ -497,6 +508,7 @@
                 id: "TCH-005",
                 staffId: "GES-554109",
                 name: "Kofi Owusu Ansah",
+                phone: "0555556677",
                 grade: "Senior Superintendent II",
                 classAssigned: "Basic 4",
                 payments: [
@@ -512,6 +524,7 @@
                 id: "TCH-006",
                 staffId: "GES-670921",
                 name: "Dorcas Akosua Agyei",
+                phone: "0206667788",
                 grade: "Superintendent II",
                 classAssigned: "KG 2",
                 payments: [
@@ -525,6 +538,7 @@
                 id: "TCH-007",
                 staffId: "GES-712890",
                 name: "Samuel Appiah Nkrumah",
+                phone: "0247778899",
                 grade: "Principal Superintendent",
                 classAssigned: "Basic 5",
                 payments: [
@@ -540,6 +554,7 @@
                 id: "TCH-008",
                 staffId: "GES-834112",
                 name: "Priscilla Adwoa Donkor",
+                phone: "0508889900",
                 grade: "Assistant Director II",
                 classAssigned: "Basic 3",
                 payments: [
@@ -572,6 +587,8 @@
             if (stored) {
                 try {
                     teachersData = JSON.parse(stored);
+                    // Ensure backward compatibility if phone is missing on older stored records
+                    teachersData = teachersData.map(t => ({ phone: "N/A", ...t }));
                 } catch (e) {
                     teachersData = DEFAULT_TEACHERS;
                 }
@@ -641,6 +658,7 @@
                 document.getElementById('currentTeacherName').textContent = "No Staff Registered";
                 document.getElementById('currentTeacherGrade').textContent = "--";
                 document.getElementById('currentTeacherStaffId').textContent = "--";
+                document.getElementById('currentTeacherPhone').textContent = "--";
                 document.getElementById('currentTeacherClass').textContent = "--";
                 document.getElementById('teacherAvatar').textContent = "--";
                 
@@ -683,6 +701,7 @@
             document.getElementById('currentTeacherName').textContent = currentTeacher.name;
             document.getElementById('currentTeacherGrade').textContent = currentTeacher.grade;
             document.getElementById('currentTeacherStaffId').textContent = currentTeacher.staffId;
+            document.getElementById('currentTeacherPhone').textContent = currentTeacher.phone || 'N/A';
             document.getElementById('currentTeacherClass').textContent = currentTeacher.classAssigned;
             document.getElementById('teacherAvatar').textContent = getInitials(currentTeacher.name);
 
@@ -722,7 +741,7 @@
             masterBody.innerHTML = '';
 
             if (teachersData.length === 0) {
-                masterBody.innerHTML = `<tr><td colspan="6" class="px-4 py-6 text-center text-slate-400">No active teachers registered in system.</td></tr>`;
+                masterBody.innerHTML = `<tr><td colspan="7" class="px-4 py-6 text-center text-slate-400">No active teachers registered in system.</td></tr>`;
                 return;
             }
 
@@ -735,6 +754,7 @@
                 tr.innerHTML = `
                     <td class="px-4 py-3 font-mono text-slate-600 dark:text-slate-300">${t.staffId}</td>
                     <td class="px-4 py-3 font-bold text-slate-900 dark:text-white">${t.name}</td>
+                    <td class="px-4 py-3 font-mono text-slate-600 dark:text-slate-300">${t.phone || 'N/A'}</td>
                     <td class="px-4 py-3">${t.classAssigned}</td>
                     <td class="px-4 py-3 font-bold text-emerald-600 dark:text-emerald-400">GHS ${total.toFixed(2)}</td>
                     <td class="px-4 py-3">${t.payments.length} Months</td>
@@ -816,10 +836,11 @@
             e.preventDefault();
             const staffId = document.getElementById('newStaffId').value.trim();
             const name = document.getElementById('newStaffName').value.trim();
+            const phone = document.getElementById('newStaffPhone').value.trim();
             const grade = document.getElementById('newStaffGrade').value;
             const classAssigned = document.getElementById('newStaffClass').value.trim();
 
-            if (!staffId || !name || !grade || !classAssigned) return;
+            if (!staffId || !name || !phone || !grade || !classAssigned) return;
 
             const exists = teachersData.some(t => t.staffId.toLowerCase() === staffId.toLowerCase());
             if (exists) {
@@ -832,6 +853,7 @@
                 id: newId,
                 staffId: staffId,
                 name: name,
+                phone: phone,
                 grade: grade,
                 classAssigned: classAssigned,
                 payments: []
@@ -847,6 +869,7 @@
 
             document.getElementById('newStaffId').value = '';
             document.getElementById('newStaffName').value = '';
+            document.getElementById('newStaffPhone').value = '';
             document.getElementById('newStaffClass').value = '';
 
             showToast(`New staff profile created for ${name}!`);
@@ -896,6 +919,7 @@
 
             document.getElementById('pdfTeacherName').textContent = currentTeacher.name;
             document.getElementById('pdfStaffId').textContent = currentTeacher.staffId;
+            document.getElementById('pdfPhone').textContent = currentTeacher.phone || 'N/A';
             document.getElementById('pdfGrade').textContent = currentTeacher.grade;
             document.getElementById('pdfClass').textContent = currentTeacher.classAssigned;
             document.getElementById('pdfIssueDate').textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
