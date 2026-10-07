@@ -349,7 +349,7 @@ body {
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                             <i class="fa-solid fa-lock text-xs"></i>
                         </span>
-                        <input type="password" id="gatewayPassword" class="form-input !pl-9 !py-3 font-semibold" placeholder="Enter your password or admin passcode" required>
+                        <input type="password" id="gatewayPassword" class="form-input !pl-9 !py-3 font-semibold" placeholder="Default is your Staff ID" required>
                     </div>
                 </div>
 
@@ -1860,7 +1860,7 @@ function renderMemberPaymentTable(teacher) {
 
 function renderMemberWithdrawalTable(teacher) {
     const body = document.getElementById('withdrawalTableBody');
-    const payouts = [...teacher.payouts].sort((a, b) => String(b.date).localeCompare(String(b.date)));
+    const payouts = [...teacher.payouts].sort((a, b) => String(b.date).localeCompare(String(a.date)));
     if (!payouts.length) {
         body.innerHTML = emptyRow(5, 'No welfare payouts recorded.');
         return;
@@ -2074,7 +2074,13 @@ function handlePortalLogin(event) {
         return;
     }
 
-    const matched = welfareData.teachers.find(t => String(t.id).toLowerCase() === staffId.toLowerCase() || String(t.id).toLowerCase() === password.toLowerCase() || String(t.name).toLowerCase().includes(staffId.toLowerCase()));
+    const matched = welfareData.teachers.find(t => {
+        const idMatches = String(t.id).toLowerCase() === staffId.toLowerCase();
+        const defaultPassMatches = password === t.id;
+        const customPassMatches = t.customPassword && t.customPassword === password;
+        return idMatches && (defaultPassMatches || customPassMatches);
+    });
+
     if (matched) {
         adminLoggedIn = false;
         loggedInTeacherId = matched.id;
@@ -2123,7 +2129,6 @@ function handlePasswordReset(event) {
         return;
     }
 
-    // Save/update passcode flag in teacher record
     teacher.customPassword = newPassword;
     saveData();
 
@@ -2590,7 +2595,6 @@ async function downloadMonthlySummaryPDF() {
     document.getElementById('monthlyReportMonthLabel').textContent = monthFormattedName;
     document.getElementById('monthlyReportDate').textContent = formatDate(todayISO());
 
-    // Filter contributions and payouts for the selected month
     const monthlyPayments = [];
     welfareData.teachers.forEach(teacher => {
         teacher.payments.forEach(payment => {
