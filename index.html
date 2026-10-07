@@ -297,7 +297,7 @@ body {
     display: flex;
     white-space: nowrap;
     width: max-content;
-    animation: continuousScroll 50s linear infinite;
+    animation: continuousScroll 90s linear infinite;
 }
 
 .animate-continuous-ticker:hover {
@@ -600,9 +600,10 @@ body {
                 <i class="fa-solid fa-bars"></i>
             </button>
             <div>
-                <p class="text-[10px] font-extrabold uppercase tracking-widest text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                <!-- REPLACED "WELFARE MANAGEMENT SYSTEM" WITH DYNAMIC GREETING -->
+                <p id="headerGreetingText" class="text-[10px] font-extrabold uppercase tracking-widest text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    Welfare Management System
+                    Hi, Guest!
                 </p>
                 <h2 id="pageTitle"
                     class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
@@ -1353,12 +1354,12 @@ body {
 </div>
 
 <!-- =========================================================
-     LIVE ROLLING ACTIVITY BANNER (Fixed Bottom Ticker - 50s speed)
+     LIVE ROLLING ACTIVITY BANNER (Fixed Bottom Ticker - 90s speed)
 ========================================================= -->
 <div id="liveTickerBanner" class="fixed bottom-0 left-0 right-0 z-40 bg-sdaNavy-900/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-amber-500/30 text-white text-xs py-2.5 px-4 shadow-2xl overflow-hidden hidden">
     <div class="overflow-hidden whitespace-nowrap relative w-full">
-        <!-- REDUCED BANNER SPEED TO 50s -->
-        <div id="tickerContent" class="animate-continuous-ticker flex items-center gap-12 font-medium" style="animation-duration: 50s;">
+        <!-- REDUCED BANNER SPEED TO 90s -->
+        <div id="tickerContent" class="animate-continuous-ticker flex items-center gap-12 font-medium" style="animation-duration: 90s;">
             <!-- Dynamically populated activity items -->
         </div>
     </div>
@@ -1375,7 +1376,6 @@ body {
                 <i class="fa-solid fa-lock text-amber-500"></i>
                 Executive Admin Verification
             </h3>
-            <!-- FIXED: Added type="button" so clicking X closes the modal instead of submitting the form -->
             <button type="button" onclick="closeAdminModal()" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white transition-all">
                 <i class="fa-solid fa-xmark"></i>
             </button>
@@ -2040,6 +2040,36 @@ function renderAll() {
     renderLiveTicker();
     renderMemberLiveTicker();
     renderHeaderPassport();
+    renderHeaderGreeting();
+}
+
+function renderHeaderGreeting() {
+    const greetingEl = document.getElementById('headerGreetingText');
+    if (!greetingEl) return;
+
+    let firstName = 'Guest';
+    if (!adminLoggedIn && loggedInTeacherId) {
+        const teacher = getTeacherById(loggedInTeacherId);
+        if (teacher && teacher.name) {
+            firstName = teacher.name.trim().split(/\s+/)[0];
+        }
+    } else if (adminLoggedIn) {
+        if (currentAdminUser && currentAdminUser.name) {
+            firstName = currentAdminUser.name.trim().split(/\s+/)[0];
+        } else {
+            firstName = 'Admin';
+        }
+    } else {
+        const teacher = getSelectedTeacher();
+        if (teacher && teacher.name) {
+            firstName = teacher.name.trim().split(/\s+/)[0];
+        }
+    }
+
+    greetingEl.innerHTML = `
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        Hi, ${escapeHtml(firstName)}!
+    `;
 }
 
 function renderHeaderPassport() {
