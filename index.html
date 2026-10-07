@@ -247,6 +247,22 @@ body {
     backdrop-filter: blur(4px);
 }
 
+/* Rolling Ticker Animation */
+@keyframes tickerScroll {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+
+.animate-ticker {
+    display: inline-block;
+    white-space: nowrap;
+    animation: tickerScroll 25s linear infinite;
+}
+
+.animate-ticker:hover {
+    animation-play-state: paused;
+}
+
 @media (max-width: 1023px) {
     .sidebar {
         transform: translateX(-100%);
@@ -294,7 +310,7 @@ body {
 </style>
 </head>
 
-<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 pb-12">
 
 <!-- =========================================================
      GoG ePAY STYLE LOGIN GATEWAY MODAL
@@ -1099,6 +1115,21 @@ body {
 </div>
 
 <!-- =========================================================
+     LIVE ROLLING ACTIVITY BANNER (Fixed Bottom Ticker)
+========================================================= -->
+<div id="liveTickerBanner" class="fixed bottom-0 left-0 right-0 z-40 bg-sdaNavy-900/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-amber-500/30 text-white text-xs py-2 px-4 shadow-2xl flex items-center hidden">
+    <div class="flex items-center gap-2 bg-amber-500 text-sdaNavy-900 font-extrabold px-2.5 py-1 rounded text-[10px] uppercase tracking-wider flex-shrink-0 z-10 shadow">
+        <i class="fa-solid fa-bullhorn animate-bounce"></i>
+        <span>Activity Ticker</span>
+    </div>
+    <div class="overflow-hidden whitespace-nowrap relative flex-1 ml-3">
+        <div id="tickerContent" class="animate-ticker flex items-center gap-8">
+            <!-- Dynamically populated activity items -->
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================
      ADMIN MODAL (For quick admin lock access from top bar)
 ========================================================= -->
 <div id="adminModal"
@@ -1588,6 +1619,7 @@ function renderAll() {
     renderWelfareSection();
     renderAdminRoster();
     renderAdminSettings();
+    renderLiveTicker();
 }
 
 function renderDashboard() {
@@ -1669,7 +1701,7 @@ function renderMemberPaymentTable(teacher) {
 
 function renderMemberWithdrawalTable(teacher) {
     const body = document.getElementById('withdrawalTableBody');
-    const payouts = [...teacher.payouts].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+    const payouts = [...teacher.payouts].sort((a, b) => String(b.date).localeCompare(String(b.date)));
     if (!payouts.length) {
         body.innerHTML = emptyRow(5, 'No welfare payouts recorded.');
         return;
@@ -1825,6 +1857,41 @@ function renderAdminSettings() {
     const current = document.getElementById('adminCurrentDues');
     if (input) input.value = standardMonthlyDues;
     if (current) current.textContent = money(standardMonthlyDues);
+}
+
+function renderLiveTicker() {
+    const banner = document.getElementById('liveTickerBanner');
+    const content = document.getElementById('tickerContent');
+    if (!banner || !content) return;
+
+    // Show banner only when logged in as a teacher member
+    if (!loggedInTeacherId || adminLoggedIn) {
+        banner.classList.add('hidden');
+        return;
+    }
+
+    const teacher = getTeacherById(loggedInTeacherId);
+    if (!teacher || !teacher.payments || teacher.payments.length === 0) {
+        banner.classList.add('hidden');
+        return;
+    }
+
+    banner.classList.remove('hidden');
+
+    const sortedPayments = [...teacher.payments].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+    
+    let tickerHtml = '';
+    sortedPayments.forEach(pay => {
+        tickerHtml += `
+            <span class="inline-flex items-center gap-2">
+                <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                <span><strong>${escapeHtml(teacher.name)}</strong> contributed <span class="text-amber-300 font-bold">${money(pay.amount)}</span> for ${escapeHtml(monthYear(pay.date))} (Ref: ${escapeHtml(pay.reference || 'N/A')}) on ${formatDate(pay.date)}.</span>
+            </span>
+            <span class="text-amber-500">•</span>
+        `;
+    });
+
+    content.innerHTML = tickerHtml;
 }
 
 function handlePortalLogin(event) {
@@ -2162,6 +2229,7 @@ function logoutAdmin() {
     document.getElementById('gatewayPassword').value = '';
     document.getElementById('gatewayError').classList.add('hidden');
     document.getElementById('loginGatewayModal').classList.remove('hidden');
+    renderAll();
     showToast('Session ended. Please sign in.', 'success');
 }
 
