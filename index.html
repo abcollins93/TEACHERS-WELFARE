@@ -4,1115 +4,256 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ntonso SDA Primary 'A' - Teachers Welfare Fund</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- html2pdf.js for generating crisp PDF statements -->
+    <!-- html2pdf Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        sdaNavy: {
-                            50: '#f0f4f8',
-                            100: '#d9e2ec',
-                            500: '#103057',
-                            700: '#0b203c',
-                            900: '#061224',
-                        },
-                        sdaGold: {
-                            400: '#fbbf24',
-                            500: '#d97706',
-                            600: '#b45309',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         body {
             font-family: 'Inter', sans-serif;
         }
-        /* Custom print preview styling for PDF generation */
+        /* Fixed PDF template positioning for reliable rendering off-screen */
         .pdf-template {
-            display: none;
+            position: absolute;
+            left: -9999px;
+            top: 0;
+            width: 210mm; /* A4 width */
+            background: white;
         }
         .pdf-template.active {
-            display: block;
+            position: relative;
+            left: 0;
         }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col">
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
 
-    <!-- Top Header & Navbar -->
-    <header class="bg-sdaNavy-900 text-white shadow-lg border-b-4 border-sdaGold-500 sticky top-0 z-30">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
-            <div class="flex items-center space-x-3">
-                <div class="bg-sdaGold-500 text-sdaNavy-900 p-2.5 rounded-xl font-black text-xl shadow-inner flex items-center justify-center w-12 h-12">
-                    <i class="fa-solid font-bold fa-graduation-cap"></i>
-                </div>
-                <div>
-                    <h1 class="text-lg sm:text-xl font-extrabold tracking-tight leading-tight text-amber-400">
-                        NTONSO SDA PRIMARY 'A'
-                    </h1>
-                    <p class="text-xs sm:text-sm text-slate-300 font-medium">Teachers Welfare Fund Portal</p>
-                </div>
+    <!-- App Header -->
+    <header class="bg-emerald-900 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+            <div>
+                <h1 class="text-xl font-bold tracking-wide">GHANA EDUCATION SERVICE</h1>
+                <p class="text-emerald-300 text-sm font-medium">NTONSO SDA PRIMARY 'A' • TEACHERS WELFARE FUND</p>
             </div>
-
-            <!-- Actions Controls -->
-            <div class="flex items-center space-x-2 sm:space-x-4 ml-auto">
-                <!-- Dark Mode Toggle -->
-                <button id="themeToggle" onclick="toggleDarkMode()" class="p-2.5 rounded-lg bg-sdaNavy-700 hover:bg-sdaNavy-500 text-amber-300 transition-all border border-sdaNavy-500" title="Toggle Theme">
-                    <i id="themeIcon" class="fa-solid fa-moon"></i>
-                </button>
-                
-                <!-- Admin Mode Switch -->
-                <button id="adminToggleBtn" onclick="toggleAdminModal()" class="px-3 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-sdaGold-500 hover:bg-sdaGold-600 text-sdaNavy-900 transition-all flex items-center shadow-sm">
-                    <i class="fa-solid fa-lock mr-1.5"></i>
-                    <span id="adminBtnText">Admin Access</span>
+            <div class="mt-3 md:mt-0 flex items-center gap-3">
+                <button onclick="downloadPDF()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow transition flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Download Official Statement (PDF)
                 </button>
             </div>
         </div>
     </header>
 
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-
-        <!-- Banner Announcement -->
-        <div class="mb-6 bg-gradient-to-r from-sdaNavy-700 to-sdaNavy-900 rounded-2xl p-4 sm:p-6 text-white shadow-md relative overflow-hidden border border-sdaNavy-500">
-            <div class="absolute right-0 top-0 bottom-0 opacity-10 flex items-center pr-8 pointer-events-none">
-                <i class="fa-solid fa-hand-holding-hand text-9xl"></i>
-            </div>
-            <div class="relative z-10 max-w-2xl">
-                <span class="bg-amber-400/20 text-amber-300 text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border border-amber-400/30">Official Welfare Hub</span>
-                <h2 class="text-xl sm:text-2xl font-bold mt-2 text-white">Empowering Our Educators Through Solidarity</h2>
-                <p class="text-slate-300 text-xs sm:text-sm mt-1">Providing mutual financial support, social welfare benefits, and standard monthly record keeping for all faculty members at Ntonso SDA Primary 'A'.</p>
+    <!-- Main Content Dashboard -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Sidebar: Teacher Selector -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex flex-col">
+            <h2 class="text-lg font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100">Welfare Members</h2>
+            <div id="teacherListContainer" class="space-y-2 overflow-y-auto max-h-[500px]">
+                <!-- Dynamically populated list of teachers -->
             </div>
         </div>
 
-        <!-- Teacher Selector Bar -->
-        <div class="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 mb-6">
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div class="w-full sm:w-auto flex items-center space-x-2 text-slate-700 dark:text-slate-200">
-                    <i class="fa-solid fa-user-check text-sdaGold-500 text-lg"></i>
-                    <label for="teacherSelect" class="font-bold text-sm">Select Teacher / Staff Profile:</label>
+        <!-- Main Details Section -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                    <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Contributions</p>
+                    <p id="uiTotalPaid" class="text-2xl font-extrabold text-emerald-700 mt-1">GHS 0.00</p>
                 </div>
-                <div class="w-full sm:w-1/2 md:w-1/3 flex items-center space-x-2">
-                    <select id="teacherSelect" onchange="switchTeacher(this.value)" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-sdaNavy-500 focus:outline-none dark:text-white">
-                        <!-- Options auto populated -->
-                    </select>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                    <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Withdrawals</p>
+                    <p id="uiTotalWithdrawn" class="text-2xl font-extrabold text-rose-700 mt-1">GHS 0.00</p>
+                </div>
+            </div>
+
+            <!-- Member Details Card -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-900 mb-3">Member Statement Overview</h3>
+                <div id="memberDetailsView" class="text-sm text-slate-600 space-y-2">
+                    <!-- Selected member info goes here -->
                 </div>
             </div>
         </div>
-
-        <!-- Dashboard Stat Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <!-- Card 1: Fund Balance -->
-            <div class="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex items-center">
-                <div class="p-3.5 rounded-xl bg-blue-100 dark:bg-blue-900/40 text-sdaNavy-500 dark:text-blue-300 mr-4">
-                    <i class="fa-solid fa-vault text-2xl"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Net Fund Balance</p>
-                    <h3 id="statTotalFund" class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-0.5">GHS 0.00</h3>
-                    <p class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium"><i class="fa-solid fa-circle-check"></i> After All Payouts</p>
-                </div>
-            </div>
-
-            <!-- Card 2: Selected Teacher Total Contributions -->
-            <div class="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex items-center">
-                <div class="p-3.5 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-sdaGold-600 dark:text-amber-300 mr-4">
-                    <i class="fa-solid fa-hand-holding-dollar text-2xl"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Member's Total Dues</p>
-                    <h3 id="statMemberTotal" class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-0.5">GHS 0.00</h3>
-                    <p id="statMemberContribCount" class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-medium">0 Payments recorded</p>
-                </div>
-            </div>
-
-            <!-- Card 3: Monthly Rate -->
-            <div class="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex items-center">
-                <div class="p-3.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-300 mr-4">
-                    <i class="fa-solid fa-calendar-check text-2xl"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Standard Monthly Dues</p>
-                    <h3 id="statMonthlyRate" class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-0.5">GHS 100.00</h3>
-                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-medium">Approved Flat Rate</p>
-                </div>
-            </div>
-
-            <!-- Card 4: Last Payment -->
-            <div class="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex items-center">
-                <div class="p-3.5 rounded-xl bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300 mr-4">
-                    <i class="fa-solid fa-clock-rotate-left text-2xl"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Last Activity</p>
-                    <h3 id="statLastPayment" class="text-base sm:text-lg font-bold text-slate-900 dark:text-white mt-0.5">N/A</h3>
-                    <p id="statLastMonthName" class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-medium">-</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Active Teacher Profile Overview & PDF Action -->
-        <div class="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div class="flex items-center space-x-4">
-                <div id="teacherAvatar" class="w-14 h-14 rounded-full bg-sdaNavy-500 text-white font-bold text-xl flex items-center justify-center border-2 border-sdaGold-400 shadow-sm">
-                    --
-                </div>
-                <div>
-                    <div class="flex items-center space-x-2">
-                        <h2 id="currentTeacherName" class="text-lg font-bold text-slate-900 dark:text-white">--</h2>
-                        <span id="currentTeacherGrade" class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">--</span>
-                    </div>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                        <span class="font-semibold text-slate-700 dark:text-slate-300">Staff ID:</span> <span id="currentTeacherStaffId">--</span> | 
-                        <span class="font-semibold text-slate-700 dark:text-slate-300">Phone:</span> <span id="currentTeacherPhone">--</span> | 
-                        <span class="font-semibold text-slate-700 dark:text-slate-300">Class:</span> <span id="currentTeacherClass">--</span>
-                    </p>
-                </div>
-            </div>
-            
-            <button onclick="downloadPDF()" class="w-full md:w-auto px-4 py-2.5 bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all flex items-center justify-center space-x-2 border border-sdaNavy-700">
-                <i class="fa-solid fa-file-pdf text-amber-400 text-base"></i>
-                <span>Download Official Statement (PDF)</span>
-            </button>
-        </div>
-
-        <!-- Payment History Table -->
-        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden mb-6">
-            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-700 flex flex-wrap justify-between items-center gap-2 bg-slate-50/50 dark:bg-slate-800/50">
-                <h3 class="font-bold text-slate-800 dark:text-white text-base flex items-center">
-                    <i class="fa-solid fa-list-check text-sdaGold-500 mr-2"></i> Monthly Contribution Ledger
-                </h3>
-                <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">Session: 2025/2026 Academic Year</span>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left text-slate-600 dark:text-slate-300">
-                    <thead class="text-xs text-slate-700 uppercase bg-slate-100 dark:bg-slate-700/50 dark:text-slate-300">
-                        <tr>
-                            <th scope="col" class="px-6 py-3.5 font-bold">Month / Year</th>
-                            <th scope="col" class="px-6 py-3.5 font-bold">Receipt / Ref No.</th>
-                            <th scope="col" class="px-6 py-3.5 font-bold">Amount Paid (GHS)</th>
-                            <th scope="col" class="px-6 py-3.5 font-bold">Date Paid</th>
-                            <th scope="col" class="px-6 py-3.5 font-bold">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="paymentTableBody" class="divide-y divide-slate-200 dark:divide-slate-700">
-                        <!-- Dynamic payment rows -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Withdrawal History Table (Visible on all teacher profiles to show fund benefit logs) -->
-        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden mb-6">
-            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-700 flex flex-wrap justify-between items-center gap-2 bg-slate-50/50 dark:bg-slate-800/50">
-                <div>
-                    <h3 class="font-bold text-slate-800 dark:text-white text-base flex items-center">
-                        <i class="fa-solid fa-hand-holding-medical text-rose-500 mr-2"></i> Welfare Payouts & Fund Withdrawal Log
-                    </h3>
-                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Note: Benefit payouts are funded from the shared pool and are **not** deducted from individual member contribution totals.</p>
-                </div>
-                <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">Executive Disbursements</span>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left text-slate-600 dark:text-slate-300">
-                    <thead class="text-xs text-slate-700 uppercase bg-slate-100 dark:bg-slate-700/50 dark:text-slate-300">
-                        <tr>
-                            <th scope="col" class="px-6 py-3.5 font-bold">Ref No.</th>
-                            <th scope="col" class="px-6 py-3.5 font-bold">Beneficiary / Teacher</th>
-                            <th scope="col" class="px-6 py-3.5 font-bold">Disbursement Reason</th>
-                            <th scope="col" class="px-6 py-3.5 font-bold">Amount Disbursed (GHS)</th>
-                            <th scope="col" class="px-6 py-3.5 font-bold">Date Processed</th>
-                        </tr>
-                    </thead>
-                    <tbody id="withdrawalTableBody" class="divide-y divide-slate-200 dark:divide-slate-700">
-                        <!-- Dynamic withdrawal rows -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Admin View Container (Hidden unless logged in as Admin) -->
-        <div id="adminPanelSection" class="hidden space-y-6">
-            <div class="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl p-4 flex justify-between items-center">
-                <div class="flex items-center space-x-2 text-amber-800 dark:text-amber-300">
-                    <i class="fa-solid fa-user-shield text-xl"></i>
-                    <div>
-                        <h4 class="font-bold text-sm">Welfare Executive Admin Mode Active</h4>
-                        <p class="text-xs text-amber-700 dark:text-amber-400">You can register staff members, record dues contributions, process benefit withdrawals, and manage accounts.</p>
-                    </div>
-                </div>
-                <button onclick="toggleAdminModal()" class="text-xs bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100 px-3 py-1.5 rounded font-semibold hover:bg-amber-300">
-                    Exit Admin
-                </button>
-            </div>
-
-            <!-- SECTION: Add New Staff Member -->
-            <div class="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-700">
-                <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4 flex items-center">
-                    <i class="fa-solid fa-user-plus text-sdaNavy-500 dark:text-blue-400 mr-2"></i> Register New Staff Member
-                </h3>
-                <form id="addStaffForm" onsubmit="handleAddNewStaff(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Staff ID</label>
-                        <input type="text" id="newStaffId" placeholder="e.g. GES-902183" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-xs font-medium dark:text-white focus:ring-2 focus:ring-sdaNavy-500" required>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
-                        <input type="text" id="newStaffName" placeholder="e.g. Kwame Mensah" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-xs font-medium dark:text-white focus:ring-2 focus:ring-sdaNavy-500" required>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Phone Number</label>
-                        <input type="tel" id="newStaffPhone" placeholder="e.g. 0241234567" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-xs font-medium dark:text-white focus:ring-2 focus:ring-sdaNavy-500" required>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Grade / Rank</label>
-                        <select id="newStaffGrade" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-xs font-medium dark:text-white focus:ring-2 focus:ring-sdaNavy-500" required>
-                            <option value="Pupil Teacher">1. Pupil Teacher</option>
-                            <option value="Superintendent II">2. Superintendent II</option>
-                            <option value="Superintendent I">3. Superintendent I</option>
-                            <option value="Senior Superintendent II">4. Senior Superintendent II</option>
-                            <option value="Senior Superintendent I" selected>5. Senior Superintendent I</option>
-                            <option value="Principal Superintendent">6. Principal Superintendent</option>
-                            <option value="Assistant Director II">7. Assistant Director II</option>
-                            <option value="Assistant Director I">8. Assistant Director I</option>
-                            <option value="Deputy Director">9. Deputy Director</option>
-                            <option value="Director II">10. Director II</option>
-                            <option value="Director I">11. Director I</option>
-                            <option value="Deputy Director General">12. Deputy Director General</option>
-                            <option value="Director General">13. Director General</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Class Assigned</label>
-                        <input type="text" id="newStaffClass" placeholder="e.g. Basic 4 or KG 1" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-xs font-medium dark:text-white focus:ring-2 focus:ring-sdaNavy-500" required>
-                    </div>
-                    <div class="flex items-end">
-                        <button type="submit" class="w-full bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white text-xs font-bold py-2.5 px-4 rounded-lg shadow transition-all flex items-center justify-center space-x-1.5">
-                            <i class="fa-solid fa-plus"></i>
-                            <span>Add Staff Profile</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- SECTION: Record New Payment Form -->
-                <div class="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-700">
-                    <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4 flex items-center">
-                        <i class="fa-solid fa-plus-circle text-emerald-500 mr-2"></i> Log New Dues Payment
-                    </h3>
-                    <form id="addPaymentForm" onsubmit="handleRecordPayment(event)" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Target Teacher</label>
-                            <select id="adminPaymentTeacherSelect" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-xs font-medium dark:text-white focus:ring-2 focus:ring-sdaNavy-500" required>
-                            </select>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Month / Year</label>
-                                <input type="month" id="adminPaymentMonth" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-xs font-medium dark:text-white focus:ring-2 focus:ring-sdaNavy-500" required>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Amount (GHS)</label>
-                                <input type="number" id="adminPaymentAmount" min="10" step="5" value="100" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-xs font-medium dark:text-white focus:ring-2 focus:ring-sdaNavy-500" required>
-                            </div>
-                        </div>
-                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2.5 px-4 rounded-lg shadow transition-all">
-                            Save Contribution Record
-                        </button>
-                    </form>
-                </div>
-
-                <!-- SECTION: Process Welfare Withdrawal Form -->
-                <div class="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-700">
-                    <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4 flex items-center">
-                        <i class="fa-solid fa-money-bill-transfer text-rose-500 mr-2"></i> Process Welfare Withdrawal / Payout
-                    </h3>
-                    <form id="addWithdrawalForm" onsubmit="handleRecordWithdrawal(event)" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Target Teacher / Beneficiary</label>
-                            <select id="adminWithdrawalTeacherSelect" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-xs font-medium dark:text-white focus:ring-2 focus:ring-sdaNavy-500" required>
-                            </select>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Amount (GHS)</label>
-                                <input type="number" id="adminWithdrawalAmount" min="10" step="5" placeholder="e.g. 500" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-xs font-medium dark:text-white focus:ring-2 focus:ring-sdaNavy-500" required>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Disbursement Reason</label>
-                                <select id="adminWithdrawalReason" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-xs font-medium dark:text-white focus:ring-2 focus:ring-sdaNavy-500" required>
-                                    <option value="Medical Support">Medical Support</option>
-                                    <option value="Bereavement Assistance">Bereavement Assistance</option>
-                                    <option value="Emergency Loan">Emergency Loan</option>
-                                    <option value="Wedding / Celebration">Wedding / Celebration</option>
-                                    <option value="General Welfare Support">General Welfare Support</option>
-                                </select>
-                            </div>
-                        </div>
-                        <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-2.5 px-4 rounded-lg shadow transition-all">
-                            Process Payout / Withdrawal
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- School-Wide Welfare Master Summary Table -->
-            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-                <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
-                    <h3 class="font-bold text-slate-800 dark:text-white text-base flex items-center">
-                        <i class="fa-solid fa-users-viewfinder text-sdaNavy-500 dark:text-blue-400 mr-2"></i> All Teachers Summary Roster
-                    </h3>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-xs text-left text-slate-600 dark:text-slate-300">
-                        <thead class="text-xs uppercase bg-slate-100 dark:bg-slate-700/50 text-slate-700 dark:text-slate-200">
-                            <tr>
-                                <th class="px-4 py-3 font-bold">Staff ID</th>
-                                <th class="px-4 py-3 font-bold">Teacher Name</th>
-                                <th class="px-4 py-3 font-bold">Phone</th>
-                                <th class="px-4 py-3 font-bold">Class</th>
-                                <th class="px-4 py-3 font-bold">Total Paid Dues</th>
-                                <th class="px-4 py-3 font-bold">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="masterRosterBody" class="divide-y divide-slate-200 dark:divide-slate-700">
-                            <!-- Populated dynamically -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-        </div>
-
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-sdaNavy-900 text-slate-400 border-t border-slate-800 py-6 text-xs mt-8">
-        <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
-            <p class="font-semibold text-slate-300">NTONSO SDA PRIMARY 'A' SCHOOL - WELFARE EXECUTIVE COMMITTEE</p>
-            <p>© 2026 Teachers Welfare Fund. All Rights Reserved. Managed for institutional transparency.</p>
-            <p class="text-[11px] text-slate-500">Ntonso, Ashanti Region, Ghana | Seventh-day Adventist Education Unit</p>
-        </div>
-    </footer>
-
-    <!-- Admin Login Modal -->
-    <div id="adminModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center">
-                    <i class="fa-solid fa-lock text-sdaGold-500 mr-2"></i> Executive Admin Verification
-                </h3>
-                <button onclick="toggleAdminModal()" class="text-slate-400 hover:text-slate-600 text-sm">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Please enter executive access passcode to switch to portal administration mode.</p>
-            
-            <form onsubmit="handleAdminLogin(event)">
-                <div class="mb-4">
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Passcode</label>
-                    <input type="password" id="adminPasswordInput" placeholder="Enter password (default: sda2026)" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-sdaNavy-500" required>
-                    <p id="adminAuthError" class="text-xs text-rose-500 font-semibold mt-1 hidden">Invalid passcode. Default passcode is: <code class="bg-rose-100 dark:bg-rose-900 px-1 py-0.5 rounded">sda2026</code></p>
-                </div>
-                <div class="flex space-x-2">
-                    <button type="button" onclick="toggleAdminModal()" class="w-1/2 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-lg hover:bg-slate-200">Cancel</button>
-                    <button type="submit" class="w-1/2 py-2 bg-sdaNavy-500 text-white text-xs font-bold rounded-lg hover:bg-sdaNavy-700 shadow">Login</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Clean Printable Template Container for PDF Export (hidden from screen display) -->
-    <div id="pdfExportContainer" class="pdf-template max-w-2xl mx-auto p-8 bg-white text-slate-900 font-sans">
-        <!-- Official Letterhead Header -->
-        <div class="text-center border-b-2 border-slate-800 pb-4 mb-6">
-            <h2 class="text-xl font-extrabold uppercase tracking-wide text-slate-900">GHANA EDUCATION SERVICE</h2>
-            <h1 class="text-2xl font-black text-blue-900 mt-1">NTONSO SDA PRIMARY 'A'</h1>
-            <p class="text-xs font-bold text-amber-700 uppercase tracking-widest mt-0.5">TEACHERS WELFARE FUND EXECUTIVE</p>
-            <p class="text-[11px] text-slate-600">P.O. Box 12, Ntonso-Ashanti, Ghana | Tel: +233 (0) 24 000 0000</p>
+    <!-- ================= HIDDEN PDF EXPORT TEMPLATE (A4 Structured Layout) ================= -->
+    <div id="pdfExportContainer" class="pdf-template p-8 text-slate-900">
+        <!-- Header -->
+        <div class="text-center border-b-2 border-slate-900 pb-4 mb-6">
+            <h2 class="text-sm font-bold tracking-widest text-slate-700">GHANA EDUCATION SERVICE</h2>
+            <h1 class="text-xl font-black text-emerald-900 tracking-wide mt-0.5">NTONSO SDA PRIMARY 'A'</h1>
+            <p class="text-xs font-bold text-amber-700 tracking-wider uppercase mt-1">TEACHERS WELFARE FUND EXECUTIVE</p>
+            <p class="text-[10px] text-slate-500 mt-0.5">P.O. Box 12, Ntonso-Ashanti, Ghana | Tel: +233 (0) 24 000 0000</p>
         </div>
 
-        <div class="flex justify-between items-end border-b border-slate-200 pb-3 mb-6 text-xs">
-            <div>
-                <h3 class="text-sm font-bold text-slate-800 uppercase">OFFICIAL STATEMENT OF CONTRIBUTION & BENEFITS</h3>
-                <p class="text-slate-600 mt-0.5">Document ID: <span id="pdfDocId" class="font-mono font-semibold">WEL-2026-0001</span></p>
-            </div>
-            <div class="text-right">
-                <p class="text-slate-600">Date Issued: <span id="pdfIssueDate" class="font-semibold">--</span></p>
-                <p class="text-slate-600">Academic Year: <span class="font-semibold">2025/2026</span></p>
-            </div>
+        <!-- Document Title -->
+        <div class="text-center my-4">
+            <h3 class="text-sm font-bold uppercase tracking-wider bg-slate-100 py-1 border border-slate-300">Official Statement of Contribution & Benefits</h3>
         </div>
 
-        <!-- Member Personal Particulars -->
-        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-6 text-xs">
-            <div class="grid grid-cols-2 gap-y-2">
-                <div><span class="font-bold text-slate-700">Member Name:</span> <span id="pdfTeacherName" class="font-semibold">--</span></div>
-                <div><span class="font-bold text-slate-700">Staff ID:</span> <span id="pdfStaffId" class="font-semibold">--</span></div>
-                <div><span class="font-bold text-slate-700">Phone Number:</span> <span id="pdfPhone" class="font-semibold">--</span></div>
-                <div><span class="font-bold text-slate-700">Grade / Rank:</span> <span id="pdfGrade">--</span></div>
-                <div class="col-span-2"><span class="font-bold text-slate-700">Assigned Class:</span> <span id="pdfClass">--</span></div>
-            </div>
+        <!-- Member Info Box -->
+        <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs border border-slate-300 p-3 mb-6 bg-slate-50 rounded">
+            <div><span class="font-semibold text-slate-500">Member Name:</span> <span id="pdfTeacherName" class="font-bold text-slate-900"></span></div>
+            <div><span class="font-semibold text-slate-500">Staff ID:</span> <span id="pdfStaffId" class="font-mono font-bold text-slate-900"></span></div>
+            <div><span class="font-semibold text-slate-500">Phone:</span> <span id="pdfPhone" class="text-slate-900"></span></div>
+            <div><span class="font-semibold text-slate-500">Grade / Rank:</span> <span id="pdfGrade" class="text-slate-900"></span></div>
+            <div><span class="font-semibold text-slate-500">Class Assigned:</span> <span id="pdfClass" class="text-slate-900"></span></div>
+            <div><span class="font-semibold text-slate-500">Issue Date:</span> <span id="pdfIssueDate" class="text-slate-900"></span></div>
+            <div class="col-span-2 pt-1 border-t border-slate-200 mt-1"><span class="font-semibold text-slate-500">Doc Reference ID:</span> <span id="pdfDocId" class="font-mono text-slate-700"></span></div>
         </div>
 
-        <!-- Summary Totals -->
-        <div class="grid grid-cols-2 gap-4 mb-6 text-xs">
-            <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center">
-                <p class="text-emerald-800 font-bold">Total Dues Paid</p>
-                <p id="pdfTotalPaid" class="text-sm font-extrabold text-emerald-900 mt-0.5">GHS 0.00</p>
-            </div>
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
-                <p class="text-blue-800 font-bold">Total Fund-Wide Payouts Logged</p>
-                <p id="pdfTotalWithdrawn" class="text-sm font-extrabold text-blue-900 mt-0.5">GHS 0.00</p>
-            </div>
+        <!-- Contributions Table Section -->
+        <div class="mb-6">
+            <h4 class="text-xs font-bold uppercase tracking-wide text-slate-700 mb-2">1. Monthly Contributions Record</h4>
+            <table class="w-full border-collapse border border-slate-300 text-xs">
+                <thead>
+                    <tr class="bg-slate-200 text-slate-800">
+                        <th class="border border-slate-300 px-3 py-1.5 text-left w-10">#</th>
+                        <th class="border border-slate-300 px-3 py-1.5 text-left">Contribution Month</th>
+                        <th class="border border-slate-300 px-3 py-1.5 text-left">Transaction ID</th>
+                        <th class="border border-slate-300 px-3 py-1.5 text-left">Date Logged</th>
+                        <th class="border border-slate-300 px-3 py-1.5 text-right">Amount (GHS)</th>
+                    </tr>
+                </thead>
+                <tbody id="pdfTableBody">
+                    <!-- Dynamic rows populated via JS -->
+                </tbody>
+                <tfoot>
+                    <tr class="bg-slate-50 font-bold">
+                        <td colspan="4" class="border border-slate-300 px-3 py-1.5 text-right">Total Contributions Paid:</td>
+                        <td id="pdfTotalPaid" class="border border-slate-300 px-3 py-1.5 text-right text-emerald-800">GHS 0.00</td>
+                    </tr>
+                </tfoot>
+            </table>
         </div>
 
-        <!-- Statement Table: Contributions -->
-        <h4 class="text-xs font-bold text-slate-800 uppercase mb-2">1. Monthly Contributions Log</h4>
-        <table class="w-full text-xs text-left border-collapse border border-slate-300 mb-6">
-            <thead>
-                <tr class="bg-slate-100 text-slate-800 border-b border-slate-300">
-                    <th class="border border-slate-300 px-3 py-1.5 font-bold">#</th>
-                    <th class="border border-slate-300 px-3 py-1.5 font-bold">Month / Year</th>
-                    <th class="border border-slate-300 px-3 py-1.5 font-bold">Receipt Ref</th>
-                    <th class="border border-slate-300 px-3 py-1.5 font-bold">Date Logged</th>
-                    <th class="border border-slate-300 px-3 py-1.5 font-bold text-right">Amount (GHS)</th>
-                </tr>
-            </thead>
-            <tbody id="pdfTableBody">
-                <!-- Populated dynamically for print -->
-            </tbody>
-        </table>
-
-        <!-- Statement Table: Withdrawals -->
-        <h4 class="text-xs font-bold text-slate-800 uppercase mb-2">2. Welfare Payouts & Fund Withdrawals Log</h4>
-        <table class="w-full text-xs text-left border-collapse border border-slate-300 mb-8">
-            <thead>
-                <tr class="bg-slate-100 text-slate-800 border-b border-slate-300">
-                    <th class="border border-slate-300 px-3 py-1.5 font-bold">#</th>
-                    <th class="border border-slate-300 px-3 py-1.5 font-bold">Beneficiary / Teacher</th>
-                    <th class="border border-slate-300 px-3 py-1.5 font-bold">Disbursement Reason</th>
-                    <th class="border border-slate-300 px-3 py-1.5 font-bold">Ref No.</th>
-                    <th class="border border-slate-300 px-3 py-1.5 font-bold text-right">Amount (GHS)</th>
-                </tr>
-            </thead>
-            <tbody id="pdfWithdrawalTableBody">
-                <!-- Populated dynamically for print -->
-            </tbody>
-        </table>
+        <!-- Withdrawals Table Section -->
+        <div class="mb-6">
+            <h4 class="text-xs font-bold uppercase tracking-wide text-slate-700 mb-2">2. Welfare Benefit Withdrawals Record</h4>
+            <table class="w-full border-collapse border border-slate-300 text-xs">
+                <thead>
+                    <tr class="bg-slate-200 text-slate-800">
+                        <th class="border border-slate-300 px-3 py-1.5 text-left w-10">#</th>
+                        <th class="border border-slate-300 px-3 py-1.5 text-left">Member Name</th>
+                        <th class="border border-slate-300 px-3 py-1.5 text-left">Reason / Purpose</th>
+                        <th class="border border-slate-300 px-3 py-1.5 text-left">Ref ID</th>
+                        <th class="border border-slate-300 px-3 py-1.5 text-right">Amount (GHS)</th>
+                    </tr>
+                </thead>
+                <tbody id="pdfWithdrawalTableBody">
+                    <!-- Dynamic rows populated via JS -->
+                </tbody>
+                <tfoot>
+                    <tr class="bg-slate-50 font-bold">
+                        <td colspan="4" class="border border-slate-300 px-3 py-1.5 text-right">Total Withdrawals Recorded:</td>
+                        <td id="pdfTotalWithdrawn" class="border border-slate-300 px-3 py-1.5 text-right text-rose-800">GHS 0.00</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
 
         <!-- Signatures Footer -->
-        <div class="grid grid-cols-2 gap-8 pt-8 border-t border-slate-300 text-xs">
-            <div class="text-center">
-                <div class="h-10 border-b border-dashed border-slate-400 mb-1"></div>
-                <p class="font-bold text-slate-800">Welfare Financial Secretary</p>
-                <p class="text-[10px] text-slate-500">Signature & Date</p>
+        <div class="mt-12 pt-6 grid grid-cols-2 gap-8 text-xs text-center border-t border-slate-200">
+            <div>
+                <div class="h-10 mb-1 flex items-end justify-center font-serif italic text-slate-500">O. David</div>
+                <div class="border-t border-slate-400 pt-1 font-bold text-slate-800">Headteacher Signature</div>
+                <div class="text-[10px] text-slate-500">Ntonso SDA Primary 'A'</div>
             </div>
-            <div class="text-center">
-                <div class="h-10 border-b border-dashed border-slate-400 mb-1"></div>
-                <p class="font-bold text-slate-800">Headteacher / Patron</p>
-                <p class="text-[10px] text-slate-500">Ntonso SDA Primary 'A'</p>
+            <div>
+                <div class="h-10 mb-1"></div>
+                <div class="border-t border-slate-400 pt-1 font-bold text-slate-800">Welfare Treasurer Signature</div>
+                <div class="text-[10px] text-slate-500">Fund Executive Committee</div>
             </div>
         </div>
     </div>
 
+    <!-- Application Script -->
     <script>
-        /* ==========================================================================
-           1. INITIAL PRE-POPULATED DATA
-           ========================================================================== */
-        const DEFAULT_TEACHERS = [
+        // Sample Mock Data structure for Teachers and Welfare Records
+        let teachersData = [
             {
-                id: "TCH-001",
-                staffId: "GES-108421",
-                name: "Kwaku Mensah",
-                phone: "0241112233",
-                grade: "Senior Superintendent I",
-                classAssigned: "Basic 6",
+                id: 1,
+                name: "Collins Adarkwa Baiden",
+                staffId: "GES/AST/2022/001",
+                phone: "+233 24 123 4567",
+                grade: "Professional Teacher",
+                classAssigned: "ICT Coordinator / Basic 6",
                 payments: [
-                    { id: "REC-901", month: "2025-09", amount: 100, date: "2025-09-15" },
-                    { id: "REC-902", month: "2025-10", amount: 100, date: "2025-10-12" },
-                    { id: "REC-903", month: "2025-11", amount: 100, date: "2025-11-10" },
-                    { id: "REC-904", month: "2025-12", amount: 100, date: "2025-12-14" },
-                    { id: "REC-905", month: "2026-01", amount: 100, date: "2026-01-18" },
-                    { id: "REC-906", month: "2026-02", amount: 100, date: "2026-02-11" }
+                    { id: "TXN-8812", month: "2026-01", date: "15 Jan 2026", amount: 50.00 },
+                    { id: "TXN-8923", month: "2026-02", date: "14 Feb 2026", amount: 50.00 },
+                    { id: "TXN-9041", month: "2026-03", date: "18 Mar 2026", amount: 50.00 },
+                    { id: "TXN-9155", month: "2026-04", date: "12 Apr 2026", amount: 50.00 },
+                    { id: "TXN-9260", month: "2026-05", date: "16 May 2026", amount: 50.00 },
+                    { id: "TXN-9382", month: "2026-06", date: "20 Jun 2026", amount: 50.00 }
                 ],
                 withdrawals: [
-                    { id: "WTH-501", teacherName: "Kwaku Mensah", reason: "Medical Support", amount: 200, date: "2026-01-20" }
+                    { id: "WTH-102", date: "10 Mar 2026", reason: "Emergency Medical Support", amount: 150.00, teacherName: "Collins Adarkwa Baiden" }
                 ]
             },
             {
-                id: "TCH-002",
-                staffId: "GES-209115",
-                name: "Abena Serwaa Boateng",
-                phone: "0202223344",
-                grade: "Principal Superintendent",
-                classAssigned: "Basic 1",
+                id: 2,
+                name: "Edwardina Appiah Mensah",
+                staffId: "GES/AST/2023/044",
+                phone: "+233 20 987 6543",
+                grade: "Teacher",
+                classAssigned: "Primary 4",
                 payments: [
-                    { id: "REC-907", month: "2025-09", amount: 100, date: "2025-09-14" },
-                    { id: "REC-908", month: "2025-10", amount: 100, date: "2025-10-10" },
-                    { id: "REC-909", month: "2025-11", amount: 100, date: "2025-11-15" },
-                    { id: "REC-910", month: "2025-12", amount: 100, date: "2025-12-20" },
-                    { id: "REC-911", month: "2026-01", amount: 100, date: "2026-01-10" },
-                    { id: "REC-912", month: "2026-02", amount: 100, date: "2026-02-14" }
-                ],
-                withdrawals: []
-            },
-            {
-                id: "TCH-003",
-                staffId: "GES-311092",
-                name: "Emmanuel Osei Poku",
-                phone: "0273334455",
-                grade: "Assistant Director I",
-                classAssigned: "Administration",
-                payments: [
-                    { id: "REC-913", month: "2025-09", amount: 100, date: "2025-09-10" },
-                    { id: "REC-914", month: "2025-10", amount: 100, date: "2025-10-11" },
-                    { id: "REC-915", month: "2025-11", amount: 100, date: "2025-11-12" },
-                    { id: "REC-916", month: "2025-12", amount: 100, date: "2025-12-15" },
-                    { id: "REC-917", month: "2026-01", amount: 100, date: "2026-01-08" },
-                    { id: "REC-918", month: "2026-02", amount: 100, date: "2026-02-09" }
-                ],
-                withdrawals: [
-                    { id: "WTH-502", teacherName: "Emmanuel Osei Poku", reason: "Bereavement Assistance", amount: 300, date: "2026-02-15" }
-                ]
-            },
-            {
-                id: "TCH-004",
-                staffId: "GES-401882",
-                name: "Grace Yaa Asantewaa",
-                phone: "0244445566",
-                grade: "Superintendent I",
-                classAssigned: "Basic 2",
-                payments: [
-                    { id: "REC-919", month: "2025-09", amount: 100, date: "2025-09-18" },
-                    { id: "REC-920", month: "2025-10", amount: 100, date: "2025-10-19" },
-                    { id: "REC-921", month: "2025-11", amount: 100, date: "2025-11-20" },
-                    { id: "REC-922", month: "2025-12", amount: 100, date: "2025-12-22" },
-                    { id: "REC-923", month: "2026-01", amount: 100, date: "2026-01-25" }
-                ],
-                withdrawals: []
-            },
-            {
-                id: "TCH-005",
-                staffId: "GES-554109",
-                name: "Kofi Owusu Ansah",
-                phone: "0555556677",
-                grade: "Senior Superintendent II",
-                classAssigned: "Basic 4",
-                payments: [
-                    { id: "REC-924", month: "2025-09", amount: 100, date: "2025-09-12" },
-                    { id: "REC-925", month: "2025-10", amount: 100, date: "2025-10-14" },
-                    { id: "REC-926", month: "2025-11", amount: 100, date: "2025-11-16" },
-                    { id: "REC-927", month: "2025-12", amount: 100, date: "2025-12-18" },
-                    { id: "REC-928", month: "2026-01", amount: 100, date: "2026-01-19" },
-                    { id: "REC-929", month: "2026-02", amount: 100, date: "2026-02-12" }
-                ],
-                withdrawals: []
-            },
-            {
-                id: "TCH-006",
-                staffId: "GES-670921",
-                name: "Dorcas Akosua Agyei",
-                phone: "0206667788",
-                grade: "Superintendent II",
-                classAssigned: "KG 2",
-                payments: [
-                    { id: "REC-930", month: "2025-09", amount: 100, date: "2025-09-20" },
-                    { id: "REC-931", month: "2025-10", amount: 100, date: "2025-10-21" },
-                    { id: "REC-932", month: "2025-11", amount: 100, date: "2025-11-22" },
-                    { id: "REC-933", month: "2026-01", amount: 100, date: "2026-01-28" }
-                ],
-                withdrawals: []
-            },
-            {
-                id: "TCH-007",
-                staffId: "GES-712890",
-                name: "Samuel Appiah Nkrumah",
-                phone: "0247778899",
-                grade: "Principal Superintendent",
-                classAssigned: "Basic 5",
-                payments: [
-                    { id: "REC-934", month: "2025-09", amount: 100, date: "2025-09-11" },
-                    { id: "REC-935", month: "2025-10", amount: 100, date: "2025-10-12" },
-                    { id: "REC-936", month: "2025-11", amount: 100, date: "2025-11-14" },
-                    { id: "REC-937", month: "2025-12", amount: 100, date: "2025-12-11" },
-                    { id: "REC-938", month: "2026-01", amount: 100, date: "2026-01-12" },
-                    { id: "REC-939", month: "2026-02", amount: 100, date: "2026-02-10" }
-                ],
-                withdrawals: []
-            },
-            {
-                id: "TCH-008",
-                staffId: "GES-834112",
-                name: "Priscilla Adwoa Donkor",
-                phone: "0508889900",
-                grade: "Assistant Director II",
-                classAssigned: "Basic 3",
-                payments: [
-                    { id: "REC-940", month: "2025-09", amount: 100, date: "2025-09-16" },
-                    { id: "REC-941", month: "2025-10", amount: 100, date: "2025-10-18" },
-                    { id: "REC-942", month: "2025-11", amount: 100, date: "2025-11-19" },
-                    { id: "REC-943", month: "2025-12", amount: 100, date: "2025-12-21" },
-                    { id: "REC-944", month: "2026-01", amount: 100, date: "2026-01-20" }
+                    { id: "TXN-8815", month: "2026-01", date: "16 Jan 2026", amount: 50.00 },
+                    { id: "TXN-8929", month: "2026-02", date: "15 Feb 2026", amount: 50.00 },
+                    { id: "TXN-9048", month: "2026-03", date: "19 Mar 2026", amount: 50.00 }
                 ],
                 withdrawals: []
             }
         ];
 
-        let teachersData = [];
-        let activeTeacherId = "";
-        let isAdminLoggedIn = false;
+        let activeTeacherId = 1;
 
-        // Initialize App
-        window.addEventListener('DOMContentLoaded', () => {
-            loadTeachersData();
-            populateTeacherSelects();
-            if (teachersData.length > 0) {
-                activeTeacherId = teachersData[0].id;
-            }
-            renderDashboard();
-        });
-
-        // Load data from localStorage or fallback to defaults
-        function loadTeachersData() {
-            const stored = localStorage.getItem('ntonso_sda_teachers');
-            if (stored) {
-                try {
-                    teachersData = JSON.parse(stored);
-                    teachersData = teachersData.map(t => ({ withdrawals: [], phone: "N/A", ...t }));
-                } catch (e) {
-                    teachersData = DEFAULT_TEACHERS;
-                }
-            } else {
-                teachersData = DEFAULT_TEACHERS;
-                saveTeachersData();
-            }
-        }
-
-        function saveTeachersData() {
-            localStorage.setItem('ntonso_sda_teachers', JSON.stringify(teachersData));
-        }
-
-        function populateTeacherSelects() {
-            const selectEl = document.getElementById('teacherSelect');
-            const adminSelectEl = document.getElementById('adminPaymentTeacherSelect');
-            const adminWithdrawalSelectEl = document.getElementById('adminWithdrawalTeacherSelect');
-            
-            const currentSelected = selectEl.value;
-            const currentAdminSelected = adminSelectEl.value;
-            const currentAdminWthSelected = adminWithdrawalSelectEl.value;
-
-            selectEl.innerHTML = '';
-            adminSelectEl.innerHTML = '';
-            adminWithdrawalSelectEl.innerHTML = '';
-
-            if (teachersData.length === 0) {
-                const opt = document.createElement('option');
-                opt.value = "";
-                opt.textContent = "No active staff registered";
-                selectEl.appendChild(opt);
-                adminSelectEl.appendChild(opt.cloneNode(true));
-                adminWithdrawalSelectEl.appendChild(opt.cloneNode(true));
-                return;
-            }
-
-            teachersData.forEach(t => {
-                const opt = document.createElement('option');
-                opt.value = t.id;
-                opt.textContent = `${t.name} (${t.classAssigned}) - Staff ID: ${t.staffId}`;
-                selectEl.appendChild(opt);
-
-                const adminOpt = document.createElement('option');
-                adminOpt.value = t.id;
-                adminOpt.textContent = `${t.name} (${t.staffId})`;
-                adminSelectEl.appendChild(adminOpt);
-                adminWithdrawalSelectEl.appendChild(adminOpt.cloneNode(true));
-            });
-
-            if (currentSelected && teachersData.some(t => t.id === currentSelected)) {
-                selectEl.value = currentSelected;
-            }
-            if (currentAdminSelected && teachersData.some(t => t.id === currentAdminSelected)) {
-                adminSelectEl.value = currentAdminSelected;
-            }
-            if (currentAdminWthSelected && teachersData.some(t => t.id === currentAdminWthSelected)) {
-                adminWithdrawalSelectEl.value = currentAdminWthSelected;
-            }
-        }
-
-        function switchTeacher(teacherId) {
-            activeTeacherId = teacherId;
-            renderDashboard();
+        function formatMonthName(monthStr) {
+            const [year, month] = monthStr.split('-');
+            const date = new Date(year, month - 1, 1);
+            return date.toLocaleString('en-US', { month: 'long', year: 'numeric' });
         }
 
         function renderDashboard() {
-            if (teachersData.length === 0 && parseFloat(localStorage.getItem('ntonso_sda_preserved_paid') || '0') === 0) {
-                document.getElementById('statTotalFund').textContent = "GHS 0.00";
-                document.getElementById('statMemberTotal').textContent = "GHS 0.00";
-                document.getElementById('statMemberContribCount').textContent = "0 Payments recorded";
-                document.getElementById('statLastPayment').textContent = "N/A";
-                document.getElementById('statLastMonthName').textContent = "-";
-                
-                document.getElementById('currentTeacherName').textContent = "No Staff Registered";
-                document.getElementById('currentTeacherGrade').textContent = "--";
-                document.getElementById('currentTeacherStaffId').textContent = "--";
-                document.getElementById('currentTeacherPhone').textContent = "--";
-                document.getElementById('currentTeacherClass').textContent = "--";
-                document.getElementById('teacherAvatar').textContent = "--";
-                
-                document.getElementById('paymentTableBody').innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-slate-400">No staff accounts exist. Register a teacher using the Admin Panel.</td></tr>`;
-                document.getElementById('withdrawalTableBody').innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-slate-400">No withdrawal records.</td></tr>`;
-                
-                if (isAdminLoggedIn) renderMasterRoster();
-                return;
-            }
-
-            const currentTeacher = teachersData.find(t => t.id === activeTeacherId) || (teachersData.length > 0 ? teachersData[0] : null);
-            if (currentTeacher) {
-                activeTeacherId = currentTeacher.id;
-            }
-
-            // 1. Calculate Fund Metrics across school including preserved totals from removed staff
-            let schoolWideTotalPaid = 0;
-            let schoolWideTotalWithdrawn = 0;
-            let allGlobalWithdrawals = [];
+            const listContainer = document.getElementById('teacherListContainer');
+            listContainer.innerHTML = '';
 
             teachersData.forEach(t => {
-                t.payments.forEach(p => schoolWideTotalPaid += p.amount);
-                if (t.withdrawals && t.withdrawals.length > 0) {
-                    t.withdrawals.forEach(w => {
-                        schoolWideTotalWithdrawn += w.amount;
-                        allGlobalWithdrawals.push(w);
-                    });
-                }
-            });
-
-            // Add previously preserved totals from removed staff members
-            const preservedPaid = parseFloat(localStorage.getItem('ntonso_sda_preserved_paid') || '0');
-            const preservedWithdrawn = parseFloat(localStorage.getItem('ntonso_sda_preserved_withdrawn') || '0');
-
-            schoolWideTotalPaid += preservedPaid;
-            schoolWideTotalWithdrawn += preservedWithdrawn;
-
-            const schoolWideNet = schoolWideTotalPaid - schoolWideTotalWithdrawn;
-
-            let memberTotalPaid = 0;
-            if (currentTeacher) {
-                currentTeacher.payments.forEach(p => memberTotalPaid += p.amount);
-            }
-
-            // Find last activity (payment or global withdrawal)
-            let allActivities = [
-                ...(currentTeacher ? currentTeacher.payments.map(p => ({ type: 'payment', date: p.date, desc: `Paid GHS ${p.amount.toFixed(2)}` })) : []),
-                ...allGlobalWithdrawals.map(w => ({ type: 'withdrawal', date: w.date, desc: `Fund Payout: GHS ${w.amount.toFixed(2)}` }))
-            ].sort((a, b) => b.date.localeCompare(a.date));
-
-            const lastActivity = allActivities.length > 0 ? allActivities[0] : null;
-
-            // 2. Update Metric Cards
-            document.getElementById('statTotalFund').textContent = `GHS ${schoolWideNet.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-            document.getElementById('statMemberTotal').textContent = `GHS ${memberTotalPaid.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-            document.getElementById('statMemberContribCount').textContent = `${currentTeacher ? currentTeacher.payments.length : 0} Payments recorded`;
-            
-            if (lastActivity) {
-                document.getElementById('statLastPayment').textContent = lastActivity.desc;
-                document.getElementById('statLastMonthName').textContent = `On ${lastActivity.date}`;
-            } else {
-                document.getElementById('statLastPayment').textContent = `N/A`;
-                document.getElementById('statLastMonthName').textContent = `No activity logged`;
-            }
-
-            // 3. Update Active Profile Card
-            if (currentTeacher) {
-                document.getElementById('currentTeacherName').textContent = currentTeacher.name;
-                document.getElementById('currentTeacherGrade').textContent = currentTeacher.grade;
-                document.getElementById('currentTeacherStaffId').textContent = currentTeacher.staffId;
-                document.getElementById('currentTeacherPhone').textContent = currentTeacher.phone || 'N/A';
-                document.getElementById('currentTeacherClass').textContent = currentTeacher.classAssigned;
-                document.getElementById('teacherAvatar').textContent = getInitials(currentTeacher.name);
-            }
-
-            // 4. Render Payments Table
-            const paymentTbody = document.getElementById('paymentTableBody');
-            paymentTbody.innerHTML = '';
-
-            if (!currentTeacher || currentTeacher.payments.length === 0) {
-                paymentTbody.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-slate-400">No payment records found for this teacher.</td></tr>`;
-            } else {
-                const sortedPayments = [...currentTeacher.payments].sort((a, b) => b.month.localeCompare(a.month));
-                sortedPayments.forEach(p => {
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors";
-                    tr.innerHTML = `
-                        <td class="px-6 py-4 font-bold text-slate-900 dark:text-white">${formatMonthName(p.month)}</td>
-                        <td class="px-6 py-4 font-mono text-xs text-slate-600 dark:text-slate-300">${p.id}</td>
-                        <td class="px-6 py-4 font-extrabold text-emerald-600 dark:text-emerald-400">GHS ${p.amount.toFixed(2)}</td>
-                        <td class="px-6 py-4">${p.date}</td>
-                        <td class="px-6 py-4">
-                            <span class="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center w-fit">
-                                <i class="fa-solid fa-circle-check mr-1.5 text-[10px]"></i> Paid
-                            </span>
-                        </td>
-                    `;
-                    paymentTbody.appendChild(tr);
-                });
-            }
-
-            // 5. Render Global Withdrawals Table (Shows across all teacher views)
-            const sortedWithdrawals = [...allGlobalWithdrawals].sort((a, b) => b.date.localeCompare(a.date));
-            const withdrawalTbody = document.getElementById('withdrawalTableBody');
-            withdrawalTbody.innerHTML = '';
-
-            if (sortedWithdrawals.length === 0) {
-                withdrawalTbody.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-slate-400">No welfare fund payouts or withdrawals recorded.</td></tr>`;
-            } else {
-                sortedWithdrawals.forEach(w => {
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors";
-                    tr.innerHTML = `
-                        <td class="px-6 py-4 font-mono text-xs text-slate-600 dark:text-slate-300">${w.id}</td>
-                        <td class="px-6 py-4 font-bold text-slate-900 dark:text-white">${w.teacherName || 'Member'}</td>
-                        <td class="px-6 py-4"><i class="fa-solid fa-tag text-rose-500 mr-1.5"></i> ${w.reason}</td>
-                        <td class="px-6 py-4 font-extrabold text-rose-600 dark:text-rose-400">- GHS ${w.amount.toFixed(2)}</td>
-                        <td class="px-6 py-4">${w.date}</td>
-                    `;
-                    withdrawalTbody.appendChild(tr);
-                });
-            }
-
-            // 6. Update Admin Master Roster if admin panel is open
-            if (isAdminLoggedIn) {
-                renderMasterRoster();
-            }
-        }
-
-        function renderMasterRoster() {
-            const masterBody = document.getElementById('masterRosterBody');
-            masterBody.innerHTML = '';
-
-            if (teachersData.length === 0) {
-                masterBody.innerHTML = `<tr><td colspan="6" class="px-4 py-6 text-center text-slate-400">No active teachers registered in system.</td></tr>`;
-                return;
-            }
-
-            teachersData.forEach(t => {
-                let paid = 0;
-                t.payments.forEach(p => paid += p.amount);
-
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/30";
-                tr.innerHTML = `
-                    <td class="px-4 py-3 font-mono text-slate-600 dark:text-slate-300">${t.staffId}</td>
-                    <td class="px-4 py-3 font-bold text-slate-900 dark:text-white">${t.name}</td>
-                    <td class="px-4 py-3 font-mono text-slate-600 dark:text-slate-300">${t.phone || 'N/A'}</td>
-                    <td class="px-4 py-3">${t.classAssigned}</td>
-                    <td class="px-4 py-3 font-bold text-emerald-600 dark:text-emerald-400">GHS ${paid.toFixed(2)}</td>
-                    <td class="px-4 py-3">
-                        <div class="flex items-center space-x-2">
-                            <button onclick="selectTeacherFromRoster('${t.id}')" class="text-xs bg-sdaNavy-500 text-white px-2.5 py-1 rounded hover:bg-sdaNavy-700 font-semibold transition-all">
-                                View Profile
-                            </button>
-                            <button onclick="handleRemoveStaff('${t.id}', '${t.name}')" class="text-xs bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 rounded font-semibold transition-all flex items-center space-x-1" title="Remove Staff Member">
-                                <i class="fa-solid fa-user-minus"></i>
-                                <span>Remove</span>
-                            </button>
-                        </div>
-                    </td>
+                const isActive = t.id === activeTeacherId;
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition flex flex-col ${isActive ? 'bg-emerald-50 text-emerald-900 border border-emerald-300 shadow-sm' : 'hover:bg-slate-50 text-slate-700 border border-transparent'}`;
+                btn.innerHTML = `
+                    <span class="font-bold">${t.name}</span>
+                    <span class="text-xs text-slate-500 font-mono">${t.staffId}</span>
                 `;
-                masterBody.appendChild(tr);
+                btn.onclick = () => {
+                    activeTeacherId = t.id;
+                    renderDashboard();
+                };
+                listContainer.appendChild(btn);
             });
-        }
 
-        function selectTeacherFromRoster(id) {
-            document.getElementById('teacherSelect').value = id;
-            switchTeacher(id);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function handleRemoveStaff(teacherId, teacherName) {
-            const confirmed = confirm(`Are you sure you want to remove ${teacherName} from the welfare system?\n\nThis will permanently delete their profile while locking their financial contributions into the master fund balance.`);
-            if (!confirmed) return;
-
-            // Find the teacher being removed and preserve their financials
-            const teacherToRemove = teachersData.find(t => t.id === teacherId);
-            if (teacherToRemove) {
-                let teacherPaid = 0;
-                teacherToRemove.payments.forEach(p => teacherPaid += p.amount);
-                
-                let teacherWithdrawn = 0;
-                if (teacherToRemove.withdrawals) {
-                    teacherToRemove.withdrawals.forEach(w => teacherWithdrawn += w.amount);
-                }
-
-                // Add to persistent preserved localStorage counters
-                const currentPreservedPaid = parseFloat(localStorage.getItem('ntonso_sda_preserved_paid') || '0');
-                const currentPreservedWithdrawn = parseFloat(localStorage.getItem('ntonso_sda_preserved_withdrawn') || '0');
-
-                localStorage.setItem('ntonso_sda_preserved_paid', currentPreservedPaid + teacherPaid);
-                localStorage.setItem('ntonso_sda_preserved_withdrawn', currentPreservedWithdrawn + teacherWithdrawn);
-            }
-
-            // Filter out the teacher from active roster
-            teachersData = teachersData.filter(t => t.id !== teacherId);
-            saveTeachersData();
-            populateTeacherSelects();
-
-            if (activeTeacherId === teacherId) {
-                activeTeacherId = teachersData.length > 0 ? teachersData[0].id : "";
-                document.getElementById('teacherSelect').value = activeTeacherId;
-            }
-
-            renderDashboard();
-            showToast(`${teacherName} removed. Contributions successfully locked into fund balance.`);
-        }
-
-        function toggleAdminModal() {
-            const modal = document.getElementById('adminModal');
-            document.getElementById('adminAuthError').classList.add('hidden');
-            document.getElementById('adminPasswordInput').value = '';
-
-            if (isAdminLoggedIn) {
-                isAdminLoggedIn = false;
-                document.getElementById('adminPanelSection').classList.add('hidden');
-                document.getElementById('adminBtnText').textContent = 'Admin Access';
-                document.getElementById('adminToggleBtn').className = "px-3 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-sdaGold-500 hover:bg-sdaGold-600 text-sdaNavy-900 transition-all flex items-center shadow-sm";
-            } else {
-                modal.classList.toggle('hidden');
-            }
-        }
-
-        function handleAdminLogin(e) {
-            e.preventDefault();
-            const password = document.getElementById('adminPasswordInput').value;
-
-            if (password === 'sda2026' || password === '1234') {
-                isAdminLoggedIn = true;
-                document.getElementById('adminModal').classList.add('hidden');
-                document.getElementById('adminPanelSection').classList.remove('hidden');
-                document.getElementById('adminBtnText').textContent = 'Exit Admin Mode';
-                document.getElementById('adminToggleBtn').className = "px-3 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-rose-600 hover:bg-rose-700 text-white transition-all flex items-center shadow-sm";
-                renderMasterRoster();
-            } else {
-                document.getElementById('adminAuthError').classList.remove('hidden');
-            }
-        }
-
-        function handleAddNewStaff(e) {
-            e.preventDefault();
-            const staffId = document.getElementById('newStaffId').value.trim();
-            const name = document.getElementById('newStaffName').value.trim();
-            const phone = document.getElementById('newStaffPhone').value.trim();
-            const grade = document.getElementById('newStaffGrade').value;
-            const classAssigned = document.getElementById('newStaffClass').value.trim();
-
-            if (!staffId || !name || !phone || !grade || !classAssigned) return;
-
-            const exists = teachersData.some(t => t.staffId.toLowerCase() === staffId.toLowerCase());
-            if (exists) {
-                alert("A staff member with this Staff ID already exists.");
-                return;
-            }
-
-            const newId = `TCH-${String(Date.now()).slice(-4)}`;
-            const newTeacher = {
-                id: newId,
-                staffId: staffId,
-                name: name,
-                phone: phone,
-                grade: grade,
-                classAssigned: classAssigned,
-                payments: [],
-                withdrawals: []
-            };
-
-            teachersData.push(newTeacher);
-            saveTeachersData();
-            populateTeacherSelects();
+            const currentTeacher = teachersData.find(t => t.id === activeTeacherId) || teachersData[0];
             
-            activeTeacherId = newId;
-            document.getElementById('teacherSelect').value = newId;
-            renderDashboard();
+            // Calculate totals
+            let totalPaid = currentTeacher.payments.reduce((sum, p) => sum + p.amount, 0);
+            let totalWithdrawn = (currentTeacher.withdrawals || []).reduce((sum, w) => sum + w.amount, 0);
 
-            document.getElementById('newStaffId').value = '';
-            document.getElementById('newStaffName').value = '';
-            document.getElementById('newStaffPhone').value = '';
-            document.getElementById('newStaffClass').value = '';
+            document.getElementById('uiTotalPaid').textContent = `GHS ${totalPaid.toFixed(2)}`;
+            document.getElementById('uiTotalWithdrawn').textContent = `GHS ${totalWithdrawn.toFixed(2)}`;
 
-            showToast(`New staff profile created for ${name}!`);
-        }
-
-        function handleRecordPayment(e) {
-            e.preventDefault();
-            const teacherId = document.getElementById('adminPaymentTeacherSelect').value;
-            const month = document.getElementById('adminPaymentMonth').value;
-            const amount = parseFloat(document.getElementById('adminPaymentAmount').value);
-
-            if (!teacherId || !month || isNaN(amount)) return;
-
-            const targetTeacher = teachersData.find(t => t.id === teacherId);
-            if (!targetTeacher) return;
-
-            const existingIdx = targetTeacher.payments.findIndex(p => p.month === month);
-            const todayStr = new Date().toISOString().split('T')[0];
-            const randomRef = `REC-${Math.floor(100 + Math.random() * 900)}`;
-
-            if (existingIdx !== -1) {
-                targetTeacher.payments[existingIdx].amount = amount;
-                targetTeacher.payments[existingIdx].date = todayStr;
-            } else {
-                targetTeacher.payments.push({
-                    id: randomRef,
-                    month: month,
-                    amount: amount,
-                    date: todayStr
-                });
-            }
-
-            saveTeachersData();
-            renderDashboard();
-
-            document.getElementById('adminPaymentMonth').value = '';
-            showToast('Payment record updated successfully!');
-        }
-
-        function handleRecordWithdrawal(e) {
-            e.preventDefault();
-            const teacherId = document.getElementById('adminWithdrawalTeacherSelect').value;
-            const amount = parseFloat(document.getElementById('adminWithdrawalAmount').value);
-            const reason = document.getElementById('adminWithdrawalReason').value;
-
-            if (!teacherId || isNaN(amount) || !reason) return;
-
-            const targetTeacher = teachersData.find(t => t.id === teacherId);
-            if (!targetTeacher) return;
-
-            if (!targetTeacher.withdrawals) {
-                targetTeacher.withdrawals = [];
-            }
-
-            const todayStr = new Date().toISOString().split('T')[0];
-            const randomRef = `WTH-${Math.floor(100 + Math.random() * 900)}`;
-
-            targetTeacher.withdrawals.push({
-                id: randomRef,
-                teacherName: targetTeacher.name,
-                reason: reason,
-                amount: amount,
-                date: todayStr
-            });
-
-            saveTeachersData();
-            renderDashboard();
-
-            document.getElementById('adminWithdrawalAmount').value = '';
-            showToast(`Welfare payout of GHS ${amount.toFixed(2)} recorded for ${targetTeacher.name}!`);
+            document.getElementById('memberDetailsView').innerHTML = `
+                <p><strong class="text-slate-700">Full Name:</strong> ${currentTeacher.name}</p>
+                <p><strong class="text-slate-700">Staff ID:</strong> <span class="font-mono">${currentTeacher.staffId}</span></p>
+                <p><strong class="text-slate-700">Phone:</strong> ${currentTeacher.phone}</p>
+                <p><strong class="text-slate-700">Grade / Rank:</strong> ${currentTeacher.grade}</p>
+                <p><strong class="text-slate-700">Class Assigned:</strong> ${currentTeacher.classAssigned}</p>
+                <p><strong class="text-slate-700">Total Months Contributed:</strong> ${currentTeacher.payments.length}</p>
+            `;
         }
 
         function downloadPDF() {
@@ -1190,58 +331,25 @@
             element.classList.add('active');
 
             const opt = {
-                margin:       0.5,
+                margin:       [0.4, 0.4, 0.4, 0.4],
                 filename:     `Welfare_Statement_${currentTeacher.staffId}_${currentTeacher.name.replace(/\s+/g, '_')}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, logging: false },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
 
-            html2pdf().set(opt).from(element).save().then(() => {
-                element.classList.remove('active');
-            }).catch(err => {
-                console.error("PDF generation error: ", err);
-                element.classList.remove('active');
-            });
-        }
-
-        function formatMonthName(monthStr) {
-            if (!monthStr) return '';
-            const [year, month] = monthStr.split('-');
-            const date = new Date(year, parseInt(month) - 1, 1);
-            return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-        }
-
-        function getInitials(name) {
-            if (!name) return 'TS';
-            const parts = name.split(' ');
-            if (parts.length >= 2) {
-                return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-            }
-            return name.substring(0, 2).toUpperCase();
-        }
-
-        function toggleDarkMode() {
-            const html = document.documentElement;
-            const themeIcon = document.getElementById('themeIcon');
-            if (html.classList.contains('dark')) {
-                html.classList.remove('dark');
-                themeIcon.className = "fa-solid fa-moon";
-            } else {
-                html.classList.add('dark');
-                themeIcon.className = "fa-solid fa-sun";
-            }
-        }
-
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.className = "fixed bottom-5 right-5 bg-slate-900 text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-xl z-50 flex items-center space-x-2 transition-all border border-slate-700";
-            toast.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i> <span>${message}</span>`;
-            document.body.appendChild(toast);
             setTimeout(() => {
-                toast.remove();
-            }, 3000);
+                html2pdf().set(opt).from(element).save().then(() => {
+                    element.classList.remove('active');
+                }).catch(err => {
+                    console.error("PDF generation error: ", err);
+                    element.classList.remove('active');
+                });
+            }, 200);
         }
+
+        // Initialize dashboard on load
+        window.onload = renderDashboard;
     </script>
 </body>
 </html>
