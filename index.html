@@ -297,7 +297,7 @@ body {
     display: flex;
     white-space: nowrap;
     width: max-content;
-    animation: continuousScroll 90s linear infinite;
+    animation: continuousScroll 180s linear infinite; /* Adjusted speed to 180s for very slow, smooth scroll */
 }
 
 .animate-continuous-ticker:hover {
@@ -600,9 +600,9 @@ body {
                 <i class="fa-solid fa-bars"></i>
             </button>
             <div>
-                <!-- REPLACED "WELFARE MANAGEMENT SYSTEM" WITH DYNAMIC GREETING -->
-                <p id="headerGreetingText" class="text-[10px] font-extrabold uppercase tracking-widest text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <!-- INCREASED FONT SIZE & SET TO "HI, ADMIN!" WHEN ADMIN LOGGED IN -->
+                <p id="headerGreetingText" class="text-xs sm:text-sm font-black uppercase tracking-widest text-amber-600 dark:text-amber-400 flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
                     Hi, Guest!
                 </p>
                 <h2 id="pageTitle"
@@ -625,11 +625,10 @@ body {
                 <i id="themeIcon" class="fa-solid fa-moon text-sm"></i>
             </button>
 
-            <!-- REPLACED ADMIN ACCESS BUTTON WITH PASSPORT UPLOAD CONTAINER / AVATAR -->
+            <!-- PASSPORT UPLOAD CONTAINER / AVATAR -->
             <div class="relative group">
                 <input type="file" id="headerPassportInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="handleHeaderPassportUpload(event)" title="Click to upload passport picture">
                 <div id="headerPassportContainer" class="w-11 h-11 rounded-2xl bg-slate-200 dark:bg-slate-800 border-2 border-amber-500 overflow-hidden flex items-center justify-center shadow-md relative group-hover:scale-105 transition-all">
-                    <!-- Default fallback icon or uploaded image -->
                     <div id="headerPassportPlaceholder" class="text-amber-600 dark:text-amber-400 text-sm font-bold flex items-center justify-center w-full h-full bg-amber-500/10">
                         <i class="fa-solid fa-camera"></i>
                     </div>
@@ -671,11 +670,10 @@ body {
         </div>
     </div>
 
-    <!-- Teacher/Member Rolling Ticker Banner (Visible when viewing as a teacher/member) -->
+    <!-- Teacher/Member Rolling Ticker Banner -->
     <div id="memberTickerBanner" class="mb-6 bg-sdaNavy-900/90 dark:bg-slate-900/90 backdrop-blur-md border border-amber-500/30 rounded-2xl text-white text-xs py-3 px-4 shadow-lg overflow-hidden hidden">
         <div class="overflow-hidden whitespace-nowrap relative w-full">
-            <div id="memberTickerContent" class="animate-continuous-ticker flex items-center gap-12 font-medium">
-                <!-- Dynamically populated activity items for the logged-in member -->
+            <div id="memberTickerContent" class="animate-continuous-ticker flex items-center gap-12 font-medium" style="animation-duration: 180s;">
             </div>
         </div>
     </div>
@@ -838,7 +836,7 @@ body {
         </div>
     </div>
 
-    <!-- WITHDRAWALS (Universal viewable across all teachers/members) -->
+    <!-- WITHDRAWALS -->
     <div class="glass-card rounded-2xl shadow-sm overflow-hidden">
         <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
             <h3 class="font-extrabold text-base flex items-center gap-2 text-slate-900 dark:text-white">
@@ -1021,7 +1019,7 @@ body {
             </div>
         </div>
 
-        <!-- Monthly Fund Summary (Admin Only) -->
+        <!-- Monthly Fund Summary -->
         <div id="monthlySummaryCard"
              class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
             <div>
@@ -1049,7 +1047,7 @@ body {
             </div>
         </div>
 
-        <!-- Complete Fund Summary (Admin Only) -->
+        <!-- Complete Fund Summary -->
         <div id="completeSummaryCard"
              class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
             <div>
@@ -1354,13 +1352,12 @@ body {
 </div>
 
 <!-- =========================================================
-     LIVE ROLLING ACTIVITY BANNER (Fixed Bottom Ticker - 90s speed)
+     LIVE ROLLING ACTIVITY BANNER (Fixed Bottom Ticker - 180s speed)
 ========================================================= -->
 <div id="liveTickerBanner" class="fixed bottom-0 left-0 right-0 z-40 bg-sdaNavy-900/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-amber-500/30 text-white text-xs py-2.5 px-4 shadow-2xl overflow-hidden hidden">
     <div class="overflow-hidden whitespace-nowrap relative w-full">
-        <!-- REDUCED BANNER SPEED TO 90s -->
-        <div id="tickerContent" class="animate-continuous-ticker flex items-center gap-12 font-medium" style="animation-duration: 90s;">
-            <!-- Dynamically populated activity items -->
+        <!-- SLOWER BANNER SPEED SET TO 180s -->
+        <div id="tickerContent" class="animate-continuous-ticker flex items-center gap-12 font-medium" style="animation-duration: 180s;">
         </div>
     </div>
 </div>
@@ -1463,9 +1460,7 @@ body {
 <div id="pdfRenderArea" class="pdf-render-area">
     <!-- Individual Statement Template -->
     <div id="statementPdfTemplate" class="pdf-page" style="font-size: 13px;">
-        <!-- Top Header with Passport Picture at Top Right -->
         <div class="relative border-b-2 border-slate-800 pb-4 mb-5 pdf-avoid-break">
-            <!-- Passport Picture Positioned Top Right in PDF -->
             <div id="pdfPassportContainer" class="absolute right-0 top-0 w-24 h-28 border-2 border-slate-700 bg-slate-100 flex items-center justify-center overflow-hidden shadow">
                 <span id="pdfPassportPlaceholderText" class="text-[10px] text-slate-400 font-bold text-center px-1">Passport Photo</span>
                 <img id="pdfPassportImg" class="w-full h-full object-cover hidden" alt="Passport">
@@ -1558,7 +1553,7 @@ body {
         </div>
     </div>
 
-    <!-- Monthly Summary Report Template (Admin Only) -->
+    <!-- Monthly Summary Report Template -->
     <div id="monthlySummaryPdfTemplate" class="pdf-summary-page" style="font-size: 13px;">
         <div class="text-center border-b-2 border-slate-800 pb-4 pdf-avoid-break">
             <h2 class="text-2xl font-extrabold">GHANA EDUCATION SERVICE</h2>
@@ -1822,7 +1817,7 @@ function logAdminAction(actionDescription, targetTeacherId = null) {
         targetTeacherId: targetTeacherId ? String(targetTeacherId) : null
     };
     adminLogs.unshift(logEntry);
-    if (adminLogs.length > 30) adminLogs.pop(); // keep last 30 actions
+    if (adminLogs.length > 30) adminLogs.pop();
     saveAdminLogsList();
     renderLiveTicker();
     renderMemberLiveTicker();
@@ -2047,28 +2042,25 @@ function renderHeaderGreeting() {
     const greetingEl = document.getElementById('headerGreetingText');
     if (!greetingEl) return;
 
-    let firstName = 'Guest';
+    let greetingName = 'Guest';
     if (!adminLoggedIn && loggedInTeacherId) {
         const teacher = getTeacherById(loggedInTeacherId);
         if (teacher && teacher.name) {
-            firstName = teacher.name.trim().split(/\s+/)[0];
+            greetingName = teacher.name.trim().split(/\s+/)[0];
         }
     } else if (adminLoggedIn) {
-        if (currentAdminUser && currentAdminUser.name) {
-            firstName = currentAdminUser.name.trim().split(/\s+/)[0];
-        } else {
-            firstName = 'Admin';
-        }
+        // CHANGED TO DISPLAY "ADMIN" INSTEAD OF THE DEFAULT NAME
+        greetingName = 'Admin';
     } else {
         const teacher = getSelectedTeacher();
         if (teacher && teacher.name) {
-            firstName = teacher.name.trim().split(/\s+/)[0];
+            greetingName = teacher.name.trim().split(/\s+/)[0];
         }
     }
 
     greetingEl.innerHTML = `
-        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-        Hi, ${escapeHtml(firstName)}!
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        Hi, ${escapeHtml(greetingName)}!
     `;
 }
 
@@ -3029,7 +3021,6 @@ async function downloadPDF() {
     document.getElementById('pdfGrade').textContent = teacher.rank;
     document.getElementById('pdfClass').textContent = teacher.className;
 
-    // Handle passport picture in PDF
     const pdfImg = document.getElementById('pdfPassportImg');
     const pdfPlaceholderText = document.getElementById('pdfPassportPlaceholderText');
     if (teacher.passport) {
