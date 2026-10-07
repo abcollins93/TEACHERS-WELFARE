@@ -495,6 +495,7 @@ function showSection(sec, btn) {
     document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
     document.getElementById('pageTitle').textContent = sec.charAt(0).toUpperCase() + sec.slice(1);
+    closeMobileSidebar();
 }
 
 function toggleSidebar() {
@@ -505,8 +506,19 @@ function toggleSidebar() {
     m.classList.toggle('ml-[76px]');
 }
 
-function openMobileSidebar() { document.getElementById('sidebar').classList.add('mobile-open'); document.getElementById('mobileOverlay').classList.remove('hidden'); }
-function closeMobileSidebar() { document.getElementById('sidebar').classList.remove('mobile-open'); document.getElementById('mobileOverlay').classList.add('hidden'); }
+function openMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('mobileOverlay');
+    if (sidebar) sidebar.style.transform = 'translateX(0)';
+    if (overlay) overlay.classList.remove('hidden');
+}
+
+function closeMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('mobileOverlay');
+    if (sidebar) sidebar.style.transform = 'translateX(-100%)';
+    if (overlay) overlay.classList.add('hidden');
+}
 
 function toggleDarkMode() {
     document.documentElement.classList.toggle('dark');
