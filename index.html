@@ -2185,7 +2185,7 @@ function handlePortalLogin(event) {
         showToast(`Welcome back, ${matched.name}!`, 'success');
     } else {
         errorEl.textContent = 'Invalid staff number or password.';
-        errorEl.classList.remove('hidden');
+        errorEl.classList.add('hidden');
     }
 }
 
