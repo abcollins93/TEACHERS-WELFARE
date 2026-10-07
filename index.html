@@ -101,7 +101,6 @@ body {
         opacity: 0;
         transform: translateY(6px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
@@ -204,10 +203,6 @@ body {
     text-align: center;
 }
 
-.pdf-small {
-    font-size: 9px;
-}
-
 .pdf-table {
     font-size: 9px;
 }
@@ -257,28 +252,22 @@ body {
         transform: translateX(-100%);
         width: 280px !important;
     }
-
     .sidebar.mobile-open {
         transform: translateX(0);
     }
-
     .main-wrapper {
         margin-left: 0 !important;
     }
-
     .sidebar-collapsed {
         width: 280px !important;
     }
-
     .sidebar-collapsed .sidebar-text,
     .sidebar-collapsed .sidebar-brand-text {
         display: inline;
     }
-
     .sidebar-collapsed .nav-button {
         justify-content: flex-start;
     }
-
     .sidebar-collapsed .nav-button i {
         margin-right: .75rem !important;
     }
@@ -298,7 +287,6 @@ body {
     body {
         background: white !important;
     }
-
     .no-print {
         display: none !important;
     }
@@ -307,6 +295,73 @@ body {
 </head>
 
 <body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
+
+<!-- =========================================================
+     GoG ePAY STYLE LOGIN GATEWAY MODAL
+========================================================= -->
+<div id="loginGatewayModal"
+     class="fixed inset-0 bg-slate-900/90 modal-backdrop z-[300] flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-8 shadow-2xl border border-slate-200 dark:border-slate-800 my-auto">
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 mx-auto bg-emerald-100 dark:bg-emerald-950 text-emerald-600 rounded-2xl flex items-center justify-center mb-3 shadow-inner">
+                <i class="fa-solid fa-shield-halved text-2xl"></i>
+            </div>
+            <h2 class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                Ntonso SDA Primary 'A'
+            </h2>
+            <p class="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-1 uppercase tracking-widest">
+                ePAY & Welfare Portal
+            </p>
+        </div>
+
+        <form onsubmit="handlePortalLogin(event)" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Staff Number / ID</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                        <i class="fa-solid fa-id-card text-xs"></i>
+                    </span>
+                    <input type="text" id="gatewayStaffId" class="form-input !pl-9 !py-3 font-semibold" placeholder="Enter your staff number" required>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Password / Passcode</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                        <i class="fa-solid fa-lock text-xs"></i>
+                    </span>
+                    <input type="password" id="gatewayPassword" class="form-input !pl-9 !py-3 font-semibold" placeholder="Enter your password or admin passcode" required>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between text-xs pt-1">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4">
+                    <span class="text-slate-600 dark:text-slate-400 font-medium">Remember me</span>
+                </label>
+                <a href="#" onclick="showToast('Contact administrator to reset passcode.', 'error'); return false;" class="text-emerald-600 dark:text-emerald-400 font-bold hover:underline">Forgot password?</a>
+            </div>
+
+            <p id="gatewayError" class="text-xs text-rose-500 font-semibold text-center hidden">Invalid staff number or password.</p>
+
+            <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white font-extrabold rounded-xl shadow-lg shadow-emerald-600/20 transition-all text-sm mt-2">
+                Sign In
+            </button>
+        </form>
+
+        <div class="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 text-center">
+            <p class="text-[10px] text-slate-400 uppercase tracking-wider mb-2">Contact Welfare Desk</p>
+            <div class="flex justify-center gap-4 text-[11px] font-bold text-slate-600 dark:text-slate-400">
+                <span>0240000001</span>
+                <span>•</span>
+                <span>0243340355</span>
+                <span>•</span>
+                <span>0247452601</span>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- =========================================================
      MOBILE OVERLAY
@@ -1044,10 +1099,10 @@ body {
 </div>
 
 <!-- =========================================================
-     ADMIN LOGIN MODAL
+     ADMIN MODAL (For quick admin lock access from top bar)
 ========================================================= -->
 <div id="adminModal"
-     class="hidden fixed inset-0 bg-black/60 modal-backdrop z-[100] items-center justify-center p-4">
+     class="hidden fixed inset-0 bg-black/60 modal-backdrop z-[250] items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl">
         <div class="flex justify-between items-center mb-4">
             <h3 class="font-extrabold">
@@ -1060,7 +1115,7 @@ body {
         </div>
 
         <form onsubmit="handleAdminLogin(event)">
-            <label class="block text-xs font-bold mb-1">Passcode</label>
+            <label class="block text-xs font-bold mb-1">Admin Passcode</label>
             <input type="password" id="adminPasswordInput" class="form-input" required>
             <p id="adminAuthError" class="text-xs text-rose-500 mt-2 hidden">Invalid passcode.</p>
 
@@ -1076,7 +1131,7 @@ body {
      EDIT MEMBER MODAL
 ========================================================= -->
 <div id="editMemberModal"
-     class="hidden fixed inset-0 bg-black/60 modal-backdrop z-[100] items-center justify-center p-4">
+     class="hidden fixed inset-0 bg-black/60 modal-backdrop z-[250] items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-2xl shadow-2xl p-6">
         <div class="flex justify-between items-center mb-5">
             <div>
@@ -1126,7 +1181,7 @@ body {
 <!-- =========================================================
      TOAST
 ========================================================= -->
-<div id="toast" class="fixed bottom-5 right-5 z-[200] hidden max-w-sm">
+<div id="toast" class="fixed bottom-5 right-5 z-[350] hidden max-w-sm">
     <div id="toastInner" class="rounded-xl shadow-2xl px-5 py-4 text-sm font-semibold text-white">
         <span id="toastMessage"></span>
     </div>
@@ -1359,7 +1414,13 @@ function loadData() {
     try {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (!saved) {
-            return { teachers: [] };
+            return {
+                teachers: [
+                    { id: 'STF001', name: 'Collins Adarkwa Baiden', phone: '0240000001', rank: 'Assistant Director II', className: 'BS6', payments: [{ date: '2026-09-01', amount: 100, reference: 'PAY-001' }], payouts: [] },
+                    { id: 'STF002', name: 'Edwardina Appiah Mensah', phone: '0240000002', rank: 'ADII', className: 'BS5', payments: [{ date: '2026-09-01', amount: 100, reference: 'PAY-002' }], payouts: [] },
+                    { id: 'STF003', name: 'Madam Cassandra Yeboah', phone: '0240000003', rank: 'ADI', className: 'BS4', payments: [{ date: '2026-09-01', amount: 100, reference: 'PAY-003' }], payouts: [] }
+                ]
+            };
         }
         const parsed = JSON.parse(saved);
         if (!parsed || !Array.isArray(parsed.teachers)) {
@@ -1756,6 +1817,42 @@ function renderAdminSettings() {
     if (current) current.textContent = money(standardMonthlyDues);
 }
 
+function handlePortalLogin(event) {
+    event.preventDefault();
+    const staffId = document.getElementById('gatewayStaffId').value.trim();
+    const password = document.getElementById('gatewayPassword').value.trim();
+    const errorEl = document.getElementById('gatewayError');
+
+    if (!staffId || !password) {
+        errorEl.textContent = 'Please enter your staff number and password.';
+        errorEl.classList.remove('hidden');
+        return;
+    }
+
+    if (ADMIN_PASSWORDS.includes(password) || ADMIN_PASSWORDS.includes(staffId)) {
+        adminLoggedIn = true;
+        document.getElementById('loginGatewayModal').classList.add('hidden');
+        updateAdminInterface();
+        renderAll();
+        showToast('Administrator session started.', 'success');
+        return;
+    }
+
+    const matched = welfareData.teachers.find(t => String(t.id).toLowerCase() === staffId.toLowerCase() || String(t.id).toLowerCase() === password.toLowerCase() || String(t.name).toLowerCase().includes(staffId.toLowerCase()));
+    if (matched) {
+        adminLoggedIn = false;
+        selectedTeacherId = matched.id;
+        document.getElementById('loginGatewayModal').classList.add('hidden');
+        updateAdminInterface();
+        renderAll();
+        showSection('dashboard', null, true);
+        showToast(`Welcome, ${matched.name}!`, 'success');
+    } else {
+        errorEl.textContent = 'Invalid staff number or password.';
+        errorEl.classList.remove('hidden');
+    }
+}
+
 function handleAddNewStaff(event) {
     event.preventDefault();
     if (!requireAdmin()) return;
@@ -2016,7 +2113,10 @@ function handleSidebarAuthAction() {
     if (adminLoggedIn) {
         logoutAdmin();
     } else {
-        toggleAdminModal();
+        document.getElementById('gatewayStaffId').value = '';
+        document.getElementById('gatewayPassword').value = '';
+        document.getElementById('gatewayError').classList.add('hidden');
+        document.getElementById('loginGatewayModal').classList.remove('hidden');
     }
 }
 
@@ -2038,7 +2138,10 @@ function requestAdminSection() {
 function logoutAdmin() {
     adminLoggedIn = false;
     updateAdminInterface();
-    showSection('dashboard', null, true);
+    document.getElementById('gatewayStaffId').value = '';
+    document.getElementById('gatewayPassword').value = '';
+    document.getElementById('gatewayError').classList.add('hidden');
+    document.getElementById('loginGatewayModal').classList.remove('hidden');
     showToast('Admin session ended.', 'success');
 }
 
@@ -2336,6 +2439,7 @@ function showSection(section, button = null, bypassAdmin = false) {
 }
 
 function toggleSidebar() {
+    if (window.innerWidth < 1024) return;
     const sidebar = document.getElementById('sidebar');
     const main = document.getElementById('mainWrapper');
     const icon = document.getElementById('sidebarToggleIcon');
@@ -2472,5 +2576,3 @@ setTimeout(() => {
 
 </body>
 </html>
- 
-
