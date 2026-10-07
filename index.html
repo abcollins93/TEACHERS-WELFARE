@@ -449,7 +449,7 @@ body {
 
         <!-- Admin Login Button Beneath Interface -->
         <div class="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 text-center">
-            <button onclick="document.getElementById('loginGatewayModal').classList.add('hidden'); toggleAdminModal();" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-sdaNavy-900 font-extrabold rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-2">
+            <button onclick="openAdminModalFromGateway()" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-sdaNavy-900 font-extrabold rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-2">
                 <i class="fa-solid fa-user-shield"></i>
                 <span>Log in as Admin</span>
             </button>
@@ -625,7 +625,7 @@ body {
             </button>
 
             <button id="adminToggleBtn"
-                    onclick="toggleAdminModal()"
+                    onclick="openAdminModal()"
                     class="px-4 py-2.5 text-xs font-extrabold rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-sdaNavy-900 shadow-md shadow-amber-500/20 flex items-center gap-2 transition-all">
                 <i class="fa-solid fa-lock text-[11px]"></i>
                 <span id="adminBtnText">Admin Access</span>
@@ -1288,7 +1288,7 @@ body {
                 <i class="fa-solid fa-lock text-amber-500"></i>
                 Executive Admin Verification
             </h3>
-            <button onclick="toggleAdminModal()" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white transition-all">
+            <button onclick="closeAdminModal()" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white transition-all">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
@@ -1301,7 +1301,7 @@ body {
             <p id="adminAuthError" class="text-xs text-rose-500 font-semibold hidden bg-rose-50 p-2.5 rounded-xl border border-rose-200">Invalid passcode. Try sda2026 or 1234.</p>
 
             <div class="flex gap-3 pt-2">
-                <button type="button" onclick="toggleAdminModal()" class="w-1/2 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-200">Cancel</button>
+                <button type="button" onclick="closeAdminModal()" class="w-1/2 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-200">Cancel</button>
                 <button type="submit" class="w-1/2 py-3.5 bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white rounded-xl text-xs font-extrabold shadow-md">Authenticate</button>
             </div>
         </form>
@@ -2426,19 +2426,27 @@ function saveMonthlyDues() {
     showToast('Standard monthly dues updated successfully.', 'success');
 }
 
-function toggleAdminModal() {
+function openAdminModal() {
     const modal = document.getElementById('adminModal');
-    if (modal.classList.contains('hidden')) {
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        setTimeout(() => {
-            const input = document.getElementById('adminPasswordInput');
-            if (input) input.focus();
-        }, 100);
-    } else {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-    }
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    setTimeout(() => {
+        const input = document.getElementById('adminPasswordInput');
+        if (input) input.focus();
+    }, 100);
+}
+
+function openAdminModalFromGateway() {
+    document.getElementById('loginGatewayModal').classList.add('hidden');
+    openAdminModal();
+}
+
+function closeAdminModal() {
+    const modal = document.getElementById('adminModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.getElementById('adminPasswordInput').value = '';
+    document.getElementById('adminAuthError').classList.add('hidden');
 }
 
 function handleAdminLogin(event) {
@@ -2448,9 +2456,7 @@ function handleAdminLogin(event) {
     if (ADMIN_PASSWORDS.includes(password)) {
         adminLoggedIn = true;
         loggedInTeacherId = null;
-        document.getElementById('adminAuthError').classList.add('hidden');
-        document.getElementById('adminPasswordInput').value = '';
-        toggleAdminModal();
+        closeAdminModal();
         updateAdminInterface();
         renderAll();
         showSection('admin', null, true);
@@ -2525,14 +2531,14 @@ function handleSidebarAuthAction() {
 
 function requireAdmin() {
     if (adminLoggedIn) return true;
-    toggleAdminModal();
+    openAdminModal();
     showToast('Administrator login is required for this action.', 'error');
     return false;
 }
 
 function requestAdminSection() {
     if (!adminLoggedIn) {
-        toggleAdminModal();
+        openAdminModal();
         return;
     }
     showSection('admin', null, true);
@@ -2666,7 +2672,7 @@ async function downloadPDF() {
 
 async function downloadMonthlySummaryPDF() {
     if (!adminLoggedIn) {
-        toggleAdminModal();
+        openAdminModal();
         showToast('Administrator login required to download monthly summary.', 'error');
         return;
     }
@@ -2765,7 +2771,7 @@ async function downloadMonthlySummaryPDF() {
 
 async function downloadFundSummaryPDF() {
     if (!adminLoggedIn) {
-        toggleAdminModal();
+        openAdminModal();
         showToast('Administrator login required to download complete fund summary.', 'error');
         return;
     }
@@ -2840,7 +2846,7 @@ async function downloadFundSummaryPDF() {
     }
 
     await renderPDFElement(template, {
-        filename: `Ntonso_SDA_Teachers_Welfare_Complete_Fund_Summary_${todayISO()}.pdf`,
+        filename: `Ntonso_SDA_Teachers_Welfare_Complete_Complete_Fund_Summary_${todayISO()}.pdf`,
         orientation: 'landscape'
     });
 
@@ -2908,7 +2914,7 @@ async function renderPDFElement(element, options = {}) {
 
 function showSection(section, button = null, bypassAdmin = false) {
     if ((section === 'admin' || section === 'teachers') && !adminLoggedIn && !bypassAdmin) {
-        toggleAdminModal();
+        openAdminModal();
         showToast('Administrator login required to access Teachers & Members roster.', 'error');
         return;
     }
@@ -3079,7 +3085,7 @@ document.addEventListener('keydown', event => {
     const editModal = document.getElementById('editMemberModal');
 
     if (adminModal && !adminModal.classList.contains('hidden')) {
-        toggleAdminModal();
+        closeAdminModal();
     }
     if (editModal && !editModal.classList.contains('hidden')) {
         closeEditMemberModal();
