@@ -508,6 +508,17 @@ body {
                 <span class="sidebar-text">Dark / Light Mode</span>
             </button>
         </nav>
+
+        <div class="border-t border-white/10 my-5"></div>
+
+        <!-- Logout Button for All Members -->
+        <nav class="space-y-1">
+            <button onclick="logoutAdmin()"
+                    class="nav-button w-full flex items-center rounded-lg px-3 py-3 text-sm font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-950/30">
+                <i class="fa-solid fa-right-from-bracket w-6 text-center mr-3"></i>
+                <span class="sidebar-text">Sign Out / Logout</span>
+            </button>
+        </nav>
     </div>
 
     <div class="border-t border-white/10 p-4">
@@ -2076,9 +2087,15 @@ function handlePortalLogin(event) {
 
     const matched = welfareData.teachers.find(t => {
         const idMatches = String(t.id).toLowerCase() === staffId.toLowerCase();
-        const defaultPassMatches = password === t.id;
-        const customPassMatches = t.customPassword && t.customPassword === password;
-        return idMatches && (defaultPassMatches || customPassMatches);
+        if (!idMatches) return false;
+
+        // If a custom password has been set, ONLY the custom password works.
+        // Otherwise, the default password is the Staff ID.
+        if (t.customPassword) {
+            return password === t.customPassword;
+        } else {
+            return password === t.id;
+        }
     });
 
     if (matched) {
