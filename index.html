@@ -908,9 +908,9 @@ body {
 
             <button id="fundSummaryButton"
                     onclick="downloadFundSummaryPDF()"
-                    class="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm">
+                    class="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm opacity-50 cursor-not-allowed" disabled>
                 <i class="fa-solid fa-file-pdf mr-2"></i>
-                Download Complete Fund Summary
+                Download Complete Fund Summary (Admin Only)
             </button>
         </div>
     </div>
@@ -1449,8 +1449,6 @@ function getCurrentAcademicYear() {
     const month = now.getMonth() + 1; // 1-12
     const day = now.getDate();
 
-    // If month is September and day is 30, or if month > September, academic year starts current/next
-    // Rule specified: "At the end of every september the academic must change"
     let startYear = year;
     if (month < 9 || (month === 9 && day < 30)) {
         startYear = year - 1;
@@ -1880,7 +1878,6 @@ function renderLiveTicker() {
     const content = document.getElementById('tickerContent');
     if (!banner || !content) return;
 
-    // Show banner only when logged in as a teacher member
     if (!loggedInTeacherId || adminLoggedIn) {
         banner.classList.add('hidden');
         return;
@@ -2188,6 +2185,7 @@ function updateAdminInterface() {
 
         summaryButton.classList.remove('opacity-50', 'cursor-not-allowed');
         summaryButton.disabled = false;
+        summaryButton.innerHTML = '<i class="fa-solid fa-file-pdf mr-2"></i> Download Complete Fund Summary';
         summaryText.textContent = 'Administrator access is active. You can generate the complete fund report.';
 
         if (statementSelect) statementSelect.disabled = false;
@@ -2201,6 +2199,7 @@ function updateAdminInterface() {
 
         summaryButton.classList.add('opacity-50', 'cursor-not-allowed');
         summaryButton.disabled = true;
+        summaryButton.innerHTML = '<i class="fa-solid fa-file-pdf mr-2"></i> Download Complete Fund Summary (Admin Only)';
         summaryText.textContent = 'This report is available to the Administrator only.';
 
         if (statementSelect) statementSelect.disabled = true;
@@ -2363,7 +2362,11 @@ async function downloadPDF() {
 }
 
 async function downloadFundSummaryPDF() {
-    if (!requireAdmin()) return;
+    if (!adminLoggedIn) {
+        toggleAdminModal();
+        showToast('Administrator login required to download complete fund summary.', 'error');
+        return;
+    }
 
     if (typeof html2pdf === 'undefined') {
         showToast('PDF library could not be loaded.', 'error');
