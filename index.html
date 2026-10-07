@@ -288,7 +288,6 @@ body {
     background: rgba(15, 23, 42, 0.75);
 }
 
-/* Rolling Ticker Animation */
 @keyframes tickerScroll {
     0% { transform: translateX(100%); }
     100% { transform: translateX(-100%); }
@@ -379,12 +378,12 @@ body {
         <div id="loginFormView">
             <form onsubmit="handlePortalLogin(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Staff Number / ID</label>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Staff Number / ID / Admin Username</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                             <i class="fa-solid fa-id-card text-xs"></i>
                         </span>
-                        <input type="text" id="gatewayStaffId" class="form-input !pl-10 !py-3.5 font-semibold" placeholder="e.g. STF001" required>
+                        <input type="text" id="gatewayStaffId" class="form-input !pl-10 !py-3.5 font-semibold" placeholder="e.g. STF001 or admin" required>
                     </div>
                 </div>
 
@@ -394,7 +393,7 @@ body {
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                             <i class="fa-solid fa-lock text-xs"></i>
                         </span>
-                        <input type="password" id="gatewayPassword" class="form-input !pl-10 !py-3.5 font-semibold" placeholder="Default is your Staff ID" required>
+                        <input type="password" id="gatewayPassword" class="form-input !pl-10 !py-3.5 font-semibold" placeholder="Enter password" required>
                     </div>
                 </div>
 
@@ -1100,6 +1099,78 @@ body {
             </div>
         </div>
 
+        <!-- NEW: Admin Accounts & Passcode Management Section -->
+        <div class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800">
+            <h3 class="font-extrabold text-base mb-4 text-slate-900 dark:text-white flex items-center gap-2">
+                <i class="fa-solid fa-user-shield text-amber-500"></i>
+                Admin User Registration & Passcode Management
+            </h3>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Register New Admin Sub-Form -->
+                <div class="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                    <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-user-plus text-emerald-500"></i> Register New Administrator
+                    </h4>
+                    <form onsubmit="handleRegisterAdmin(event)" class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">Admin Username / ID</label>
+                            <input type="text" id="newAdminUsername" class="form-input text-xs" placeholder="e.g. headteacher_ntonso" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">Full Name / Title</label>
+                            <input type="text" id="newAdminName" class="form-input text-xs" placeholder="e.g. Obeng David (Headteacher)" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">Initial Passcode</label>
+                            <input type="password" id="newAdminPassword" class="form-input text-xs" placeholder="Enter secure passcode" required>
+                        </div>
+                        <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-xs shadow-md transition-all">
+                            Register Administrator Account
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Change Admin Passcode Sub-Form -->
+                <div class="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                    <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-key text-amber-500"></i> Change Admin Passcode
+                    </h4>
+                    <form onsubmit="handleChangeAdminPasscode(event)" class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">Select Admin Account</label>
+                            <select id="adminAccountSelect" class="form-input text-xs font-semibold" required></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">Current Passcode</label>
+                            <input type="password" id="currentAdminPasscode" class="form-input text-xs" placeholder="Enter current passcode" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">New Passcode</label>
+                            <input type="password" id="newAdminPasscode" class="form-input text-xs" placeholder="Enter new passcode" required>
+                        </div>
+                        <button type="submit" class="w-full py-3 bg-amber-600 hover:bg-amber-700 text-sdaNavy-900 font-extrabold rounded-xl text-xs shadow-md transition-all">
+                            Update Passcode
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Active Admins Table -->
+            <div class="mt-6 overflow-x-auto">
+                <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">Authorized Administrators List</h4>
+                <table class="w-full text-xs">
+                    <thead class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-extrabold">
+                        <tr>
+                            <th class="px-4 py-3 text-left">Username</th>
+                            <th class="px-4 py-3 text-left">Name / Title</th>
+                            <th class="px-4 py-3 text-left">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminUsersTableBody" class="divide-y divide-slate-200 dark:divide-slate-800"></tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- Add Staff -->
         <div class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800">
             <h3 class="font-extrabold text-base mb-4 text-slate-900 dark:text-white flex items-center gap-2">
@@ -1295,10 +1366,10 @@ body {
 
         <form onsubmit="handleAdminLogin(event)" class="space-y-4">
             <div>
-                <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Admin Passcode</label>
-                <input type="password" id="adminPasswordInput" class="form-input !py-3.5 font-semibold" placeholder="Enter admin passcode" required>
+                <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Admin Username / Passcode</label>
+                <input type="password" id="adminPasswordInput" class="form-input !py-3.5 font-semibold" placeholder="Enter admin username or passcode" required>
             </div>
-            <p id="adminAuthError" class="text-xs text-rose-500 font-semibold hidden bg-rose-50 p-2.5 rounded-xl border border-rose-200">Invalid passcode. Try sda2026 or 1234.</p>
+            <p id="adminAuthError" class="text-xs text-rose-500 font-semibold hidden bg-rose-50 p-2.5 rounded-xl border border-rose-200">Invalid passcode or username.</p>
 
             <div class="flex gap-3 pt-2">
                 <button type="button" onclick="closeAdminModal()" class="w-1/2 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-200">Cancel</button>
@@ -1650,8 +1721,12 @@ body {
 const STORAGE_KEY = 'ntonso_sda_welfare_data_v3';
 const DUES_KEY = 'ntonso_sda_standard_dues_v3';
 const THEME_KEY = 'ntonso_sda_theme_v3';
+const ADMIN_USERS_KEY = 'ntonso_sda_admin_users_v3';
 
-const ADMIN_PASSWORDS = ['sda2026', '1234'];
+const DEFAULT_ADMINS = [
+    { username: 'admin', name: 'Default Executive Admin', password: '1234' },
+    { username: 'sda2026', name: 'Executive Committee', password: 'sda2026' }
+];
 
 const RANK_OPTIONS = [
     'PS',
@@ -1673,7 +1748,23 @@ let selectedTeacherId = null;
 let editingMemberId = null;
 
 let welfareData = loadData();
+let adminUsers = loadAdminUsers();
 let standardMonthlyDues = Number(localStorage.getItem(DUES_KEY) || 100);
+
+function loadAdminUsers() {
+    try {
+        const saved = localStorage.getItem(ADMIN_USERS_KEY);
+        if (!saved) return [...DEFAULT_ADMINS];
+        const parsed = JSON.parse(saved);
+        return Array.isArray(parsed) && parsed.length ? parsed : [...DEFAULT_ADMINS];
+    } catch {
+        return [...DEFAULT_ADMINS];
+    }
+}
+
+function saveAdminUsersList() {
+    localStorage.setItem(ADMIN_USERS_KEY, JSON.stringify(adminUsers));
+}
 
 function getCurrentAcademicYear() {
     const now = new Date();
@@ -1859,14 +1950,30 @@ function populateTeacherSelects() {
     });
 }
 
+function populateAdminSelects() {
+    const select = document.getElementById('adminAccountSelect');
+    if (!select) return;
+    const currentVal = select.value;
+    select.innerHTML = '<option value="">Select Admin Account</option>';
+    adminUsers.forEach(adm => {
+        const opt = document.createElement('option');
+        opt.value = adm.username;
+        opt.textContent = `${adm.name} (${adm.username})`;
+        select.appendChild(opt);
+    });
+    if (currentVal) select.value = currentVal;
+}
+
 function renderAll() {
     populateTeacherSelects();
+    populateAdminSelects();
     renderDashboard();
     renderTeachersSection();
     renderPaymentsSection();
     renderWelfareSection();
     renderAdminRoster();
     renderAdminSettings();
+    renderAdminUsersTable();
     renderLiveTicker();
 }
 
@@ -2100,6 +2207,26 @@ function renderAdminRoster() {
     }).join('');
 }
 
+function renderAdminUsersTable() {
+    const body = document.getElementById('adminUsersTableBody');
+    if (!body) return;
+    if (!adminUsers.length) {
+        body.innerHTML = `<tr><td colspan="3" class="px-4 py-4 text-center text-slate-400">No admin accounts found.</td></tr>`;
+        return;
+    }
+    body.innerHTML = adminUsers.map(adm => {
+        return `
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                <td class="px-4 py-3 font-mono font-bold">${escapeHtml(adm.username)}</td>
+                <td class="px-4 py-3 font-semibold">${escapeHtml(adm.name)}</td>
+                <td class="px-4 py-3">
+                    ${adminUsers.length > 1 ? `<button onclick="handleRemoveAdmin('${escapeAttr(adm.username)}')" class="text-rose-500 hover:text-rose-700 font-bold text-[11px]"><i class="fa-solid fa-trash"></i> Remove</button>` : '<span class="text-slate-400 text-[10px]">Primary</span>'}
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
 function renderAdminSettings() {
     const input = document.getElementById('standardMonthlyDuesInput');
     const current = document.getElementById('adminCurrentDues');
@@ -2148,18 +2275,19 @@ function handlePortalLogin(event) {
     const errorEl = document.getElementById('gatewayError');
 
     if (!staffId || !password) {
-        errorEl.textContent = 'Please enter your staff number and password.';
+        errorEl.textContent = 'Please enter your staff number or username and password.';
         errorEl.classList.remove('hidden');
         return;
     }
 
-    if (ADMIN_PASSWORDS.includes(password) || ADMIN_PASSWORDS.includes(staffId)) {
+    const matchedAdmin = adminUsers.find(a => a.username.toLowerCase() === staffId.toLowerCase() && a.password === password);
+    if (matchedAdmin) {
         adminLoggedIn = true;
         loggedInTeacherId = null;
         document.getElementById('loginGatewayModal').classList.add('hidden');
         updateAdminInterface();
         renderAll();
-        showToast('Administrator session started securely.', 'success');
+        showToast(`Administrator session started (${matchedAdmin.name}).`, 'success');
         return;
     }
 
@@ -2184,8 +2312,8 @@ function handlePortalLogin(event) {
         showSection('dashboard', null, true);
         showToast(`Welcome back, ${matched.name}!`, 'success');
     } else {
-        errorEl.textContent = 'Invalid staff number or password.';
-        errorEl.classList.add('hidden');
+        errorEl.textContent = 'Invalid username/staff ID or password.';
+        errorEl.classList.remove('hidden');
     }
 }
 
@@ -2228,6 +2356,76 @@ function handlePasswordReset(event) {
     showLoginView();
     document.getElementById('gatewayStaffId').value = teacher.id;
     document.getElementById('gatewayPassword').value = newPassword;
+}
+
+function handleRegisterAdmin(event) {
+    event.preventDefault();
+    if (!requireAdmin()) return;
+
+    const username = document.getElementById('newAdminUsername').value.trim();
+    const name = document.getElementById('newAdminName').value.trim();
+    const password = document.getElementById('newAdminPassword').value.trim();
+
+    if (!username || !name || !password) {
+        showToast('Please complete all admin registration fields.', 'error');
+        return;
+    }
+
+    const exists = adminUsers.some(a => a.username.toLowerCase() === username.toLowerCase());
+    if (exists) {
+        showToast('An admin account with this username already exists.', 'error');
+        return;
+    }
+
+    adminUsers.push({ username, name, password });
+    saveAdminUsersList();
+    renderAll();
+    document.getElementById('newAdminUsername').value = '';
+    document.getElementById('newAdminName').value = '';
+    document.getElementById('newAdminPassword').value = '';
+    showToast(`Administrator ${name} registered successfully.`, 'success');
+}
+
+function handleChangeAdminPasscode(event) {
+    event.preventDefault();
+    if (!requireAdmin()) return;
+
+    const username = document.getElementById('adminAccountSelect').value;
+    const currentPass = document.getElementById('currentAdminPasscode').value;
+    const newPass = document.getElementById('newAdminPasscode').value;
+
+    const adminAcc = adminUsers.find(a => a.username === username);
+    if (!adminAcc) {
+        showToast('Please select a valid admin account.', 'error');
+        return;
+    }
+
+    if (adminAcc.password !== currentPass) {
+        showToast('Current passcode is incorrect.', 'error');
+        return;
+    }
+
+    adminAcc.password = newPass;
+    saveAdminUsersList();
+    document.getElementById('currentAdminPasscode').value = '';
+    document.getElementById('newAdminPasscode').value = '';
+    showToast(`Passcode for ${adminAcc.name} updated successfully.`, 'success');
+}
+
+function handleRemoveAdmin(username) {
+    if (!requireAdmin()) return;
+    if (adminUsers.length <= 1) {
+        showToast('You must keep at least one active admin account.', 'error');
+        return;
+    }
+
+    const confirmed = confirm(`Are you sure you want to remove admin account: ${username}?`);
+    if (!confirmed) return;
+
+    adminUsers = adminUsers.filter(a => a.username !== username);
+    saveAdminUsersList();
+    renderAll();
+    showToast('Admin account removed successfully.', 'success');
 }
 
 function handleAddNewStaff(event) {
@@ -2451,16 +2649,17 @@ function closeAdminModal() {
 
 function handleAdminLogin(event) {
     event.preventDefault();
-    const password = document.getElementById('adminPasswordInput').value;
+    const inputVal = document.getElementById('adminPasswordInput').value.trim();
 
-    if (ADMIN_PASSWORDS.includes(password)) {
+    const matched = adminUsers.find(a => a.username.toLowerCase() === inputVal.toLowerCase() || a.password === inputVal);
+    if (matched) {
         adminLoggedIn = true;
         loggedInTeacherId = null;
         closeAdminModal();
         updateAdminInterface();
         renderAll();
         showSection('admin', null, true);
-        showToast('Admin access granted successfully.', 'success');
+        showToast(`Admin access granted (${matched.name}).`, 'success');
     } else {
         document.getElementById('adminAuthError').classList.remove('hidden');
     }
