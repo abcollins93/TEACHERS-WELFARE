@@ -149,7 +149,7 @@ body {
     width: 190mm;
     min-height: 277mm;
     margin: 0 auto;
-    padding: 8mm;
+    padding: 10mm;
     background: #ffffff;
     color: #111827;
     position: relative;
@@ -160,7 +160,7 @@ body {
     width: 277mm;
     min-height: 190mm;
     margin: 0 auto;
-    padding: 8mm;
+    padding: 10mm;
     background: #ffffff;
     color: #111827;
     position: relative;
@@ -197,20 +197,20 @@ body {
 .pdf-footer {
     margin-top: 12mm;
     border-top: 1px solid #cbd5e1;
-    padding-top: 3mm;
-    font-size: 8px;
+    padding-top: 4mm;
+    font-size: 11px;
     color: #64748b;
     text-align: center;
 }
 
 .pdf-table {
-    font-size: 9px;
+    font-size: 12px;
 }
 
 .pdf-table th,
 .pdf-table td {
     border: 1px solid #cbd5e1;
-    padding: 5px 6px;
+    padding: 8px 10px;
     vertical-align: middle;
 }
 
@@ -220,13 +220,13 @@ body {
 }
 
 .pdf-summary-table {
-    font-size: 8.5px;
+    font-size: 11.5px;
 }
 
 .pdf-summary-table th,
 .pdf-summary-table td {
     border: 1px solid #cbd5e1;
-    padding: 4px 5px;
+    padding: 7px 8px;
     vertical-align: middle;
 }
 
@@ -1222,26 +1222,26 @@ body {
      PDF RENDER AREA
 ========================================================= -->
 <div id="pdfRenderArea" class="pdf-render-area">
-    <div id="statementPdfTemplate" class="pdf-page">
+    <div id="statementPdfTemplate" class="pdf-page" style="font-size: 13px;">
         <div class="text-center border-b-2 border-slate-800 pb-4 pdf-avoid-break">
-            <h2 class="text-xl font-extrabold">GHANA EDUCATION SERVICE</h2>
-            <h1 class="text-2xl font-black text-blue-900">NTONSO SDA PRIMARY 'A'</h1>
-            <p class="text-xs font-bold text-amber-700 uppercase">TEACHERS WELFARE FUND</p>
-            <p class="text-[10px] text-slate-500">Official Member Contribution & Welfare Statement</p>
+            <h2 class="text-2xl font-extrabold">GHANA EDUCATION SERVICE</h2>
+            <h1 class="text-3xl font-black text-blue-900">NTONSO SDA PRIMARY 'A'</h1>
+            <p class="text-sm font-bold text-amber-700 uppercase">TEACHERS WELFARE FUND</p>
+            <p class="text-xs text-slate-500">Official Member Contribution & Welfare Statement</p>
         </div>
 
-        <div class="flex justify-between mt-5 mb-5 text-xs pdf-avoid-break">
+        <div class="flex justify-between mt-5 mb-5 text-sm pdf-avoid-break">
             <div>
                 <p><strong>Document ID:</strong> <span id="pdfDocId"></span></p>
-                <p><strong>Academic Year:</strong> 2025/2026</p>
+                <p><strong>Academic Year:</strong> <span id="pdfAcademicYear">2026/2027</span></p>
             </div>
             <div class="text-right">
                 <p><strong>Date Issued:</strong> <span id="pdfIssueDate"></span></p>
             </div>
         </div>
 
-        <div class="border border-slate-300 rounded-lg p-4 mb-5 text-xs pdf-avoid-break">
-            <h3 class="font-bold border-b pb-2 mb-3">MEMBER INFORMATION</h3>
+        <div class="border border-slate-300 rounded-lg p-5 mb-5 text-sm pdf-avoid-break">
+            <h3 class="font-bold border-b pb-2 mb-3 text-base">MEMBER INFORMATION</h3>
             <div class="grid grid-cols-2 gap-y-2">
                 <p><strong>Name:</strong> <span id="pdfTeacherName"></span></p>
                 <p><strong>Staff ID:</strong> <span id="pdfStaffId"></span></p>
@@ -1251,18 +1251,18 @@ body {
             </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 mb-5 pdf-avoid-break">
+        <div class="grid grid-cols-2 gap-4 mb-6 pdf-avoid-break">
             <div class="border border-emerald-200 bg-emerald-50 rounded-lg p-4 text-center">
                 <p class="text-xs font-bold text-emerald-800">TOTAL CONTRIBUTIONS</p>
-                <p id="pdfTotalPaid" class="text-lg font-extrabold text-emerald-900 mt-1">GHS 0.00</p>
+                <p id="pdfTotalPaid" class="text-xl font-extrabold text-emerald-900 mt-1">GHS 0.00</p>
             </div>
             <div class="border border-rose-200 bg-rose-50 rounded-lg p-4 text-center">
                 <p class="text-xs font-bold text-rose-800">TOTAL WELFARE PAYOUTS</p>
-                <p id="pdfTotalWithdrawn" class="text-lg font-extrabold text-rose-900 mt-1">GHS 0.00</p>
+                <p id="pdfTotalWithdrawn" class="text-xl font-extrabold text-rose-900 mt-1">GHS 0.00</p>
             </div>
         </div>
 
-        <h3 class="text-xs font-extrabold uppercase mb-2">1. Contribution History</h3>
+        <h3 class="text-sm font-extrabold uppercase mb-2">1. Contribution History</h3>
         <table class="pdf-table mb-7">
             <thead>
                 <tr>
@@ -1276,7 +1276,7 @@ body {
             <tbody id="pdfTableBody"></tbody>
         </table>
 
-        <h3 class="text-xs font-extrabold uppercase mb-2">2. Welfare Payouts / Fund Withdrawals</h3>
+        <h3 class="text-sm font-extrabold uppercase mb-2">2. Welfare Payouts / Fund Withdrawals</h3>
         <table class="pdf-table">
             <thead>
                 <tr>
@@ -1291,7 +1291,7 @@ body {
             <tbody id="pdfWithdrawalTableBody"></tbody>
         </table>
 
-        <div class="grid grid-cols-2 gap-12 mt-14 text-[10px] pdf-avoid-break">
+        <div class="grid grid-cols-2 gap-12 mt-14 text-xs pdf-avoid-break">
             <div class="text-center">
                 <div class="border-b border-dashed border-slate-500 h-8"></div>
                 <p class="font-bold mt-2">Welfare Financial Secretary</p>
@@ -1309,18 +1309,18 @@ body {
         </div>
     </div>
 
-    <div id="summaryPdfTemplate" class="pdf-summary-page">
+    <div id="summaryPdfTemplate" class="pdf-summary-page" style="font-size: 13px;">
         <div class="text-center border-b-2 border-slate-800 pb-4 pdf-avoid-break">
-            <h2 class="text-xl font-extrabold">GHANA EDUCATION SERVICE</h2>
-            <h1 class="text-2xl font-black text-blue-900">NTONSO SDA PRIMARY 'A'</h1>
-            <p class="text-xs font-bold text-amber-700 uppercase">TEACHERS WELFARE FUND</p>
-            <p class="text-[10px] text-slate-500">Complete Fund Summary Report</p>
+            <h2 class="text-2xl font-extrabold">GHANA EDUCATION SERVICE</h2>
+            <h1 class="text-3xl font-black text-blue-900">NTONSO SDA PRIMARY 'A'</h1>
+            <p class="text-sm font-bold text-amber-700 uppercase">TEACHERS WELFARE FUND</p>
+            <p class="text-xs text-slate-500">Complete Fund Summary Report</p>
         </div>
 
-        <div class="flex justify-between mt-5 mb-5 text-xs pdf-avoid-break">
+        <div class="flex justify-between mt-5 mb-5 text-sm pdf-avoid-break">
             <div>
                 <p><strong>Report ID:</strong> <span id="summaryReportId"></span></p>
-                <p><strong>Academic Year:</strong> 2025/2026</p>
+                <p><strong>Academic Year:</strong> <span id="summaryAcademicYear">2026/2027</span></p>
             </div>
             <div class="text-right">
                 <p><strong>Date Generated:</strong> <span id="summaryDate"></span></p>
@@ -1329,24 +1329,24 @@ body {
 
         <div class="grid grid-cols-4 gap-3 mb-6 pdf-avoid-break">
             <div class="border border-blue-200 bg-blue-50 rounded-lg p-3 text-center">
-                <p class="text-[9px] font-bold text-blue-800">TOTAL MEMBERS</p>
-                <p id="summaryMembers" class="text-lg font-extrabold text-blue-900">0</p>
+                <p class="text-[11px] font-bold text-blue-800">TOTAL MEMBERS</p>
+                <p id="summaryMembers" class="text-xl font-extrabold text-blue-900">0</p>
             </div>
             <div class="border border-emerald-200 bg-emerald-50 rounded-lg p-3 text-center">
-                <p class="text-[9px] font-bold text-emerald-800">CONTRIBUTIONS</p>
-                <p id="summaryContributions" class="text-lg font-extrabold text-emerald-900">GHS 0.00</p>
+                <p class="text-[11px] font-bold text-emerald-800">CONTRIBUTIONS</p>
+                <p id="summaryContributions" class="text-xl font-extrabold text-emerald-900">GHS 0.00</p>
             </div>
             <div class="border border-rose-200 bg-rose-50 rounded-lg p-3 text-center">
-                <p class="text-[9px] font-bold text-rose-800">WELFARE PAYOUTS</p>
-                <p id="summaryPayouts" class="text-lg font-extrabold text-rose-900">GHS 0.00</p>
+                <p class="text-[11px] font-bold text-rose-800">WELFARE PAYOUTS</p>
+                <p id="summaryPayouts" class="text-xl font-extrabold text-rose-900">GHS 0.00</p>
             </div>
             <div class="border border-amber-200 bg-amber-50 rounded-lg p-3 text-center">
-                <p class="text-[9px] font-bold text-amber-800">NET FUND</p>
-                <p id="summaryNetFund" class="text-lg font-extrabold text-amber-900">GHS 0.00</p>
+                <p class="text-[11px] font-bold text-amber-800">NET FUND</p>
+                <p id="summaryNetFund" class="text-xl font-extrabold text-amber-900">GHS 0.00</p>
             </div>
         </div>
 
-        <h3 class="text-xs font-extrabold uppercase mb-2">1. Members Contribution Summary</h3>
+        <h3 class="text-sm font-extrabold uppercase mb-2">1. Members Contribution Summary</h3>
         <table class="pdf-summary-table mb-6">
             <thead>
                 <tr>
@@ -1361,7 +1361,7 @@ body {
             <tbody id="summaryMembersBody"></tbody>
         </table>
 
-        <h3 class="text-xs font-extrabold uppercase mb-2">2. Welfare Payout Summary</h3>
+        <h3 class="text-sm font-extrabold uppercase mb-2">2. Welfare Payout Summary</h3>
         <table class="pdf-summary-table mb-6">
             <thead>
                 <tr>
@@ -1376,8 +1376,8 @@ body {
             <tbody id="summaryPayoutsBody"></tbody>
         </table>
 
-        <h3 class="text-xs font-extrabold uppercase mb-2">3. Fund Financial Summary</h3>
-        <div class="border border-slate-300 rounded-lg text-xs pdf-avoid-break">
+        <h3 class="text-sm font-extrabold uppercase mb-2">3. Fund Financial Summary</h3>
+        <div class="border border-slate-300 rounded-lg text-sm pdf-avoid-break">
             <div class="flex justify-between px-4 py-3 border-b">
                 <span>Total Member Contributions</span>
                 <strong id="summaryDetailContributions">GHS 0.00</strong>
@@ -1390,13 +1390,13 @@ body {
                 <span>Standard Monthly Dues</span>
                 <strong id="summaryDetailMonthlyDues">GHS 0.00</strong>
             </div>
-            <div class="flex justify-between px-4 py-3 bg-slate-100 font-extrabold">
+            <div class="flex justify-between px-4 py-3 bg-slate-100 font-extrabold text-base">
                 <span>NET AVAILABLE FUND</span>
                 <strong id="summaryDetailNet">GHS 0.00</strong>
             </div>
         </div>
 
-        <div class="mt-12 grid grid-cols-2 gap-12 text-[10px] pdf-avoid-break">
+        <div class="mt-12 grid grid-cols-2 gap-12 text-xs pdf-avoid-break">
             <div class="text-center">
                 <div class="border-b border-dashed border-slate-500 h-8"></div>
                 <p class="font-bold mt-2">Welfare Financial Secretary</p>
@@ -1441,6 +1441,22 @@ let editingMemberId = null;
 
 let welfareData = loadData();
 let standardMonthlyDues = Number(localStorage.getItem(DUES_KEY) || 100);
+
+// Dynamic Academic Year calculation: changes at the end of September (October 1 onwards advances year)
+function getCurrentAcademicYear() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1; // 1-12
+    const day = now.getDate();
+
+    // If month is September and day is 30, or if month > September, academic year starts current/next
+    // Rule specified: "At the end of every september the academic must change"
+    let startYear = year;
+    if (month < 9 || (month === 9 && day < 30)) {
+        startYear = year - 1;
+    }
+    return `${startYear}/${startYear + 1}`;
+}
 
 function loadData() {
     try {
@@ -2285,6 +2301,7 @@ async function downloadPDF() {
     const template = document.getElementById('statementPdfTemplate');
 
     document.getElementById('pdfDocId').textContent = generateDocumentId('STMT');
+    document.getElementById('pdfAcademicYear').textContent = getCurrentAcademicYear();
     document.getElementById('pdfIssueDate').textContent = formatDate(todayISO());
     document.getElementById('pdfTeacherName').textContent = teacher.name;
     document.getElementById('pdfStaffId').textContent = teacher.id;
@@ -2360,6 +2377,7 @@ async function downloadFundSummaryPDF() {
     const netFund = totalContributions - totalPayouts;
 
     document.getElementById('summaryReportId').textContent = generateDocumentId('FUND');
+    document.getElementById('summaryAcademicYear').textContent = getCurrentAcademicYear();
     document.getElementById('summaryDate').textContent = formatDate(todayISO());
     document.getElementById('summaryMembers').textContent = totalMembers;
     document.getElementById('summaryContributions').textContent = money(totalContributions);
