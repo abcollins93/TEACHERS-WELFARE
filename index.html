@@ -297,7 +297,7 @@ body {
     display: flex;
     white-space: nowrap;
     width: max-content;
-    animation: continuousScroll 35s linear infinite;
+    animation: continuousScroll 50s linear infinite;
 }
 
 .animate-continuous-ticker:hover {
@@ -2310,12 +2310,22 @@ function renderMemberLiveTicker() {
     if (!banner || !content) return;
 
     const currentTeacher = getSelectedTeacher();
-    if (!currentTeacher) {
+    if (!currentTeacher || adminLoggedIn) {
         banner.classList.add('hidden');
         return;
     }
 
-    const relevantLogs = adminLogs.filter(log => !log.targetTeacherId || String(log.targetTeacherId) === String(currentTeacher.id));
+    // Only show logs that specifically target this teacher and are NOT general admin login/logout logs
+    const relevantLogs = adminLogs.filter(log => {
+        if (!log.targetTeacherId || String(log.targetTeacherId) !== String(currentTeacher.id)) {
+            return false;
+        }
+        const act = log.action.toLowerCase();
+        if (act.includes('logged in') || act.includes('logged out')) {
+            return false;
+        }
+        return true;
+    });
 
     if (relevantLogs.length === 0) {
         banner.classList.add('hidden');
@@ -2329,7 +2339,7 @@ function renderMemberLiveTicker() {
         singleSetHtml += `
             <span class="inline-flex items-center gap-2 px-6">
                 <i class="fa-solid fa-bell text-amber-400"></i>
-                <span>Admin Notice for <strong class="text-amber-300">${escapeHtml(currentTeacher.name)}</strong>: ${escapeHtml(log.action)} (${escapeHtml(log.time)})</span>
+                <span>Notice: ${escapeHtml(log.action)} (${escapeHtml(log.time)})</span>
             </span>
             <span class="text-amber-500">•</span>
         `;
@@ -2571,7 +2581,7 @@ function handleRecordPayment(event) {
     document.getElementById('adminPaymentDate').value = todayISO();
     renderAll();
     
-    logAdminAction(`Recorded contribution of ${money(amount)} for ${teacher.name}`, teacher.id);
+    logAdminAction(`Recorded contribution of ${money(amount)}`, teacher.id);
     showToast('Contribution recorded successfully.', 'success');
 }
 
@@ -2610,7 +2620,7 @@ function handleRecordWithdrawal(event) {
     document.getElementById('adminWithdrawalDate').value = todayISO();
     renderAll();
     
-    logAdminAction(`Processed welfare payout of ${money(amount)} for ${teacher.name} (${reason})`, teacher.id);
+    logAdminAction(`Processed welfare payout of ${money(amount)} (${reason})`, teacher.id);
     showToast('Welfare payout recorded successfully.', 'success');
 }
 
@@ -2667,7 +2677,7 @@ function saveEditedMember(event) {
     closeEditMemberModal();
     renderAll();
     
-    logAdminAction(`Updated profile details for member: ${teacher.name}`, teacher.id);
+    logAdminAction(`Updated profile details for member`, teacher.id);
     showToast('Member details updated successfully.', 'success');
 }
 
@@ -2688,7 +2698,7 @@ function handleRemoveStaff(id) {
     saveData();
     renderAll();
     
-    logAdminAction(`Removed staff member: ${removedName} (${id})`, id);
+    logAdminAction(`Removed staff member: ${removedName}`, id);
     showToast('Member removed successfully.', 'success');
 }
 
