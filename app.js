@@ -1,5 +1,3 @@
-That happens because the desktop sidebar collapse button was being triggered on a mobile screen size, causing the sidebar to shrink into a narrow strip over the page content instead of hiding properly.
-Here is the updated app.js file with a safety check so the collapse button only affects desktop screens, keeping mobile views clean and properly aligned:
 const STORAGE_KEY = 'ntonso_sda_welfare_data_v3';
 const DUES_KEY = 'ntonso_sda_standard_dues_v3';
 const THEME_KEY = 'ntonso_sda_theme_v3';
