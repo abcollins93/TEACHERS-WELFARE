@@ -1099,7 +1099,7 @@ body {
             </div>
         </div>
 
-        <!-- NEW: Admin Accounts & Passcode Management Section -->
+        <!-- Admin Accounts & Passcode Management Section -->
         <div class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800">
             <h3 class="font-extrabold text-base mb-4 text-slate-900 dark:text-white flex items-center gap-2">
                 <i class="fa-solid fa-user-shield text-amber-500"></i>
@@ -1339,7 +1339,7 @@ body {
 <div id="liveTickerBanner" class="fixed bottom-0 left-0 right-0 z-40 bg-sdaNavy-900/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-amber-500/30 text-white text-xs py-2.5 px-4 shadow-2xl flex items-center hidden">
     <div class="flex items-center gap-2 bg-amber-500 text-sdaNavy-900 font-black px-3 py-1 rounded-lg text-[10px] uppercase tracking-wider flex-shrink-0 z-10 shadow">
         <i class="fa-solid fa-bullhorn animate-bounce"></i>
-        <span>Activity Ticker</span>
+        <span>Admin Audit Ticker</span>
     </div>
     <div class="overflow-hidden whitespace-nowrap relative flex-1 ml-3">
         <div id="tickerContent" class="animate-ticker flex items-center gap-8 font-medium">
@@ -1722,6 +1722,7 @@ const STORAGE_KEY = 'ntonso_sda_welfare_data_v3';
 const DUES_KEY = 'ntonso_sda_standard_dues_v3';
 const THEME_KEY = 'ntonso_sda_theme_v3';
 const ADMIN_USERS_KEY = 'ntonso_sda_admin_users_v3';
+const ADMIN_LOGS_KEY = 'ntonso_sda_admin_logs_v3';
 
 const DEFAULT_ADMINS = [
     { username: 'admin', name: 'Default Executive Admin', password: '1234' },
@@ -1743,12 +1744,14 @@ const RANK_OPTIONS = [
 ];
 
 let adminLoggedIn = false;
+let currentAdminUser = null;
 let loggedInTeacherId = null;
 let selectedTeacherId = null;
 let editingMemberId = null;
 
 let welfareData = loadData();
 let adminUsers = loadAdminUsers();
+let adminLogs = loadAdminLogs();
 let standardMonthlyDues = Number(localStorage.getItem(DUES_KEY) || 100);
 
 function loadAdminUsers() {
@@ -1764,6 +1767,37 @@ function loadAdminUsers() {
 
 function saveAdminUsersList() {
     localStorage.setItem(ADMIN_USERS_KEY, JSON.stringify(adminUsers));
+}
+
+function loadAdminLogs() {
+    try {
+        const saved = localStorage.getItem(ADMIN_LOGS_KEY);
+        if (!saved) return [];
+        const parsed = JSON.parse(saved);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+}
+
+function saveAdminLogsList() {
+    localStorage.setItem(ADMIN_LOGS_KEY, JSON.stringify(adminLogs));
+}
+
+function logAdminAction(actionDescription) {
+    const adminName = currentAdminUser ? currentAdminUser.name : 'Administrator';
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const logEntry = {
+        name: adminName,
+        action: actionDescription,
+        time: timeStr,
+        timestamp: Date.now()
+    };
+    adminLogs.unshift(logEntry);
+    if (adminLogs.length > 30) adminLogs.pop(); // keep last 30 actions
+    saveAdminLogsList();
+    renderLiveTicker();
 }
 
 function getCurrentAcademicYear() {
@@ -2239,27 +2273,19 @@ function renderLiveTicker() {
     const content = document.getElementById('tickerContent');
     if (!banner || !content) return;
 
-    if (!loggedInTeacherId || adminLoggedIn) {
-        banner.classList.add('hidden');
-        return;
-    }
-
-    const teacher = getTeacherById(loggedInTeacherId);
-    if (!teacher || !teacher.payments || teacher.payments.length === 0) {
+    if (!adminLoggedIn || adminLogs.length === 0) {
         banner.classList.add('hidden');
         return;
     }
 
     banner.classList.remove('hidden');
 
-    const sortedPayments = [...teacher.payments].sort((a, b) => String(b.date).localeCompare(String(a.date)));
-    
     let tickerHtml = '';
-    sortedPayments.forEach(pay => {
+    adminLogs.forEach(log => {
         tickerHtml += `
             <span class="inline-flex items-center gap-2">
-                <i class="fa-solid fa-circle-check text-emerald-400"></i>
-                <span><strong>${escapeHtml(teacher.name)}</strong> contributed <span class="text-amber-300 font-bold">${money(pay.amount)}</span> for ${escapeHtml(monthYear(pay.date))} (Ref: ${escapeHtml(pay.reference || 'N/A')}) on ${formatDate(pay.date)}.</span>
+                <i class="fa-solid fa-user-shield text-amber-400"></i>
+                <span><strong>${escapeHtml(log.name)}</strong> performed action: <span class="text-amber-300 font-bold">${escapeHtml(log.action)}</span> at ${escapeHtml(log.time)}.</span>
             </span>
             <span class="text-amber-500">•</span>
         `;
@@ -2283,6 +2309,7 @@ function handlePortalLogin(event) {
     const matchedAdmin = adminUsers.find(a => a.username.toLowerCase() === staffId.toLowerCase() && a.password === password);
     if (matchedAdmin) {
         adminLoggedIn = true;
+        currentAdminUser = matchedAdmin;
         loggedInTeacherId = null;
         document.getElementById('loginGatewayModal').classList.add('hidden');
         updateAdminInterface();
@@ -2304,6 +2331,7 @@ function handlePortalLogin(event) {
 
     if (matched) {
         adminLoggedIn = false;
+        currentAdminUser = null;
         loggedInTeacherId = matched.id;
         selectedTeacherId = matched.id;
         document.getElementById('loginGatewayModal').classList.add('hidden');
@@ -2383,6 +2411,8 @@ function handleRegisterAdmin(event) {
     document.getElementById('newAdminUsername').value = '';
     document.getElementById('newAdminName').value = '';
     document.getElementById('newAdminPassword').value = '';
+    
+    logAdminAction(`Registered new administrator account: ${name} (${username})`);
     showToast(`Administrator ${name} registered successfully.`, 'success');
 }
 
@@ -2409,6 +2439,8 @@ function handleChangeAdminPasscode(event) {
     saveAdminUsersList();
     document.getElementById('currentAdminPasscode').value = '';
     document.getElementById('newAdminPasscode').value = '';
+    
+    logAdminAction(`Updated passcode for admin account: ${adminAcc.name}`);
     showToast(`Passcode for ${adminAcc.name} updated successfully.`, 'success');
 }
 
@@ -2425,6 +2457,7 @@ function handleRemoveAdmin(username) {
     adminUsers = adminUsers.filter(a => a.username !== username);
     saveAdminUsersList();
     renderAll();
+    logAdminAction(`Removed admin account: ${username}`);
     showToast('Admin account removed successfully.', 'success');
 }
 
@@ -2456,6 +2489,8 @@ function handleAddNewStaff(event) {
     document.getElementById('addStaffForm').reset();
     initializeDates();
     renderAll();
+    
+    logAdminAction(`Registered new staff member: ${name} (${id})`);
     showToast('New staff member registered successfully.', 'success');
 }
 
@@ -2491,6 +2526,8 @@ function handleRecordPayment(event) {
     document.getElementById('adminPaymentAmount').value = standardMonthlyDues;
     document.getElementById('adminPaymentDate').value = todayISO();
     renderAll();
+    
+    logAdminAction(`Recorded contribution of ${money(amount)} for ${teacher.name}`);
     showToast('Contribution recorded successfully.', 'success');
 }
 
@@ -2528,6 +2565,8 @@ function handleRecordWithdrawal(event) {
     document.getElementById('adminWithdrawalAmount').value = '';
     document.getElementById('adminWithdrawalDate').value = todayISO();
     renderAll();
+    
+    logAdminAction(`Processed welfare payout of ${money(amount)} for ${teacher.name} (${reason})`);
     showToast('Welfare payout recorded successfully.', 'success');
 }
 
@@ -2572,6 +2611,7 @@ function saveEditedMember(event) {
         return;
     }
 
+    const oldName = teacher.name;
     teacher.id = newId;
     teacher.name = document.getElementById('editStaffName').value.trim();
     teacher.phone = document.getElementById('editStaffPhone').value.trim();
@@ -2582,6 +2622,8 @@ function saveEditedMember(event) {
     saveData();
     closeEditMemberModal();
     renderAll();
+    
+    logAdminAction(`Updated profile details for member: ${teacher.name} (formerly ${oldName})`);
     showToast('Member details updated successfully.', 'success');
 }
 
@@ -2593,6 +2635,7 @@ function handleRemoveStaff(id) {
     const confirmed = confirm(`Remove ${teacher.name} and all of this member's contribution/payout records?`);
     if (!confirmed) return;
 
+    const removedName = teacher.name;
     welfareData.teachers = welfareData.teachers.filter(member => String(member.id) !== String(id));
     if (String(selectedTeacherId) === String(id)) {
         selectedTeacherId = welfareData.teachers.length ? welfareData.teachers[0].id : null;
@@ -2600,6 +2643,8 @@ function handleRemoveStaff(id) {
 
     saveData();
     renderAll();
+    
+    logAdminAction(`Removed staff member: ${removedName} (${id})`);
     showToast('Member removed successfully.', 'success');
 }
 
@@ -2621,6 +2666,8 @@ function saveMonthlyDues() {
     if (paymentAmount) paymentAmount.value = standardMonthlyDues;
 
     renderAll();
+    
+    logAdminAction(`Updated standard monthly dues to ${money(standardMonthlyDues)}`);
     showToast('Standard monthly dues updated successfully.', 'success');
 }
 
@@ -2654,11 +2701,14 @@ function handleAdminLogin(event) {
     const matched = adminUsers.find(a => a.username.toLowerCase() === inputVal.toLowerCase() || a.password === inputVal);
     if (matched) {
         adminLoggedIn = true;
+        currentAdminUser = matched;
         loggedInTeacherId = null;
         closeAdminModal();
         updateAdminInterface();
         renderAll();
         showSection('admin', null, true);
+        
+        logAdminAction(`Logged in to admin panel`);
         showToast(`Admin access granted (${matched.name}).`, 'success');
     } else {
         document.getElementById('adminAuthError').classList.remove('hidden');
@@ -2693,7 +2743,7 @@ function updateAdminInterface() {
 
         if (statementSelect) statementSelect.disabled = false;
 
-        if (sidebarUserRoleText) sidebarUserRoleText.textContent = 'Administrator';
+        if (sidebarUserRoleText) sidebarUserRoleText.textContent = currentAdminUser ? currentAdminUser.name : 'Administrator';
         if (sidebarAuthIcon) sidebarAuthIcon.className = 'fa-solid fa-right-from-bracket';
     } else {
         btn.classList.add('bg-gradient-to-r', 'from-amber-500', 'to-amber-600');
@@ -2744,7 +2794,11 @@ function requestAdminSection() {
 }
 
 function logoutAdmin() {
+    if (adminLoggedIn) {
+        logAdminAction(`Logged out of admin session`);
+    }
     adminLoggedIn = false;
+    currentAdminUser = null;
     loggedInTeacherId = null;
     selectedTeacherId = null;
     updateAdminInterface();
@@ -2768,6 +2822,7 @@ function confirmResetAllData() {
         return;
     }
 
+    logAdminAction(`Reset all welfare fund data and records`);
     welfareData = { teachers: [] };
     selectedTeacherId = null;
     loggedInTeacherId = null;
@@ -2965,6 +3020,7 @@ async function downloadMonthlySummaryPDF() {
         orientation: 'landscape'
     });
 
+    logAdminAction(`Downloaded monthly summary report for ${monthFormattedName}`);
     showToast(`Monthly summary for ${monthFormattedName} downloaded successfully.`, 'success');
 }
 
@@ -3045,10 +3101,11 @@ async function downloadFundSummaryPDF() {
     }
 
     await renderPDFElement(template, {
-        filename: `Ntonso_SDA_Teachers_Welfare_Complete_Complete_Fund_Summary_${todayISO()}.pdf`,
+        filename: `Ntonso_SDA_Teachers_Welfare_Complete_Fund_Summary_${todayISO()}.pdf`,
         orientation: 'landscape'
     });
 
+    logAdminAction(`Downloaded complete executive fund summary report`);
     showToast('Complete fund summary downloaded successfully.', 'success');
 }
 
