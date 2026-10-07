@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Ntonso SDA Primary 'A' - Teachers Welfare Fund</title>
+<title>Ntonso SDA Primary 'A' - Teachers Welfare Fund Portal</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 
@@ -30,6 +30,20 @@ tailwind.config = {
                     400: '#fbbf24',
                     500: '#d97706',
                     600: '#b45309'
+                },
+                emeraldAccent: {
+                    500: '#059669',
+                    600: '#047857'
+                }
+            },
+            animation: {
+                'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                'float': 'float 4s ease-in-out infinite',
+            },
+            keyframes: {
+                float: {
+                    '0%, 100%': { transform: 'translateY(0)' },
+                    '50%': { transform: 'translateY(-6px)' }
                 }
             }
         }
@@ -38,26 +52,39 @@ tailwind.config = {
 </script>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 * {
     box-sizing: border-box;
 }
 
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Plus Jakarta+Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.dark .glass-card {
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(51, 65, 85, 0.8);
 }
 
 .sidebar {
-    transition: width .3s ease, transform .3s ease;
+    transition: width .35s cubic-bezier(0.4, 0, 0.2, 1), transform .35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .main-wrapper {
-    transition: margin-left .3s ease;
+    transition: margin-left .35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar-collapsed {
-    width: 76px !important;
+    width: 82px !important;
 }
 
 .sidebar-collapsed .sidebar-text,
@@ -71,69 +98,82 @@ body {
 
 .sidebar-collapsed .nav-button i {
     margin-right: 0 !important;
+    font-size: 1.15rem;
 }
 
 .nav-button {
-    transition: all .2s ease;
+    transition: all .25s ease;
+    position: relative;
 }
 
 .nav-button.active {
-    background: rgba(217,119,6,.18);
+    background: linear-gradient(135deg, rgba(217,119,6,0.22), rgba(217,119,6,0.08));
     color: #fbbf24;
-    border-right: 3px solid #fbbf24;
+    border-left: 4px solid #fbbf24;
+    box-shadow: 0 4px 15px -3px rgba(217, 119, 6, 0.2);
 }
 
-.nav-button:hover {
-    background: rgba(255,255,255,.08);
+.nav-button:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(3px);
 }
 
 .page-section {
     display: none;
-    animation: fadeIn .25s ease;
+    animation: smoothFadeIn .3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .page-section.active {
     display: block;
 }
 
-@keyframes fadeIn {
+@keyframes smoothFadeIn {
     from {
         opacity: 0;
-        transform: translateY(6px);
+        transform: translateY(12px) scale(0.99);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
     }
 }
 
 .stat-card {
-    transition: transform .2s ease, box-shadow .2s ease;
+    transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .stat-card:hover {
-    transform: translateY(-2px);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
 }
 
 .form-input {
     width: 100%;
     background: #f8fafc;
     border: 1px solid #cbd5e1;
-    border-radius: .5rem;
-    padding: .65rem .75rem;
-    font-size: .75rem;
+    border-radius: .75rem;
+    padding: .75rem 1rem;
+    font-size: .85rem;
     outline: none;
+    transition: all .2s ease;
 }
 
 .form-input:focus {
     border-color: #103057;
-    box-shadow: 0 0 0 2px rgba(16,48,87,.15);
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(16, 48, 87, 0.12);
 }
 
 .dark .form-input {
     background: #1e293b;
     border-color: #475569;
     color: white;
+}
+
+.dark .form-input:focus {
+    border-color: #fbbf24;
+    background: #0f172a;
+    box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.15);
 }
 
 .pdf-render-area {
@@ -244,7 +284,8 @@ body {
 }
 
 .modal-backdrop {
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(8px);
+    background: rgba(15, 23, 42, 0.75);
 }
 
 /* Rolling Ticker Animation */
@@ -256,7 +297,7 @@ body {
 .animate-ticker {
     display: inline-block;
     white-space: nowrap;
-    animation: tickerScroll 25s linear infinite;
+    animation: tickerScroll 30s linear infinite;
 }
 
 .animate-ticker:hover {
@@ -290,13 +331,17 @@ body {
 }
 
 ::-webkit-scrollbar {
-    width: 7px;
-    height: 7px;
+    width: 8px;
+    height: 8px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #94a3b8;
+    background: #cbd5e1;
     border-radius: 10px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: #475569;
 }
 
 @media print {
@@ -310,22 +355,22 @@ body {
 </style>
 </head>
 
-<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 pb-12">
+<body class="bg-slate-100 text-slate-800 dark:bg-slate-950 dark:text-slate-100 pb-16 selection:bg-amber-500 selection:text-slate-950">
 
 <!-- =========================================================
      GoG ePAY STYLE LOGIN GATEWAY MODAL
 ========================================================= -->
 <div id="loginGatewayModal"
-     class="fixed inset-0 bg-slate-900/90 modal-backdrop z-[300] flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-8 shadow-2xl border border-slate-200 dark:border-slate-800 my-auto">
+     class="fixed inset-0 modal-backdrop z-[300] flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-8 shadow-2xl border border-slate-200 dark:border-slate-800 my-auto transform transition-all animate-[smoothFadeIn_0.4s_ease-out]">
         <div class="text-center mb-6">
-            <div class="w-16 h-16 mx-auto bg-emerald-100 dark:bg-emerald-950 text-emerald-600 rounded-2xl flex items-center justify-center mb-3 shadow-inner">
-                <i class="fa-solid fa-shield-halved text-2xl"></i>
+            <div class="w-20 h-20 mx-auto bg-gradient-to-tr from-emerald-500 to-teal-400 text-white rounded-3xl flex items-center justify-center mb-4 shadow-lg shadow-emerald-500/30 animate-float">
+                <i class="fa-solid fa-shield-halved text-3xl"></i>
             </div>
-            <h2 class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-wider">
+            <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                 Ntonso SDA Primary 'A'
             </h2>
-            <p class="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-1 uppercase tracking-widest">
+            <p class="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-1 uppercase tracking-widest bg-emerald-50 dark:bg-emerald-950/50 py-1 px-3 rounded-full inline-block">
                 ePAY & Welfare Portal
             </p>
         </div>
@@ -336,20 +381,20 @@ body {
                 <div>
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Staff Number / ID</label>
                     <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                             <i class="fa-solid fa-id-card text-xs"></i>
                         </span>
-                        <input type="text" id="gatewayStaffId" class="form-input !pl-9 !py-3 font-semibold" placeholder="Enter your staff number" required>
+                        <input type="text" id="gatewayStaffId" class="form-input !pl-10 !py-3.5 font-semibold" placeholder="e.g. STF001" required>
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Password / Passcode</label>
                     <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                             <i class="fa-solid fa-lock text-xs"></i>
                         </span>
-                        <input type="password" id="gatewayPassword" class="form-input !pl-9 !py-3 font-semibold" placeholder="Default is your Staff ID" required>
+                        <input type="password" id="gatewayPassword" class="form-input !pl-10 !py-3.5 font-semibold" placeholder="Default is your Staff ID" required>
                     </div>
                 </div>
 
@@ -361,10 +406,11 @@ body {
                     <a href="#" onclick="showResetPasswordView(); return false;" class="text-emerald-600 dark:text-emerald-400 font-bold hover:underline">Forgot password?</a>
                 </div>
 
-                <p id="gatewayError" class="text-xs text-rose-500 font-semibold text-center hidden">Invalid staff number or password.</p>
+                <p id="gatewayError" class="text-xs text-rose-500 font-semibold text-center hidden bg-rose-50 dark:bg-rose-950/40 p-2.5 rounded-xl border border-rose-200 dark:border-rose-900">Invalid staff number or password.</p>
 
-                <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white font-extrabold rounded-xl shadow-lg shadow-emerald-600/20 transition-all text-sm mt-2">
-                    Sign In
+                <button type="submit" class="w-full py-4 bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-700 hover:to-teal-600 text-white font-extrabold rounded-xl shadow-xl shadow-emerald-600/25 transition-all duration-300 transform active:scale-[0.98] text-sm mt-2 flex items-center justify-center gap-2">
+                    <span>Secure Sign In</span>
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
                 </button>
             </form>
         </div>
@@ -379,20 +425,20 @@ body {
             <form onsubmit="handlePasswordReset(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Staff ID</label>
-                    <input type="text" id="resetStaffId" class="form-input !py-2.5 font-semibold" placeholder="e.g. STF001" required>
+                    <input type="text" id="resetStaffId" class="form-input !py-3 font-semibold" placeholder="e.g. STF001" required>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Registered Phone Number</label>
-                    <input type="text" id="resetPhone" class="form-input !py-2.5 font-semibold" placeholder="e.g. 0240000001" required>
+                    <input type="text" id="resetPhone" class="form-input !py-3 font-semibold" placeholder="e.g. 0240000001" required>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">New Password / Passcode</label>
-                    <input type="password" id="resetNewPassword" class="form-input !py-2.5 font-semibold" placeholder="Enter new password" required>
+                    <input type="password" id="resetNewPassword" class="form-input !py-3 font-semibold" placeholder="Enter new password" required>
                 </div>
 
-                <p id="resetError" class="text-xs text-rose-500 font-semibold text-center hidden">Verification failed. Check Staff ID or Phone.</p>
+                <p id="resetError" class="text-xs text-rose-500 font-semibold text-center hidden bg-rose-50 p-2 rounded-lg">Verification failed. Check Staff ID or Phone.</p>
 
                 <div class="flex gap-2 pt-2">
                     <button type="button" onclick="showLoginView()" class="w-1/2 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-200">Cancel</button>
@@ -402,13 +448,11 @@ body {
         </div>
 
         <div class="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 text-center">
-            <p class="text-[10px] text-slate-400 uppercase tracking-wider mb-2">Contact Welfare Desk</p>
-            <div class="flex justify-center gap-4 text-[11px] font-bold text-slate-600 dark:text-slate-400">
-                <span>0240000001</span>
-                <span>•</span>
-                <span>0243340355</span>
-                <span>•</span>
-                <span>0247452601</span>
+            <p class="text-[10px] text-slate-400 uppercase tracking-wider mb-2 font-semibold">Contact Welfare Desk</p>
+            <div class="flex justify-center gap-3 text-[11px] font-bold text-slate-600 dark:text-slate-400">
+                <span class="bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg">0240000001</span>
+                <span class="bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg">0243340355</span>
+                <span class="bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg">0247452601</span>
             </div>
         </div>
     </div>
@@ -419,120 +463,121 @@ body {
 ========================================================= -->
 <div id="mobileOverlay"
      onclick="closeMobileSidebar()"
-     class="mobile-overlay fixed inset-0 bg-black/50 z-40 lg:hidden"></div>
+     class="mobile-overlay fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-40 lg:hidden"></div>
 
 <!-- =========================================================
      SIDEBAR
 ========================================================= -->
 <aside id="sidebar"
-       class="sidebar fixed left-0 top-0 bottom-0 w-72 bg-sdaNavy-900 text-white z-50 flex flex-col shadow-2xl">
+       class="sidebar fixed left-0 top-0 bottom-0 w-72 bg-gradient-to-b from-sdaNavy-900 via-sdaNavy-900 to-slate-950 text-white z-50 flex flex-col shadow-2xl border-r border-white/5">
 
-    <div class="h-20 px-4 border-b border-white/10 flex items-center">
-        <div class="bg-sdaGold-500 text-sdaNavy-900 w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0">
-            <i class="fa-solid fa-graduation-cap text-xl"></i>
+    <div class="h-20 px-5 border-b border-white/10 flex items-center bg-sdaNavy-900/50 backdrop-blur">
+        <div class="bg-gradient-to-tr from-sdaGold-500 to-amber-300 text-sdaNavy-900 w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/20">
+            <i class="fa-solid fa-graduation-cap text-lg"></i>
         </div>
 
-        <div class="ml-3 sidebar-brand-text">
-            <h1 class="font-extrabold text-sm text-amber-400">
+        <div class="ml-3.5 sidebar-brand-text overflow-hidden">
+            <h1 class="font-black text-sm text-amber-400 tracking-tight leading-tight truncate">
                 NTONSO SDA PRIMARY 'A'
             </h1>
-            <p class="text-[10px] text-slate-400">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
                 Teachers Welfare Fund
             </p>
         </div>
 
         <button onclick="toggleSidebar()"
-                class="ml-auto hidden lg:block text-slate-400 hover:text-white">
-            <i id="sidebarToggleIcon" class="fa-solid fa-angles-left"></i>
+                class="ml-auto hidden lg:flex w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 items-center justify-center text-slate-400 hover:text-white transition-all">
+            <i id="sidebarToggleIcon" class="fa-solid fa-angles-left text-xs"></i>
         </button>
 
         <button onclick="closeMobileSidebar()"
-                class="ml-auto lg:hidden text-slate-400">
+                class="ml-auto lg:hidden w-8 h-8 rounded-xl bg-white/5 items-center justify-center text-slate-400">
             <i class="fa-solid fa-xmark"></i>
         </button>
     </div>
 
-    <div class="flex-1 overflow-y-auto py-5 px-3">
-        <p class="sidebar-text text-[10px] font-bold uppercase tracking-widest text-slate-500 px-3 mb-2">
-            Main Menu
-        </p>
+    <div class="flex-1 overflow-y-auto py-6 px-3.5 space-y-6">
+        <div>
+            <p class="sidebar-text text-[10px] font-extrabold uppercase tracking-widest text-slate-400 px-3 mb-3">
+                Main Menu
+            </p>
 
-        <nav class="space-y-1">
-            <button onclick="showSection('dashboard',this)"
-                    class="nav-button active w-full flex items-center rounded-lg px-3 py-3 text-sm font-semibold">
-                <i class="fa-solid fa-chart-pie w-6 text-center mr-3"></i>
-                <span class="sidebar-text">Dashboard</span>
-            </button>
+            <nav class="space-y-1.5">
+                <button onclick="showSection('dashboard',this)"
+                        class="nav-button active w-full flex items-center rounded-xl px-3.5 py-3 text-sm font-semibold">
+                    <i class="fa-solid fa-chart-pie w-6 text-center mr-3 text-amber-400"></i>
+                    <span class="sidebar-text">Dashboard</span>
+                </button>
 
-            <button onclick="showSection('teachers',this)"
-                    class="nav-button w-full flex items-center rounded-lg px-3 py-3 text-sm font-semibold">
-                <i class="fa-solid fa-users w-6 text-center mr-3"></i>
-                <span class="sidebar-text">Teachers & Members</span>
-            </button>
+                <button onclick="showSection('teachers',this)"
+                        class="nav-button w-full flex items-center rounded-xl px-3.5 py-3 text-sm font-semibold">
+                    <i class="fa-solid fa-users w-6 text-center mr-3 text-blue-400"></i>
+                    <span class="sidebar-text">Teachers & Members</span>
+                </button>
 
-            <button onclick="showSection('payments',this)"
-                    class="nav-button w-full flex items-center rounded-lg px-3 py-3 text-sm font-semibold">
-                <i class="fa-solid fa-money-check-dollar w-6 text-center mr-3"></i>
-                <span class="sidebar-text">Contributions</span>
-            </button>
+                <button onclick="showSection('payments',this)"
+                        class="nav-button w-full flex items-center rounded-xl px-3.5 py-3 text-sm font-semibold">
+                    <i class="fa-solid fa-money-check-dollar w-6 text-center mr-3 text-emerald-400"></i>
+                    <span class="sidebar-text">Contributions</span>
+                </button>
 
-            <button onclick="showSection('welfare',this)"
-                    class="nav-button w-full flex items-center rounded-lg px-3 py-3 text-sm font-semibold">
-                <i class="fa-solid fa-hand-holding-heart w-6 text-center mr-3"></i>
-                <span class="sidebar-text">Welfare & Payouts</span>
-            </button>
+                <button onclick="showSection('welfare',this)"
+                        class="nav-button w-full flex items-center rounded-xl px-3.5 py-3 text-sm font-semibold">
+                    <i class="fa-solid fa-hand-holding-heart w-6 text-center mr-3 text-rose-400"></i>
+                    <span class="sidebar-text">Welfare & Payouts</span>
+                </button>
 
-            <button onclick="showSection('statements',this)"
-                    class="nav-button w-full flex items-center rounded-lg px-3 py-3 text-sm font-semibold">
-                <i class="fa-solid fa-file-invoice-dollar w-6 text-center mr-3"></i>
-                <span class="sidebar-text">Statements & Reports</span>
-            </button>
-        </nav>
+                <button onclick="showSection('statements',this)"
+                        class="nav-button w-full flex items-center rounded-xl px-3.5 py-3 text-sm font-semibold">
+                    <i class="fa-solid fa-file-invoice-dollar w-6 text-center mr-3 text-purple-400"></i>
+                    <span class="sidebar-text">Statements & Reports</span>
+                </button>
+            </nav>
+        </div>
 
-        <div class="border-t border-white/10 my-5"></div>
+        <div>
+            <p class="sidebar-text text-[10px] font-extrabold uppercase tracking-widest text-slate-400 px-3 mb-3">
+                Administration
+            </p>
 
-        <p class="sidebar-text text-[10px] font-bold uppercase tracking-widest text-slate-500 px-3 mb-2">
-            Administration
-        </p>
+            <nav class="space-y-1.5">
+                <button onclick="requestAdminSection()"
+                        class="nav-button w-full flex items-center rounded-xl px-3.5 py-3 text-sm font-semibold">
+                    <i class="fa-solid fa-user-shield w-6 text-center mr-3 text-amber-500"></i>
+                    <span class="sidebar-text">Admin Panel</span>
+                </button>
 
-        <nav class="space-y-1">
-            <button onclick="requestAdminSection()"
-                    class="nav-button w-full flex items-center rounded-lg px-3 py-3 text-sm font-semibold">
-                <i class="fa-solid fa-user-shield w-6 text-center mr-3"></i>
-                <span class="sidebar-text">Admin Panel</span>
-            </button>
+                <button onclick="toggleDarkMode()"
+                        class="nav-button w-full flex items-center rounded-xl px-3.5 py-3 text-sm font-semibold">
+                    <i id="sidebarThemeIcon" class="fa-solid fa-moon w-6 text-center mr-3 text-sky-400"></i>
+                    <span class="sidebar-text">Dark / Light Mode</span>
+                </button>
+            </nav>
+        </div>
 
-            <button onclick="toggleDarkMode()"
-                    class="nav-button w-full flex items-center rounded-lg px-3 py-3 text-sm font-semibold">
-                <i id="sidebarThemeIcon" class="fa-solid fa-moon w-6 text-center mr-3"></i>
-                <span class="sidebar-text">Dark / Light Mode</span>
-            </button>
-        </nav>
-
-        <div class="border-t border-white/10 my-5"></div>
-
-        <!-- Logout Button for All Members -->
-        <nav class="space-y-1">
-            <button onclick="logoutAdmin()"
-                    class="nav-button w-full flex items-center rounded-lg px-3 py-3 text-sm font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-950/30">
-                <i class="fa-solid fa-right-from-bracket w-6 text-center mr-3"></i>
-                <span class="sidebar-text">Sign Out / Logout</span>
-            </button>
-        </nav>
+        <div>
+            <nav class="space-y-1.5">
+                <button onclick="logoutAdmin()"
+                        class="nav-button w-full flex items-center rounded-xl px-3.5 py-3 text-sm font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-950/30">
+                    <i class="fa-solid fa-right-from-bracket w-6 text-center mr-3"></i>
+                    <span class="sidebar-text">Sign Out / Logout</span>
+                </button>
+            </nav>
+        </div>
     </div>
 
-    <div class="border-t border-white/10 p-4">
-        <div class="flex items-center justify-between bg-white/5 rounded-xl p-3">
+    <div class="p-4 border-t border-white/10 bg-black/20">
+        <div class="flex items-center justify-between bg-white/5 rounded-2xl p-3 border border-white/5">
             <div class="flex items-center overflow-hidden">
-                <div class="w-9 h-9 rounded-full bg-sdaGold-500 text-sdaNavy-900 flex items-center justify-center flex-shrink-0">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 text-sdaNavy-900 flex items-center justify-center flex-shrink-0 font-extrabold shadow">
                     <i class="fa-solid fa-user-shield text-xs"></i>
                 </div>
                 <div class="ml-3 sidebar-text overflow-hidden">
-                    <p id="sidebarUserRoleText" class="text-xs font-bold truncate">Public Portal</p>
+                    <p id="sidebarUserRoleText" class="text-xs font-extrabold truncate text-white">Public Portal</p>
                     <p class="text-[10px] text-slate-400 truncate">Ntonso SDA Primary 'A'</p>
                 </div>
             </div>
-            <button id="sidebarAuthBtn" onclick="handleSidebarAuthAction()" class="sidebar-text ml-2 px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 text-[10px] font-bold transition-all" title="Login / Logout">
+            <button id="sidebarAuthBtn" onclick="handleSidebarAuthAction()" class="sidebar-text ml-2 w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-xs text-amber-400 transition-all" title="Login / Logout">
                 <i id="sidebarAuthIcon" class="fa-solid fa-right-to-bracket"></i>
             </button>
         </div>
@@ -548,39 +593,42 @@ body {
 <!-- =========================================================
      HEADER
 ========================================================= -->
-<header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30">
-    <div class="h-20 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-        <div class="flex items-center gap-3">
+<header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 transition-all shadow-sm">
+    <div class="h-20 px-4 sm:px-8 flex items-center justify-between">
+        <div class="flex items-center gap-3.5">
             <button onclick="openMobileSidebar()"
-                    class="lg:hidden w-10 h-10 rounded-lg bg-sdaNavy-900 text-white flex items-center justify-center">
+                    class="lg:hidden w-11 h-11 rounded-xl bg-sdaNavy-900 text-white flex items-center justify-center shadow-md">
                 <i class="fa-solid fa-bars"></i>
             </button>
             <div>
-                <p class="text-[10px] font-bold uppercase tracking-widest text-sdaGold-600 dark:text-amber-400">
-                    Welfare Management
+                <p class="text-[10px] font-extrabold uppercase tracking-widest text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Welfare Management System
                 </p>
                 <h2 id="pageTitle"
-                    class="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">
+                    class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                     Dashboard
                 </h2>
             </div>
         </div>
 
-        <div class="flex items-center gap-2">
-            <div class="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800">
-                <i class="fa-solid fa-user text-sdaGold-500"></i>
-                <span id="headerTeacherName" class="text-xs font-semibold">No Teacher</span>
+        <div class="flex items-center gap-3">
+            <div class="hidden md:flex items-center gap-2.5 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 shadow-inner">
+                <div class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xs font-bold">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <span id="headerTeacherName" class="text-xs font-bold text-slate-700 dark:text-slate-200">No Teacher</span>
             </div>
 
             <button onclick="toggleDarkMode()"
-                    class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                <i id="themeIcon" class="fa-solid fa-moon"></i>
+                    class="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-amber-400 transition-all shadow-sm" title="Toggle Theme">
+                <i id="themeIcon" class="fa-solid fa-moon text-sm"></i>
             </button>
 
             <button id="adminToggleBtn"
                     onclick="toggleAdminModal()"
-                    class="px-3 py-2.5 text-xs font-bold rounded-lg bg-sdaGold-500 text-sdaNavy-900 flex items-center">
-                <i class="fa-solid fa-lock mr-1.5"></i>
+                    class="px-4 py-2.5 text-xs font-extrabold rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-sdaNavy-900 shadow-md shadow-amber-500/20 flex items-center gap-2 transition-all">
+                <i class="fa-solid fa-lock text-[11px]"></i>
                 <span id="adminBtnText">Admin Access</span>
             </button>
         </div>
@@ -590,41 +638,44 @@ body {
 <!-- =========================================================
      MAIN CONTENT
 ========================================================= -->
-<main class="flex-1 p-4 sm:p-6 lg:p-8">
+<main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
 
 <!-- =========================================================
      DASHBOARD
 ========================================================= -->
 <section id="section-dashboard" class="page-section active">
-    <div class="mb-6 bg-gradient-to-br from-sdaNavy-700 via-sdaNavy-900 to-slate-950 rounded-2xl p-5 sm:p-7 text-white shadow-xl">
-        <div class="max-w-3xl">
-            <div class="inline-flex items-center gap-2 bg-amber-400/10 text-amber-300 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase">
-                <i class="fa-solid fa-shield-heart"></i>
+    <!-- Hero Banner -->
+    <div class="mb-8 relative overflow-hidden bg-gradient-to-br from-sdaNavy-700 via-sdaNavy-900 to-slate-950 rounded-3xl p-6 sm:p-10 text-white shadow-2xl border border-white/10">
+        <div class="absolute -right-10 -bottom-10 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute right-1/3 -top-20 w-60 h-60 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
+        
+        <div class="max-w-3xl relative z-10">
+            <div class="inline-flex items-center gap-2 bg-amber-400/20 border border-amber-400/30 text-amber-300 text-[11px] font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider backdrop-blur-md">
+                <i class="fa-solid fa-shield-heart text-amber-400"></i>
                 Official Welfare Hub
             </div>
-            <h1 class="text-2xl sm:text-3xl font-extrabold mt-3">
+            <h1 class="text-3xl sm:text-4xl font-black mt-4 tracking-tight leading-tight">
                 Empowering Our Educators Through Solidarity
             </h1>
-            <p class="text-slate-300 text-xs sm:text-sm mt-2">
-                Providing mutual financial support, social welfare benefits,
-                and transparent monthly record keeping.
+            <p class="text-slate-300 text-sm sm:text-base mt-3 leading-relaxed font-medium">
+                Providing mutual financial support, social welfare benefits, and fully transparent monthly record-keeping for Ntonso SDA Primary 'A' School.
             </p>
         </div>
     </div>
 
     <!-- Teacher Selector (Visible to Admin Only) -->
-    <div id="teacherSelectorContainer" class="bg-white dark:bg-slate-900 rounded-xl p-4 shadow-sm border border-slate-200 dark:border-slate-800 mb-6">
+    <div id="teacherSelectorContainer" class="glass-card rounded-2xl p-5 shadow-sm mb-8">
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-2">
-                <div class="w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                    <i class="fa-solid fa-user-check text-sdaGold-500"></i>
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold text-lg">
+                    <i class="fa-solid fa-user-check"></i>
                 </div>
                 <div>
-                    <label class="font-bold text-sm block">
+                    <label class="font-extrabold text-sm block text-slate-900 dark:text-white">
                         Select Teacher / Staff Profile
                     </label>
-                    <span class="text-[10px] text-slate-400">
-                        View individual contribution records
+                    <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        Switch profile to view individual contribution records and statements
                     </span>
                 </div>
             </div>
@@ -632,165 +683,164 @@ body {
             <div class="w-full sm:w-1/2 md:w-1/3">
                 <select id="teacherSelect"
                         onchange="switchTeacher(this.value)"
-                        class="form-input">
+                        class="form-input !font-bold">
                 </select>
             </div>
         </div>
     </div>
 
     <!-- STAT CARDS -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
-        <div class="stat-card bg-white dark:bg-slate-900 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-800 flex items-center">
-            <div class="p-3.5 rounded-xl bg-blue-100 dark:bg-blue-900/40 text-blue-700 mr-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+        <div class="stat-card glass-card rounded-2xl p-6 shadow-sm flex items-center border-l-4 border-l-blue-600">
+            <div class="p-4 rounded-2xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 mr-4 shadow-inner">
                 <i class="fa-solid fa-vault text-2xl"></i>
             </div>
             <div>
-                <p class="text-[10px] font-semibold text-slate-500 uppercase">
+                <p class="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                     Net Fund Balance
                 </p>
-                <h3 id="statTotalFund" class="text-xl sm:text-2xl font-extrabold">
+                <h3 id="statTotalFund" class="text-2xl font-black mt-1 text-slate-900 dark:text-white">
                     GHS 0.00
                 </h3>
-                <p class="text-[11px] text-emerald-600">
-                    After All Payouts
+                <p class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 flex items-center gap-1">
+                    <i class="fa-solid fa-circle-check text-[9px]"></i> After All Payouts
                 </p>
             </div>
         </div>
 
-        <div class="stat-card bg-white dark:bg-slate-900 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-800 flex items-center">
-            <div class="p-3.5 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-600 mr-4">
+        <div class="stat-card glass-card rounded-2xl p-6 shadow-sm flex items-center border-l-4 border-l-amber-500">
+            <div class="p-4 rounded-2xl bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 mr-4 shadow-inner">
                 <i class="fa-solid fa-hand-holding-dollar text-2xl"></i>
             </div>
             <div>
-                <p class="text-[10px] font-semibold text-slate-500 uppercase">
+                <p class="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                     Member's Total Dues
                 </p>
-                <h3 id="statMemberTotal" class="text-xl sm:text-2xl font-extrabold">
+                <h3 id="statMemberTotal" class="text-2xl font-black mt-1 text-slate-900 dark:text-white">
                     GHS 0.00
                 </h3>
-                <p id="statMemberContribCount" class="text-[11px] text-slate-500">
+                <p id="statMemberContribCount" class="text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-0.5">
                     0 Payments recorded
                 </p>
             </div>
         </div>
 
-        <div class="stat-card bg-white dark:bg-slate-900 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-800 flex items-center">
-            <div class="p-3.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 mr-4">
+        <div class="stat-card glass-card rounded-2xl p-6 shadow-sm flex items-center border-l-4 border-l-emerald-500">
+            <div class="p-4 rounded-2xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 mr-4 shadow-inner">
                 <i class="fa-solid fa-calendar-check text-2xl"></i>
             </div>
             <div>
-                <p class="text-[10px] font-semibold text-slate-500 uppercase">
+                <p class="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                     Standard Monthly Dues
                 </p>
-                <h3 id="statMonthlyRate" class="text-xl sm:text-2xl font-extrabold">
+                <h3 id="statMonthlyRate" class="text-2xl font-black mt-1 text-slate-900 dark:text-white">
                     GHS 100.00
                 </h3>
-                <p class="text-[11px] text-slate-500">
+                <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-0.5">
                     Current Rate
                 </p>
             </div>
         </div>
 
-        <div class="stat-card bg-white dark:bg-slate-900 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-800 flex items-center">
-            <div class="p-3.5 rounded-xl bg-purple-100 dark:bg-purple-900/40 text-purple-600 mr-4">
+        <div class="stat-card glass-card rounded-2xl p-6 shadow-sm flex items-center border-l-4 border-l-purple-500">
+            <div class="p-4 rounded-2xl bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 mr-4 shadow-inner">
                 <i class="fa-solid fa-clock-rotate-left text-2xl"></i>
             </div>
             <div>
-                <p class="text-[10px] font-semibold text-slate-500 uppercase">
+                <p class="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                     Last Activity
                 </p>
-                <h3 id="statLastPayment" class="text-base sm:text-lg font-bold">
+                <h3 id="statLastPayment" class="text-lg font-black mt-1 text-slate-900 dark:text-white truncate max-w-[160px]">
                     N/A
                 </h3>
-                <p id="statLastMonthName" class="text-[11px] text-slate-500">
+                <p id="statLastMonthName" class="text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-0.5">
                     -
                 </p>
             </div>
         </div>
     </div>
 
-    <!-- PROFILE -->
-    <div class="bg-white dark:bg-slate-900 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-800 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div class="flex items-center gap-4">
+    <!-- PROFILE CARD -->
+    <div class="glass-card rounded-2xl p-6 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div class="flex items-center gap-5">
             <div id="teacherAvatar"
-                 class="w-14 h-14 rounded-full bg-sdaNavy-500 text-white font-bold text-xl flex items-center justify-center">
+                 class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-sdaNavy-900 to-sdaNavy-700 text-amber-400 font-black text-2xl flex items-center justify-center shadow-lg shadow-sdaNavy-900/20">
                 --
             </div>
             <div>
-                <div class="flex flex-wrap items-center gap-2">
-                    <h2 id="currentTeacherName" class="text-lg font-bold">
+                <div class="flex flex-wrap items-center gap-3">
+                    <h2 id="currentTeacherName" class="text-xl font-extrabold text-slate-900 dark:text-white">
                         --
                     </h2>
                     <span id="currentTeacherGrade"
-                          class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded">
+                          class="bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 text-xs font-extrabold px-3 py-1 rounded-full border border-blue-200 dark:border-blue-900">
                         --
                     </span>
                 </div>
-                <p class="text-xs text-slate-500 mt-1">
-                    Staff ID:
-                    <span id="currentTeacherStaffId" class="font-semibold">--</span>
-                    <span class="mx-1">|</span>
-                    Phone:
-                    <span id="currentTeacherPhone" class="font-semibold">--</span>
-                    <span class="mx-1">|</span>
-                    Class:
-                    <span id="currentTeacherClass" class="font-semibold">--</span>
+                <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1.5 flex flex-wrap items-center gap-2">
+                    <span>Staff ID: <strong id="currentTeacherStaffId" class="text-slate-800 dark:text-slate-200">--</strong></span>
+                    <span>•</span>
+                    <span>Phone: <strong id="currentTeacherPhone" class="text-slate-800 dark:text-slate-200">--</strong></span>
+                    <span>•</span>
+                    <span>Class: <strong id="currentTeacherClass" class="text-slate-800 dark:text-slate-200">--</strong></span>
                 </p>
             </div>
         </div>
 
         <button onclick="downloadPDF()"
-                class="w-full md:w-auto px-4 py-2.5 bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white text-sm font-semibold rounded-lg flex items-center justify-center gap-2">
-            <i class="fa-solid fa-file-pdf text-amber-400"></i>
-            Download Statement
+                class="w-full md:w-auto px-6 py-3.5 bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white text-xs font-extrabold rounded-xl shadow-lg shadow-sdaNavy-500/20 flex items-center justify-center gap-2.5 transition-all transform active:scale-95">
+            <i class="fa-solid fa-file-pdf text-amber-400 text-base"></i>
+            Download Official Statement
         </button>
     </div>
 
     <!-- PAYMENT LEDGER -->
-    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden mb-6">
-        <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
-            <h3 class="font-bold">
-                <i class="fa-solid fa-list-check text-sdaGold-500 mr-2"></i>
+    <div class="glass-card rounded-2xl shadow-sm overflow-hidden mb-8">
+        <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <h3 class="font-extrabold text-base flex items-center gap-2 text-slate-900 dark:text-white">
+                <i class="fa-solid fa-list-check text-amber-500"></i>
                 Monthly Contribution Ledger
             </h3>
+            <span class="text-xs font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 px-3 py-1 rounded-lg">Verified Records</span>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-sm text-left">
-                <thead class="text-xs uppercase bg-slate-100 dark:bg-slate-800">
+                <thead class="text-xs uppercase bg-slate-100/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 font-extrabold tracking-wider">
                     <tr>
-                        <th class="px-6 py-3.5">Month / Year</th>
-                        <th class="px-6 py-3.5">Receipt / Ref No.</th>
-                        <th class="px-6 py-3.5">Amount Paid</th>
-                        <th class="px-6 py-3.5">Date Paid</th>
-                        <th class="px-6 py-3.5">Status</th>
+                        <th class="px-6 py-4">Month / Year</th>
+                        <th class="px-6 py-4">Receipt / Ref No.</th>
+                        <th class="px-6 py-4">Amount Paid</th>
+                        <th class="px-6 py-4">Date Paid</th>
+                        <th class="px-6 py-4">Status</th>
                     </tr>
                 </thead>
-                <tbody id="paymentTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+                <tbody id="paymentTableBody" class="divide-y divide-slate-200 dark:divide-slate-800/80 font-medium">
                 </tbody>
             </table>
         </div>
     </div>
 
     <!-- WITHDRAWALS -->
-    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-        <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
-            <h3 class="font-bold">
-                <i class="fa-solid fa-hand-holding-heart text-rose-500 mr-2"></i>
+    <div class="glass-card rounded-2xl shadow-sm overflow-hidden">
+        <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <h3 class="font-extrabold text-base flex items-center gap-2 text-slate-900 dark:text-white">
+                <i class="fa-solid fa-hand-holding-heart text-rose-500"></i>
                 Welfare Payouts & Fund Withdrawal Log
             </h3>
+            <span class="text-xs font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 px-3 py-1 rounded-lg">Disbursements</span>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-sm text-left">
-                <thead class="text-xs uppercase bg-slate-100 dark:bg-slate-800">
+                <thead class="text-xs uppercase bg-slate-100/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 font-extrabold tracking-wider">
                     <tr>
-                        <th class="px-6 py-3.5">Ref No.</th>
-                        <th class="px-6 py-3.5">Beneficiary</th>
-                        <th class="px-6 py-3.5">Reason</th>
-                        <th class="px-6 py-3.5">Amount</th>
-                        <th class="px-6 py-3.5">Date</th>
+                        <th class="px-6 py-4">Ref No.</th>
+                        <th class="px-6 py-4">Beneficiary</th>
+                        <th class="px-6 py-4">Reason</th>
+                        <th class="px-6 py-4">Amount</th>
+                        <th class="px-6 py-4">Date</th>
                     </tr>
                 </thead>
-                <tbody id="withdrawalTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+                <tbody id="withdrawalTableBody" class="divide-y divide-slate-200 dark:divide-slate-800/80 font-medium">
                 </tbody>
             </table>
         </div>
@@ -801,26 +851,31 @@ body {
      TEACHERS (Admin Only)
 ========================================================= -->
 <section id="section-teachers" class="page-section">
-    <div class="mb-6">
-        <h2 class="text-2xl font-extrabold">Teachers & Members</h2>
-        <p class="text-sm text-slate-500">Registered welfare fund members (Admin Access Only).</p>
+    <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h2 class="text-2xl font-black text-slate-900 dark:text-white">Teachers & Members</h2>
+            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">Registered welfare fund active members (Admin Access Only).</p>
+        </div>
+        <div class="bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-400 px-3.5 py-1.5 rounded-xl text-xs font-bold border border-amber-200 dark:border-amber-900">
+            <i class="fa-solid fa-user-shield mr-1.5"></i> Admin Roster View
+        </div>
     </div>
 
-    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+    <div class="glass-card rounded-2xl shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
-                <thead class="bg-slate-100 dark:bg-slate-800 text-xs uppercase">
+                <thead class="bg-slate-100/80 dark:bg-slate-800/80 text-xs uppercase text-slate-600 dark:text-slate-300 font-extrabold tracking-wider">
                     <tr>
-                        <th class="px-5 py-3 text-left">Staff ID</th>
-                        <th class="px-5 py-3 text-left">Name</th>
-                        <th class="px-5 py-3 text-left">Phone</th>
-                        <th class="px-5 py-3 text-left">Rank / Grade</th>
-                        <th class="px-5 py-3 text-left">Class</th>
-                        <th class="px-5 py-3 text-left">Total Paid</th>
-                        <th class="px-5 py-3 text-left">Action</th>
+                        <th class="px-6 py-4 text-left">Staff ID</th>
+                        <th class="px-6 py-4 text-left">Name</th>
+                        <th class="px-6 py-4 text-left">Phone</th>
+                        <th class="px-6 py-4 text-left">Rank / Grade</th>
+                        <th class="px-6 py-4 text-left">Class</th>
+                        <th class="px-6 py-4 text-left">Total Paid</th>
+                        <th class="px-6 py-4 text-left">Action</th>
                     </tr>
                 </thead>
-                <tbody id="teachersSectionBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+                <tbody id="teachersSectionBody" class="divide-y divide-slate-200 dark:divide-slate-800/80 font-medium">
                 </tbody>
             </table>
         </div>
@@ -832,38 +887,38 @@ body {
 ========================================================= -->
 <section id="section-payments" class="page-section">
     <div class="mb-6">
-        <h2 class="text-2xl font-extrabold">Contributions</h2>
-        <p class="text-sm text-slate-500">Complete contribution records.</p>
+        <h2 class="text-2xl font-black text-slate-900 dark:text-white">Contributions</h2>
+        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">Complete contribution records and financial logs.</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
-        <div class="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-800">
-            <p class="text-xs uppercase font-bold text-slate-400">Total Contributions</p>
-            <h3 id="paymentTotalAll" class="text-2xl font-extrabold mt-2">GHS 0.00</h3>
+        <div class="glass-card rounded-2xl p-6 shadow-sm border-l-4 border-l-emerald-500">
+            <p class="text-xs uppercase font-extrabold text-slate-400 tracking-wider">Total Contributions</p>
+            <h3 id="paymentTotalAll" class="text-2xl font-black mt-2 text-slate-900 dark:text-white">GHS 0.00</h3>
         </div>
-        <div class="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-800">
-            <p class="text-xs uppercase font-bold text-slate-400">Active Members</p>
-            <h3 id="paymentMemberCount" class="text-2xl font-extrabold mt-2">0</h3>
+        <div class="glass-card rounded-2xl p-6 shadow-sm border-l-4 border-l-blue-500">
+            <p class="text-xs uppercase font-extrabold text-slate-400 tracking-wider">Active Members</p>
+            <h3 id="paymentMemberCount" class="text-2xl font-black mt-2 text-slate-900 dark:text-white">0</h3>
         </div>
-        <div class="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-800">
-            <p class="text-xs uppercase font-bold text-slate-400">Standard Monthly Dues</p>
-            <h3 id="paymentMonthlyRate" class="text-2xl font-extrabold mt-2">GHS 100.00</h3>
+        <div class="glass-card rounded-2xl p-6 shadow-sm border-l-4 border-l-amber-500">
+            <p class="text-xs uppercase font-extrabold text-slate-400 tracking-wider">Standard Monthly Dues</p>
+            <h3 id="paymentMonthlyRate" class="text-2xl font-black mt-2 text-slate-900 dark:text-white">GHS 100.00</h3>
         </div>
     </div>
 
-    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+    <div class="glass-card rounded-2xl shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
-                <thead class="bg-slate-100 dark:bg-slate-800 text-xs uppercase">
+                <thead class="bg-slate-100/80 dark:bg-slate-800/80 text-xs uppercase text-slate-600 dark:text-slate-300 font-extrabold tracking-wider">
                     <tr>
-                        <th class="px-5 py-3 text-left">Teacher</th>
-                        <th class="px-5 py-3 text-left">Month / Year</th>
-                        <th class="px-5 py-3 text-left">Reference</th>
-                        <th class="px-5 py-3 text-left">Amount</th>
-                        <th class="px-5 py-3 text-left">Date</th>
+                        <th class="px-6 py-4 text-left">Teacher</th>
+                        <th class="px-6 py-4 text-left">Month / Year</th>
+                        <th class="px-6 py-4 text-left">Reference</th>
+                        <th class="px-6 py-4 text-left">Amount</th>
+                        <th class="px-6 py-4 text-left">Date</th>
                     </tr>
                 </thead>
-                <tbody id="allPaymentsBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+                <tbody id="allPaymentsBody" class="divide-y divide-slate-200 dark:divide-slate-800/80 font-medium">
                 </tbody>
             </table>
         </div>
@@ -875,38 +930,38 @@ body {
 ========================================================= -->
 <section id="section-welfare" class="page-section">
     <div class="mb-6">
-        <h2 class="text-2xl font-extrabold">Welfare & Payouts</h2>
-        <p class="text-sm text-slate-500">Welfare fund disbursement history.</p>
+        <h2 class="text-2xl font-black text-slate-900 dark:text-white">Welfare & Payouts</h2>
+        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">Welfare fund disbursement history and support log.</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
-        <div class="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-800">
-            <p class="text-xs uppercase font-bold text-slate-400">Total Payouts</p>
-            <h3 id="welfareTotalWithdrawn" class="text-2xl font-extrabold mt-2">GHS 0.00</h3>
+        <div class="glass-card rounded-2xl p-6 shadow-sm border-l-4 border-l-rose-500">
+            <p class="text-xs uppercase font-extrabold text-slate-400 tracking-wider">Total Payouts</p>
+            <h3 id="welfareTotalWithdrawn" class="text-2xl font-black mt-2 text-slate-900 dark:text-white">GHS 0.00</h3>
         </div>
-        <div class="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-800">
-            <p class="text-xs uppercase font-bold text-slate-400">Current Fund</p>
-            <h3 id="welfareCurrentFund" class="text-2xl font-extrabold mt-2">GHS 0.00</h3>
+        <div class="glass-card rounded-2xl p-6 shadow-sm border-l-4 border-l-blue-500">
+            <p class="text-xs uppercase font-extrabold text-slate-400 tracking-wider">Current Fund</p>
+            <h3 id="welfareCurrentFund" class="text-2xl font-black mt-2 text-slate-900 dark:text-white">GHS 0.00</h3>
         </div>
-        <div class="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-800">
-            <p class="text-xs uppercase font-bold text-slate-400">Active Members</p>
-            <h3 id="welfareMemberCount" class="text-2xl font-extrabold mt-2">0</h3>
+        <div class="glass-card rounded-2xl p-6 shadow-sm border-l-4 border-l-purple-500">
+            <p class="text-xs uppercase font-extrabold text-slate-400 tracking-wider">Active Members</p>
+            <h3 id="welfareMemberCount" class="text-2xl font-black mt-2 text-slate-900 dark:text-white">0</h3>
         </div>
     </div>
 
-    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+    <div class="glass-card rounded-2xl shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
-                <thead class="bg-slate-100 dark:bg-slate-800 text-xs uppercase">
+                <thead class="bg-slate-100/80 dark:bg-slate-800/80 text-xs uppercase text-slate-600 dark:text-slate-300 font-extrabold tracking-wider">
                     <tr>
-                        <th class="px-5 py-3 text-left">Reference</th>
-                        <th class="px-5 py-3 text-left">Beneficiary</th>
-                        <th class="px-5 py-3 text-left">Reason</th>
-                        <th class="px-5 py-3 text-left">Amount</th>
-                        <th class="px-5 py-3 text-left">Date</th>
+                        <th class="px-6 py-4 text-left">Reference</th>
+                        <th class="px-6 py-4 text-left">Beneficiary</th>
+                        <th class="px-6 py-4 text-left">Reason</th>
+                        <th class="px-6 py-4 text-left">Amount</th>
+                        <th class="px-6 py-4 text-left">Date</th>
                     </tr>
                 </thead>
-                <tbody id="allWithdrawalsBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+                <tbody id="allWithdrawalsBody" class="divide-y divide-slate-200 dark:divide-slate-800/80 font-medium">
                 </tbody>
             </table>
         </div>
@@ -918,71 +973,82 @@ body {
 ========================================================= -->
 <section id="section-statements" class="page-section">
     <div class="mb-6">
-        <h2 class="text-2xl font-extrabold">Statements & Reports</h2>
-        <p class="text-sm text-slate-500">Generate individual member statements or admin fund summary reports.</p>
+        <h2 class="text-2xl font-black text-slate-900 dark:text-white">Statements & Reports</h2>
+        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">Generate individual member statements or executive fund summary reports instantly.</p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Individual Statement -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800">
-            <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center mb-4">
-                <i class="fa-solid fa-file-invoice text-xl"></i>
+        <div class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
+            <div>
+                <div class="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-4 text-xl shadow-inner">
+                    <i class="fa-solid fa-file-invoice"></i>
+                </div>
+                <h3 class="font-extrabold text-lg text-slate-900 dark:text-white">Individual Statement</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-5 leading-relaxed font-medium">Generate a comprehensive, print-ready official A4 statement for the selected member account.</p>
             </div>
-            <h3 class="font-extrabold text-lg">Individual Statement</h3>
-            <p class="text-sm text-slate-500 mt-1 mb-5">Generate a full A4 statement for your account.</p>
 
-            <select id="statementTeacherSelect"
-                    onchange="switchTeacher(this.value)"
-                    class="form-input mb-4">
-            </select>
+            <div>
+                <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Select Member Account</label>
+                <select id="statementTeacherSelect"
+                        onchange="switchTeacher(this.value)"
+                        class="form-input mb-4 font-semibold">
+                </select>
 
-            <button onclick="downloadPDF()"
-                    class="w-full py-3 rounded-lg bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white font-bold text-sm">
-                <i class="fa-solid fa-file-pdf text-amber-400 mr-2"></i>
-                Download Member Statement
-            </button>
+                <button onclick="downloadPDF()"
+                        class="w-full py-3.5 rounded-xl bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white font-extrabold text-xs shadow-lg shadow-sdaNavy-500/20 flex items-center justify-center gap-2 transition-all">
+                    <i class="fa-solid fa-file-pdf text-amber-400 text-sm"></i>
+                    <span>Download Member Statement</span>
+                </button>
+            </div>
         </div>
 
         <!-- Monthly Fund Summary (Admin Only) -->
         <div id="monthlySummaryCard"
-             class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800">
-            <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center mb-4">
-                <i class="fa-solid fa-calendar-days text-xl"></i>
-            </div>
-            <h3 class="font-extrabold text-lg">Monthly Summary Report</h3>
-            <p id="monthlySummaryAccessText" class="text-sm text-slate-500 mt-1 mb-5">
-                Available to Administrator only. Select target month below.
-            </p>
-
-            <div class="mb-3">
-                <label class="block text-xs font-bold mb-1">Select Month & Year</label>
-                <input type="month" id="reportTargetMonth" class="form-input">
+             class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
+            <div>
+                <div class="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-4 text-xl shadow-inner">
+                    <i class="fa-solid fa-calendar-days"></i>
+                </div>
+                <h3 class="font-extrabold text-lg text-slate-900 dark:text-white">Monthly Summary Report</h3>
+                <p id="monthlySummaryAccessText" class="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-5 leading-relaxed font-medium">
+                    Available to Administrator only. Select target month to review specific monthly inflows and outflows.
+                </p>
             </div>
 
-            <button id="monthlySummaryButton"
-                    onclick="downloadMonthlySummaryPDF()"
-                    class="w-full py-3 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm opacity-50 cursor-not-allowed" disabled>
-                <i class="fa-solid fa-file-pdf mr-2"></i>
-                Download Monthly Summary (Admin)
-            </button>
+            <div>
+                <div class="mb-4">
+                    <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Select Month & Year</label>
+                    <input type="month" id="reportTargetMonth" class="form-input font-semibold">
+                </div>
+
+                <button id="monthlySummaryButton"
+                        onclick="downloadMonthlySummaryPDF()"
+                        class="w-full py-3.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs shadow-lg shadow-amber-600/20 flex items-center justify-center gap-2 opacity-50 cursor-not-allowed transition-all" disabled>
+                    <i class="fa-solid fa-file-pdf text-sm"></i>
+                    <span>Download Monthly Summary (Admin)</span>
+                </button>
+            </div>
         </div>
 
         <!-- Complete Fund Summary (Admin Only) -->
         <div id="completeSummaryCard"
-             class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800">
-            <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center mb-4">
-                <i class="fa-solid fa-chart-column text-xl"></i>
+             class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
+            <div>
+                <div class="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-4 text-xl shadow-inner">
+                    <i class="fa-solid fa-chart-column"></i>
+                </div>
+                <h3 class="font-extrabold text-lg text-slate-900 dark:text-white">Complete Fund Summary</h3>
+                <p id="summaryAccessText" class="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-6 leading-relaxed font-medium">
+                    This executive report summarizes all registered members, total dues, and lifetime payouts. Available to Administrator only.
+                </p>
             </div>
-            <h3 class="font-extrabold text-lg">Complete Fund Summary</h3>
-            <p id="summaryAccessText" class="text-sm text-slate-500 mt-1 mb-5">
-                This report is available to the Administrator only.
-            </p>
 
             <button id="fundSummaryButton"
                     onclick="downloadFundSummaryPDF()"
-                    class="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm opacity-50 cursor-not-allowed" disabled>
-                <i class="fa-solid fa-file-pdf mr-2"></i>
-                Download Complete Summary (Admin)
+                    class="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 opacity-50 cursor-not-allowed transition-all" disabled>
+                <i class="fa-solid fa-file-pdf text-sm"></i>
+                <span>Download Complete Summary (Admin)</span>
             </button>
         </div>
     </div>
@@ -992,123 +1058,133 @@ body {
      ADMIN PANEL
 ========================================================= -->
 <section id="section-admin" class="page-section">
-    <div class="mb-6 flex flex-col sm:flex-row justify-between gap-3">
+    <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-            <h2 class="text-2xl font-extrabold">Administration</h2>
-            <p class="text-sm text-slate-500">Manage members, contributions, dues and welfare payouts.</p>
+            <h2 class="text-2xl font-black text-slate-900 dark:text-white">Administration Panel</h2>
+            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">Manage members, contributions, monthly dues, and welfare payouts securely.</p>
         </div>
         <div class="flex items-center gap-3">
-            <div id="adminStatusBadge" class="bg-emerald-100 text-emerald-800 px-3 py-2 rounded-lg text-xs font-bold flex items-center">
-                <i class="fa-solid fa-circle-check mr-1"></i> Admin Mode Active
+            <div id="adminStatusBadge" class="bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-400 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center border border-emerald-200 dark:border-emerald-900">
+                <i class="fa-solid fa-circle-check mr-1.5 text-emerald-500"></i> Admin Mode Active
             </div>
-            <button onclick="logoutAdmin()" class="px-3 py-2 rounded-lg bg-rose-600 text-white text-xs font-bold hover:bg-rose-700">
-                <i class="fa-solid fa-right-from-bracket mr-1"></i> Logout Admin
+            <button onclick="logoutAdmin()" class="px-3.5 py-2 rounded-xl bg-rose-600 text-white text-xs font-extrabold hover:bg-rose-700 shadow-md shadow-rose-600/20 transition-all">
+                <i class="fa-solid fa-right-from-bracket mr-1.5"></i> Logout
             </button>
         </div>
     </div>
 
     <div class="space-y-6">
-        <div class="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-800">
-            <h3 class="font-extrabold mb-4">
-                <i class="fa-solid fa-sliders text-sdaGold-500 mr-2"></i>
+        <!-- Settings -->
+        <div class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800">
+            <h3 class="font-extrabold text-base mb-4 text-slate-900 dark:text-white flex items-center gap-2">
+                <i class="fa-solid fa-sliders text-amber-500"></i>
                 Welfare Fund Settings
             </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
                 <div>
-                    <label class="block text-xs font-bold mb-1">Standard Monthly Dues</label>
-                    <div class="flex gap-2">
-                        <input type="number" id="standardMonthlyDuesInput" min="0" step="0.01" class="form-input">
-                        <button onclick="saveMonthlyDues()" class="px-5 rounded-lg bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white text-xs font-bold">Save</button>
+                    <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Standard Monthly Dues (GHS)</label>
+                    <div class="flex gap-2.5">
+                        <input type="number" id="standardMonthlyDuesInput" min="0" step="0.01" class="form-input font-bold">
+                        <button onclick="saveMonthlyDues()" class="px-6 rounded-xl bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white text-xs font-extrabold shadow-md transition-all">Save</button>
                     </div>
-                    <p class="text-[10px] text-slate-400 mt-2">This amount will be used as the standard monthly welfare dues throughout the portal.</p>
+                    <p class="text-[11px] text-slate-400 mt-2 font-medium">This amount auto-populates as standard monthly dues throughout the portal.</p>
                 </div>
-                <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
-                    <p class="text-xs font-bold text-slate-500">Current Standard Dues</p>
-                    <p id="adminCurrentDues" class="text-2xl font-extrabold text-sdaGold-600 mt-1">GHS 100.00</p>
+                <div class="bg-slate-50 dark:bg-slate-800/80 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Current Standard Dues</p>
+                        <p id="adminCurrentDues" class="text-3xl font-black text-amber-600 dark:text-amber-400 mt-1">GHS 100.00</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-coins"></i>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-800">
-            <h3 class="font-extrabold mb-4">
-                <i class="fa-solid fa-user-plus text-blue-500 mr-2"></i>
+        <!-- Add Staff -->
+        <div class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800">
+            <h3 class="font-extrabold text-base mb-4 text-slate-900 dark:text-white flex items-center gap-2">
+                <i class="fa-solid fa-user-plus text-blue-500"></i>
                 Register New Staff Member
             </h3>
             <form id="addStaffForm" onsubmit="handleAddNewStaff(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
                 <div>
-                    <label class="block text-xs font-bold mb-1">Staff ID</label>
-                    <input id="newStaffId" class="form-input" required>
+                    <label class="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">Staff ID</label>
+                    <input id="newStaffId" class="form-input" placeholder="e.g. STF004" required>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold mb-1">Full Name</label>
-                    <input id="newStaffName" class="form-input" required>
+                    <label class="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">Full Name</label>
+                    <input id="newStaffName" class="form-input" placeholder="Teacher Name" required>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold mb-1">Phone Number</label>
-                    <input id="newStaffPhone" class="form-input" required>
+                    <label class="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">Phone Number</label>
+                    <input id="newStaffPhone" class="form-input" placeholder="0240000000" required>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold mb-1">Rank / Grade</label>
+                    <label class="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">Rank / Grade</label>
                     <select id="newStaffGrade" class="form-input" required></select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold mb-1">Class Assigned</label>
-                    <input id="newStaffClass" class="form-input" required>
+                    <label class="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">Class Assigned</label>
+                    <input id="newStaffClass" class="form-input" placeholder="e.g. BS3" required>
                 </div>
                 <div class="flex items-end">
-                    <button type="submit" class="w-full bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white text-xs font-bold py-2.5 rounded-lg">
-                        <i class="fa-solid fa-plus mr-1"></i> Add Staff
+                    <button type="submit" class="w-full bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white text-xs font-extrabold py-3.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-plus"></i> Add Staff
                     </button>
                 </div>
             </form>
         </div>
 
+        <!-- Payments & Withdrawals Forms Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-800">
-                <h3 class="font-extrabold mb-4">
-                    <i class="fa-solid fa-money-check-dollar text-emerald-500 mr-2"></i>
+            <!-- Log Dues -->
+            <div class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800">
+                <h3 class="font-extrabold text-base mb-4 text-slate-900 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-money-check-dollar text-emerald-500"></i>
                     Log New Dues Payment
                 </h3>
                 <form onsubmit="handleRecordPayment(event)" class="space-y-4">
                     <div>
-                        <label class="block text-xs font-bold mb-1">Teacher / Member</label>
-                        <select id="adminPaymentTeacherSelect" class="form-input" required></select>
+                        <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Teacher / Member</label>
+                        <select id="adminPaymentTeacherSelect" class="form-input font-semibold" required></select>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold mb-1">Date Paid</label>
-                        <input type="date" id="adminPaymentDate" class="form-input" required>
+                        <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Date Paid</label>
+                        <input type="date" id="adminPaymentDate" class="form-input font-semibold" required>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold mb-1">Amount</label>
-                        <input type="number" id="adminPaymentAmount" min="0" step="0.01" class="form-input" required>
+                        <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Amount (GHS)</label>
+                        <input type="number" id="adminPaymentAmount" min="0" step="0.01" class="form-input font-bold" required>
                     </div>
-                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-3 rounded-lg">
-                        Save Contribution Record
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold py-3.5 rounded-xl shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-circle-check"></i> Save Contribution Record
                     </button>
                 </form>
             </div>
 
-            <div class="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-800">
-                <h3 class="font-extrabold mb-4">
-                    <i class="fa-solid fa-money-bill-transfer text-rose-500 mr-2"></i>
+            <!-- Process Withdrawal -->
+            <div class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800">
+                <h3 class="font-extrabold text-base mb-4 text-slate-900 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-money-bill-transfer text-rose-500"></i>
                     Process Welfare Withdrawal
                 </h3>
                 <form onsubmit="handleRecordWithdrawal(event)" class="space-y-4">
                     <div>
-                        <label class="block text-xs font-bold mb-1">Beneficiary</label>
-                        <select id="adminWithdrawalTeacherSelect" class="form-input" required></select>
+                        <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Beneficiary</label>
+                        <select id="adminWithdrawalTeacherSelect" class="form-input font-semibold" required></select>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold mb-1">Date</label>
-                        <input type="date" id="adminWithdrawalDate" class="form-input" required>
+                        <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Date</label>
+                        <input type="date" id="adminWithdrawalDate" class="form-input font-semibold" required>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold mb-1">Amount</label>
-                        <input type="number" id="adminWithdrawalAmount" min="0" step="0.01" class="form-input" required>
+                        <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Amount (GHS)</label>
+                        <input type="number" id="adminWithdrawalAmount" min="0" step="0.01" class="form-input font-bold" required>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold mb-1">Reason</label>
-                        <select id="adminWithdrawalReason" class="form-input" required>
+                        <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Reason / Purpose</label>
+                        <select id="adminWithdrawalReason" class="form-input font-semibold" required>
                             <option value="Medical Support">Medical Support</option>
                             <option value="Bereavement Assistance">Bereavement Assistance</option>
                             <option value="Emergency Loan">Emergency Loan</option>
@@ -1116,54 +1192,55 @@ body {
                             <option value="General Welfare Support">General Welfare Support</option>
                         </select>
                     </div>
-                    <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-3 rounded-lg">
-                        Process Payout / Withdrawal
+                    <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold py-3.5 rounded-xl shadow-lg shadow-rose-600/20 transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i> Process Payout / Withdrawal
                     </button>
                 </form>
             </div>
         </div>
 
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
-                <h3 class="font-extrabold">
-                    <i class="fa-solid fa-users-viewfinder text-blue-500 mr-2"></i>
-                    All Teachers / Members
+        <!-- Master Roster Table -->
+        <div class="glass-card rounded-2xl shadow-sm overflow-hidden border border-slate-200 dark:border-slate-800">
+            <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-800">
+                <h3 class="font-extrabold text-base text-slate-900 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-users-viewfinder text-blue-500"></i>
+                    Master Member Roster & Management
                 </h3>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-xs">
-                    <thead class="bg-slate-100 dark:bg-slate-800 uppercase">
+                    <thead class="bg-slate-100/80 dark:bg-slate-800/80 uppercase text-slate-600 dark:text-slate-300 font-extrabold tracking-wider">
                         <tr>
-                            <th class="px-4 py-3 text-left">Staff ID</th>
-                            <th class="px-4 py-3 text-left">Name</th>
-                            <th class="px-4 py-3 text-left">Phone</th>
-                            <th class="px-4 py-3 text-left">Rank / Grade</th>
-                            <th class="px-4 py-3 text-left">Class</th>
-                            <th class="px-4 py-3 text-left">Total Paid</th>
-                            <th class="px-4 py-3 text-left">Actions</th>
+                            <th class="px-5 py-4 text-left">Staff ID</th>
+                            <th class="px-5 py-4 text-left">Name</th>
+                            <th class="px-5 py-4 text-left">Phone</th>
+                            <th class="px-5 py-4 text-left">Rank / Grade</th>
+                            <th class="px-5 py-4 text-left">Class</th>
+                            <th class="px-5 py-4 text-left">Total Paid</th>
+                            <th class="px-5 py-4 text-left">Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="masterRosterBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+                    <tbody id="masterRosterBody" class="divide-y divide-slate-200 dark:divide-slate-800/80 font-medium">
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <div class="bg-rose-50 dark:bg-rose-950/30 rounded-xl p-5 border-2 border-rose-200 dark:border-rose-900">
+        <!-- Data Reset Box -->
+        <div class="bg-rose-50 dark:bg-rose-950/30 rounded-2xl p-6 border-2 border-rose-200 dark:border-rose-900">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
                 <div>
-                    <h3 class="font-extrabold text-rose-700 dark:text-rose-400">
-                        <i class="fa-solid fa-triangle-exclamation mr-2"></i>
+                    <h3 class="font-extrabold text-base text-rose-700 dark:text-rose-400 flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
                         Reset Welfare Fund Data
                     </h3>
-                    <p class="text-xs text-rose-600 dark:text-rose-300 mt-1 max-w-2xl">
-                        This will permanently clear all registered members, contribution records,
-                        welfare payouts and transaction history from this browser.
+                    <p class="text-xs text-rose-600 dark:text-rose-300 mt-1 max-w-2xl font-medium leading-relaxed">
+                        This will permanently clear all registered members, contribution records, welfare payouts and transaction history from local storage.
                     </p>
                 </div>
                 <button onclick="confirmResetAllData()"
-                        class="shrink-0 px-5 py-3 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold">
-                    <i class="fa-solid fa-trash-can mr-2"></i> Reset All Data
+                        class="shrink-0 px-6 py-3.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold shadow-lg shadow-rose-600/25 transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-trash-can"></i> Reset All Data
                 </button>
             </div>
         </div>
@@ -1175,12 +1252,12 @@ body {
 <!-- =========================================================
      FOOTER
 ========================================================= -->
-<footer class="bg-sdaNavy-900 text-slate-400 text-xs py-6">
-    <div class="text-center px-4 space-y-2">
-        <p class="font-semibold text-slate-300">
-            NTONSO SDA PRIMARY 'A' SCHOOL - WELFARE EXECUTIVE COMMITTEE
+<footer class="bg-sdaNavy-900 text-slate-400 text-xs py-8 border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
+        <p class="font-bold text-slate-200 tracking-wide">
+            NTONSO SDA PRIMARY 'A' SCHOOL • WELFARE EXECUTIVE COMMITTEE
         </p>
-        <p>© 2026 Teachers Welfare Fund. All Rights Reserved.</p>
+        <p class="text-slate-500 font-medium">© 2026 Teachers Welfare Fund Portal. All Rights Reserved.</p>
     </div>
 </footer>
 
@@ -1189,42 +1266,44 @@ body {
 <!-- =========================================================
      LIVE ROLLING ACTIVITY BANNER (Fixed Bottom Ticker)
 ========================================================= -->
-<div id="liveTickerBanner" class="fixed bottom-0 left-0 right-0 z-40 bg-sdaNavy-900/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-amber-500/30 text-white text-xs py-2 px-4 shadow-2xl flex items-center hidden">
-    <div class="flex items-center gap-2 bg-amber-500 text-sdaNavy-900 font-extrabold px-2.5 py-1 rounded text-[10px] uppercase tracking-wider flex-shrink-0 z-10 shadow">
+<div id="liveTickerBanner" class="fixed bottom-0 left-0 right-0 z-40 bg-sdaNavy-900/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-amber-500/30 text-white text-xs py-2.5 px-4 shadow-2xl flex items-center hidden">
+    <div class="flex items-center gap-2 bg-amber-500 text-sdaNavy-900 font-black px-3 py-1 rounded-lg text-[10px] uppercase tracking-wider flex-shrink-0 z-10 shadow">
         <i class="fa-solid fa-bullhorn animate-bounce"></i>
         <span>Activity Ticker</span>
     </div>
     <div class="overflow-hidden whitespace-nowrap relative flex-1 ml-3">
-        <div id="tickerContent" class="animate-ticker flex items-center gap-8">
+        <div id="tickerContent" class="animate-ticker flex items-center gap-8 font-medium">
             <!-- Dynamically populated activity items -->
         </div>
     </div>
 </div>
 
 <!-- =========================================================
-     ADMIN MODAL (For quick admin lock access from top bar)
+     ADMIN MODAL
 ========================================================= -->
 <div id="adminModal"
-     class="hidden fixed inset-0 bg-black/60 modal-backdrop z-[250] items-center justify-center p-4">
-    <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="font-extrabold">
-                <i class="fa-solid fa-lock text-sdaGold-500 mr-2"></i>
+     class="hidden fixed inset-0 modal-backdrop z-[250] items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-8 shadow-2xl border border-slate-200 dark:border-slate-800 transform transition-all animate-[smoothFadeIn_0.3s_ease-out]">
+        <div class="flex justify-between items-center mb-5">
+            <h3 class="font-extrabold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                <i class="fa-solid fa-lock text-amber-500"></i>
                 Executive Admin Verification
             </h3>
-            <button onclick="toggleAdminModal()">
+            <button onclick="toggleAdminModal()" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white transition-all">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
 
-        <form onsubmit="handleAdminLogin(event)">
-            <label class="block text-xs font-bold mb-1">Admin Passcode</label>
-            <input type="password" id="adminPasswordInput" class="form-input" required>
-            <p id="adminAuthError" class="text-xs text-rose-500 mt-2 hidden">Invalid passcode.</p>
+        <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Admin Passcode</label>
+                <input type="password" id="adminPasswordInput" class="form-input !py-3.5 font-semibold" placeholder="Enter admin passcode" required>
+            </div>
+            <p id="adminAuthError" class="text-xs text-rose-500 font-semibold hidden bg-rose-50 p-2.5 rounded-xl border border-rose-200">Invalid passcode. Try sda2026 or 1234.</p>
 
-            <div class="flex gap-2 mt-5">
-                <button type="button" onclick="toggleAdminModal()" class="w-1/2 py-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-bold">Cancel</button>
-                <button type="submit" class="w-1/2 py-3 bg-sdaNavy-500 text-white rounded-lg text-xs font-bold">Login</button>
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="toggleAdminModal()" class="w-1/2 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-200">Cancel</button>
+                <button type="submit" class="w-1/2 py-3.5 bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white rounded-xl text-xs font-extrabold shadow-md">Authenticate</button>
             </div>
         </form>
     </div>
@@ -1234,47 +1313,47 @@ body {
      EDIT MEMBER MODAL
 ========================================================= -->
 <div id="editMemberModal"
-     class="hidden fixed inset-0 bg-black/60 modal-backdrop z-[250] items-center justify-center p-4">
-    <div class="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-2xl shadow-2xl p-6">
-        <div class="flex justify-between items-center mb-5">
+     class="hidden fixed inset-0 modal-backdrop z-[250] items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-2xl shadow-2xl p-8 border border-slate-200 dark:border-slate-800 transform transition-all animate-[smoothFadeIn_0.3s_ease-out]">
+        <div class="flex justify-between items-center mb-6">
             <div>
-                <h3 class="text-lg font-extrabold">Edit Teacher / Member Details</h3>
-                <p class="text-xs text-slate-500">Update the member's personal and employment information.</p>
+                <h3 class="text-lg font-black text-slate-900 dark:text-white">Edit Teacher / Member Details</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Update the member's personal and employment information.</p>
             </div>
-            <button onclick="closeEditMemberModal()" class="text-slate-400 hover:text-rose-500">
-                <i class="fa-solid fa-xmark text-xl"></i>
+            <button onclick="closeEditMemberModal()" class="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all">
+                <i class="fa-solid fa-xmark text-lg"></i>
             </button>
         </div>
 
-        <form onsubmit="saveEditedMember(event)">
+        <form onsubmit="saveEditedMember(event)" class="space-y-4">
             <input type="hidden" id="editMemberId">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-xs font-bold mb-1">Staff ID</label>
-                    <input id="editStaffId" class="form-input" required>
+                    <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Staff ID</label>
+                    <input id="editStaffId" class="form-input font-semibold" required>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold mb-1">Full Name</label>
-                    <input id="editStaffName" class="form-input" required>
+                    <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Full Name</label>
+                    <input id="editStaffName" class="form-input font-semibold" required>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold mb-1">Phone Number</label>
-                    <input id="editStaffPhone" class="form-input" required>
+                    <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Phone Number</label>
+                    <input id="editStaffPhone" class="form-input font-semibold" required>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold mb-1">Rank / Grade</label>
-                    <select id="editStaffGrade" class="form-input" required></select>
+                    <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Rank / Grade</label>
+                    <select id="editStaffGrade" class="form-input font-semibold" required></select>
                 </div>
                 <div class="sm:col-span-2">
-                    <label class="block text-xs font-bold mb-1">Class Assigned</label>
-                    <input id="editStaffClass" class="form-input" required>
+                    <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Class Assigned</label>
+                    <input id="editStaffClass" class="form-input font-semibold" required>
                 </div>
             </div>
 
-            <div class="flex gap-3 mt-6">
-                <button type="button" onclick="closeEditMemberModal()" class="flex-1 py-3 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold">Cancel</button>
-                <button type="submit" class="flex-1 py-3 rounded-lg bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white text-xs font-bold">
-                    <i class="fa-solid fa-floppy-disk mr-1"></i> Save Changes
+            <div class="flex gap-3 pt-4">
+                <button type="button" onclick="closeEditMemberModal()" class="flex-1 py-3.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold">Cancel</button>
+                <button type="submit" class="flex-1 py-3.5 rounded-xl bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white text-xs font-extrabold shadow-lg shadow-sdaNavy-500/20">
+                    <i class="fa-solid fa-floppy-disk mr-1.5"></i> Save Changes
                 </button>
             </div>
         </form>
@@ -1284,8 +1363,9 @@ body {
 <!-- =========================================================
      TOAST
 ========================================================= -->
-<div id="toast" class="fixed bottom-5 right-5 z-[350] hidden max-w-sm">
-    <div id="toastInner" class="rounded-xl shadow-2xl px-5 py-4 text-sm font-semibold text-white">
+<div id="toast" class="fixed bottom-6 right-6 z-[350] hidden max-w-sm transform transition-all">
+    <div id="toastInner" class="rounded-2xl shadow-2xl px-6 py-4 text-xs font-extrabold text-white flex items-center gap-3 backdrop-blur-md">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-base"></i>
         <span id="toastMessage"></span>
     </div>
 </div>
@@ -1856,13 +1936,13 @@ function renderMemberPaymentTable(teacher) {
     }
     body.innerHTML = payments.map(payment => {
         return `
-            <tr>
-                <td class="px-6 py-3">${escapeHtml(monthYear(payment.date))}</td>
-                <td class="px-6 py-3">${escapeHtml(payment.reference || '-')}</td>
-                <td class="px-6 py-3 font-bold">${money(payment.amount)}</td>
-                <td class="px-6 py-3">${formatDate(payment.date)}</td>
-                <td class="px-6 py-3">
-                    <span class="inline-flex px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">Paid</span>
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
+                <td class="px-6 py-4 font-semibold">${escapeHtml(monthYear(payment.date))}</td>
+                <td class="px-6 py-4 text-slate-500 font-mono text-xs">${escapeHtml(payment.reference || '-')}</td>
+                <td class="px-6 py-4 font-extrabold text-emerald-600 dark:text-emerald-400">${money(payment.amount)}</td>
+                <td class="px-6 py-4">${formatDate(payment.date)}</td>
+                <td class="px-6 py-4">
+                    <span class="inline-flex px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 text-[10px] font-extrabold border border-emerald-200 dark:border-emerald-900">Verified Paid</span>
                 </td>
             </tr>
         `;
@@ -1878,12 +1958,12 @@ function renderMemberWithdrawalTable(teacher) {
     }
     body.innerHTML = payouts.map(payout => {
         return `
-            <tr>
-                <td class="px-6 py-3">${escapeHtml(payout.reference || '-')}</td>
-                <td class="px-6 py-3 font-semibold">${escapeHtml(teacher.name)}</td>
-                <td class="px-6 py-3">${escapeHtml(payout.reason || '-')}</td>
-                <td class="px-6 py-3 font-bold text-rose-600">${money(payout.amount)}</td>
-                <td class="px-6 py-3">${formatDate(payout.date)}</td>
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
+                <td class="px-6 py-4 font-mono text-xs text-slate-500">${escapeHtml(payout.reference || '-')}</td>
+                <td class="px-6 py-4 font-extrabold">${escapeHtml(teacher.name)}</td>
+                <td class="px-6 py-4 font-semibold text-slate-600 dark:text-slate-300">${escapeHtml(payout.reason || '-')}</td>
+                <td class="px-6 py-4 font-black text-rose-600 dark:text-rose-400">${money(payout.amount)}</td>
+                <td class="px-6 py-4">${formatDate(payout.date)}</td>
             </tr>
         `;
     }).join('');
@@ -1898,16 +1978,16 @@ function renderTeachersSection() {
     body.innerHTML = welfareData.teachers.map(teacher => {
         const total = teacher.payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
         return `
-            <tr>
-                <td class="px-5 py-3 font-semibold">${escapeHtml(teacher.id)}</td>
-                <td class="px-5 py-3 font-bold">${escapeHtml(teacher.name)}</td>
-                <td class="px-5 py-3">${escapeHtml(teacher.phone)}</td>
-                <td class="px-5 py-3">${escapeHtml(teacher.rank)}</td>
-                <td class="px-5 py-3">${escapeHtml(teacher.className)}</td>
-                <td class="px-5 py-3 font-bold">${money(total)}</td>
-                <td class="px-5 py-3">
-                    <button onclick="openEditMemberModal('${escapeAttr(teacher.id)}')" class="px-3 py-1.5 rounded-lg bg-blue-100 text-blue-700 font-bold text-[10px]">
-                        <i class="fa-solid fa-pen mr-1"></i> Edit
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
+                <td class="px-6 py-4 font-mono font-semibold text-xs">${escapeHtml(teacher.id)}</td>
+                <td class="px-6 py-4 font-black text-slate-900 dark:text-white">${escapeHtml(teacher.name)}</td>
+                <td class="px-6 py-4">${escapeHtml(teacher.phone)}</td>
+                <td class="px-6 py-4"><span class="bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 px-2.5 py-1 rounded-lg text-xs font-bold border border-blue-200 dark:border-blue-900">${escapeHtml(teacher.rank)}</span></td>
+                <td class="px-6 py-4 font-bold text-amber-600 dark:text-amber-400">${escapeHtml(teacher.className)}</td>
+                <td class="px-6 py-4 font-black text-emerald-600 dark:text-emerald-400">${money(total)}</td>
+                <td class="px-6 py-4">
+                    <button onclick="openEditMemberModal('${escapeAttr(teacher.id)}')" class="px-3.5 py-2 rounded-xl bg-blue-100 hover:bg-blue-200 dark:bg-blue-950 dark:hover:bg-blue-900 text-blue-700 dark:text-blue-300 font-extrabold text-xs transition-all flex items-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-pen text-[10px]"></i> Edit
                     </button>
                 </td>
             </tr>
@@ -1937,12 +2017,12 @@ function renderPaymentsSection() {
 
     body.innerHTML = records.map(record => {
         return `
-            <tr>
-                <td class="px-5 py-3 font-semibold">${escapeHtml(record.teacher.name)}</td>
-                <td class="px-5 py-3">${escapeHtml(monthYear(record.payment.date))}</td>
-                <td class="px-5 py-3">${escapeHtml(record.payment.reference || '-')}</td>
-                <td class="px-5 py-3 font-bold text-emerald-600">${money(record.payment.amount)}</td>
-                <td class="px-5 py-3">${formatDate(record.payment.date)}</td>
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
+                <td class="px-6 py-4 font-extrabold text-slate-900 dark:text-white">${escapeHtml(record.teacher.name)}</td>
+                <td class="px-6 py-4 font-semibold">${escapeHtml(monthYear(record.payment.date))}</td>
+                <td class="px-6 py-4 font-mono text-xs text-slate-500">${escapeHtml(record.payment.reference || '-')}</td>
+                <td class="px-6 py-4 font-black text-emerald-600 dark:text-emerald-400">${money(record.payment.amount)}</td>
+                <td class="px-6 py-4">${formatDate(record.payment.date)}</td>
             </tr>
         `;
     }).join('');
@@ -1972,12 +2052,12 @@ function renderWelfareSection() {
 
     body.innerHTML = records.map(record => {
         return `
-            <tr>
-                <td class="px-5 py-3">${escapeHtml(record.payout.reference || '-')}</td>
-                <td class="px-5 py-3 font-semibold">${escapeHtml(record.teacher.name)}</td>
-                <td class="px-5 py-3">${escapeHtml(record.payout.reason || '-')}</td>
-                <td class="px-5 py-3 font-bold text-rose-600">${money(record.payout.amount)}</td>
-                <td class="px-5 py-3">${formatDate(record.payout.date)}</td>
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
+                <td class="px-6 py-4 font-mono text-xs text-slate-500">${escapeHtml(record.payout.reference || '-')}</td>
+                <td class="px-6 py-4 font-extrabold text-slate-900 dark:text-white">${escapeHtml(record.teacher.name)}</td>
+                <td class="px-6 py-4 font-semibold text-slate-600 dark:text-slate-300">${escapeHtml(record.payout.reason || '-')}</td>
+                <td class="px-6 py-4 font-black text-rose-600 dark:text-rose-400">${money(record.payout.amount)}</td>
+                <td class="px-6 py-4">${formatDate(record.payout.date)}</td>
             </tr>
         `;
     }).join('');
@@ -2000,20 +2080,20 @@ function renderAdminRoster() {
     body.innerHTML = welfareData.teachers.map(teacher => {
         const total = teacher.payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
         return `
-            <tr>
-                <td class="px-4 py-3 font-semibold">${escapeHtml(teacher.id)}</td>
-                <td class="px-4 py-3 font-bold">${escapeHtml(teacher.name)}</td>
-                <td class="px-4 py-3">${escapeHtml(teacher.phone)}</td>
-                <td class="px-4 py-3">${escapeHtml(teacher.rank)}</td>
-                <td class="px-4 py-3">${escapeHtml(teacher.className)}</td>
-                <td class="px-4 py-3 font-bold">${money(total)}</td>
-                <td class="px-4 py-3">
-                    <div class="flex flex-wrap gap-1.5">
-                        <button onclick="openEditMemberModal('${escapeAttr(teacher.id)}')" class="px-2.5 py-1.5 rounded-lg bg-blue-100 text-blue-700 font-bold">
-                            <i class="fa-solid fa-pen"></i>
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
+                <td class="px-5 py-4 font-mono font-bold text-xs">${escapeHtml(teacher.id)}</td>
+                <td class="px-5 py-4 font-black text-slate-900 dark:text-white">${escapeHtml(teacher.name)}</td>
+                <td class="px-5 py-4">${escapeHtml(teacher.phone)}</td>
+                <td class="px-5 py-4"><span class="bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-lg text-[11px] font-bold border border-blue-200 dark:border-blue-900">${escapeHtml(teacher.rank)}</span></td>
+                <td class="px-5 py-4 font-bold text-amber-600 dark:text-amber-400">${escapeHtml(teacher.className)}</td>
+                <td class="px-5 py-4 font-black text-emerald-600 dark:text-emerald-400">${money(total)}</td>
+                <td class="px-5 py-4">
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="openEditMemberModal('${escapeAttr(teacher.id)}')" class="px-3 py-1.5 rounded-xl bg-blue-100 hover:bg-blue-200 dark:bg-blue-950 dark:hover:bg-blue-900 text-blue-700 dark:text-blue-300 font-extrabold text-xs transition-all shadow-sm">
+                            <i class="fa-solid fa-pen text-[10px]"></i> Edit
                         </button>
-                        <button onclick="handleRemoveStaff('${escapeAttr(teacher.id)}')" class="px-2.5 py-1.5 rounded-lg bg-rose-100 text-rose-700 font-bold">
-                            <i class="fa-solid fa-trash"></i>
+                        <button onclick="handleRemoveStaff('${escapeAttr(teacher.id)}')" class="px-3 py-1.5 rounded-xl bg-rose-100 hover:bg-rose-200 dark:bg-rose-950 dark:hover:bg-rose-900 text-rose-700 dark:text-rose-300 font-extrabold text-xs transition-all shadow-sm">
+                            <i class="fa-solid fa-trash text-[10px]"></i> Delete
                         </button>
                     </div>
                 </td>
@@ -2081,7 +2161,7 @@ function handlePortalLogin(event) {
         document.getElementById('loginGatewayModal').classList.add('hidden');
         updateAdminInterface();
         renderAll();
-        showToast('Administrator session started.', 'success');
+        showToast('Administrator session started securely.', 'success');
         return;
     }
 
@@ -2104,7 +2184,7 @@ function handlePortalLogin(event) {
         updateAdminInterface();
         renderAll();
         showSection('dashboard', null, true);
-        showToast(`Welcome, ${matched.name}!`, 'success');
+        showToast(`Welcome back, ${matched.name}!`, 'success');
     } else {
         errorEl.textContent = 'Invalid staff number or password.';
         errorEl.classList.remove('hidden');
@@ -2240,7 +2320,7 @@ function handleRecordWithdrawal(event) {
 
     const currentFund = getTotalContributions() - getTotalPayouts();
     if (amount > currentFund) {
-        showToast('Withdrawal exceeds the current available fund.', 'error');
+        showToast('Withdrawal exceeds the current available fund balance.', 'error');
         return;
     }
 
@@ -2346,7 +2426,7 @@ function saveMonthlyDues() {
     if (paymentAmount) paymentAmount.value = standardMonthlyDues;
 
     renderAll();
-    showToast('Standard monthly dues updated.', 'success');
+    showToast('Standard monthly dues updated successfully.', 'success');
 }
 
 function toggleAdminModal() {
@@ -2377,7 +2457,7 @@ function handleAdminLogin(event) {
         updateAdminInterface();
         renderAll();
         showSection('admin', null, true);
-        showToast('Admin access granted.', 'success');
+        showToast('Admin access granted successfully.', 'success');
     } else {
         document.getElementById('adminAuthError').classList.remove('hidden');
     }
@@ -2395,18 +2475,18 @@ function updateAdminInterface() {
     const statementSelect = document.getElementById('statementTeacherSelect');
 
     if (adminLoggedIn) {
-        btn.classList.remove('bg-sdaGold-500');
+        btn.classList.remove('bg-gradient-to-r', 'from-amber-500', 'to-amber-600');
         btn.classList.add('bg-emerald-600', 'text-white');
         text.textContent = 'Admin Active';
 
         summaryButton.classList.remove('opacity-50', 'cursor-not-allowed');
         summaryButton.disabled = false;
-        summaryButton.innerHTML = '<i class="fa-solid fa-file-pdf mr-2"></i> Download Complete Summary (Admin)';
+        summaryButton.innerHTML = '<i class="fa-solid fa-file-pdf mr-2"></i><span>Download Complete Summary (Admin)</span>';
         summaryText.textContent = 'Administrator access is active. You can generate the complete fund report.';
 
         monthlySummaryButton.classList.remove('opacity-50', 'cursor-not-allowed');
         monthlySummaryButton.disabled = false;
-        monthlySummaryButton.innerHTML = '<i class="fa-solid fa-file-pdf mr-2"></i> Download Monthly Summary (Admin)';
+        monthlySummaryButton.innerHTML = '<i class="fa-solid fa-file-pdf mr-2"></i><span>Download Monthly Summary (Admin)</span>';
         monthlySummaryAccessText.textContent = 'Administrator access active. Select target month to generate report.';
 
         if (statementSelect) statementSelect.disabled = false;
@@ -2414,18 +2494,18 @@ function updateAdminInterface() {
         if (sidebarUserRoleText) sidebarUserRoleText.textContent = 'Administrator';
         if (sidebarAuthIcon) sidebarAuthIcon.className = 'fa-solid fa-right-from-bracket';
     } else {
-        btn.classList.add('bg-sdaGold-500');
+        btn.classList.add('bg-gradient-to-r', 'from-amber-500', 'to-amber-600');
         btn.classList.remove('bg-emerald-600', 'text-white');
         text.textContent = 'Admin Access';
 
         summaryButton.classList.add('opacity-50', 'cursor-not-allowed');
         summaryButton.disabled = true;
-        summaryButton.innerHTML = '<i class="fa-solid fa-file-pdf mr-2"></i> Download Complete Summary (Admin)';
+        summaryButton.innerHTML = '<i class="fa-solid fa-file-pdf mr-2"></i><span>Download Complete Summary (Admin)</span>';
         summaryText.textContent = 'This report is available to the Administrator only.';
 
         monthlySummaryButton.classList.add('opacity-50', 'cursor-not-allowed');
         monthlySummaryButton.disabled = true;
-        monthlySummaryButton.innerHTML = '<i class="fa-solid fa-file-pdf mr-2"></i> Download Monthly Summary (Admin)';
+        monthlySummaryButton.innerHTML = '<i class="fa-solid fa-file-pdf mr-2"></i><span>Download Monthly Summary (Admin)</span>';
         monthlySummaryAccessText.textContent = 'Available to Administrator only. Select target month below.';
 
         if (statementSelect) statementSelect.disabled = true;
@@ -2471,7 +2551,7 @@ function logoutAdmin() {
     document.getElementById('gatewayError').classList.add('hidden');
     document.getElementById('loginGatewayModal').classList.remove('hidden');
     renderAll();
-    showToast('Session ended. Please sign in.', 'success');
+    showToast('Session ended successfully. Please sign in.', 'success');
 }
 
 function confirmResetAllData() {
@@ -2683,7 +2763,7 @@ async function downloadMonthlySummaryPDF() {
         orientation: 'landscape'
     });
 
-    showToast(`Monthly summary for ${monthFormattedName} downloaded.`, 'success');
+    showToast(`Monthly summary for ${monthFormattedName} downloaded successfully.`, 'success');
 }
 
 async function downloadFundSummaryPDF() {
@@ -2884,12 +2964,12 @@ function toggleSidebar() {
 
     if (sidebar.classList.contains('sidebar-collapsed')) {
         main.classList.remove('ml-72');
-        main.classList.add('ml-[76px]');
-        icon.className = 'fa-solid fa-angles-right';
+        main.classList.add('ml-[82px]');
+        icon.className = 'fa-solid fa-angles-right text-xs';
     } else {
-        main.classList.remove('ml-[76px]');
+        main.classList.remove('ml-[82px]');
         main.classList.add('ml-72');
-        icon.className = 'fa-solid fa-angles-left';
+        icon.className = 'fa-solid fa-angles-left text-xs';
     }
 }
 
@@ -2930,10 +3010,10 @@ function updateThemeIcons() {
     const sidebarThemeIcon = document.getElementById('sidebarThemeIcon');
 
     if (themeIcon) {
-        themeIcon.className = dark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        themeIcon.className = dark ? 'fa-solid fa-sun text-sm text-amber-400' : 'fa-solid fa-moon text-sm';
     }
     if (sidebarThemeIcon) {
-        sidebarThemeIcon.className = dark ? 'fa-solid fa-sun w-6 text-center mr-3' : 'fa-solid fa-moon w-6 text-center mr-3';
+        sidebarThemeIcon.className = dark ? 'fa-solid fa-sun w-6 text-center mr-3 text-amber-400' : 'fa-solid fa-moon w-6 text-center mr-3 text-sky-400';
     }
 }
 
@@ -2941,9 +3021,16 @@ function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
     const inner = document.getElementById('toastInner');
     const messageElement = document.getElementById('toastMessage');
+    const iconElement = document.getElementById('toastIcon');
 
     messageElement.textContent = message;
-    inner.className = 'rounded-xl shadow-2xl px-5 py-4 text-sm font-semibold text-white ' + (type === 'error' ? 'bg-rose-600' : 'bg-emerald-600');
+    if (type === 'error') {
+        inner.className = 'rounded-2xl shadow-2xl px-6 py-4 text-xs font-extrabold text-white flex items-center gap-3 bg-rose-600 backdrop-blur-md';
+        iconElement.className = 'fa-solid fa-circle-exclamation text-base';
+    } else {
+        inner.className = 'rounded-2xl shadow-2xl px-6 py-4 text-xs font-extrabold text-white flex items-center gap-3 bg-emerald-600 backdrop-blur-md';
+        iconElement.className = 'fa-solid fa-circle-check text-base';
+    }
 
     toast.classList.remove('hidden');
     clearTimeout(window.__toastTimer);
@@ -2955,8 +3042,8 @@ function showToast(message, type = 'success') {
 function emptyRow(colspan, message) {
     return `
         <tr>
-            <td colspan="${colspan}" class="px-5 py-8 text-center text-slate-400">
-                <i class="fa-solid fa-folder-open mb-2 text-lg"></i>
+            <td colspan="${colspan}" class="px-6 py-12 text-center text-slate-400 font-semibold">
+                <i class="fa-solid fa-folder-open mb-2 text-2xl text-slate-300 dark:text-slate-600"></i>
                 <div>${escapeHtml(message)}</div>
             </td>
         </tr>
