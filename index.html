@@ -1,237 +1,319 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Ntonso SDA Primary 'A' - Teachers Welfare Fund</title>
+<title>Ntonso SDA Primary 'A' - Teachers Welfare Fund</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.tailwindcss.com"></script>
 
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        sdaNavy: {
-                            50: '#f0f4f8',
-                            100: '#d9e2ec',
-                            500: '#103057',
-                            700: '#0b203c',
-                            900: '#061224'
-                        },
-                        sdaGold: {
-                            400: '#fbbf24',
-                            500: '#d97706',
-                            600: '#b45309'
-                        }
-                    }
+<script>
+tailwind.config = {
+    darkMode: 'class',
+    theme: {
+        extend: {
+            colors: {
+                sdaNavy: {
+                    50: '#f0f4f8',
+                    100: '#d9e2ec',
+                    500: '#103057',
+                    700: '#0b203c',
+                    900: '#061224'
+                },
+                sdaGold: {
+                    400: '#fbbf24',
+                    500: '#d97706',
+                    600: '#b45309'
                 }
             }
-        };
-    </script>
-
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-
-        * {
-            box-sizing: border-box;
         }
+    }
+};
+</script>
 
-        body {
-            font-family: 'Inter', sans-serif;
-        }
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-        .sidebar {
-            transition: width .3s ease, transform .3s ease;
-        }
+* {
+    box-sizing: border-box;
+}
 
-        .main-wrapper {
-            transition: margin-left .3s ease;
-        }
+body {
+    font-family: 'Inter', sans-serif;
+}
 
-        .sidebar-collapsed {
-            width: 76px !important;
-        }
+.sidebar {
+    transition: width .3s ease, transform .3s ease;
+}
 
-        .sidebar-collapsed .sidebar-text,
-        .sidebar-collapsed .sidebar-brand-text {
-            display: none;
-        }
+.main-wrapper {
+    transition: margin-left .3s ease;
+}
 
-        .sidebar-collapsed .nav-button {
-            justify-content: center;
-        }
+.sidebar-collapsed {
+    width: 76px !important;
+}
 
-        .sidebar-collapsed .nav-button i {
-            margin-right: 0 !important;
-        }
+.sidebar-collapsed .sidebar-text,
+.sidebar-collapsed .sidebar-brand-text {
+    display: none;
+}
 
-        .nav-button {
-            transition: all .2s ease;
-        }
+.sidebar-collapsed .nav-button {
+    justify-content: center;
+}
 
-        .nav-button.active {
-            background: rgba(217,119,6,.18);
-            color: #fbbf24;
-            border-right: 3px solid #fbbf24;
-        }
+.sidebar-collapsed .nav-button i {
+    margin-right: 0 !important;
+}
 
-        .nav-button:hover {
-            background: rgba(255,255,255,.08);
-        }
+.nav-button {
+    transition: all .2s ease;
+}
 
-        .page-section {
-            display: none;
-            animation: fadeIn .25s ease;
-        }
+.nav-button.active {
+    background: rgba(217,119,6,.18);
+    color: #fbbf24;
+    border-right: 3px solid #fbbf24;
+}
 
-        .page-section.active {
-            display: block;
-        }
+.nav-button:hover {
+    background: rgba(255,255,255,.08);
+}
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(6px);
-            }
+.page-section {
+    display: none;
+    animation: fadeIn .25s ease;
+}
 
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+.page-section.active {
+    display: block;
+}
 
-        .stat-card {
-            transition: transform .2s ease, box-shadow .2s ease;
-        }
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
 
-        .stat-card:hover {
-            transform: translateY(-2px);
-        }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 
-        .form-input {
-            width: 100%;
-            background: #f8fafc;
-            border: 1px solid #cbd5e1;
-            border-radius: .5rem;
-            padding: .65rem .75rem;
-            font-size: .75rem;
-            outline: none;
-        }
+.stat-card {
+    transition: transform .2s ease, box-shadow .2s ease;
+}
 
-        .form-input:focus {
-            border-color: #103057;
-            box-shadow: 0 0 0 2px rgba(16,48,87,.15);
-        }
+.stat-card:hover {
+    transform: translateY(-2px);
+}
 
-        .dark .form-input {
-            background: #1e293b;
-            border-color: #475569;
-            color: white;
-        }
+.form-input {
+    width: 100%;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: .5rem;
+    padding: .65rem .75rem;
+    font-size: .75rem;
+    outline: none;
+}
 
-        .pdf-template {
-            position: absolute;
-            left: -99999px;
-            top: 0;
-            width: 794px;
-            min-height: 1123px;
-            background: white;
-            color: #111827;
-        }
+.form-input:focus {
+    border-color: #103057;
+    box-shadow: 0 0 0 2px rgba(16,48,87,.15);
+}
 
-        .pdf-page {
-            width: 794px;
-            min-height: 1123px;
-            padding: 45px 48px 55px;
-            background: white;
-            position: relative;
-        }
+.dark .form-input {
+    background: #1e293b;
+    border-color: #475569;
+    color: white;
+}
 
-        .pdf-page table {
-            page-break-inside: auto;
-        }
+/* =========================================================
+   PDF STYLES
+   The old fixed 794px/1123px approach has been removed.
+   A4 dimensions are now handled by html2pdf/jsPDF.
+========================================================= */
 
-        .pdf-page tr {
-            page-break-inside: avoid;
-            page-break-after: auto;
-        }
+.pdf-render-area {
+    position: fixed;
+    left: -100000px;
+    top: 0;
+    width: 210mm;
+    background: #ffffff;
+    z-index: -9999;
+}
 
-        .pdf-footer {
-            position: absolute;
-            bottom: 20px;
-            left: 48px;
-            right: 48px;
-            border-top: 1px solid #cbd5e1;
-            padding-top: 8px;
-            font-size: 9px;
-            color: #64748b;
-            text-align: center;
-        }
+.pdf-page {
+    width: 190mm;
+    min-height: 277mm;
+    margin: 0 auto;
+    padding: 8mm;
+    background: #ffffff;
+    color: #111827;
+    position: relative;
+    overflow: visible;
+}
 
-        .mobile-overlay {
-            display: none;
-        }
+.pdf-summary-page {
+    width: 277mm;
+    min-height: 190mm;
+    margin: 0 auto;
+    padding: 8mm;
+    background: #ffffff;
+    color: #111827;
+    position: relative;
+    overflow: visible;
+}
 
-        .mobile-overlay.show {
-            display: block;
-        }
+.pdf-page table,
+.pdf-summary-page table {
+    width: 100%;
+    border-collapse: collapse;
+}
 
-        @media (max-width: 1023px) {
+.pdf-page tr,
+.pdf-summary-page tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+}
 
-            .sidebar {
-                transform: translateX(-100%);
-                width: 280px !important;
-            }
+.pdf-page thead,
+.pdf-summary-page thead {
+    display: table-header-group;
+}
 
-            .sidebar.mobile-open {
-                transform: translateX(0);
-            }
+.pdf-page tfoot,
+.pdf-summary-page tfoot {
+    display: table-footer-group;
+}
 
-            .main-wrapper {
-                margin-left: 0 !important;
-            }
+.pdf-avoid-break {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+}
 
-            .sidebar-collapsed {
-                width: 280px !important;
-            }
+.pdf-footer {
+    margin-top: 12mm;
+    border-top: 1px solid #cbd5e1;
+    padding-top: 3mm;
+    font-size: 8px;
+    color: #64748b;
+    text-align: center;
+}
 
-            .sidebar-collapsed .sidebar-text,
-            .sidebar-collapsed .sidebar-brand-text {
-                display: inline;
-            }
+.pdf-small {
+    font-size: 9px;
+}
 
-            .sidebar-collapsed .nav-button {
-                justify-content: flex-start;
-            }
+.pdf-table {
+    font-size: 9px;
+}
 
-            .sidebar-collapsed .nav-button i {
-                margin-right: .75rem !important;
-            }
-        }
+.pdf-table th,
+.pdf-table td {
+    border: 1px solid #cbd5e1;
+    padding: 5px 6px;
+    vertical-align: middle;
+}
 
-        ::-webkit-scrollbar {
-            width: 7px;
-            height: 7px;
-        }
+.pdf-table th {
+    background: #f1f5f9;
+    font-weight: 800;
+}
 
-        ::-webkit-scrollbar-thumb {
-            background: #94a3b8;
-            border-radius: 10px;
-        }
-    </style>
+.pdf-summary-table {
+    font-size: 8.5px;
+}
+
+.pdf-summary-table th,
+.pdf-summary-table td {
+    border: 1px solid #cbd5e1;
+    padding: 4px 5px;
+    vertical-align: middle;
+}
+
+.pdf-summary-table th {
+    background: #f1f5f9;
+    font-weight: 800;
+}
+
+.mobile-overlay {
+    display: none;
+}
+
+.mobile-overlay.show {
+    display: block;
+}
+
+.modal-backdrop {
+    backdrop-filter: blur(4px);
+}
+
+@media (max-width: 1023px) {
+
+    .sidebar {
+        transform: translateX(-100%);
+        width: 280px !important;
+    }
+
+    .sidebar.mobile-open {
+        transform: translateX(0);
+    }
+
+    .main-wrapper {
+        margin-left: 0 !important;
+    }
+
+    .sidebar-collapsed {
+        width: 280px !important;
+    }
+
+    .sidebar-collapsed .sidebar-text,
+    .sidebar-collapsed .sidebar-brand-text {
+        display: inline;
+    }
+
+    .sidebar-collapsed .nav-button {
+        justify-content: flex-start;
+    }
+
+    .sidebar-collapsed .nav-button i {
+        margin-right: .75rem !important;
+    }
+}
+
+::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 10px;
+}
+
+@media print {
+    body {
+        background: white !important;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+}
+</style>
 </head>
 
-
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen">
-
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
 
 <!-- =========================================================
      MOBILE OVERLAY
@@ -239,8 +321,7 @@
 
 <div id="mobileOverlay"
      onclick="closeMobileSidebar()"
-     class="mobile-overlay fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-40 lg:hidden">
-</div>
+     class="mobile-overlay fixed inset-0 bg-black/50 z-40 lg:hidden"></div>
 
 
 <!-- =========================================================
@@ -248,7 +329,7 @@
 ========================================================= -->
 
 <aside id="sidebar"
-       class="sidebar fixed top-0 left-0 bottom-0 z-50 w-72 bg-sdaNavy-900 text-white shadow-2xl flex flex-col">
+       class="sidebar fixed left-0 top-0 bottom-0 w-72 bg-sdaNavy-900 text-white z-50 flex flex-col shadow-2xl">
 
     <div class="h-20 px-4 border-b border-white/10 flex items-center">
 
@@ -268,14 +349,19 @@
 
         <button onclick="toggleSidebar()"
                 class="ml-auto hidden lg:block text-slate-400 hover:text-white">
+
             <i id="sidebarToggleIcon"
                class="fa-solid fa-angles-left"></i>
+
         </button>
 
         <button onclick="closeMobileSidebar()"
                 class="ml-auto lg:hidden text-slate-400">
+
             <i class="fa-solid fa-xmark"></i>
+
         </button>
+
     </div>
 
 
@@ -295,6 +381,7 @@
                 <span class="sidebar-text">
                     Dashboard
                 </span>
+
             </button>
 
 
@@ -306,6 +393,7 @@
                 <span class="sidebar-text">
                     Teachers & Members
                 </span>
+
             </button>
 
 
@@ -317,6 +405,7 @@
                 <span class="sidebar-text">
                     Contributions
                 </span>
+
             </button>
 
 
@@ -328,6 +417,7 @@
                 <span class="sidebar-text">
                     Welfare & Payouts
                 </span>
+
             </button>
 
 
@@ -339,6 +429,7 @@
                 <span class="sidebar-text">
                     Statements & Reports
                 </span>
+
             </button>
 
         </nav>
@@ -362,6 +453,7 @@
                 <span class="sidebar-text">
                     Admin Panel
                 </span>
+
             </button>
 
 
@@ -374,9 +466,11 @@
                 <span class="sidebar-text">
                     Dark / Light Mode
                 </span>
+
             </button>
 
         </nav>
+
     </div>
 
 
@@ -385,10 +479,13 @@
         <div class="flex items-center bg-white/5 rounded-xl p-3">
 
             <div class="w-9 h-9 rounded-full bg-sdaGold-500 text-sdaNavy-900 flex items-center justify-center">
+
                 <i class="fa-solid fa-school"></i>
+
             </div>
 
             <div class="ml-3 sidebar-text">
+
                 <p class="text-xs font-bold">
                     Welfare Executive
                 </p>
@@ -396,9 +493,11 @@
                 <p class="text-[10px] text-slate-400">
                     Ntonso SDA Primary 'A'
                 </p>
+
             </div>
 
         </div>
+
     </div>
 
 </aside>
@@ -409,14 +508,14 @@
 ========================================================= -->
 
 <div id="mainWrapper"
-     class="main-wrapper lg:ml-72 min-h-screen flex flex-col">
+     class="main-wrapper ml-72 min-h-screen flex flex-col">
 
 
 <!-- =========================================================
      HEADER
 ========================================================= -->
 
-<header class="sticky top-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur border-b border-slate-200 dark:border-slate-800">
+<header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30">
 
     <div class="h-20 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
 
@@ -424,7 +523,9 @@
 
             <button onclick="openMobileSidebar()"
                     class="lg:hidden w-10 h-10 rounded-lg bg-sdaNavy-900 text-white flex items-center justify-center">
+
                 <i class="fa-solid fa-bars"></i>
+
             </button>
 
             <div>
@@ -439,6 +540,7 @@
                 </h2>
 
             </div>
+
         </div>
 
 
@@ -485,10 +587,10 @@
 
 
 <!-- =========================================================
-     MAIN
+     MAIN CONTENT
 ========================================================= -->
 
-<main class="flex-grow p-4 sm:p-6 lg:p-8">
+<main class="flex-1 p-4 sm:p-6 lg:p-8">
 
 
 <!-- =========================================================
@@ -497,7 +599,6 @@
 
 <section id="section-dashboard"
          class="page-section active">
-
 
     <div class="mb-6 bg-gradient-to-br from-sdaNavy-700 via-sdaNavy-900 to-slate-950 rounded-2xl p-5 sm:p-7 text-white shadow-xl">
 
@@ -521,6 +622,7 @@
             </p>
 
         </div>
+
     </div>
 
 
@@ -533,7 +635,9 @@
             <div class="flex items-center gap-2">
 
                 <div class="w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+
                     <i class="fa-solid fa-user-check text-sdaGold-500"></i>
+
                 </div>
 
                 <div>
@@ -547,6 +651,7 @@
                     </span>
 
                 </div>
+
             </div>
 
 
@@ -560,6 +665,7 @@
             </div>
 
         </div>
+
     </div>
 
 
@@ -645,7 +751,7 @@
                 </h3>
 
                 <p class="text-[11px] text-slate-500">
-                    Approved Flat Rate
+                    Current Rate
                 </p>
 
             </div>
@@ -1200,7 +1306,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
 
-        <!-- Individual -->
+        <!-- INDIVIDUAL -->
 
         <div class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800">
 
@@ -1237,9 +1343,10 @@
         </div>
 
 
-        <!-- Summary -->
+        <!-- ADMIN SUMMARY -->
 
-        <div class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800">
+        <div id="completeSummaryCard"
+             class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800">
 
             <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center mb-4">
 
@@ -1251,13 +1358,14 @@
                 Complete Fund Summary
             </h3>
 
-            <p class="text-sm text-slate-500 mt-1 mb-5">
-                Download a complete PDF report containing members,
-                contributions, welfare payouts, total funds and other summaries.
+            <p id="summaryAccessText"
+               class="text-sm text-slate-500 mt-1 mb-5">
+                This report is available to the Administrator only.
             </p>
 
 
-            <button onclick="downloadFundSummaryPDF()"
+            <button id="fundSummaryButton"
+                    onclick="downloadFundSummaryPDF()"
                     class="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm">
 
                 <i class="fa-solid fa-file-pdf mr-2"></i>
@@ -1274,7 +1382,7 @@
 
 
 <!-- =========================================================
-     ADMIN
+     ADMIN PANEL
 ========================================================= -->
 
 <section id="section-admin"
@@ -1295,7 +1403,7 @@
         </div>
 
         <div id="adminStatusBadge"
-             class="hidden bg-emerald-100 text-emerald-800 px-3 py-2 rounded-lg text-xs font-bold">
+             class="bg-emerald-100 text-emerald-800 px-3 py-2 rounded-lg text-xs font-bold">
 
             <i class="fa-solid fa-circle-check mr-1"></i>
 
@@ -1309,9 +1417,7 @@
     <div class="space-y-6">
 
 
-        <!-- =================================================
-             SETTINGS
-        ================================================== -->
+        <!-- SETTINGS -->
 
         <div class="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-800">
 
@@ -1374,9 +1480,7 @@
         </div>
 
 
-        <!-- =================================================
-             REGISTER STAFF
-        ================================================== -->
+        <!-- REGISTER STAFF -->
 
         <div class="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-800">
 
@@ -1478,12 +1582,12 @@
         </div>
 
 
-        <!-- =================================================
-             RECORD PAYMENT
-        ================================================== -->
+        <!-- RECORDS -->
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
+
+            <!-- PAYMENT -->
 
             <div class="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-800">
 
@@ -1670,9 +1774,7 @@
         </div>
 
 
-        <!-- =================================================
-             MASTER ROSTER
-        ================================================== -->
+        <!-- MASTER ROSTER -->
 
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
 
@@ -1739,6 +1841,46 @@
 
         </div>
 
+
+        <!-- DANGEROUS / RESET AREA -->
+
+        <div class="bg-rose-50 dark:bg-rose-950/30 rounded-xl p-5 border-2 border-rose-200 dark:border-rose-900">
+
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+
+                <div>
+
+                    <h3 class="font-extrabold text-rose-700 dark:text-rose-400">
+
+                        <i class="fa-solid fa-triangle-exclamation mr-2"></i>
+
+                        Reset Welfare Fund Data
+
+                    </h3>
+
+                    <p class="text-xs text-rose-600 dark:text-rose-300 mt-1 max-w-2xl">
+
+                        This will permanently clear all registered members, contribution records,
+                        welfare payouts and transaction history from this browser.
+
+                    </p>
+
+                </div>
+
+
+                <button onclick="confirmResetAllData()"
+                        class="shrink-0 px-5 py-3 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold">
+
+                    <i class="fa-solid fa-trash-can mr-2"></i>
+
+                    Reset All Data
+
+                </button>
+
+            </div>
+
+        </div>
+
     </div>
 
 </section>
@@ -1750,7 +1892,7 @@
      FOOTER
 ========================================================= -->
 
-<footer class="bg-sdaNavy-900 text-slate-400 border-t border-slate-800 py-6 text-xs">
+<footer class="bg-sdaNavy-900 text-slate-400 text-xs py-6">
 
     <div class="text-center px-4 space-y-2">
 
@@ -1774,19 +1916,24 @@
 ========================================================= -->
 
 <div id="adminModal"
-     class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[60] flex items-center justify-center hidden p-4">
+     class="hidden fixed inset-0 bg-black/60 modal-backdrop z-[100] items-center justify-center p-4">
 
     <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl">
 
         <div class="flex justify-between items-center mb-4">
 
             <h3 class="font-extrabold">
+
                 <i class="fa-solid fa-lock text-sdaGold-500 mr-2"></i>
+
                 Executive Admin Verification
+
             </h3>
 
             <button onclick="toggleAdminModal()">
+
                 <i class="fa-solid fa-xmark"></i>
+
             </button>
 
         </div>
@@ -1814,12 +1961,16 @@
                 <button type="button"
                         onclick="toggleAdminModal()"
                         class="w-1/2 py-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-bold">
+
                     Cancel
+
                 </button>
 
                 <button type="submit"
                         class="w-1/2 py-3 bg-sdaNavy-500 text-white rounded-lg text-xs font-bold">
+
                     Login
+
                 </button>
 
             </div>
@@ -1836,7 +1987,7 @@
 ========================================================= -->
 
 <div id="editMemberModal"
-     class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[70] hidden items-center justify-center p-4">
+     class="hidden fixed inset-0 bg-black/60 modal-backdrop z-[100] items-center justify-center p-4">
 
     <div class="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-2xl shadow-2xl p-6">
 
@@ -1945,13 +2096,18 @@
                 <button type="button"
                         onclick="closeEditMemberModal()"
                         class="flex-1 py-3 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold">
+
                     Cancel
+
                 </button>
 
                 <button type="submit"
                         class="flex-1 py-3 rounded-lg bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white text-xs font-bold">
+
                     <i class="fa-solid fa-floppy-disk mr-1"></i>
+
                     Save Changes
+
                 </button>
 
             </div>
@@ -1964,15 +2120,40 @@
 
 
 <!-- =========================================================
-     MEMBER PDF
+     TOAST
 ========================================================= -->
 
-<div id="pdfExportContainer"
-     class="pdf-template">
+<div id="toast"
+     class="fixed bottom-5 right-5 z-[200] hidden max-w-sm">
 
-    <div class="pdf-page">
+    <div id="toastInner"
+         class="rounded-xl shadow-2xl px-5 py-4 text-sm font-semibold text-white">
 
-        <div class="text-center border-b-2 border-slate-800 pb-4">
+        <span id="toastMessage"></span>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     PDF RENDER AREA
+     IMPORTANT:
+     This is kept OFF-SCREEN, not display:none.
+     html2canvas can therefore render it correctly.
+========================================================= -->
+
+<div id="pdfRenderArea"
+     class="pdf-render-area">
+
+    <!-- =====================================================
+         INDIVIDUAL STATEMENT TEMPLATE
+    ====================================================== -->
+
+    <div id="statementPdfTemplate"
+         class="pdf-page">
+
+        <div class="text-center border-b-2 border-slate-800 pb-4 pdf-avoid-break">
 
             <h2 class="text-xl font-extrabold">
                 GHANA EDUCATION SERVICE
@@ -1993,7 +2174,7 @@
         </div>
 
 
-        <div class="flex justify-between mt-5 mb-5 text-xs">
+        <div class="flex justify-between mt-5 mb-5 text-xs pdf-avoid-break">
 
             <div>
 
@@ -2022,7 +2203,7 @@
         </div>
 
 
-        <div class="border border-slate-300 rounded-lg p-4 mb-5 text-xs">
+        <div class="border border-slate-300 rounded-lg p-4 mb-5 text-xs pdf-avoid-break">
 
             <h3 class="font-bold border-b pb-2 mb-3">
                 MEMBER INFORMATION
@@ -2061,7 +2242,7 @@
         </div>
 
 
-        <div class="grid grid-cols-2 gap-4 mb-5">
+        <div class="grid grid-cols-2 gap-4 mb-5 pdf-avoid-break">
 
             <div class="border border-emerald-200 bg-emerald-50 rounded-lg p-4 text-center">
 
@@ -2098,29 +2279,21 @@
         </h3>
 
 
-        <table class="w-full text-[10px] border-collapse border border-slate-300 mb-6">
+        <table class="pdf-table mb-7">
 
             <thead>
 
-                <tr class="bg-slate-100">
+                <tr>
 
-                    <th class="border px-2 py-2">
-                        #
-                    </th>
+                    <th>#</th>
 
-                    <th class="border px-2 py-2">
-                        Month / Year
-                    </th>
+                    <th>Month / Year</th>
 
-                    <th class="border px-2 py-2">
-                        Receipt
-                    </th>
+                    <th>Receipt / Reference</th>
 
-                    <th class="border px-2 py-2">
-                        Date Paid
-                    </th>
+                    <th>Date Paid</th>
 
-                    <th class="border px-2 py-2 text-right">
+                    <th class="text-right">
                         Amount
                     </th>
 
@@ -2139,29 +2312,23 @@
         </h3>
 
 
-        <table class="w-full text-[10px] border-collapse border border-slate-300">
+        <table class="pdf-table">
 
             <thead>
 
-                <tr class="bg-slate-100">
+                <tr>
 
-                    <th class="border px-2 py-2">
-                        #
-                    </th>
+                    <th>#</th>
 
-                    <th class="border px-2 py-2">
-                        Beneficiary
-                    </th>
+                    <th>Beneficiary</th>
 
-                    <th class="border px-2 py-2">
-                        Reason
-                    </th>
+                    <th>Reason</th>
 
-                    <th class="border px-2 py-2">
-                        Reference
-                    </th>
+                    <th>Reference</th>
 
-                    <th class="border px-2 py-2 text-right">
+                    <th>Date</th>
+
+                    <th class="text-right">
                         Amount
                     </th>
 
@@ -2175,7 +2342,7 @@
         </table>
 
 
-        <div class="grid grid-cols-2 gap-12 mt-14 text-[10px]">
+        <div class="grid grid-cols-2 gap-12 mt-14 text-[10px] pdf-avoid-break">
 
             <div class="text-center">
 
@@ -2219,19 +2386,15 @@
 
     </div>
 
-</div>
 
+    <!-- =====================================================
+         COMPLETE SUMMARY TEMPLATE
+    ====================================================== -->
 
-<!-- =========================================================
-     FUND SUMMARY PDF
-========================================================= -->
+    <div id="summaryPdfTemplate"
+         class="pdf-summary-page">
 
-<div id="fundSummaryPDF"
-     class="pdf-template">
-
-    <div class="pdf-page">
-
-        <div class="text-center border-b-2 border-slate-800 pb-4">
+        <div class="text-center border-b-2 border-slate-800 pb-4 pdf-avoid-break">
 
             <h2 class="text-xl font-extrabold">
                 GHANA EDUCATION SERVICE
@@ -2252,7 +2415,7 @@
         </div>
 
 
-        <div class="flex justify-between mt-5 mb-5 text-xs">
+        <div class="flex justify-between mt-5 mb-5 text-xs pdf-avoid-break">
 
             <div>
 
@@ -2281,9 +2444,7 @@
         </div>
 
 
-        <!-- SUMMARY CARDS -->
-
-        <div class="grid grid-cols-4 gap-3 mb-6">
+        <div class="grid grid-cols-4 gap-3 mb-6 pdf-avoid-break">
 
             <div class="border border-blue-200 bg-blue-50 rounded-lg p-3 text-center">
 
@@ -2343,40 +2504,36 @@
         </div>
 
 
-        <!-- MEMBERS CONTRIBUTION -->
-
         <h3 class="text-xs font-extrabold uppercase mb-2">
             1. Members Contribution Summary
         </h3>
 
 
-        <table class="w-full text-[9px] border-collapse border border-slate-300 mb-6">
+        <table class="pdf-summary-table mb-6">
 
             <thead>
 
-                <tr class="bg-slate-100">
+                <tr>
 
-                    <th class="border px-2 py-2">
-                        #
-                    </th>
+                    <th>#</th>
 
-                    <th class="border px-2 py-2 text-left">
+                    <th class="text-left">
                         Staff ID
                     </th>
 
-                    <th class="border px-2 py-2 text-left">
+                    <th class="text-left">
                         Member Name
                     </th>
 
-                    <th class="border px-2 py-2 text-left">
+                    <th class="text-left">
                         Rank / Grade
                     </th>
 
-                    <th class="border px-2 py-2">
+                    <th>
                         Payments
                     </th>
 
-                    <th class="border px-2 py-2 text-right">
+                    <th class="text-right">
                         Total Contribution
                     </th>
 
@@ -2390,40 +2547,36 @@
         </table>
 
 
-        <!-- PAYOUTS -->
-
         <h3 class="text-xs font-extrabold uppercase mb-2">
             2. Welfare Payout Summary
         </h3>
 
 
-        <table class="w-full text-[9px] border-collapse border border-slate-300 mb-6">
+        <table class="pdf-summary-table mb-6">
 
             <thead>
 
-                <tr class="bg-slate-100">
+                <tr>
 
-                    <th class="border px-2 py-2">
-                        #
-                    </th>
+                    <th>#</th>
 
-                    <th class="border px-2 py-2 text-left">
+                    <th class="text-left">
                         Date
                     </th>
 
-                    <th class="border px-2 py-2 text-left">
+                    <th class="text-left">
                         Beneficiary
                     </th>
 
-                    <th class="border px-2 py-2 text-left">
+                    <th class="text-left">
                         Reason
                     </th>
 
-                    <th class="border px-2 py-2 text-left">
+                    <th class="text-left">
                         Reference
                     </th>
 
-                    <th class="border px-2 py-2 text-right">
+                    <th class="text-right">
                         Amount
                     </th>
 
@@ -2437,14 +2590,12 @@
         </table>
 
 
-        <!-- FUND DETAILS -->
-
         <h3 class="text-xs font-extrabold uppercase mb-2">
             3. Fund Financial Summary
         </h3>
 
 
-        <div class="border border-slate-300 rounded-lg text-xs">
+        <div class="border border-slate-300 rounded-lg text-xs pdf-avoid-break">
 
             <div class="flex justify-between px-4 py-3 border-b">
 
@@ -2500,7 +2651,7 @@
         </div>
 
 
-        <div class="mt-12 grid grid-cols-2 gap-12 text-[10px]">
+        <div class="mt-12 grid grid-cols-2 gap-12 text-[10px] pdf-avoid-break">
 
             <div class="text-center">
 
@@ -2538,696 +2689,379 @@
 </div>
 
 
-<!-- =========================================================
-     JAVASCRIPT
-========================================================= -->
-
 <script>
 
-
 /* =========================================================
-   SETTINGS
+   CONFIGURATION
 ========================================================= */
 
-const DEFAULT_MONTHLY_DUES = 100;
+const STORAGE_KEY = 'ntonso_sda_welfare_data_v3';
+const DUES_KEY = 'ntonso_sda_standard_dues_v3';
+const THEME_KEY = 'ntonso_sda_theme_v3';
 
-const RANKS = [
-    "Pupil Teacher",
-    "Superintendent II",
-    "Superintendent I",
-    "Senior Superintendent II",
-    "Senior Superintendent I",
-    "Principal Superintendent",
-    "Assistant Director II",
-    "Assistant Director I",
-    "Deputy Director",
-    "Director II",
-    "Director I",
-    "Deputy Director General",
-    "Director General",
-    "Headmaster",
-    "Assistant Headmaster",
-    "Headmistress",
-    "Assistant Headmistress"
+const ADMIN_PASSWORDS = [
+    'sda2026',
+    '1234'
+];
+
+const RANK_OPTIONS = [
+
+    'PS',
+
+    'ADII',
+
+    'ADI',
+
+    'DD',
+
+    'Assistant Director II',
+
+    'Assistant Director I',
+
+    'Deputy Director',
+
+    '14. Headmaster',
+
+    '15. Assistant Headmaster',
+
+    '16. Headmistress',
+
+    '16. Assistant Headmistress'
+
 ];
 
 
-let teachersData = [];
+/* =========================================================
+   APPLICATION STATE
+========================================================= */
 
-let activeTeacherId = "";
+let adminLoggedIn = false;
 
-let isAdminLoggedIn = false;
+let selectedTeacherId = null;
+
+let editingMemberId = null;
 
 
 /* =========================================================
-   DEFAULT TEACHERS
+   DATA
 ========================================================= */
 
-const DEFAULT_TEACHERS = [
-    {
-        id: "TCH-001",
-        staffId: "GES-108421",
-        name: "Kwaku Mensah",
-        phone: "0241112233",
-        grade: "Senior Superintendent I",
-        classAssigned: "Basic 6",
+let welfareData = loadData();
 
-        payments: [
-            {
-                id: "REC-901",
-                month: "2025-09",
-                amount: 100,
-                date: "2025-09-15"
-            },
-            {
-                id: "REC-902",
-                month: "2025-10",
-                amount: 100,
-                date: "2025-10-12"
-            },
-            {
-                id: "REC-903",
-                month: "2025-11",
-                amount: 100,
-                date: "2025-11-10"
-            },
-            {
-                id: "REC-904",
-                month: "2025-12",
-                amount: 100,
-                date: "2025-12-14"
-            },
-            {
-                id: "REC-905",
-                month: "2026-01",
-                amount: 100,
-                date: "2026-01-18"
-            },
-            {
-                id: "REC-906",
-                month: "2026-02",
-                amount: 100,
-                date: "2026-02-11"
+let standardMonthlyDues = Number(
+    localStorage.getItem(DUES_KEY) || 100
+);
+
+
+/* =========================================================
+   LOAD DATA
+========================================================= */
+
+function loadData() {
+
+    try {
+
+        const saved = localStorage.getItem(STORAGE_KEY);
+
+        if (!saved) {
+
+            return {
+                teachers: []
+            };
+
+        }
+
+        const parsed = JSON.parse(saved);
+
+        if (!parsed || !Array.isArray(parsed.teachers)) {
+
+            return {
+                teachers: []
+            };
+
+        }
+
+        parsed.teachers.forEach(teacher => {
+
+            if (!Array.isArray(teacher.payments)) {
+                teacher.payments = [];
             }
-        ],
 
-        withdrawals: [
-            {
-                id: "WTH-501",
-                teacherName: "Kwaku Mensah",
-                reason: "Medical Support",
-                amount: 200,
-                date: "2026-01-20"
+            if (!Array.isArray(teacher.payouts)) {
+                teacher.payouts = [];
             }
-        ]
-    },
 
-    {
-        id: "TCH-002",
-        staffId: "GES-209115",
-        name: "Abena Serwaa Boateng",
-        phone: "0202223344",
-        grade: "Principal Superintendent",
-        classAssigned: "Basic 1",
+        });
 
-        payments: [
-            {
-                id: "REC-907",
-                month: "2025-09",
-                amount: 100,
-                date: "2025-09-14"
-            },
-            {
-                id: "REC-908",
-                month: "2025-10",
-                amount: 100,
-                date: "2025-10-10"
-            },
-            {
-                id: "REC-909",
-                month: "2025-11",
-                amount: 100,
-                date: "2025-11-15"
-            },
-            {
-                id: "REC-910",
-                month: "2025-12",
-                amount: 100,
-                date: "2025-12-20"
-            },
-            {
-                id: "REC-911",
-                month: "2026-01",
-                amount: 100,
-                date: "2026-01-10"
-            },
-            {
-                id: "REC-912",
-                month: "2026-02",
-                amount: 100,
-                date: "2026-02-14"
-            }
-        ],
+        return parsed;
 
-        withdrawals: []
-    },
+    } catch (error) {
 
-    {
-        id: "TCH-003",
-        staffId: "GES-311092",
-        name: "Emmanuel Osei Poku",
-        phone: "0273334455",
-        grade: "Assistant Director I",
-        classAssigned: "Administration",
+        console.error(error);
 
-        payments: [
-            {
-                id: "REC-913",
-                month: "2025-09",
-                amount: 100,
-                date: "2025-09-10"
-            },
-            {
-                id: "REC-914",
-                month: "2025-10",
-                amount: 100,
-                date: "2025-10-11"
-            },
-            {
-                id: "REC-915",
-                month: "2025-11",
-                amount: 100,
-                date: "2025-11-12"
-            },
-            {
-                id: "REC-916",
-                month: "2025-12",
-                amount: 100,
-                date: "2025-12-15"
-            },
-            {
-                id: "REC-917",
-                month: "2026-01",
-                amount: 100,
-                date: "2026-01-08"
-            },
-            {
-                id: "REC-918",
-                month: "2026-02",
-                amount: 100,
-                date: "2026-02-09"
-            }
-        ],
+        return {
+            teachers: []
+        };
 
-        withdrawals: [
-            {
-                id: "WTH-502",
-                teacherName: "Emmanuel Osei Poku",
-                reason: "Bereavement Assistance",
-                amount: 300,
-                date: "2026-02-15"
-            }
-        ]
     }
-];
+
+}
 
 
 /* =========================================================
-   INITIALIZATION
+   SAVE DATA
 ========================================================= */
 
-window.addEventListener("DOMContentLoaded", function () {
+function saveData() {
 
-    loadTeachersData();
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(welfareData)
+    );
 
-    initializeRankDropdowns();
+}
+
+
+/* =========================================================
+   INITIALIZE
+========================================================= */
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    populateRankSelects();
 
     initializeDates();
 
-    populateTeacherSelects();
+    applySavedTheme();
 
-    loadMonthlyDues();
+    renderAll();
 
-    if (teachersData.length > 0) {
-        activeTeacherId = teachersData[0].id;
-    }
-
-    renderDashboard();
-
-    renderAllSections();
+    updateAdminInterface();
 
 });
 
 
 /* =========================================================
-   MONTHLY DUES
+   DATE HELPERS
 ========================================================= */
 
-function getMonthlyDues() {
+function todayISO() {
 
-    const saved =
-        parseFloat(
-            localStorage.getItem("ntonso_monthly_dues")
-        );
+    const now = new Date();
 
-    if (!isNaN(saved) && saved >= 0) {
-        return saved;
-    }
+    const year = now.getFullYear();
 
-    return DEFAULT_MONTHLY_DUES;
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+
+    const day = String(now.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+
 }
 
 
-function loadMonthlyDues() {
+function formatDate(dateString) {
 
-    const dues = getMonthlyDues();
+    if (!dateString) return '-';
 
-    const input =
-        document.getElementById(
-            "standardMonthlyDuesInput"
-        );
+    const date = new Date(`${dateString}T00:00:00`);
 
-    if (input) {
-        input.value = dues;
+    if (Number.isNaN(date.getTime())) {
+
+        return dateString;
+
     }
 
-    const adminCurrent =
-        document.getElementById(
-            "adminCurrentDues"
-        );
+    return date.toLocaleDateString(
+        'en-GB',
+        {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        }
+    );
 
-    if (adminCurrent) {
-        adminCurrent.textContent =
-            formatCurrency(dues);
-    }
-
-    const stat =
-        document.getElementById(
-            "statMonthlyRate"
-        );
-
-    if (stat) {
-        stat.textContent =
-            formatCurrency(dues);
-    }
-
-    const paymentRate =
-        document.getElementById(
-            "paymentMonthlyRate"
-        );
-
-    if (paymentRate) {
-        paymentRate.textContent =
-            formatCurrency(dues);
-    }
 }
 
 
-function saveMonthlyDues() {
+function monthYear(dateString) {
 
-    if (!isAdminLoggedIn) {
-        showToast("Administrator login is required.");
-        return;
+    if (!dateString) return '-';
+
+    const date = new Date(`${dateString}T00:00:00`);
+
+    if (Number.isNaN(date.getTime())) {
+
+        return '-';
+
     }
 
-    const input =
-        document.getElementById(
-            "standardMonthlyDuesInput"
-        );
+    return date.toLocaleDateString(
+        'en-GB',
+        {
+            month: 'long',
+            year: 'numeric'
+        }
+    );
 
-    const amount =
-        parseFloat(input.value);
+}
 
-    if (isNaN(amount) || amount < 0) {
-        showToast("Please enter a valid dues amount.");
-        return;
+
+function initializeDates() {
+
+    const today = todayISO();
+
+    const paymentDate =
+        document.getElementById('adminPaymentDate');
+
+    const withdrawalDate =
+        document.getElementById('adminWithdrawalDate');
+
+    if (paymentDate) {
+        paymentDate.value = today;
     }
 
-    localStorage.setItem(
-        "ntonso_monthly_dues",
-        amount
-    );
+    if (withdrawalDate) {
+        withdrawalDate.value = today;
+    }
 
-    loadMonthlyDues();
-
-    renderDashboard();
-
-    showToast(
-        `Standard monthly dues updated to ${formatCurrency(amount)}.`
-    );
 }
 
 
 /* =========================================================
-   RANKS
+   CURRENCY
 ========================================================= */
 
-function initializeRankDropdowns() {
+function money(amount) {
 
-    const dropdowns = [
-        document.getElementById("newStaffGrade"),
-        document.getElementById("editStaffGrade")
+    return 'GHS ' +
+        Number(amount || 0).toLocaleString(
+            'en-GH',
+            {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }
+        );
+
+}
+
+
+/* =========================================================
+   ID GENERATORS
+========================================================= */
+
+function generateReference(prefix) {
+
+    return prefix +
+        '-' +
+        Date.now().toString().slice(-8);
+
+}
+
+
+function generateDocumentId(prefix) {
+
+    const now = new Date();
+
+    const stamp =
+        now.getFullYear() +
+        String(now.getMonth() + 1).padStart(2, '0') +
+        String(now.getDate()).padStart(2, '0') +
+        String(now.getHours()).padStart(2, '0') +
+        String(now.getMinutes()).padStart(2, '0') +
+        String(now.getSeconds()).padStart(2, '0');
+
+    return `${prefix}-${stamp}`;
+
+}
+
+
+/* =========================================================
+   INITIALS
+========================================================= */
+
+function initials(name) {
+
+    if (!name) return '--';
+
+    return name
+        .trim()
+        .split(/\s+/)
+        .slice(0, 2)
+        .map(part => part.charAt(0))
+        .join('')
+        .toUpperCase();
+
+}
+
+
+/* =========================================================
+   RANK SELECTS
+========================================================= */
+
+function populateRankSelects() {
+
+    const selects = [
+        document.getElementById('newStaffGrade'),
+        document.getElementById('editStaffGrade')
     ];
 
-    dropdowns.forEach(select => {
+    selects.forEach(select => {
 
         if (!select) return;
 
-        select.innerHTML = "";
+        select.innerHTML =
+            '<option value="">Select Rank / Grade</option>';
 
-        RANKS.forEach((rank, index) => {
+        RANK_OPTIONS.forEach(rank => {
 
             const option =
-                document.createElement("option");
+                document.createElement('option');
 
             option.value = rank;
 
-            option.textContent =
-                `${index + 1}. ${rank}`;
+            option.textContent = rank;
 
             select.appendChild(option);
 
         });
 
     });
+
 }
 
 
 /* =========================================================
-   SIDEBAR
+   TEACHER HELPERS
 ========================================================= */
 
-function toggleSidebar() {
+function getTeacherById(id) {
 
-    const sidebar =
-        document.getElementById("sidebar");
-
-    const icon =
-        document.getElementById(
-            "sidebarToggleIcon"
-        );
-
-    sidebar.classList.toggle(
-        "sidebar-collapsed"
+    return welfareData.teachers.find(
+        teacher => String(teacher.id) === String(id)
     );
 
-    icon.className =
-        sidebar.classList.contains(
-            "sidebar-collapsed"
-        )
-            ? "fa-solid fa-angles-right"
-            : "fa-solid fa-angles-left";
 }
 
 
-function openMobileSidebar() {
+function getSelectedTeacher() {
 
-    document.getElementById(
-        "sidebar"
-    ).classList.add(
-        "mobile-open"
-    );
+    if (!selectedTeacherId) {
 
-    document.getElementById(
-        "mobileOverlay"
-    ).classList.add(
-        "show"
-    );
-}
+        if (welfareData.teachers.length) {
 
+            selectedTeacherId =
+                welfareData.teachers[0].id;
 
-function closeMobileSidebar() {
+        } else {
 
-    document.getElementById(
-        "sidebar"
-    ).classList.remove(
-        "mobile-open"
-    );
-
-    document.getElementById(
-        "mobileOverlay"
-    ).classList.remove(
-        "show"
-    );
-}
-
-
-/* =========================================================
-   SECTION NAVIGATION
-========================================================= */
-
-function showSection(section, button) {
-
-    if (section === "admin" && !isAdminLoggedIn) {
-
-        toggleAdminModal();
-
-        return;
-    }
-
-
-    document.querySelectorAll(
-        ".page-section"
-    ).forEach(sectionEl => {
-
-        sectionEl.classList.remove(
-            "active"
-        );
-
-    });
-
-
-    const target =
-        document.getElementById(
-            `section-${section}`
-        );
-
-    if (target) {
-        target.classList.add("active");
-    }
-
-
-    document.querySelectorAll(
-        ".nav-button"
-    ).forEach(btn => {
-
-        btn.classList.remove("active");
-
-    });
-
-
-    if (button) {
-        button.classList.add("active");
-    }
-
-
-    const titles = {
-
-        dashboard: "Dashboard",
-
-        teachers: "Teachers & Members",
-
-        payments: "Contributions",
-
-        welfare: "Welfare & Payouts",
-
-        statements: "Statements & Reports",
-
-        admin: "Administration"
-
-    };
-
-
-    document.getElementById(
-        "pageTitle"
-    ).textContent =
-        titles[section] || "Dashboard";
-
-
-    closeMobileSidebar();
-
-    renderAllSections();
-}
-
-
-function requestAdminSection() {
-
-    if (isAdminLoggedIn) {
-
-        const adminButton =
-            document.querySelectorAll(
-                ".nav-button"
-            )[5];
-
-        showSection(
-            "admin",
-            adminButton
-        );
-
-    } else {
-
-        toggleAdminModal();
-
-    }
-}
-
-
-/* =========================================================
-   STORAGE
-========================================================= */
-
-function loadTeachersData() {
-
-    const saved =
-        localStorage.getItem(
-            "ntonso_sda_teachers"
-        );
-
-
-    if (saved) {
-
-        try {
-
-            teachersData =
-                JSON.parse(saved);
-
-        } catch {
-
-            teachersData =
-                JSON.parse(
-                    JSON.stringify(
-                        DEFAULT_TEACHERS
-                    )
-                );
+            return null;
 
         }
 
-    } else {
-
-        teachersData =
-            JSON.parse(
-                JSON.stringify(
-                    DEFAULT_TEACHERS
-                )
-            );
-
-        saveTeachersData();
-
     }
 
-
-    teachersData =
-        teachersData.map(t => ({
-
-            id: t.id,
-
-            staffId: t.staffId || "",
-
-            name: t.name || "",
-
-            phone: t.phone || "",
-
-            grade: t.grade || "Senior Superintendent I",
-
-            classAssigned:
-                t.classAssigned || "",
-
-            payments:
-                Array.isArray(t.payments)
-                    ? t.payments
-                    : [],
-
-            withdrawals:
-                Array.isArray(t.withdrawals)
-                    ? t.withdrawals
-                    : []
-
-        }));
-
-}
-
-
-function saveTeachersData() {
-
-    localStorage.setItem(
-        "ntonso_sda_teachers",
-        JSON.stringify(
-            teachersData
-        )
-    );
-
-}
-
-
-/* =========================================================
-   SELECTORS
-========================================================= */
-
-function populateTeacherSelects() {
-
-    const selects = [
-
-        document.getElementById(
-            "teacherSelect"
-        ),
-
-        document.getElementById(
-            "statementTeacherSelect"
-        ),
-
-        document.getElementById(
-            "adminPaymentTeacherSelect"
-        ),
-
-        document.getElementById(
-            "adminWithdrawalTeacherSelect"
-        )
-
-    ];
-
-
-    selects.forEach(select => {
-
-        if (!select) return;
-
-        const previous =
-            select.value;
-
-        select.innerHTML = "";
-
-
-        teachersData.forEach(t => {
-
-            const option =
-                document.createElement(
-                    "option"
-                );
-
-            option.value = t.id;
-
-            option.textContent =
-                `${t.name} (${t.staffId})`;
-
-            select.appendChild(
-                option
-            );
-
-        });
-
-
-        if (
-            previous &&
-            teachersData.some(
-                t => t.id === previous
-            )
-        ) {
-
-            select.value =
-                previous;
-
-        }
-
-    });
+    return getTeacherById(selectedTeacherId);
 
 }
 
@@ -3236,348 +3070,96 @@ function switchTeacher(id) {
 
     if (!id) return;
 
-    activeTeacherId = id;
+    selectedTeacherId = id;
 
-    document.getElementById(
-        "teacherSelect"
-    ).value = id;
+    const teacherSelect =
+        document.getElementById('teacherSelect');
 
-    const statement =
-        document.getElementById(
-            "statementTeacherSelect"
-        );
+    const statementSelect =
+        document.getElementById('statementTeacherSelect');
 
-    if (statement) {
-        statement.value = id;
+    if (teacherSelect) {
+        teacherSelect.value = id;
     }
 
-    renderDashboard();
+    if (statementSelect) {
+        statementSelect.value = id;
+    }
+
+    renderAll();
+
 }
 
 
 /* =========================================================
-   DASHBOARD RENDER
+   POPULATE TEACHER SELECTS
 ========================================================= */
 
-function renderDashboard() {
+function populateTeacherSelects() {
 
-    if (!teachersData.length) {
-
-        return;
-    }
-
-
-    const teacher =
-        teachersData.find(
-            t => t.id === activeTeacherId
-        ) ||
-        teachersData[0];
-
-
-    activeTeacherId =
-        teacher.id;
-
-
-    const allPayments = [];
-
-    const allWithdrawals = [];
-
-
-    teachersData.forEach(t => {
-
-        (t.payments || []).forEach(p => {
-
-            allPayments.push({
-                ...p,
-                teacherName: t.name,
-                staffId: t.staffId
-            });
-
-        });
-
-
-        (t.withdrawals || []).forEach(w => {
-
-            allWithdrawals.push({
-                ...w,
-                teacherName:
-                    w.teacherName ||
-                    t.name
-            });
-
-        });
-
-    });
-
-
-    const totalContributions =
-        allPayments.reduce(
-            (sum, p) =>
-                sum + Number(p.amount),
-            0
-        );
-
-
-    const totalPayouts =
-        allWithdrawals.reduce(
-            (sum, w) =>
-                sum + Number(w.amount),
-            0
-        );
-
-
-    const netFund =
-        totalContributions -
-        totalPayouts;
-
-
-    const memberTotal =
-        (teacher.payments || []).reduce(
-            (sum, p) =>
-                sum + Number(p.amount),
-            0
-        );
-
-
-    document.getElementById(
-        "statTotalFund"
-    ).textContent =
-        formatCurrency(netFund);
-
-
-    document.getElementById(
-        "statMemberTotal"
-    ).textContent =
-        formatCurrency(memberTotal);
-
-
-    document.getElementById(
-        "statMemberContribCount"
-    ).textContent =
-        `${teacher.payments.length} Payment${teacher.payments.length === 1 ? "" : "s"} recorded`;
-
-
-    document.getElementById(
-        "statMonthlyRate"
-    ).textContent =
-        formatCurrency(
-            getMonthlyDues()
-        );
-
-
-    const activities = [
-
-        ...allPayments.map(p => ({
-            date: normalizeDate(
-                p.date,
-                p.month
-            ),
-            text:
-                `Payment: ${formatCurrency(p.amount)}`
-        })),
-
-        ...allWithdrawals.map(w => ({
-            date:
-                normalizeDate(w.date),
-            text:
-                `Welfare payout: ${formatCurrency(w.amount)}`
-        }))
-
+    const selects = [
+        document.getElementById('teacherSelect'),
+        document.getElementById('statementTeacherSelect'),
+        document.getElementById('adminPaymentTeacherSelect'),
+        document.getElementById('adminWithdrawalTeacherSelect')
     ];
 
+    selects.forEach(select => {
 
-    activities.sort(
-        (a,b) =>
-            b.date.localeCompare(
-                a.date
+        if (!select) return;
+
+        const currentValue = select.value;
+
+        select.innerHTML = '';
+
+        if (!welfareData.teachers.length) {
+
+            const option =
+                document.createElement('option');
+
+            option.value = '';
+
+            option.textContent = 'No members registered';
+
+            select.appendChild(option);
+
+            return;
+
+        }
+
+        welfareData.teachers.forEach(teacher => {
+
+            const option =
+                document.createElement('option');
+
+            option.value = teacher.id;
+
+            option.textContent =
+                `${teacher.name} (${teacher.id})`;
+
+            select.appendChild(option);
+
+        });
+
+        if (
+            currentValue &&
+            welfareData.teachers.some(
+                t => String(t.id) === String(currentValue)
             )
-    );
+        ) {
 
+            select.value = currentValue;
 
-    if (activities.length) {
+        } else if (
+            selectedTeacherId &&
+            welfareData.teachers.some(
+                t => String(t.id) === String(selectedTeacherId)
+            )
+        ) {
 
-        document.getElementById(
-            "statLastPayment"
-        ).textContent =
-            activities[0].text;
+            select.value = selectedTeacherId;
 
-        document.getElementById(
-            "statLastMonthName"
-        ).textContent =
-            formatDate(
-                activities[0].date
-            );
-
-    } else {
-
-        document.getElementById(
-            "statLastPayment"
-        ).textContent =
-            "N/A";
-
-        document.getElementById(
-            "statLastMonthName"
-        ).textContent =
-            "No activity";
-
-    }
-
-
-    document.getElementById(
-        "currentTeacherName"
-    ).textContent =
-        teacher.name;
-
-
-    document.getElementById(
-        "currentTeacherGrade"
-    ).textContent =
-        teacher.grade;
-
-
-    document.getElementById(
-        "currentTeacherStaffId"
-    ).textContent =
-        teacher.staffId;
-
-
-    document.getElementById(
-        "currentTeacherPhone"
-    ).textContent =
-        teacher.phone;
-
-
-    document.getElementById(
-        "currentTeacherClass"
-    ).textContent =
-        teacher.classAssigned;
-
-
-    document.getElementById(
-        "headerTeacherName"
-    ).textContent =
-        teacher.name;
-
-
-    document.getElementById(
-        "teacherAvatar"
-    ).textContent =
-        getInitials(
-            teacher.name
-        );
-
-
-    renderMemberPayments(
-        teacher
-    );
-
-
-    renderMemberWithdrawals(
-        allWithdrawals
-    );
-
-}
-
-
-/* =========================================================
-   PAYMENT TABLE
-========================================================= */
-
-function renderMemberPayments(
-    teacher
-) {
-
-    const body =
-        document.getElementById(
-            "paymentTableBody"
-        );
-
-    body.innerHTML = "";
-
-
-    const payments =
-        [...(teacher.payments || [])]
-        .sort(
-            (a,b) =>
-                normalizeDate(
-                    b.date,
-                    b.month
-                ).localeCompare(
-                    normalizeDate(
-                        a.date,
-                        a.month
-                    )
-                )
-        );
-
-
-    if (!payments.length) {
-
-        body.innerHTML = `
-            <tr>
-                <td colspan="5"
-                    class="px-6 py-8 text-center text-slate-400">
-                    No contribution records found.
-                </td>
-            </tr>
-        `;
-
-        return;
-    }
-
-
-    payments.forEach(p => {
-
-        const tr =
-            document.createElement(
-                "tr"
-            );
-
-        tr.className =
-            "hover:bg-slate-50 dark:hover:bg-slate-800";
-
-
-        tr.innerHTML = `
-
-            <td class="px-6 py-4 font-bold">
-                ${formatMonthName(
-                    getMonthValue(p)
-                )}
-            </td>
-
-            <td class="px-6 py-4 font-mono text-xs">
-                ${p.id}
-            </td>
-
-            <td class="px-6 py-4 font-bold text-emerald-600">
-                ${formatCurrency(
-                    p.amount
-                )}
-            </td>
-
-            <td class="px-6 py-4">
-                ${formatDate(
-                    normalizeDate(
-                        p.date,
-                        p.month
-                    )
-                )}
-            </td>
-
-            <td class="px-6 py-4">
-
-                <span class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-full">
-
-                    <i class="fa-solid fa-circle-check mr-1"></i>
-
-                    Paid
-
-                </span>
-
-            </td>
-        `;
-
-        body.appendChild(tr);
+        }
 
     });
 
@@ -3585,89 +3167,14 @@ function renderMemberPayments(
 
 
 /* =========================================================
-   WITHDRAWAL TABLE
+   RENDER ALL
 ========================================================= */
 
-function renderMemberWithdrawals(
-    withdrawals
-) {
+function renderAll() {
 
-    const body =
-        document.getElementById(
-            "withdrawalTableBody"
-        );
+    populateTeacherSelects();
 
-    body.innerHTML = "";
-
-
-    if (!withdrawals.length) {
-
-        body.innerHTML = `
-            <tr>
-                <td colspan="5"
-                    class="px-6 py-8 text-center text-slate-400">
-                    No welfare payout records found.
-                </td>
-            </tr>
-        `;
-
-        return;
-    }
-
-
-    withdrawals
-    .sort(
-        (a,b) =>
-            b.date.localeCompare(
-                a.date
-            )
-    )
-    .forEach(w => {
-
-        const tr =
-            document.createElement(
-                "tr"
-            );
-
-
-        tr.innerHTML = `
-
-            <td class="px-6 py-4 font-mono text-xs">
-                ${w.id}
-            </td>
-
-            <td class="px-6 py-4 font-bold">
-                ${w.teacherName}
-            </td>
-
-            <td class="px-6 py-4">
-                ${w.reason}
-            </td>
-
-            <td class="px-6 py-4 font-bold text-rose-600">
-                - ${formatCurrency(
-                    w.amount
-                )}
-            </td>
-
-            <td class="px-6 py-4">
-                ${formatDate(w.date)}
-            </td>
-        `;
-
-
-        body.appendChild(tr);
-
-    });
-
-}
-
-
-/* =========================================================
-   OTHER SECTIONS
-========================================================= */
-
-function renderAllSections() {
+    renderDashboard();
 
     renderTeachersSection();
 
@@ -3675,7 +3182,266 @@ function renderAllSections() {
 
     renderWelfareSection();
 
-    renderMasterRoster();
+    renderAdminRoster();
+
+    renderAdminSettings();
+
+}
+
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
+function renderDashboard() {
+
+    const teacher = getSelectedTeacher();
+
+    const totalFund =
+        getTotalContributions() -
+        getTotalPayouts();
+
+    document.getElementById('statTotalFund').textContent =
+        money(totalFund);
+
+    document.getElementById('statMonthlyRate').textContent =
+        money(standardMonthlyDues);
+
+    if (!teacher) {
+
+        document.getElementById('headerTeacherName').textContent =
+            'No Teacher';
+
+        document.getElementById('currentTeacherName').textContent =
+            'No member registered';
+
+        document.getElementById('currentTeacherGrade').textContent =
+            '--';
+
+        document.getElementById('currentTeacherStaffId').textContent =
+            '--';
+
+        document.getElementById('currentTeacherPhone').textContent =
+            '--';
+
+        document.getElementById('currentTeacherClass').textContent =
+            '--';
+
+        document.getElementById('teacherAvatar').textContent =
+            '--';
+
+        document.getElementById('statMemberTotal').textContent =
+            money(0);
+
+        document.getElementById('statMemberContribCount').textContent =
+            '0 Payments recorded';
+
+        document.getElementById('statLastPayment').textContent =
+            'N/A';
+
+        document.getElementById('statLastMonthName').textContent =
+            '-';
+
+        document.getElementById('paymentTableBody').innerHTML =
+            emptyRow(5, 'No member registered.');
+
+        document.getElementById('withdrawalTableBody').innerHTML =
+            emptyRow(5, 'No member registered.');
+
+        return;
+
+    }
+
+
+    document.getElementById('headerTeacherName').textContent =
+        teacher.name;
+
+    document.getElementById('currentTeacherName').textContent =
+        teacher.name;
+
+    document.getElementById('currentTeacherGrade').textContent =
+        teacher.rank || '--';
+
+    document.getElementById('currentTeacherStaffId').textContent =
+        teacher.id || '--';
+
+    document.getElementById('currentTeacherPhone').textContent =
+        teacher.phone || '--';
+
+    document.getElementById('currentTeacherClass').textContent =
+        teacher.className || '--';
+
+    document.getElementById('teacherAvatar').textContent =
+        initials(teacher.name);
+
+
+    const memberTotal =
+        teacher.payments.reduce(
+            (sum, payment) =>
+                sum + Number(payment.amount || 0),
+            0
+        );
+
+    document.getElementById('statMemberTotal').textContent =
+        money(memberTotal);
+
+    document.getElementById('statMemberContribCount').textContent =
+        `${teacher.payments.length} Payment${teacher.payments.length === 1 ? '' : 's'} recorded`;
+
+
+    const sortedPayments =
+        [...teacher.payments].sort(
+            (a, b) =>
+                String(b.date).localeCompare(String(a.date))
+        );
+
+    if (sortedPayments.length) {
+
+        const latest =
+            sortedPayments[0];
+
+        document.getElementById('statLastPayment').textContent =
+            money(latest.amount);
+
+        document.getElementById('statLastMonthName').textContent =
+            `${monthYear(latest.date)} • ${formatDate(latest.date)}`;
+
+    } else {
+
+        document.getElementById('statLastPayment').textContent =
+            'N/A';
+
+        document.getElementById('statLastMonthName').textContent =
+            '-';
+
+    }
+
+
+    renderMemberPaymentTable(teacher);
+
+    renderMemberWithdrawalTable(teacher);
+
+}
+
+
+/* =========================================================
+   MEMBER PAYMENT TABLE
+========================================================= */
+
+function renderMemberPaymentTable(teacher) {
+
+    const body =
+        document.getElementById('paymentTableBody');
+
+    const payments =
+        [...teacher.payments].sort(
+            (a, b) =>
+                String(b.date).localeCompare(String(a.date))
+        );
+
+    if (!payments.length) {
+
+        body.innerHTML =
+            emptyRow(
+                5,
+                'No contribution records found.'
+            );
+
+        return;
+
+    }
+
+    body.innerHTML =
+        payments.map((payment, index) => {
+
+            return `
+                <tr>
+                    <td class="px-6 py-3">
+                        ${escapeHtml(monthYear(payment.date))}
+                    </td>
+
+                    <td class="px-6 py-3">
+                        ${escapeHtml(payment.reference || '-')}
+                    </td>
+
+                    <td class="px-6 py-3 font-bold">
+                        ${money(payment.amount)}
+                    </td>
+
+                    <td class="px-6 py-3">
+                        ${formatDate(payment.date)}
+                    </td>
+
+                    <td class="px-6 py-3">
+                        <span class="inline-flex px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">
+                            Paid
+                        </span>
+                    </td>
+                </tr>
+            `;
+
+        }).join('');
+
+}
+
+
+/* =========================================================
+   MEMBER WITHDRAWAL TABLE
+========================================================= */
+
+function renderMemberWithdrawalTable(teacher) {
+
+    const body =
+        document.getElementById('withdrawalTableBody');
+
+    const payouts =
+        [...teacher.payouts].sort(
+            (a, b) =>
+                String(b.date).localeCompare(String(a.date))
+        );
+
+    if (!payouts.length) {
+
+        body.innerHTML =
+            emptyRow(
+                5,
+                'No welfare payouts recorded.'
+            );
+
+        return;
+
+    }
+
+    body.innerHTML =
+        payouts.map(payout => {
+
+            return `
+                <tr>
+
+                    <td class="px-6 py-3">
+                        ${escapeHtml(payout.reference || '-')}
+                    </td>
+
+                    <td class="px-6 py-3 font-semibold">
+                        ${escapeHtml(teacher.name)}
+                    </td>
+
+                    <td class="px-6 py-3">
+                        ${escapeHtml(payout.reason || '-')}
+                    </td>
+
+                    <td class="px-6 py-3 font-bold text-rose-600">
+                        ${money(payout.amount)}
+                    </td>
+
+                    <td class="px-6 py-3">
+                        ${formatDate(payout.date)}
+                    </td>
+
+                </tr>
+            `;
+
+        }).join('');
 
 }
 
@@ -3687,75 +3453,74 @@ function renderAllSections() {
 function renderTeachersSection() {
 
     const body =
-        document.getElementById(
-            "teachersSectionBody"
-        );
+        document.getElementById('teachersSectionBody');
 
-    if (!body) return;
+    if (!welfareData.teachers.length) {
 
-    body.innerHTML = "";
-
-
-    teachersData.forEach(t => {
-
-        const total =
-            (t.payments || [])
-            .reduce(
-                (sum,p) =>
-                    sum + Number(p.amount),
-                0
+        body.innerHTML =
+            emptyRow(
+                7,
+                'No registered members.'
             );
 
+        return;
 
-        const tr =
-            document.createElement(
-                "tr"
-            );
+    }
 
+    body.innerHTML =
+        welfareData.teachers.map(teacher => {
 
-        tr.innerHTML = `
+            const total =
+                teacher.payments.reduce(
+                    (sum, p) =>
+                        sum + Number(p.amount || 0),
+                    0
+                );
 
-            <td class="px-5 py-3 font-mono">
-                ${t.staffId}
-            </td>
+            return `
+                <tr>
 
-            <td class="px-5 py-3 font-bold">
-                ${t.name}
-            </td>
+                    <td class="px-5 py-3 font-semibold">
+                        ${escapeHtml(teacher.id)}
+                    </td>
 
-            <td class="px-5 py-3">
-                ${t.phone}
-            </td>
+                    <td class="px-5 py-3 font-bold">
+                        ${escapeHtml(teacher.name)}
+                    </td>
 
-            <td class="px-5 py-3">
-                ${t.grade}
-            </td>
+                    <td class="px-5 py-3">
+                        ${escapeHtml(teacher.phone)}
+                    </td>
 
-            <td class="px-5 py-3">
-                ${t.classAssigned}
-            </td>
+                    <td class="px-5 py-3">
+                        ${escapeHtml(teacher.rank)}
+                    </td>
 
-            <td class="px-5 py-3 font-bold text-emerald-600">
-                ${formatCurrency(total)}
-            </td>
+                    <td class="px-5 py-3">
+                        ${escapeHtml(teacher.className)}
+                    </td>
 
-            <td class="px-5 py-3">
+                    <td class="px-5 py-3 font-bold">
+                        ${money(total)}
+                    </td>
 
-                <button onclick="selectTeacherFromRoster('${t.id}')"
-                        class="bg-sdaNavy-500 text-white px-3 py-1.5 rounded text-xs">
+                    <td class="px-5 py-3">
 
-                    View
+                        <button
+                            onclick="openEditMemberModal('${escapeAttr(teacher.id)}')"
+                            class="px-3 py-1.5 rounded-lg bg-blue-100 text-blue-700 font-bold text-[10px]">
 
-                </button>
+                            <i class="fa-solid fa-pen mr-1"></i>
+                            Edit
 
-            </td>
+                        </button>
 
-        `;
+                    </td>
 
+                </tr>
+            `;
 
-        body.appendChild(tr);
-
-    });
+        }).join('');
 
 }
 
@@ -3766,91 +3531,87 @@ function renderTeachersSection() {
 
 function renderPaymentsSection() {
 
+    const total =
+        getTotalContributions();
+
+    document.getElementById('paymentTotalAll').textContent =
+        money(total);
+
+    document.getElementById('paymentMemberCount').textContent =
+        welfareData.teachers.length;
+
+    document.getElementById('paymentMonthlyRate').textContent =
+        money(standardMonthlyDues);
+
+
     const body =
-        document.getElementById(
-            "allPaymentsBody"
-        );
+        document.getElementById('allPaymentsBody');
 
-    if (!body) return;
+    const records = [];
 
-    body.innerHTML = "";
+    welfareData.teachers.forEach(teacher => {
 
+        teacher.payments.forEach(payment => {
 
-    let total = 0;
-
-
-    teachersData.forEach(t => {
-
-        (t.payments || []).forEach(p => {
-
-            total += Number(p.amount);
-
-
-            const tr =
-                document.createElement(
-                    "tr"
-                );
-
-
-            tr.innerHTML = `
-
-                <td class="px-5 py-3 font-bold">
-                    ${t.name}
-                </td>
-
-                <td class="px-5 py-3">
-                    ${formatMonthName(
-                        getMonthValue(p)
-                    )}
-                </td>
-
-                <td class="px-5 py-3 font-mono text-xs">
-                    ${p.id}
-                </td>
-
-                <td class="px-5 py-3 font-bold text-emerald-600">
-                    ${formatCurrency(
-                        p.amount
-                    )}
-                </td>
-
-                <td class="px-5 py-3">
-                    ${formatDate(
-                        normalizeDate(
-                            p.date,
-                            p.month
-                        )
-                    )}
-                </td>
-
-            `;
-
-
-            body.appendChild(tr);
+            records.push({
+                teacher,
+                payment
+            });
 
         });
 
     });
 
-
-    document.getElementById(
-        "paymentTotalAll"
-    ).textContent =
-        formatCurrency(total);
-
-
-    document.getElementById(
-        "paymentMemberCount"
-    ).textContent =
-        teachersData.length;
+    records.sort(
+        (a, b) =>
+            String(b.payment.date)
+                .localeCompare(String(a.payment.date))
+    );
 
 
-    document.getElementById(
-        "paymentMonthlyRate"
-    ).textContent =
-        formatCurrency(
-            getMonthlyDues()
-        );
+    if (!records.length) {
+
+        body.innerHTML =
+            emptyRow(
+                5,
+                'No contribution records found.'
+            );
+
+        return;
+
+    }
+
+
+    body.innerHTML =
+        records.map(record => {
+
+            return `
+                <tr>
+
+                    <td class="px-5 py-3 font-semibold">
+                        ${escapeHtml(record.teacher.name)}
+                    </td>
+
+                    <td class="px-5 py-3">
+                        ${escapeHtml(monthYear(record.payment.date))}
+                    </td>
+
+                    <td class="px-5 py-3">
+                        ${escapeHtml(record.payment.reference || '-')}
+                    </td>
+
+                    <td class="px-5 py-3 font-bold text-emerald-600">
+                        ${money(record.payment.amount)}
+                    </td>
+
+                    <td class="px-5 py-3">
+                        ${formatDate(record.payment.date)}
+                    </td>
+
+                </tr>
+            `;
+
+        }).join('');
 
 }
 
@@ -3861,103 +3622,92 @@ function renderPaymentsSection() {
 
 function renderWelfareSection() {
 
+    const totalPayouts =
+        getTotalPayouts();
+
+    const currentFund =
+        getTotalContributions() -
+        totalPayouts;
+
+    document.getElementById('welfareTotalWithdrawn').textContent =
+        money(totalPayouts);
+
+    document.getElementById('welfareCurrentFund').textContent =
+        money(currentFund);
+
+    document.getElementById('welfareMemberCount').textContent =
+        welfareData.teachers.length;
+
+
     const body =
-        document.getElementById(
-            "allWithdrawalsBody"
-        );
+        document.getElementById('allWithdrawalsBody');
 
-    if (!body) return;
+    const records = [];
 
-    body.innerHTML = "";
+    welfareData.teachers.forEach(teacher => {
 
+        teacher.payouts.forEach(payout => {
 
-    let totalPayouts = 0;
+            records.push({
+                teacher,
+                payout
+            });
 
+        });
 
-    teachersData.forEach(t => {
-
-        (t.withdrawals || []).forEach(w => {
-
-            totalPayouts +=
-                Number(w.amount);
+    });
 
 
-            const tr =
-                document.createElement(
-                    "tr"
-                );
+    records.sort(
+        (a, b) =>
+            String(b.payout.date)
+                .localeCompare(String(a.payout.date))
+    );
 
 
-            tr.innerHTML = `
+    if (!records.length) {
 
-                <td class="px-5 py-3 font-mono">
-                    ${w.id}
-                </td>
+        body.innerHTML =
+            emptyRow(
+                5,
+                'No welfare payouts recorded.'
+            );
 
-                <td class="px-5 py-3 font-bold">
-                    ${w.teacherName || t.name}
-                </td>
+        return;
 
-                <td class="px-5 py-3">
-                    ${w.reason}
-                </td>
+    }
 
-                <td class="px-5 py-3 font-bold text-rose-600">
-                    ${formatCurrency(
-                        w.amount
-                    )}
-                </td>
 
-                <td class="px-5 py-3">
-                    ${formatDate(w.date)}
-                </td>
+    body.innerHTML =
+        records.map(record => {
 
+            return `
+                <tr>
+
+                    <td class="px-5 py-3">
+                        ${escapeHtml(record.payout.reference || '-')}
+                    </td>
+
+                    <td class="px-5 py-3 font-semibold">
+                        ${escapeHtml(record.teacher.name)}
+                    </td>
+
+                    <td class="px-5 py-3">
+                        ${escapeHtml(record.payout.reason || '-')}
+                    </td>
+
+                    <td class="px-5 py-3 font-bold text-rose-600">
+                        ${money(record.payout.amount)}
+                    </td>
+
+                    <td class="px-5 py-3">
+                        ${formatDate(record.payout.date)}
+                    </td>
+
+                </tr>
             `;
 
-
-            body.appendChild(tr);
-
-        });
-
-    });
-
-
-    let contributions = 0;
-
-
-    teachersData.forEach(t => {
-
-        (t.payments || []).forEach(p => {
-
-            contributions +=
-                Number(p.amount);
-
-        });
-
-    });
-
-
-    document.getElementById(
-        "welfareTotalWithdrawn"
-    ).textContent =
-        formatCurrency(
-            totalPayouts
-        );
-
-
-    document.getElementById(
-        "welfareCurrentFund"
-    ).textContent =
-        formatCurrency(
-            contributions -
-            totalPayouts
-        );
-
-
-    document.getElementById(
-        "welfareMemberCount"
-    ).textContent =
-        teachersData.length;
+        }).join('');
 
 }
 
@@ -3966,107 +3716,451 @@ function renderWelfareSection() {
    ADMIN ROSTER
 ========================================================= */
 
-function renderMasterRoster() {
+function renderAdminRoster() {
 
     const body =
-        document.getElementById(
-            "masterRosterBody"
-        );
+        document.getElementById('masterRosterBody');
 
     if (!body) return;
 
-    body.innerHTML = "";
+    if (!adminLoggedIn) {
 
-
-    if (!isAdminLoggedIn) {
-
-        body.innerHTML = `
-            <tr>
-                <td colspan="7"
-                    class="px-5 py-8 text-center text-slate-400">
-                    Administrator access required.
-                </td>
-            </tr>
-        `;
+        body.innerHTML =
+            emptyRow(
+                7,
+                'Admin login required.'
+            );
 
         return;
+
     }
 
 
-    teachersData.forEach(t => {
+    if (!welfareData.teachers.length) {
 
-        const total =
-            (t.payments || [])
-            .reduce(
-                (sum,p) =>
-                    sum + Number(p.amount),
-                0
+        body.innerHTML =
+            emptyRow(
+                7,
+                'No registered members.'
             );
 
+        return;
 
-        const tr =
-            document.createElement(
-                "tr"
-            );
+    }
 
 
-        tr.innerHTML = `
+    body.innerHTML =
+        welfareData.teachers.map(teacher => {
 
-            <td class="px-4 py-3 font-mono">
-                ${t.staffId}
-            </td>
+            const total =
+                teacher.payments.reduce(
+                    (sum, p) =>
+                        sum + Number(p.amount || 0),
+                    0
+                );
 
-            <td class="px-4 py-3 font-bold">
-                ${t.name}
-            </td>
+            return `
+                <tr>
 
-            <td class="px-4 py-3">
-                ${t.phone}
-            </td>
+                    <td class="px-4 py-3 font-semibold">
+                        ${escapeHtml(teacher.id)}
+                    </td>
 
-            <td class="px-4 py-3">
-                ${t.grade}
-            </td>
+                    <td class="px-4 py-3 font-bold">
+                        ${escapeHtml(teacher.name)}
+                    </td>
 
-            <td class="px-4 py-3">
-                ${t.classAssigned}
-            </td>
+                    <td class="px-4 py-3">
+                        ${escapeHtml(teacher.phone)}
+                    </td>
 
-            <td class="px-4 py-3 font-bold text-emerald-600">
-                ${formatCurrency(total)}
-            </td>
+                    <td class="px-4 py-3">
+                        ${escapeHtml(teacher.rank)}
+                    </td>
 
-            <td class="px-4 py-3">
+                    <td class="px-4 py-3">
+                        ${escapeHtml(teacher.className)}
+                    </td>
 
-                <div class="flex gap-2">
+                    <td class="px-4 py-3 font-bold">
+                        ${money(total)}
+                    </td>
 
-                    <button onclick="openEditMemberModal('${t.id}')"
-                            class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-xs">
+                    <td class="px-4 py-3">
 
-                        <i class="fa-solid fa-pen-to-square mr-1"></i>
+                        <div class="flex flex-wrap gap-1.5">
 
-                        Edit
+                            <button
+                                onclick="openEditMemberModal('${escapeAttr(teacher.id)}')"
+                                class="px-2.5 py-1.5 rounded-lg bg-blue-100 text-blue-700 font-bold">
 
-                    </button>
+                                <i class="fa-solid fa-pen"></i>
+
+                            </button>
+
+                            <button
+                                onclick="handleRemoveStaff('${escapeAttr(teacher.id)}')"
+                                class="px-2.5 py-1.5 rounded-lg bg-rose-100 text-rose-700 font-bold">
+
+                                <i class="fa-solid fa-trash"></i>
+
+                            </button>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+            `;
+
+        }).join('');
+
+}
 
 
-                    <button onclick="handleRemoveStaff('${t.id}')"
-                            class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded text-xs">
+/* =========================================================
+   ADMIN SETTINGS
+========================================================= */
 
-                        <i class="fa-solid fa-trash"></i>
+function renderAdminSettings() {
 
-                    </button>
+    const input =
+        document.getElementById('standardMonthlyDuesInput');
 
-                </div>
+    const current =
+        document.getElementById('adminCurrentDues');
 
-            </td>
+    if (input) {
+        input.value = standardMonthlyDues;
+    }
 
-        `;
+    if (current) {
+        current.textContent =
+            money(standardMonthlyDues);
+    }
+
+}
 
 
-        body.appendChild(tr);
+/* =========================================================
+   ADD STAFF
+========================================================= */
 
-    });
+function handleAddNewStaff(event) {
+
+    event.preventDefault();
+
+    if (!requireAdmin()) return;
+
+
+    const id =
+        document.getElementById('newStaffId').value.trim();
+
+    const name =
+        document.getElementById('newStaffName').value.trim();
+
+    const phone =
+        document.getElementById('newStaffPhone').value.trim();
+
+    const rank =
+        document.getElementById('newStaffGrade').value;
+
+    const className =
+        document.getElementById('newStaffClass').value.trim();
+
+
+    if (
+        !id ||
+        !name ||
+        !phone ||
+        !rank ||
+        !className
+    ) {
+
+        showToast(
+            'Please complete all staff details.',
+            'error'
+        );
+
+        return;
+
+    }
+
+
+    const duplicate =
+        welfareData.teachers.some(
+            teacher =>
+                teacher.id.toLowerCase() === id.toLowerCase()
+        );
+
+
+    if (duplicate) {
+
+        showToast(
+            'A member with this Staff ID already exists.',
+            'error'
+        );
+
+        return;
+
+    }
+
+
+    const teacher = {
+
+        id,
+
+        name,
+
+        phone,
+
+        rank,
+
+        className,
+
+        payments: [],
+
+        payouts: []
+
+    };
+
+
+    welfareData.teachers.push(teacher);
+
+    saveData();
+
+    selectedTeacherId = id;
+
+    document.getElementById('addStaffForm').reset();
+
+    initializeDates();
+
+    renderAll();
+
+    showToast(
+        'New staff member registered successfully.',
+        'success'
+    );
+
+}
+
+
+/* =========================================================
+   RECORD PAYMENT
+========================================================= */
+
+function handleRecordPayment(event) {
+
+    event.preventDefault();
+
+    if (!requireAdmin()) return;
+
+
+    const teacherId =
+        document.getElementById(
+            'adminPaymentTeacherSelect'
+        ).value;
+
+    const date =
+        document.getElementById(
+            'adminPaymentDate'
+        ).value;
+
+    const amount =
+        Number(
+            document.getElementById(
+                'adminPaymentAmount'
+            ).value
+        );
+
+
+    const teacher =
+        getTeacherById(teacherId);
+
+
+    if (!teacher) {
+
+        showToast(
+            'Please select a valid member.',
+            'error'
+        );
+
+        return;
+
+    }
+
+
+    if (!date) {
+
+        showToast(
+            'Please select the payment date.',
+            'error'
+        );
+
+        return;
+
+    }
+
+
+    if (!(amount > 0)) {
+
+        showToast(
+            'Payment amount must be greater than zero.',
+            'error'
+        );
+
+        return;
+
+    }
+
+
+    const payment = {
+
+        date,
+
+        amount,
+
+        reference:
+            generateReference('PAY')
+
+    };
+
+
+    teacher.payments.push(payment);
+
+    saveData();
+
+    selectedTeacherId = teacher.id;
+
+    document.getElementById(
+        'adminPaymentAmount'
+    ).value = standardMonthlyDues;
+
+    document.getElementById(
+        'adminPaymentDate'
+    ).value = todayISO();
+
+    renderAll();
+
+    showToast(
+        'Contribution recorded successfully.',
+        'success'
+    );
+
+}
+
+
+/* =========================================================
+   RECORD WITHDRAWAL
+========================================================= */
+
+function handleRecordWithdrawal(event) {
+
+    event.preventDefault();
+
+    if (!requireAdmin()) return;
+
+
+    const teacherId =
+        document.getElementById(
+            'adminWithdrawalTeacherSelect'
+        ).value;
+
+    const date =
+        document.getElementById(
+            'adminWithdrawalDate'
+        ).value;
+
+    const amount =
+        Number(
+            document.getElementById(
+                'adminWithdrawalAmount'
+            ).value
+        );
+
+    const reason =
+        document.getElementById(
+            'adminWithdrawalReason'
+        ).value;
+
+
+    const teacher =
+        getTeacherById(teacherId);
+
+
+    if (!teacher) {
+
+        showToast(
+            'Please select a valid beneficiary.',
+            'error'
+        );
+
+        return;
+
+    }
+
+
+    if (!date || !(amount > 0)) {
+
+        showToast(
+            'Please enter a valid date and amount.',
+            'error'
+        );
+
+        return;
+
+    }
+
+
+    const currentFund =
+        getTotalContributions() -
+        getTotalPayouts();
+
+
+    if (amount > currentFund) {
+
+        showToast(
+            'Withdrawal exceeds the current available fund.',
+            'error'
+        );
+
+        return;
+
+    }
+
+
+    const payout = {
+
+        date,
+
+        amount,
+
+        reason,
+
+        reference:
+            generateReference('WEL')
+
+    };
+
+
+    teacher.payouts.push(payout);
+
+    saveData();
+
+    document.getElementById(
+        'adminWithdrawalAmount'
+    ).value = '';
+
+    document.getElementById(
+        'adminWithdrawalDate'
+    ).value = todayISO();
+
+    renderAll();
+
+    showToast(
+        'Welfare payout recorded successfully.',
+        'success'
+    );
 
 }
 
@@ -4077,64 +4171,39 @@ function renderMasterRoster() {
 
 function openEditMemberModal(id) {
 
-    if (!isAdminLoggedIn) {
-
-        showToast(
-            "Administrator access required."
-        );
-
-        return;
-    }
-
+    if (!requireAdmin()) return;
 
     const teacher =
-        teachersData.find(
-            t => t.id === id
-        );
-
+        getTeacherById(id);
 
     if (!teacher) return;
 
+    editingMemberId = id;
 
-    document.getElementById(
-        "editMemberId"
-    ).value = teacher.id;
+    document.getElementById('editMemberId').value =
+        id;
 
+    document.getElementById('editStaffId').value =
+        teacher.id;
 
-    document.getElementById(
-        "editStaffId"
-    ).value = teacher.staffId;
+    document.getElementById('editStaffName').value =
+        teacher.name;
 
+    document.getElementById('editStaffPhone').value =
+        teacher.phone;
 
-    document.getElementById(
-        "editStaffName"
-    ).value = teacher.name;
+    document.getElementById('editStaffGrade').value =
+        teacher.rank;
 
-
-    document.getElementById(
-        "editStaffPhone"
-    ).value = teacher.phone;
-
-
-    document.getElementById(
-        "editStaffGrade"
-    ).value = teacher.grade;
-
-
-    document.getElementById(
-        "editStaffClass"
-    ).value = teacher.classAssigned;
-
+    document.getElementById('editStaffClass').value =
+        teacher.className;
 
     const modal =
-        document.getElementById(
-            "editMemberModal"
-        );
+        document.getElementById('editMemberModal');
 
+    modal.classList.remove('hidden');
 
-    modal.classList.remove("hidden");
-
-    modal.classList.add("flex");
+    modal.classList.add('flex');
 
 }
 
@@ -4142,13 +4211,13 @@ function openEditMemberModal(id) {
 function closeEditMemberModal() {
 
     const modal =
-        document.getElementById(
-            "editMemberModal"
-        );
+        document.getElementById('editMemberModal');
 
-    modal.classList.add("hidden");
+    modal.classList.add('hidden');
 
-    modal.classList.remove("flex");
+    modal.classList.remove('flex');
+
+    editingMemberId = null;
 
 }
 
@@ -4157,166 +4226,195 @@ function saveEditedMember(event) {
 
     event.preventDefault();
 
+    if (!requireAdmin()) return;
 
-    const id =
-        document.getElementById(
-            "editMemberId"
-        ).value;
+    if (!editingMemberId) return;
 
 
     const teacher =
-        teachersData.find(
-            t => t.id === id
-        );
-
+        getTeacherById(editingMemberId);
 
     if (!teacher) return;
 
 
-    const newStaffId =
+    const newId =
         document.getElementById(
-            "editStaffId"
+            'editStaffId'
         ).value.trim();
 
 
     const duplicate =
-        teachersData.some(
-            t =>
-                t.id !== id &&
-                t.staffId.toLowerCase() ===
-                newStaffId.toLowerCase()
+        welfareData.teachers.some(
+            member =>
+                String(member.id).toLowerCase() ===
+                newId.toLowerCase() &&
+                String(member.id) !==
+                String(editingMemberId)
         );
 
 
     if (duplicate) {
 
         showToast(
-            "Another member already uses this Staff ID."
+            'Another member already uses this Staff ID.',
+            'error'
         );
 
         return;
+
     }
 
 
-    teacher.staffId =
-        newStaffId;
-
+    teacher.id =
+        newId;
 
     teacher.name =
         document.getElementById(
-            "editStaffName"
+            'editStaffName'
         ).value.trim();
-
 
     teacher.phone =
         document.getElementById(
-            "editStaffPhone"
+            'editStaffPhone'
         ).value.trim();
 
-
-    teacher.grade =
+    teacher.rank =
         document.getElementById(
-            "editStaffGrade"
+            'editStaffGrade'
         ).value;
 
-
-    teacher.classAssigned =
+    teacher.className =
         document.getElementById(
-            "editStaffClass"
+            'editStaffClass'
         ).value.trim();
 
 
-    /*
-       Update historical payout beneficiary
-       names when the member's name changes.
-    */
+    selectedTeacherId =
+        teacher.id;
 
-    teacher.withdrawals =
-        (teacher.withdrawals || [])
-        .map(w => ({
-
-            ...w,
-
-            teacherName:
-                teacher.name
-
-        }));
-
-
-    saveTeachersData();
+    saveData();
 
     closeEditMemberModal();
 
-    populateTeacherSelects();
-
-    renderDashboard();
-
-    renderAllSections();
-
+    renderAll();
 
     showToast(
-        `${teacher.name}'s details have been updated.`
+        'Member details updated successfully.',
+        'success'
     );
 
 }
 
 
 /* =========================================================
-   REMOVE MEMBER
+   REMOVE ONE STAFF MEMBER
 ========================================================= */
 
 function handleRemoveStaff(id) {
 
-    if (!isAdminLoggedIn) return;
-
+    if (!requireAdmin()) return;
 
     const teacher =
-        teachersData.find(
-            t => t.id === id
-        );
-
+        getTeacherById(id);
 
     if (!teacher) return;
 
 
     const confirmed =
         confirm(
-            `Remove ${teacher.name} from the member register?`
+            `Remove ${teacher.name} and all of this member's contribution/payout records?`
         );
 
 
     if (!confirmed) return;
 
 
-    teachersData =
-        teachersData.filter(
-            t => t.id !== id
+    welfareData.teachers =
+        welfareData.teachers.filter(
+            member =>
+                String(member.id) !== String(id)
         );
 
 
-    saveTeachersData();
+    if (String(selectedTeacherId) === String(id)) {
 
-
-    populateTeacherSelects();
-
-
-    if (activeTeacherId === id) {
-
-        activeTeacherId =
-            teachersData.length
-                ? teachersData[0].id
-                : "";
+        selectedTeacherId =
+            welfareData.teachers.length
+                ? welfareData.teachers[0].id
+                : null;
 
     }
 
 
-    renderDashboard();
+    saveData();
 
-    renderAllSections();
-
+    renderAll();
 
     showToast(
-        `${teacher.name} removed successfully.`
+        'Member removed successfully.',
+        'success'
+    );
+
+}
+
+
+/* =========================================================
+   MONTHLY DUES
+========================================================= */
+
+function saveMonthlyDues() {
+
+    if (!requireAdmin()) return;
+
+
+    const input =
+        document.getElementById(
+            'standardMonthlyDuesInput'
+        );
+
+
+    const value =
+        Number(input.value);
+
+
+    if (!(value >= 0)) {
+
+        showToast(
+            'Enter a valid monthly dues amount.',
+            'error'
+        );
+
+        return;
+
+    }
+
+
+    standardMonthlyDues =
+        value;
+
+
+    localStorage.setItem(
+        DUES_KEY,
+        standardMonthlyDues
+    );
+
+
+    const paymentAmount =
+        document.getElementById(
+            'adminPaymentAmount'
+        );
+
+    if (paymentAmount) {
+        paymentAmount.value =
+            standardMonthlyDues;
+    }
+
+
+    renderAll();
+
+    showToast(
+        'Standard monthly dues updated.',
+        'success'
     );
 
 }
@@ -4329,60 +4427,32 @@ function handleRemoveStaff(id) {
 function toggleAdminModal() {
 
     const modal =
-        document.getElementById(
-            "adminModal"
-        );
+        document.getElementById('adminModal');
 
+    if (modal.classList.contains('hidden')) {
 
-    if (isAdminLoggedIn) {
+        modal.classList.remove('hidden');
 
-        const exit =
-            confirm(
-                "Exit administrator mode?"
-            );
+        modal.classList.add('flex');
 
-        if (!exit) return;
+        setTimeout(() => {
 
+            const input =
+                document.getElementById(
+                    'adminPasswordInput'
+                );
 
-        isAdminLoggedIn = false;
+            if (input) input.focus();
 
+        }, 100);
 
-        document.getElementById(
-            "adminStatusBadge"
-        ).classList.add(
-            "hidden"
-        );
+    } else {
 
+        modal.classList.add('hidden');
 
-        document.getElementById(
-            "adminBtnText"
-        ).textContent =
-            "Admin Access";
+        modal.classList.remove('flex');
 
-
-        renderMasterRoster();
-
-
-        showSection(
-            "dashboard",
-            document.querySelector(
-                ".nav-button"
-            )
-        );
-
-
-        showToast(
-            "Administrator mode closed."
-        );
-
-
-        return;
     }
-
-
-    modal.classList.remove(
-        "hidden"
-    );
 
 }
 
@@ -4394,72 +4464,46 @@ function handleAdminLogin(event) {
 
     const password =
         document.getElementById(
-            "adminPasswordInput"
+            'adminPasswordInput'
         ).value;
 
 
-    /*
-       Existing credentials retained
-       from the original application.
-    */
+    if (ADMIN_PASSWORDS.includes(password)) {
 
-    if (
-        password === "sda2026" ||
-        password === "1234"
-    ) {
+        adminLoggedIn = true;
 
-        isAdminLoggedIn = true;
+        document.getElementById(
+            'adminAuthError'
+        ).classList.add('hidden');
 
 
         document.getElementById(
-            "adminModal"
-        ).classList.add(
-            "hidden"
-        );
+            'adminPasswordInput'
+        ).value = '';
 
 
-        document.getElementById(
-            "adminStatusBadge"
-        ).classList.remove(
-            "hidden"
-        );
+        toggleAdminModal();
 
+        updateAdminInterface();
 
-        document.getElementById(
-            "adminBtnText"
-        ).textContent =
-            "Exit Admin Mode";
-
-
-        loadMonthlyDues();
-
-        renderMasterRoster();
-
-
-        const adminNav =
-            document.querySelectorAll(
-                ".nav-button"
-            )[5];
-
+        renderAll();
 
         showSection(
-            "admin",
-            adminNav
+            'admin',
+            null,
+            true
         );
-
 
         showToast(
-            "Administrator access activated."
+            'Admin access granted.',
+            'success'
         );
-
 
     } else {
 
         document.getElementById(
-            "adminAuthError"
-        ).classList.remove(
-            "hidden"
-        );
+            'adminAuthError'
+        ).classList.remove('hidden');
 
     }
 
@@ -4467,491 +4511,371 @@ function handleAdminLogin(event) {
 
 
 /* =========================================================
-   ADD NEW STAFF
+   ADMIN INTERFACE
 ========================================================= */
 
-function handleAddNewStaff(event) {
+function updateAdminInterface() {
 
-    event.preventDefault();
+    const btn =
+        document.getElementById('adminToggleBtn');
 
+    const text =
+        document.getElementById('adminBtnText');
 
-    if (!isAdminLoggedIn) {
-
-        showToast(
-            "Administrator access required."
+    const summaryButton =
+        document.getElementById(
+            'fundSummaryButton'
         );
 
-        return;
+    const summaryText =
+        document.getElementById(
+            'summaryAccessText'
+        );
+
+
+    if (adminLoggedIn) {
+
+        btn.classList.remove(
+            'bg-sdaGold-500'
+        );
+
+        btn.classList.add(
+            'bg-emerald-600',
+            'text-white'
+        );
+
+        text.textContent =
+            'Admin Active';
+
+
+        summaryButton.classList.remove(
+            'opacity-50',
+            'cursor-not-allowed'
+        );
+
+        summaryButton.disabled = false;
+
+        summaryText.textContent =
+            'Administrator access is active. You can generate the complete fund report.';
+
+    } else {
+
+        btn.classList.add(
+            'bg-sdaGold-500'
+        );
+
+        btn.classList.remove(
+            'bg-emerald-600',
+            'text-white'
+        );
+
+        text.textContent =
+            'Admin Access';
+
+
+        summaryButton.classList.add(
+            'opacity-50',
+            'cursor-not-allowed'
+        );
+
+        summaryButton.disabled = true;
+
+        summaryText.textContent =
+            'This report is available to the Administrator only.';
+
+    }
+
+}
+
+
+function requireAdmin() {
+
+    if (adminLoggedIn) {
+
+        return true;
+
     }
 
 
-    const staffId =
-        document.getElementById(
-            "newStaffId"
-        ).value.trim();
+    toggleAdminModal();
+
+    showToast(
+        'Administrator login is required for this action.',
+        'error'
+    );
+
+    return false;
+
+}
 
 
-    const name =
-        document.getElementById(
-            "newStaffName"
-        ).value.trim();
+function requestAdminSection() {
+
+    if (!adminLoggedIn) {
+
+        toggleAdminModal();
+
+        return;
+
+    }
+
+    showSection(
+        'admin',
+        null,
+        true
+    );
+
+}
 
 
-    const phone =
-        document.getElementById(
-            "newStaffPhone"
-        ).value.trim();
+/* =========================================================
+   ADMIN LOGOUT
+========================================================= */
+
+function logoutAdmin() {
+
+    adminLoggedIn = false;
+
+    updateAdminInterface();
+
+    showSection(
+        'dashboard',
+        null,
+        true
+    );
+
+    showToast(
+        'Admin session ended.',
+        'success'
+    );
+
+}
 
 
-    const grade =
-        document.getElementById(
-            "newStaffGrade"
-        ).value;
+/* =========================================================
+   RESET EVERYTHING
+========================================================= */
+
+function confirmResetAllData() {
+
+    if (!requireAdmin()) return;
 
 
-    const classAssigned =
-        document.getElementById(
-            "newStaffClass"
-        ).value.trim();
+    const first =
+        confirm(
+            'WARNING: This will remove ALL registered members, contributions and welfare payout history from this browser. Continue?'
+        );
 
 
-    if (
-        teachersData.some(
-            t =>
-                t.staffId.toLowerCase() ===
-                staffId.toLowerCase()
-        )
-    ) {
+    if (!first) return;
+
+
+    const second =
+        prompt(
+            'Type RESET ALL to confirm permanent deletion of all welfare fund records.'
+        );
+
+
+    if (second !== 'RESET ALL') {
 
         showToast(
-            "This Staff ID already exists."
+            'Reset cancelled. The confirmation text did not match.',
+            'error'
         );
 
         return;
+
     }
 
 
-    const teacher = {
-
-        id:
-            `TCH-${Date.now()}`,
-
-        staffId,
-
-        name,
-
-        phone,
-
-        grade,
-
-        classAssigned,
-
-        payments: [],
-
-        withdrawals: []
-
+    welfareData = {
+        teachers: []
     };
 
 
-    teachersData.push(
-        teacher
-    );
+    selectedTeacherId = null;
 
 
-    saveTeachersData();
+    saveData();
 
 
-    populateTeacherSelects();
+    renderAll();
 
 
-    activeTeacherId =
-        teacher.id;
+    initializeDates();
 
 
     document.getElementById(
-        "teacherSelect"
-    ).value =
-        teacher.id;
+        'addStaffForm'
+    )?.reset();
 
 
-    renderDashboard();
+    const paymentAmount =
+        document.getElementById(
+            'adminPaymentAmount'
+        );
 
-    renderAllSections();
+    if (paymentAmount) {
 
+        paymentAmount.value =
+            standardMonthlyDues;
 
-    document.getElementById(
-        "addStaffForm"
-    ).reset();
+    }
 
 
     showToast(
-        `${name} has been added successfully.`
+        'All members and welfare fund history have been cleared.',
+        'success'
     );
 
 }
 
 
 /* =========================================================
-   PAYMENT
+   TOTALS
 ========================================================= */
 
-function handleRecordPayment(event) {
+function getTotalContributions() {
 
-    event.preventDefault();
+    return welfareData.teachers.reduce(
+        (total, teacher) => {
 
+            return total +
+                teacher.payments.reduce(
+                    (sum, payment) =>
+                        sum + Number(payment.amount || 0),
+                    0
+                );
 
-    if (!isAdminLoggedIn) {
-
-        showToast(
-            "Administrator access required."
-        );
-
-        return;
-    }
-
-
-    const teacherId =
-        document.getElementById(
-            "adminPaymentTeacherSelect"
-        ).value;
-
-
-    const date =
-        document.getElementById(
-            "adminPaymentDate"
-        ).value;
-
-
-    const amount =
-        parseFloat(
-            document.getElementById(
-                "adminPaymentAmount"
-            ).value
-        );
-
-
-    if (
-        !teacherId ||
-        !date ||
-        isNaN(amount) ||
-        amount < 0
-    ) {
-
-        showToast(
-            "Please complete all payment details."
-        );
-
-        return;
-    }
-
-
-    const teacher =
-        teachersData.find(
-            t => t.id === teacherId
-        );
-
-
-    if (!teacher) return;
-
-
-    const month =
-        date.substring(
-            0,
-            7
-        );
-
-
-    /*
-       A payment can be recorded more than once
-       in a month if needed. Each record receives
-       a unique receipt/reference number.
-    */
-
-    const payment = {
-
-        id:
-            `REC-${Date.now()
-                .toString()
-                .slice(-7)}`,
-
-        month,
-
-        amount,
-
-        date
-
-    };
-
-
-    teacher.payments.push(
-        payment
+        },
+        0
     );
 
-
-    saveTeachersData();
-
-
-    renderDashboard();
-
-    renderAllSections();
+}
 
 
-    document.getElementById(
-        "adminPaymentDate"
-    ).value = "";
+function getTotalPayouts() {
 
+    return welfareData.teachers.reduce(
+        (total, teacher) => {
 
-    document.getElementById(
-        "adminPaymentAmount"
-    ).value =
-        getMonthlyDues();
+            return total +
+                teacher.payouts.reduce(
+                    (sum, payout) =>
+                        sum + Number(payout.amount || 0),
+                    0
+                );
 
-
-    showToast(
-        `Payment of ${formatCurrency(amount)} recorded for ${teacher.name}.`
+        },
+        0
     );
 
 }
 
 
 /* =========================================================
-   WITHDRAWAL
-========================================================= */
-
-function handleRecordWithdrawal(event) {
-
-    event.preventDefault();
-
-
-    if (!isAdminLoggedIn) {
-
-        showToast(
-            "Administrator access required."
-        );
-
-        return;
-    }
-
-
-    const teacherId =
-        document.getElementById(
-            "adminWithdrawalTeacherSelect"
-        ).value;
-
-
-    const date =
-        document.getElementById(
-            "adminWithdrawalDate"
-        ).value;
-
-
-    const amount =
-        parseFloat(
-            document.getElementById(
-                "adminWithdrawalAmount"
-            ).value
-        );
-
-
-    const reason =
-        document.getElementById(
-            "adminWithdrawalReason"
-        ).value;
-
-
-    if (
-        !teacherId ||
-        !date ||
-        isNaN(amount) ||
-        amount < 0
-    ) {
-
-        showToast(
-            "Please complete all payout details."
-        );
-
-        return;
-    }
-
-
-    const teacher =
-        teachersData.find(
-            t => t.id === teacherId
-        );
-
-
-    if (!teacher) return;
-
-
-    teacher.withdrawals.push({
-
-        id:
-            `WTH-${Date.now()
-                .toString()
-                .slice(-7)}`,
-
-        teacherName:
-            teacher.name,
-
-        reason,
-
-        amount,
-
-        date
-
-    });
-
-
-    saveTeachersData();
-
-
-    renderDashboard();
-
-    renderAllSections();
-
-
-    document.getElementById(
-        "adminWithdrawalDate"
-    ).value = "";
-
-
-    document.getElementById(
-        "adminWithdrawalAmount"
-    ).value = "";
-
-
-    showToast(
-        `Welfare payout of ${formatCurrency(amount)} recorded.`
-    );
-
-}
-
-
-/* =========================================================
-   MEMBER PDF
+   PDF - INDIVIDUAL MEMBER STATEMENT
 ========================================================= */
 
 async function downloadPDF() {
 
-    if (!teachersData.length) {
+    const teacher =
+        getSelectedTeacher();
+
+
+    if (!teacher) {
 
         showToast(
-            "No members are registered."
+            'There is no member to generate a statement for.',
+            'error'
         );
 
         return;
+
     }
 
 
-    const teacher =
-        teachersData.find(
-            t => t.id === activeTeacherId
-        ) ||
-        teachersData[0];
+    if (
+        typeof html2pdf ===
+        'undefined'
+    ) {
+
+        showToast(
+            'PDF library could not be loaded. Check your internet connection.',
+            'error'
+        );
+
+        return;
+
+    }
 
 
-    const allWithdrawals =
-        getAllWithdrawals();
+    const template =
+        document.getElementById(
+            'statementPdfTemplate'
+        );
+
+
+    /* Populate PDF */
+
+    document.getElementById('pdfDocId').textContent =
+        generateDocumentId('STMT');
+
+    document.getElementById('pdfIssueDate').textContent =
+        formatDate(todayISO());
+
+    document.getElementById('pdfTeacherName').textContent =
+        teacher.name;
+
+    document.getElementById('pdfStaffId').textContent =
+        teacher.id;
+
+    document.getElementById('pdfPhone').textContent =
+        teacher.phone;
+
+    document.getElementById('pdfGrade').textContent =
+        teacher.rank;
+
+    document.getElementById('pdfClass').textContent =
+        teacher.className;
 
 
     const totalPaid =
-        (teacher.payments || [])
-        .reduce(
-            (sum,p) =>
-                sum + Number(p.amount),
+        teacher.payments.reduce(
+            (sum, payment) =>
+                sum + Number(payment.amount || 0),
             0
         );
 
 
-    const totalPayouts =
-        allWithdrawals.reduce(
-            (sum,w) =>
-                sum + Number(w.amount),
+    const totalWithdrawn =
+        teacher.payouts.reduce(
+            (sum, payout) =>
+                sum + Number(payout.amount || 0),
             0
         );
 
 
-    document.getElementById(
-        "pdfDocId"
-    ).textContent =
-        `WEL-${Date.now()}`;
+    document.getElementById('pdfTotalPaid').textContent =
+        money(totalPaid);
+
+    document.getElementById('pdfTotalWithdrawn').textContent =
+        money(totalWithdrawn);
 
 
-    document.getElementById(
-        "pdfIssueDate"
-    ).textContent =
-        formatDate(
-            todayISO()
-        );
-
-
-    document.getElementById(
-        "pdfTeacherName"
-    ).textContent =
-        teacher.name;
-
-
-    document.getElementById(
-        "pdfStaffId"
-    ).textContent =
-        teacher.staffId;
-
-
-    document.getElementById(
-        "pdfPhone"
-    ).textContent =
-        teacher.phone;
-
-
-    document.getElementById(
-        "pdfGrade"
-    ).textContent =
-        teacher.grade;
-
-
-    document.getElementById(
-        "pdfClass"
-    ).textContent =
-        teacher.classAssigned;
-
-
-    document.getElementById(
-        "pdfTotalPaid"
-    ).textContent =
-        formatCurrency(
-            totalPaid
-        );
-
-
-    document.getElementById(
-        "pdfTotalWithdrawn"
-    ).textContent =
-        formatCurrency(
-            totalPayouts
-        );
-
+    /* Contribution rows */
 
     const paymentBody =
         document.getElementById(
-            "pdfTableBody"
+            'pdfTableBody'
         );
 
 
-    paymentBody.innerHTML = "";
-
-
     const payments =
-        [...(teacher.payments || [])]
-        .sort(
-            (a,b) =>
-                normalizeDate(
-                    a.date,
-                    a.month
-                ).localeCompare(
-                    normalizeDate(
-                        b.date,
-                        b.month
-                    )
+        [...teacher.payments].sort(
+            (a, b) =>
+                String(a.date).localeCompare(
+                    String(b.date)
                 )
         );
 
@@ -4961,78 +4885,73 @@ async function downloadPDF() {
         paymentBody.innerHTML = `
             <tr>
                 <td colspan="5"
-                    class="border px-2 py-3 text-center">
-                    No payment records found.
+                    class="border px-2 py-3 text-center text-slate-500">
+                    No contribution records available.
                 </td>
             </tr>
         `;
 
     } else {
 
-        payments.forEach((p,index) => {
+        paymentBody.innerHTML =
+            payments.map((payment, index) => {
 
-            const tr =
-                document.createElement(
-                    "tr"
-                );
+                return `
+                    <tr>
 
+                        <td>${index + 1}</td>
 
-            tr.innerHTML = `
+                        <td>
+                            ${escapeHtml(
+                                monthYear(payment.date)
+                            )}
+                        </td>
 
-                <td class="border px-2 py-2">
-                    ${index + 1}
-                </td>
+                        <td>
+                            ${escapeHtml(
+                                payment.reference || '-'
+                            )}
+                        </td>
 
-                <td class="border px-2 py-2">
-                    ${formatMonthName(
-                        getMonthValue(p)
-                    )}
-                </td>
+                        <td>
+                            ${formatDate(payment.date)}
+                        </td>
 
-                <td class="border px-2 py-2">
-                    ${p.id}
-                </td>
+                        <td class="text-right font-bold">
+                            ${money(payment.amount)}
+                        </td>
 
-                <td class="border px-2 py-2">
-                    ${formatDate(
-                        normalizeDate(
-                            p.date,
-                            p.month
-                        )
-                    )}
-                </td>
+                    </tr>
+                `;
 
-                <td class="border px-2 py-2 text-right font-bold">
-                    ${formatCurrency(
-                        p.amount
-                    )}
-                </td>
-
-            `;
-
-
-            paymentBody.appendChild(tr);
-
-        });
+            }).join('');
 
     }
 
 
+    /* Withdrawal rows */
+
     const payoutBody =
         document.getElementById(
-            "pdfWithdrawalTableBody"
+            'pdfWithdrawalTableBody'
         );
 
 
-    payoutBody.innerHTML = "";
+    const payouts =
+        [...teacher.payouts].sort(
+            (a, b) =>
+                String(a.date).localeCompare(
+                    String(b.date)
+                )
+        );
 
 
-    if (!allWithdrawals.length) {
+    if (!payouts.length) {
 
         payoutBody.innerHTML = `
             <tr>
-                <td colspan="5"
-                    class="border px-2 py-3 text-center">
+                <td colspan="6"
+                    class="border px-2 py-3 text-center text-slate-500">
                     No welfare payouts recorded.
                 </td>
             </tr>
@@ -5040,97 +4959,107 @@ async function downloadPDF() {
 
     } else {
 
-        allWithdrawals.forEach((w,index) => {
+        payoutBody.innerHTML =
+            payouts.map((payout, index) => {
 
-            const tr =
-                document.createElement(
-                    "tr"
-                );
+                return `
+                    <tr>
 
+                        <td>${index + 1}</td>
 
-            tr.innerHTML = `
+                        <td>
+                            ${escapeHtml(teacher.name)}
+                        </td>
 
-                <td class="border px-2 py-2">
-                    ${index + 1}
-                </td>
+                        <td>
+                            ${escapeHtml(
+                                payout.reason || '-'
+                            )}
+                        </td>
 
-                <td class="border px-2 py-2">
-                    ${w.teacherName}
-                </td>
+                        <td>
+                            ${escapeHtml(
+                                payout.reference || '-'
+                            )}
+                        </td>
 
-                <td class="border px-2 py-2">
-                    ${w.reason}
-                </td>
+                        <td>
+                            ${formatDate(payout.date)}
+                        </td>
 
-                <td class="border px-2 py-2">
-                    ${w.id}
-                </td>
+                        <td class="text-right font-bold">
+                            ${money(payout.amount)}
+                        </td>
 
-                <td class="border px-2 py-2 text-right font-bold">
-                    ${formatCurrency(
-                        w.amount
-                    )}
-                </td>
+                    </tr>
+                `;
 
-            `;
-
-
-            payoutBody.appendChild(tr);
-
-        });
+            }).join('');
 
     }
 
 
-    await generatePDF(
-        "pdfExportContainer",
-        `Welfare_Statement_${safeFilename(
-            teacher.name
-        )}_${teacher.staffId}.pdf`
+    await renderPDFElement(
+        template,
+        {
+            filename:
+                `Ntonso_SDA_Welfare_Statement_${safeFilename(teacher.name)}.pdf`,
+            orientation: 'portrait'
+        }
+    );
+
+
+    showToast(
+        'Member statement downloaded successfully.',
+        'success'
     );
 
 }
 
 
 /* =========================================================
-   COMPLETE FUND SUMMARY PDF
+   PDF - COMPLETE FUND SUMMARY
+   ADMIN ONLY
 ========================================================= */
 
 async function downloadFundSummaryPDF() {
 
-    if (!isAdminLoggedIn) {
-
-        showToast(
-            "Administrator access is required to download the complete fund summary."
-        );
+    if (!requireAdmin()) {
 
         return;
+
     }
 
 
-    const allPayments =
-        getAllPayments();
+    if (
+        typeof html2pdf ===
+        'undefined'
+    ) {
+
+        showToast(
+            'PDF library could not be loaded.',
+            'error'
+        );
+
+        return;
+
+    }
 
 
-    const allWithdrawals =
-        getAllWithdrawals();
+    const template =
+        document.getElementById(
+            'summaryPdfTemplate'
+        );
 
+
+    const totalMembers =
+        welfareData.teachers.length;
 
     const totalContributions =
-        allPayments.reduce(
-            (sum,p) =>
-                sum + Number(p.amount),
-            0
-        );
-
+        getTotalContributions();
 
     const totalPayouts =
-        allWithdrawals.reduce(
-            (sum,w) =>
-                sum + Number(w.amount),
-            0
-        );
-
+        getTotalPayouts();
 
     const netFund =
         totalContributions -
@@ -5138,160 +5067,178 @@ async function downloadFundSummaryPDF() {
 
 
     document.getElementById(
-        "summaryReportId"
+        'summaryReportId'
     ).textContent =
-        `SUMMARY-${Date.now()}`;
+        generateDocumentId('FUND');
+
+    document.getElementById(
+        'summaryDate'
+    ).textContent =
+        formatDate(todayISO());
+
+    document.getElementById(
+        'summaryMembers'
+    ).textContent =
+        totalMembers;
+
+    document.getElementById(
+        'summaryContributions'
+    ).textContent =
+        money(totalContributions);
+
+    document.getElementById(
+        'summaryPayouts'
+    ).textContent =
+        money(totalPayouts);
+
+    document.getElementById(
+        'summaryNetFund'
+    ).textContent =
+        money(netFund);
 
 
     document.getElementById(
-        "summaryDate"
+        'summaryDetailContributions'
     ).textContent =
-        formatDate(
-            todayISO()
-        );
-
+        money(totalContributions);
 
     document.getElementById(
-        "summaryMembers"
+        'summaryDetailPayouts'
     ).textContent =
-        teachersData.length;
-
+        money(totalPayouts);
 
     document.getElementById(
-        "summaryContributions"
+        'summaryDetailMonthlyDues'
     ).textContent =
-        formatCurrency(
-            totalContributions
-        );
-
+        money(standardMonthlyDues);
 
     document.getElementById(
-        "summaryPayouts"
+        'summaryDetailNet'
     ).textContent =
-        formatCurrency(
-            totalPayouts
-        );
+        money(netFund);
 
 
-    document.getElementById(
-        "summaryNetFund"
-    ).textContent =
-        formatCurrency(
-            netFund
-        );
-
-
-    document.getElementById(
-        "summaryDetailContributions"
-    ).textContent =
-        formatCurrency(
-            totalContributions
-        );
-
-
-    document.getElementById(
-        "summaryDetailPayouts"
-    ).textContent =
-        formatCurrency(
-            totalPayouts
-        );
-
-
-    document.getElementById(
-        "summaryDetailMonthlyDues"
-    ).textContent =
-        formatCurrency(
-            getMonthlyDues()
-        );
-
-
-    document.getElementById(
-        "summaryDetailNet"
-    ).textContent =
-        formatCurrency(
-            netFund
-        );
-
-
-    /* MEMBER SUMMARY */
+    /* Members */
 
     const membersBody =
         document.getElementById(
-            "summaryMembersBody"
+            'summaryMembersBody'
         );
 
 
-    membersBody.innerHTML = "";
+    if (!welfareData.teachers.length) {
 
-
-    teachersData.forEach((t,index) => {
-
-        const total =
-            (t.payments || [])
-            .reduce(
-                (sum,p) =>
-                    sum + Number(p.amount),
-                0
-            );
-
-
-        const tr =
-            document.createElement(
-                "tr"
-            );
-
-
-        tr.innerHTML = `
-
-            <td class="border px-2 py-2">
-                ${index + 1}
-            </td>
-
-            <td class="border px-2 py-2">
-                ${t.staffId}
-            </td>
-
-            <td class="border px-2 py-2 font-bold">
-                ${t.name}
-            </td>
-
-            <td class="border px-2 py-2">
-                ${t.grade}
-            </td>
-
-            <td class="border px-2 py-2 text-center">
-                ${(t.payments || []).length}
-            </td>
-
-            <td class="border px-2 py-2 text-right font-bold">
-                ${formatCurrency(total)}
-            </td>
-
-        `;
-
-
-        membersBody.appendChild(tr);
-
-    });
-
-
-    /* PAYOUT SUMMARY */
-
-    const payoutsBody =
-        document.getElementById(
-            "summaryPayoutsBody"
-        );
-
-
-    payoutsBody.innerHTML = "";
-
-
-    if (!allWithdrawals.length) {
-
-        payoutsBody.innerHTML = `
+        membersBody.innerHTML = `
             <tr>
                 <td colspan="6"
-                    class="border px-2 py-3 text-center">
+                    class="border px-2 py-3 text-center text-slate-500">
+                    No members registered.
+                </td>
+            </tr>
+        `;
+
+    } else {
+
+        membersBody.innerHTML =
+            welfareData.teachers.map(
+                (teacher, index) => {
+
+                    const contribution =
+                        teacher.payments.reduce(
+                            (sum, payment) =>
+                                sum +
+                                Number(
+                                    payment.amount || 0
+                                ),
+                            0
+                        );
+
+
+                    return `
+                        <tr>
+
+                            <td>
+                                ${index + 1}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(
+                                    teacher.id
+                                )}
+                            </td>
+
+                            <td class="font-bold">
+                                ${escapeHtml(
+                                    teacher.name
+                                )}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(
+                                    teacher.rank
+                                )}
+                            </td>
+
+                            <td class="text-center">
+                                ${teacher.payments.length}
+                            </td>
+
+                            <td class="text-right font-bold">
+                                ${money(contribution)}
+                            </td>
+
+                        </tr>
+                    `;
+
+                }
+            ).join('');
+
+    }
+
+
+    /* Payouts */
+
+    const payoutBody =
+        document.getElementById(
+            'summaryPayoutsBody'
+        );
+
+
+    const allPayouts = [];
+
+
+    welfareData.teachers.forEach(
+        teacher => {
+
+            teacher.payouts.forEach(
+                payout => {
+
+                    allPayouts.push({
+                        teacher,
+                        payout
+                    });
+
+                }
+            );
+
+        }
+    );
+
+
+    allPayouts.sort(
+        (a, b) =>
+            String(a.payout.date).localeCompare(
+                String(b.payout.date)
+            )
+    );
+
+
+    if (!allPayouts.length) {
+
+        payoutBody.innerHTML = `
+            <tr>
+                <td colspan="6"
+                    class="border px-2 py-3 text-center text-slate-500">
                     No welfare payouts recorded.
                 </td>
             </tr>
@@ -5299,195 +5246,252 @@ async function downloadFundSummaryPDF() {
 
     } else {
 
-        allWithdrawals.forEach((w,index) => {
+        payoutBody.innerHTML =
+            allPayouts.map(
+                (record, index) => {
 
-            const tr =
-                document.createElement(
-                    "tr"
-                );
+                    return `
+                        <tr>
 
+                            <td>
+                                ${index + 1}
+                            </td>
 
-            tr.innerHTML = `
+                            <td>
+                                ${formatDate(
+                                    record.payout.date
+                                )}
+                            </td>
 
-                <td class="border px-2 py-2">
-                    ${index + 1}
-                </td>
+                            <td class="font-bold">
+                                ${escapeHtml(
+                                    record.teacher.name
+                                )}
+                            </td>
 
-                <td class="border px-2 py-2">
-                    ${formatDate(w.date)}
-                </td>
+                            <td>
+                                ${escapeHtml(
+                                    record.payout.reason || '-'
+                                )}
+                            </td>
 
-                <td class="border px-2 py-2 font-bold">
-                    ${w.teacherName}
-                </td>
+                            <td>
+                                ${escapeHtml(
+                                    record.payout.reference || '-'
+                                )}
+                            </td>
 
-                <td class="border px-2 py-2">
-                    ${w.reason}
-                </td>
+                            <td class="text-right font-bold">
+                                ${money(
+                                    record.payout.amount
+                                )}
+                            </td>
 
-                <td class="border px-2 py-2">
-                    ${w.id}
-                </td>
+                        </tr>
+                    `;
 
-                <td class="border px-2 py-2 text-right font-bold">
-                    ${formatCurrency(w.amount)}
-                </td>
-
-            `;
-
-
-            payoutsBody.appendChild(tr);
-
-        });
+                }
+            ).join('');
 
     }
 
 
-    await generatePDF(
-        "fundSummaryPDF",
-        `Ntonso_SDA_Welfare_Fund_Summary_${todayISO()}.pdf`
+    await renderPDFElement(
+        template,
+        {
+            filename:
+                `Ntonso_SDA_Teachers_Welfare_Complete_Fund_Summary_${todayISO()}.pdf`,
+            orientation: 'landscape'
+        }
+    );
+
+
+    showToast(
+        'Complete fund summary downloaded successfully.',
+        'success'
     );
 
 }
 
 
 /* =========================================================
-   PDF GENERATOR
+   PDF ENGINE
+   This specifically fixes the blank-page problem.
+
+   Important fixes:
+   1. Template is NOT display:none.
+   2. It is rendered off-screen.
+   3. A4 size is controlled by jsPDF.
+   4. No fixed 794x1123px canvas is used.
+   5. CSS page-break rules are enabled.
+   6. The element is temporarily placed in a visible
+      rendering context before html2canvas captures it.
 ========================================================= */
 
-async function generatePDF(
-    elementId,
-    filename
+async function renderPDFElement(
+    element,
+    options = {}
 ) {
 
-    const element =
-        document.getElementById(
-            elementId
-        );
+    const originalParent =
+        element.parentNode;
 
+    const originalStyle = {
 
-    /*
-       Temporarily move the PDF container
-       into the visible rendering area.
-    */
+        position: element.style.position,
 
-    element.style.position =
-        "fixed";
+        left: element.style.left,
 
-    element.style.left =
-        "0";
+        top: element.style.top,
 
-    element.style.top =
-        "0";
+        display: element.style.display,
 
-    element.style.zIndex =
-        "-1";
+        visibility: element.style.visibility,
 
-
-    await new Promise(
-        resolve =>
-            setTimeout(
-                resolve,
-                100
-            )
-    );
-
-
-    const options = {
-
-        margin: [
-            0.25,
-            0.25,
-            0.25,
-            0.25
-        ],
-
-        filename,
-
-        image: {
-            type: "jpeg",
-            quality: 0.98
-        },
-
-        html2canvas: {
-
-            scale: 2,
-
-            useCORS: true,
-
-            backgroundColor: "#ffffff",
-
-            logging: false,
-
-            letterRendering: true
-
-        },
-
-        pagebreak: {
-
-            mode: [
-                "css",
-                "legacy"
-            ],
-
-            avoid: [
-                "tr",
-                "h3",
-                "table"
-            ]
-
-        },
-
-        jsPDF: {
-
-            unit: "mm",
-
-            format: "a4",
-
-            orientation: "portrait",
-
-            compress: true
-
-        }
+        width: element.style.width
 
     };
 
 
     try {
 
+        element.style.position =
+            'relative';
+
+        element.style.left =
+            'auto';
+
+        element.style.top =
+            'auto';
+
+        element.style.display =
+            'block';
+
+        element.style.visibility =
+            'visible';
+
+
+        /*
+         * Give the browser time to fully render
+         * tables, fonts and dynamic content.
+         */
+
+        await new Promise(
+            resolve =>
+                requestAnimationFrame(
+                    () =>
+                        requestAnimationFrame(
+                            resolve
+                        )
+                )
+        );
+
+
+        const orientation =
+            options.orientation ||
+            'portrait';
+
+
+        const isLandscape =
+            orientation === 'landscape';
+
+
+        const pdfOptions = {
+
+            margin: [
+                8,
+                8,
+                8,
+                8
+            ],
+
+            filename:
+                options.filename ||
+                'welfare-report.pdf',
+
+            image: {
+                type: 'jpeg',
+                quality: 0.98
+            },
+
+            html2canvas: {
+
+                scale: 2,
+
+                useCORS: true,
+
+                allowTaint: false,
+
+                backgroundColor: '#ffffff',
+
+                logging: false,
+
+                scrollX: 0,
+
+                scrollY: 0,
+
+                windowWidth:
+                    isLandscape
+                        ? 1120
+                        : 794
+
+            },
+
+            jsPDF: {
+
+                unit: 'mm',
+
+                format: 'a4',
+
+                orientation:
+                    orientation,
+
+                compress: true
+
+            },
+
+            pagebreak: {
+
+                mode: [
+                    'css',
+                    'legacy'
+                ],
+
+                avoid: [
+                    'tr',
+                    '.pdf-avoid-break'
+                ]
+
+            }
+
+        };
+
+
         await html2pdf()
-            .set(options)
+            .set(pdfOptions)
             .from(element)
             .save();
 
-        showToast(
-            "PDF downloaded successfully."
-        );
-
-    } catch(error) {
-
-        console.error(
-            "PDF generation error:",
-            error
-        );
-
-        showToast(
-            "Unable to generate PDF."
-        );
 
     } finally {
 
         element.style.position =
-            "absolute";
+            originalStyle.position;
 
         element.style.left =
-            "-99999px";
+            originalStyle.left;
 
         element.style.top =
-            "0";
+            originalStyle.top;
 
-        element.style.zIndex =
-            "";
+        element.style.display =
+            originalStyle.display;
+
+        element.style.visibility =
+            originalStyle.visibility;
+
+        element.style.width =
+            originalStyle.width;
 
     }
 
@@ -5495,288 +5499,226 @@ async function generatePDF(
 
 
 /* =========================================================
-   HELPERS
+   NAVIGATION
 ========================================================= */
 
-function getAllPayments() {
-
-    const records = [];
-
-
-    teachersData.forEach(t => {
-
-        (t.payments || []).forEach(p => {
-
-            records.push({
-
-                ...p,
-
-                teacherName:
-                    t.name,
-
-                staffId:
-                    t.staffId
-
-            });
-
-        });
-
-    });
-
-
-    return records;
-
-}
-
-
-function getAllWithdrawals() {
-
-    const records = [];
-
-
-    teachersData.forEach(t => {
-
-        (t.withdrawals || []).forEach(w => {
-
-            records.push({
-
-                ...w,
-
-                teacherName:
-                    w.teacherName ||
-                    t.name
-
-            });
-
-        });
-
-    });
-
-
-    return records;
-
-}
-
-
-function getMonthValue(payment) {
-
-    if (payment.month) {
-
-        return payment.month;
-
-    }
-
-
-    if (payment.date) {
-
-        return payment.date.substring(
-            0,
-            7
-        );
-
-    }
-
-
-    return "";
-
-}
-
-
-function normalizeDate(
-    date,
-    month
+function showSection(
+    section,
+    button = null,
+    bypassAdmin = false
 ) {
 
-    if (date) {
+    if (
+        section === 'admin' &&
+        !adminLoggedIn &&
+        !bypassAdmin
+    ) {
 
-        return date.length === 10
-            ? date
-            : `${date}-01`;
+        toggleAdminModal();
 
-    }
-
-
-    if (month) {
-
-        return `${month}-01`;
+        return;
 
     }
 
 
-    return todayISO();
+    document
+        .querySelectorAll('.page-section')
+        .forEach(page => {
 
-}
+            page.classList.remove('active');
 
-
-function todayISO() {
-
-    return new Date()
-        .toISOString()
-        .split("T")[0];
-
-}
+        });
 
 
-function formatDate(date) {
-
-    if (!date) return "-";
-
-
-    const d =
-        new Date(
-            `${date}T00:00:00`
+    const target =
+        document.getElementById(
+            `section-${section}`
         );
 
 
-    if (isNaN(d.getTime())) {
-        return date;
-    }
+    if (!target) return;
 
 
-    return d.toLocaleDateString(
-        "en-GB",
-        {
-            day: "2-digit",
-            month: "short",
-            year: "numeric"
-        }
-    );
-
-}
+    target.classList.add('active');
 
 
-function formatMonthName(month) {
+    document
+        .querySelectorAll('.nav-button')
+        .forEach(nav => {
 
-    if (!month) return "-";
+            nav.classList.remove('active');
 
-
-    const parts =
-        month.split("-");
-
-
-    if (parts.length < 2) {
-        return month;
-    }
+        });
 
 
-    const date =
-        new Date(
-            Number(parts[0]),
-            Number(parts[1]) - 1,
-            1
-        );
+    if (button) {
 
+        button.classList.add('active');
 
-    return date.toLocaleDateString(
-        "en-US",
-        {
-            month: "long",
-            year: "numeric"
-        }
-    );
+    } else {
 
-}
+        const navButtons =
+            document.querySelectorAll(
+                '.nav-button'
+            );
 
+        navButtons.forEach(btn => {
 
-function formatCurrency(amount) {
+            const onclick =
+                btn.getAttribute(
+                    'onclick'
+                ) || '';
 
-    return `GHS ${Number(amount || 0).toLocaleString(
-        "en-US",
-        {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        }
-    )}`;
+            if (
+                onclick.includes(
+                    `'${section}'`
+                )
+            ) {
 
-}
+                btn.classList.add('active');
 
+            }
 
-function getInitials(name) {
-
-    if (!name) return "--";
-
-
-    const parts =
-        name.trim().split(/\s+/);
-
-
-    if (parts.length === 1) {
-
-        return parts[0]
-            .substring(0,2)
-            .toUpperCase();
+        });
 
     }
 
 
-    return (
-        parts[0][0] +
-        parts[parts.length - 1][0]
-    ).toUpperCase();
+    const titles = {
 
-}
+        dashboard: 'Dashboard',
+
+        teachers: 'Teachers & Members',
+
+        payments: 'Contributions',
+
+        welfare: 'Welfare & Payouts',
+
+        statements: 'Statements & Reports',
+
+        admin: 'Administration'
+
+    };
 
 
-function safeFilename(value) {
+    document.getElementById(
+        'pageTitle'
+    ).textContent =
+        titles[section] ||
+        'Dashboard';
 
-    return value
-        .replace(
-            /[^a-z0-9]/gi,
-            "_"
-        )
-        .replace(
-            /_+/g,
-            "_"
-        );
+
+    closeMobileSidebar();
 
 }
 
 
 /* =========================================================
-   DEFAULT DATES
+   SIDEBAR
 ========================================================= */
 
-function initializeDates() {
+function toggleSidebar() {
 
-    const today =
-        todayISO();
-
-
-    const paymentDate =
+    const sidebar =
         document.getElementById(
-            "adminPaymentDate"
+            'sidebar'
         );
 
-    const withdrawalDate =
+    const main =
         document.getElementById(
-            "adminWithdrawalDate"
+            'mainWrapper'
         );
 
-
-    if (paymentDate) {
-        paymentDate.value =
-            today;
-    }
-
-
-    if (withdrawalDate) {
-        withdrawalDate.value =
-            today;
-    }
-
-
-    const paymentAmount =
+    const icon =
         document.getElementById(
-            "adminPaymentAmount"
+            'sidebarToggleIcon'
         );
 
 
-    if (paymentAmount) {
+    sidebar.classList.toggle(
+        'sidebar-collapsed'
+    );
 
-        paymentAmount.value =
-            getMonthlyDues();
+
+    if (
+        sidebar.classList.contains(
+            'sidebar-collapsed'
+        )
+    ) {
+
+        main.classList.remove(
+            'ml-72'
+        );
+
+        main.classList.add(
+            'ml-[76px]'
+        );
+
+        icon.className =
+            'fa-solid fa-angles-right';
+
+    } else {
+
+        main.classList.remove(
+            'ml-[76px]'
+        );
+
+        main.classList.add(
+            'ml-72'
+        );
+
+        icon.className =
+            'fa-solid fa-angles-left';
 
     }
+
+}
+
+
+function openMobileSidebar() {
+
+    const sidebar =
+        document.getElementById(
+            'sidebar'
+        );
+
+    const overlay =
+        document.getElementById(
+            'mobileOverlay'
+        );
+
+
+    sidebar.classList.add(
+        'mobile-open'
+    );
+
+    overlay.classList.add(
+        'show'
+    );
+
+}
+
+
+function closeMobileSidebar() {
+
+    const sidebar =
+        document.getElementById(
+            'sidebar'
+        );
+
+    const overlay =
+        document.getElementById(
+            'mobileOverlay'
+        );
+
+
+    sidebar.classList.remove(
+        'mobile-open'
+    );
+
+    overlay.classList.remove(
+        'show'
+    );
 
 }
 
@@ -5787,22 +5729,49 @@ function initializeDates() {
 
 function toggleDarkMode() {
 
-    const html =
-        document.documentElement;
+    document.documentElement.classList.toggle(
+        'dark'
+    );
 
 
     const dark =
-        html.classList.toggle(
-            "dark"
+        document.documentElement.classList.contains(
+            'dark'
         );
 
 
     localStorage.setItem(
-        "ntonso_theme",
-        dark
-            ? "dark"
-            : "light"
+        THEME_KEY,
+        dark ? 'dark' : 'light'
     );
+
+
+    updateThemeIcons();
+
+}
+
+
+function applySavedTheme() {
+
+    const saved =
+        localStorage.getItem(
+            THEME_KEY
+        );
+
+
+    if (saved === 'dark') {
+
+        document.documentElement.classList.add(
+            'dark'
+        );
+
+    } else {
+
+        document.documentElement.classList.remove(
+            'dark'
+        );
+
+    }
 
 
     updateThemeIcons();
@@ -5813,40 +5782,40 @@ function toggleDarkMode() {
 function updateThemeIcons() {
 
     const dark =
-        document.documentElement
-            .classList.contains(
-                "dark"
-            );
-
-
-    document.getElementById(
-        "themeIcon"
-    ).className =
-        dark
-            ? "fa-solid fa-sun"
-            : "fa-solid fa-moon";
-
-
-    document.getElementById(
-        "sidebarThemeIcon"
-    ).className =
-        dark
-            ? "fa-solid fa-sun w-6 text-center mr-3"
-            : "fa-solid fa-moon w-6 text-center mr-3";
-
-}
-
-
-if (
-    localStorage.getItem(
-        "ntonso_theme"
-    ) === "dark"
-) {
-
-    document.documentElement
-        .classList.add(
-            "dark"
+        document.documentElement.classList.contains(
+            'dark'
         );
+
+
+    const themeIcon =
+        document.getElementById(
+            'themeIcon'
+        );
+
+    const sidebarThemeIcon =
+        document.getElementById(
+            'sidebarThemeIcon'
+        );
+
+
+    if (themeIcon) {
+
+        themeIcon.className =
+            dark
+                ? 'fa-solid fa-sun'
+                : 'fa-solid fa-moon';
+
+    }
+
+
+    if (sidebarThemeIcon) {
+
+        sidebarThemeIcon.className =
+            dark
+                ? 'fa-solid fa-sun w-6 text-center mr-3'
+                : 'fa-solid fa-moon w-6 text-center mr-3';
+
+    }
 
 }
 
@@ -5855,55 +5824,224 @@ if (
    TOAST
 ========================================================= */
 
-function showToast(message) {
+function showToast(
+    message,
+    type = 'success'
+) {
 
     const toast =
-        document.createElement(
-            "div"
+        document.getElementById(
+            'toast'
+        );
+
+    const inner =
+        document.getElementById(
+            'toastInner'
+        );
+
+    const messageElement =
+        document.getElementById(
+            'toastMessage'
         );
 
 
-    toast.className =
-        "fixed bottom-5 right-5 z-[100] max-w-sm bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl text-xs font-semibold flex items-center gap-2";
+    messageElement.textContent =
+        message;
 
 
-    toast.innerHTML = `
-
-        <i class="fa-solid fa-circle-check text-emerald-400"></i>
-
-        <span>
-            ${message}
-        </span>
-
-    `;
+    inner.className =
+        'rounded-xl shadow-2xl px-5 py-4 text-sm font-semibold text-white ' +
+        (
+            type === 'error'
+                ? 'bg-rose-600'
+                : 'bg-emerald-600'
+        );
 
 
-    document.body.appendChild(
-        toast
+    toast.classList.remove(
+        'hidden'
     );
 
 
-    setTimeout(() => {
-
-        toast.style.opacity =
-            "0";
-
-        toast.style.transform =
-            "translateY(10px)";
-
-        toast.style.transition =
-            "all .25s ease";
+    clearTimeout(
+        window.__toastTimer
+    );
 
 
-        setTimeout(() => {
+    window.__toastTimer =
+        setTimeout(
+            () => {
 
-            toast.remove();
+                toast.classList.add(
+                    'hidden'
+                );
 
-        },250);
-
-    },3000);
+            },
+            3500
+        );
 
 }
+
+
+/* =========================================================
+   EMPTY TABLE ROW
+========================================================= */
+
+function emptyRow(
+    colspan,
+    message
+) {
+
+    return `
+        <tr>
+            <td colspan="${colspan}"
+                class="px-5 py-8 text-center text-slate-400">
+                <i class="fa-solid fa-folder-open mb-2 text-lg"></i>
+                <div>${escapeHtml(message)}</div>
+            </td>
+        </tr>
+    `;
+
+}
+
+
+/* =========================================================
+   ESCAPE HTML
+========================================================= */
+
+function escapeHtml(value) {
+
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+
+}
+
+
+function escapeAttr(value) {
+
+    return String(value ?? '')
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'");
+
+}
+
+
+function safeFilename(value) {
+
+    return String(value || 'Member')
+        .replace(/[^a-z0-9]+/gi, '_')
+        .replace(/^_+|_+$/g, '');
+
+}
+
+
+/* =========================================================
+   PAYMENT AMOUNT DEFAULT
+========================================================= */
+
+document.addEventListener(
+    'change',
+    event => {
+
+        if (
+            event.target &&
+            event.target.id ===
+            'adminPaymentTeacherSelect'
+        ) {
+
+            const amount =
+                document.getElementById(
+                    'adminPaymentAmount'
+                );
+
+            if (
+                amount &&
+                !amount.value
+            ) {
+
+                amount.value =
+                    standardMonthlyDues;
+
+            }
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   CLOSE MODALS WITH ESC
+========================================================= */
+
+document.addEventListener(
+    'keydown',
+    event => {
+
+        if (event.key !== 'Escape') return;
+
+
+        const adminModal =
+            document.getElementById(
+                'adminModal'
+            );
+
+        const editModal =
+            document.getElementById(
+                'editMemberModal'
+            );
+
+
+        if (
+            adminModal &&
+            !adminModal.classList.contains(
+                'hidden'
+            )
+        ) {
+
+            toggleAdminModal();
+
+        }
+
+
+        if (
+            editModal &&
+            !editModal.classList.contains(
+                'hidden'
+            )
+        ) {
+
+            closeEditMemberModal();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   INITIAL PAYMENT AMOUNT
+========================================================= */
+
+setTimeout(() => {
+
+    const paymentAmount =
+        document.getElementById(
+            'adminPaymentAmount'
+        );
+
+    if (paymentAmount) {
+
+        paymentAmount.value =
+            standardMonthlyDues;
+
+    }
+
+}, 100);
 
 </script>
 
