@@ -2089,8 +2089,6 @@ function handlePortalLogin(event) {
         const idMatches = String(t.id).toLowerCase() === staffId.toLowerCase();
         if (!idMatches) return false;
 
-        // If a custom password has been set, ONLY the custom password works.
-        // Otherwise, the default password is the Staff ID.
         if (t.customPassword) {
             return password === t.customPassword;
         } else {
@@ -2208,6 +2206,9 @@ function handleRecordPayment(event) {
         return;
     }
 
+    const confirmed = confirm(`Log contribution of ${money(amount)} for ${teacher.name}?`);
+    if (!confirmed) return;
+
     const payment = { date, amount, reference: generateReference('PAY') };
     teacher.payments.push(payment);
     saveData();
@@ -2242,6 +2243,9 @@ function handleRecordWithdrawal(event) {
         showToast('Withdrawal exceeds the current available fund.', 'error');
         return;
     }
+
+    const confirmed = confirm(`Process welfare withdrawal of ${money(amount)} for beneficiary ${teacher.name} (${reason})?`);
+    if (!confirmed) return;
 
     const payout = { date, amount, reason, reference: generateReference('WEL') };
     teacher.payouts.push(payout);
