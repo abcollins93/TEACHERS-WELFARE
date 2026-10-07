@@ -752,12 +752,12 @@ body {
 </section>
 
 <!-- =========================================================
-     TEACHERS
+     TEACHERS (Admin Only)
 ========================================================= -->
 <section id="section-teachers" class="page-section">
     <div class="mb-6">
         <h2 class="text-2xl font-extrabold">Teachers & Members</h2>
-        <p class="text-sm text-slate-500">Registered welfare fund members.</p>
+        <p class="text-sm text-slate-500">Registered welfare fund members (Admin Access Only).</p>
     </div>
 
     <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
@@ -868,34 +868,60 @@ body {
 </section>
 
 <!-- =========================================================
-     STATEMENTS
+     STATEMENTS & REPORTS
 ========================================================= -->
 <section id="section-statements" class="page-section">
     <div class="mb-6">
         <h2 class="text-2xl font-extrabold">Statements & Reports</h2>
-        <p class="text-sm text-slate-500">Generate individual or complete welfare fund reports.</p>
+        <p class="text-sm text-slate-500">Generate individual member statements or admin fund summary reports.</p>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Individual Statement -->
         <div class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800">
             <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center mb-4">
                 <i class="fa-solid fa-file-invoice text-xl"></i>
             </div>
-            <h3 class="font-extrabold text-lg">Individual Member Statement</h3>
+            <h3 class="font-extrabold text-lg">Individual Statement</h3>
             <p class="text-sm text-slate-500 mt-1 mb-5">Generate a full A4 statement for your account.</p>
 
             <select id="statementTeacherSelect"
                     onchange="switchTeacher(this.value)"
-                    class="form-input">
+                    class="form-input mb-4">
             </select>
 
             <button onclick="downloadPDF()"
-                    class="mt-4 w-full py-3 rounded-lg bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white font-bold text-sm">
+                    class="w-full py-3 rounded-lg bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white font-bold text-sm">
                 <i class="fa-solid fa-file-pdf text-amber-400 mr-2"></i>
                 Download Member Statement
             </button>
         </div>
 
+        <!-- Monthly Fund Summary (Admin Only) -->
+        <div id="monthlySummaryCard"
+             class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800">
+            <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center mb-4">
+                <i class="fa-solid fa-calendar-days text-xl"></i>
+            </div>
+            <h3 class="font-extrabold text-lg">Monthly Summary Report</h3>
+            <p id="monthlySummaryAccessText" class="text-sm text-slate-500 mt-1 mb-5">
+                Available to Administrator only. Select target month below.
+            </p>
+
+            <div class="mb-3">
+                <label class="block text-xs font-bold mb-1">Select Month & Year</label>
+                <input type="month" id="reportTargetMonth" class="form-input">
+            </div>
+
+            <button id="monthlySummaryButton"
+                    onclick="downloadMonthlySummaryPDF()"
+                    class="w-full py-3 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm opacity-50 cursor-not-allowed" disabled>
+                <i class="fa-solid fa-file-pdf mr-2"></i>
+                Download Monthly Summary (Admin)
+            </button>
+        </div>
+
+        <!-- Complete Fund Summary (Admin Only) -->
         <div id="completeSummaryCard"
              class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800">
             <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center mb-4">
@@ -910,7 +936,7 @@ body {
                     onclick="downloadFundSummaryPDF()"
                     class="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm opacity-50 cursor-not-allowed" disabled>
                 <i class="fa-solid fa-file-pdf mr-2"></i>
-                Download Complete Fund Summary (Admin Only)
+                Download Complete Summary (Admin)
             </button>
         </div>
     </div>
@@ -1222,6 +1248,7 @@ body {
      PDF RENDER AREA
 ========================================================= -->
 <div id="pdfRenderArea" class="pdf-render-area">
+    <!-- Individual Statement Template -->
     <div id="statementPdfTemplate" class="pdf-page" style="font-size: 13px;">
         <div class="text-center border-b-2 border-slate-800 pb-4 pdf-avoid-break">
             <h2 class="text-2xl font-extrabold">GHANA EDUCATION SERVICE</h2>
@@ -1309,6 +1336,87 @@ body {
         </div>
     </div>
 
+    <!-- Monthly Summary Report Template (Admin Only) -->
+    <div id="monthlySummaryPdfTemplate" class="pdf-summary-page" style="font-size: 13px;">
+        <div class="text-center border-b-2 border-slate-800 pb-4 pdf-avoid-break">
+            <h2 class="text-2xl font-extrabold">GHANA EDUCATION SERVICE</h2>
+            <h1 class="text-3xl font-black text-blue-900">NTONSO SDA PRIMARY 'A'</h1>
+            <p class="text-sm font-bold text-amber-700 uppercase">TEACHERS WELFARE FUND</p>
+            <p class="text-xs text-slate-500">Monthly Financial Summary Report - <span id="monthlyReportTitleMonth"></span></p>
+        </div>
+
+        <div class="flex justify-between mt-5 mb-5 text-sm pdf-avoid-break">
+            <div>
+                <p><strong>Report ID:</strong> <span id="monthlyReportId"></span></p>
+                <p><strong>Target Month:</strong> <span id="monthlyReportMonthLabel"></span></p>
+            </div>
+            <div class="text-right">
+                <p><strong>Date Generated:</strong> <span id="monthlyReportDate"></span></p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4 mb-6 pdf-avoid-break">
+            <div class="border border-emerald-200 bg-emerald-50 rounded-lg p-3 text-center">
+                <p class="text-[11px] font-bold text-emerald-800">MONTHLY CONTRIBUTIONS</p>
+                <p id="monthlyReportTotalContrib" class="text-xl font-extrabold text-emerald-900">GHS 0.00</p>
+            </div>
+            <div class="border border-rose-200 bg-rose-50 rounded-lg p-3 text-center">
+                <p class="text-[11px] font-bold text-rose-800">MONTHLY PAYOUTS</p>
+                <p id="monthlyReportTotalPayouts" class="text-xl font-extrabold text-rose-900">GHS 0.00</p>
+            </div>
+            <div class="border border-blue-200 bg-blue-50 rounded-lg p-3 text-center">
+                <p class="text-[11px] font-bold text-blue-800">NET MONTHLY BALANCE</p>
+                <p id="monthlyReportNet" class="text-xl font-extrabold text-blue-900">GHS 0.00</p>
+            </div>
+        </div>
+
+        <h3 class="text-sm font-extrabold uppercase mb-2">1. Contributions for the Month</h3>
+        <table class="pdf-summary-table mb-6">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th class="text-left">Staff ID</th>
+                    <th class="text-left">Member Name</th>
+                    <th class="text-left">Reference</th>
+                    <th class="text-left">Date Paid</th>
+                    <th class="text-right">Amount</th>
+                </tr>
+            </thead>
+            <tbody id="monthlySummaryContribBody"></tbody>
+        </table>
+
+        <h3 class="text-sm font-extrabold uppercase mb-2">2. Payouts for the Month</h3>
+        <table class="pdf-summary-table mb-6">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th class="text-left">Beneficiary</th>
+                    <th class="text-left">Reason</th>
+                    <th class="text-left">Reference</th>
+                    <th class="text-left">Date</th>
+                    <th class="text-right">Amount</th>
+                </tr>
+            </thead>
+            <tbody id="monthlySummaryPayoutBody"></tbody>
+        </table>
+
+        <div class="mt-12 grid grid-cols-2 gap-12 text-xs pdf-avoid-break">
+            <div class="text-center">
+                <div class="border-b border-dashed border-slate-500 h-8"></div>
+                <p class="font-bold mt-2">Welfare Financial Secretary</p>
+            </div>
+            <div class="text-center">
+                <div class="border-b border-dashed border-slate-500 h-8"></div>
+                <p class="font-bold mt-2">Headteacher / Patron</p>
+            </div>
+        </div>
+
+        <div class="pdf-footer">
+            Ntonso SDA Primary 'A' Teachers Welfare Fund | Monthly Summary Report
+        </div>
+    </div>
+
+    <!-- Complete Fund Summary Template -->
     <div id="summaryPdfTemplate" class="pdf-summary-page" style="font-size: 13px;">
         <div class="text-center border-b-2 border-slate-800 pb-4 pdf-avoid-break">
             <h2 class="text-2xl font-extrabold">GHANA EDUCATION SERVICE</h2>
@@ -1521,8 +1629,10 @@ function initializeDates() {
     const today = todayISO();
     const paymentDate = document.getElementById('adminPaymentDate');
     const withdrawalDate = document.getElementById('adminWithdrawalDate');
+    const reportMonth = document.getElementById('reportTargetMonth');
     if (paymentDate) paymentDate.value = today;
     if (withdrawalDate) withdrawalDate.value = today;
+    if (reportMonth) reportMonth.value = today.slice(0, 7);
 }
 
 function money(amount) {
@@ -2174,6 +2284,8 @@ function updateAdminInterface() {
     const text = document.getElementById('adminBtnText');
     const summaryButton = document.getElementById('fundSummaryButton');
     const summaryText = document.getElementById('summaryAccessText');
+    const monthlySummaryButton = document.getElementById('monthlySummaryButton');
+    const monthlySummaryAccessText = document.getElementById('monthlySummaryAccessText');
     const sidebarUserRoleText = document.getElementById('sidebarUserRoleText');
     const sidebarAuthIcon = document.getElementById('sidebarAuthIcon');
     const statementSelect = document.getElementById('statementTeacherSelect');
@@ -2185,8 +2297,13 @@ function updateAdminInterface() {
 
         summaryButton.classList.remove('opacity-50', 'cursor-not-allowed');
         summaryButton.disabled = false;
-        summaryButton.innerHTML = '<i class="fa-solid fa-file-pdf mr-2"></i> Download Complete Fund Summary';
+        summaryButton.innerHTML = '<i class="fa-solid fa-file-pdf mr-2"></i> Download Complete Summary (Admin)';
         summaryText.textContent = 'Administrator access is active. You can generate the complete fund report.';
+
+        monthlySummaryButton.classList.remove('opacity-50', 'cursor-not-allowed');
+        monthlySummaryButton.disabled = false;
+        monthlySummaryButton.innerHTML = '<i class="fa-solid fa-file-pdf mr-2"></i> Download Monthly Summary (Admin)';
+        monthlySummaryAccessText.textContent = 'Administrator access active. Select target month to generate report.';
 
         if (statementSelect) statementSelect.disabled = false;
 
@@ -2199,8 +2316,13 @@ function updateAdminInterface() {
 
         summaryButton.classList.add('opacity-50', 'cursor-not-allowed');
         summaryButton.disabled = true;
-        summaryButton.innerHTML = '<i class="fa-solid fa-file-pdf mr-2"></i> Download Complete Fund Summary (Admin Only)';
+        summaryButton.innerHTML = '<i class="fa-solid fa-file-pdf mr-2"></i> Download Complete Summary (Admin)';
         summaryText.textContent = 'This report is available to the Administrator only.';
+
+        monthlySummaryButton.classList.add('opacity-50', 'cursor-not-allowed');
+        monthlySummaryButton.disabled = true;
+        monthlySummaryButton.innerHTML = '<i class="fa-solid fa-file-pdf mr-2"></i> Download Monthly Summary (Admin)';
+        monthlySummaryAccessText.textContent = 'Available to Administrator only. Select target month below.';
 
         if (statementSelect) statementSelect.disabled = true;
 
@@ -2361,6 +2483,106 @@ async function downloadPDF() {
     showToast('Member statement downloaded successfully.', 'success');
 }
 
+async function downloadMonthlySummaryPDF() {
+    if (!adminLoggedIn) {
+        toggleAdminModal();
+        showToast('Administrator login required to download monthly summary.', 'error');
+        return;
+    }
+
+    if (typeof html2pdf === 'undefined') {
+        showToast('PDF library could not be loaded.', 'error');
+        return;
+    }
+
+    const targetMonthInput = document.getElementById('reportTargetMonth').value;
+    if (!targetMonthInput) {
+        showToast('Please select a target month for the report.', 'error');
+        return;
+    }
+
+    const [targetYear, targetMonthNum] = targetMonthInput.split('-');
+    const targetDateObj = new Date(Number(targetYear), Number(targetMonthNum) - 1, 1);
+    const monthFormattedName = targetDateObj.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+
+    const template = document.getElementById('monthlySummaryPdfTemplate');
+
+    document.getElementById('monthlyReportId').textContent = generateDocumentId('MON');
+    document.getElementById('monthlyReportTitleMonth').textContent = monthFormattedName;
+    document.getElementById('monthlyReportMonthLabel').textContent = monthFormattedName;
+    document.getElementById('monthlyReportDate').textContent = formatDate(todayISO());
+
+    // Filter contributions and payouts for the selected month
+    const monthlyPayments = [];
+    welfareData.teachers.forEach(teacher => {
+        teacher.payments.forEach(payment => {
+            if (payment.date && payment.date.startsWith(targetMonthInput)) {
+                monthlyPayments.push({ teacher, payment });
+            }
+        });
+    });
+
+    const monthlyPayouts = [];
+    welfareData.teachers.forEach(teacher => {
+        teacher.payouts.forEach(payout => {
+            if (payout.date && payout.date.startsWith(targetMonthInput)) {
+                monthlyPayouts.push({ teacher, payout });
+            }
+        });
+    });
+
+    const totalMonthlyContrib = monthlyPayments.reduce((sum, item) => sum + Number(item.payment.amount || 0), 0);
+    const totalMonthlyPayout = monthlyPayouts.reduce((sum, item) => sum + Number(item.payout.amount || 0), 0);
+    const netMonthlyBalance = totalMonthlyContrib - totalMonthlyPayout;
+
+    document.getElementById('monthlyReportTotalContrib').textContent = money(totalMonthlyContrib);
+    document.getElementById('monthlyReportTotalPayouts').textContent = money(totalMonthlyPayout);
+    document.getElementById('monthlyReportNet').textContent = money(netMonthlyBalance);
+
+    const contribBody = document.getElementById('monthlySummaryContribBody');
+    if (!monthlyPayments.length) {
+        contribBody.innerHTML = `<tr><td colspan="6" class="border px-2 py-3 text-center text-slate-500">No contributions recorded for ${monthFormattedName}.</td></tr>`;
+    } else {
+        contribBody.innerHTML = monthlyPayments.map((item, index) => {
+            return `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${escapeHtml(item.teacher.id)}</td>
+                    <td class="font-bold">${escapeHtml(item.teacher.name)}</td>
+                    <td>${escapeHtml(item.payment.reference || '-')}</td>
+                    <td>${formatDate(item.payment.date)}</td>
+                    <td class="text-right font-bold">${money(item.payment.amount)}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    const payoutBody = document.getElementById('monthlySummaryPayoutBody');
+    if (!monthlyPayouts.length) {
+        payoutBody.innerHTML = `<tr><td colspan="6" class="border px-2 py-3 text-center text-slate-500">No welfare payouts recorded for ${monthFormattedName}.</td></tr>`;
+    } else {
+        payoutBody.innerHTML = monthlyPayouts.map((item, index) => {
+            return `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td class="font-bold">${escapeHtml(item.teacher.name)}</td>
+                    <td>${escapeHtml(item.payout.reason || '-')}</td>
+                    <td>${escapeHtml(item.payout.reference || '-')}</td>
+                    <td>${formatDate(item.payout.date)}</td>
+                    <td class="text-right font-bold">${money(item.payout.amount)}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    await renderPDFElement(template, {
+        filename: `Ntonso_SDA_Monthly_Summary_${targetMonthInput}.pdf`,
+        orientation: 'landscape'
+    });
+
+    showToast(`Monthly summary for ${monthFormattedName} downloaded.`, 'success');
+}
+
 async function downloadFundSummaryPDF() {
     if (!adminLoggedIn) {
         toggleAdminModal();
@@ -2505,8 +2727,9 @@ async function renderPDFElement(element, options = {}) {
 }
 
 function showSection(section, button = null, bypassAdmin = false) {
-    if (section === 'admin' && !adminLoggedIn && !bypassAdmin) {
+    if ((section === 'admin' || section === 'teachers') && !adminLoggedIn && !bypassAdmin) {
         toggleAdminModal();
+        showToast('Administrator login required to access Teachers & Members roster.', 'error');
         return;
     }
 
