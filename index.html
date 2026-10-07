@@ -288,18 +288,19 @@ body {
     background: rgba(15, 23, 42, 0.75);
 }
 
-@keyframes tickerScroll {
-    0% { transform: translateX(100%); }
-    100% { transform: translateX(-100%); }
+@keyframes continuousScroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
 }
 
-.animate-ticker {
-    display: inline-block;
+.animate-continuous-ticker {
+    display: flex;
     white-space: nowrap;
-    animation: tickerScroll 30s linear infinite;
+    width: max-content;
+    animation: continuousScroll 35s linear infinite;
 }
 
-.animate-ticker:hover {
+.animate-continuous-ticker:hover {
     animation-play-state: paused;
 }
 
@@ -1336,13 +1337,9 @@ body {
 <!-- =========================================================
      LIVE ROLLING ACTIVITY BANNER (Fixed Bottom Ticker)
 ========================================================= -->
-<div id="liveTickerBanner" class="fixed bottom-0 left-0 right-0 z-40 bg-sdaNavy-900/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-amber-500/30 text-white text-xs py-2.5 px-4 shadow-2xl flex items-center hidden">
-    <div class="flex items-center gap-2 bg-amber-500 text-sdaNavy-900 font-black px-3 py-1 rounded-lg text-[10px] uppercase tracking-wider flex-shrink-0 z-10 shadow">
-        <i class="fa-solid fa-bullhorn animate-bounce"></i>
-        <span>Admin Audit Ticker</span>
-    </div>
-    <div class="overflow-hidden whitespace-nowrap relative flex-1 ml-3">
-        <div id="tickerContent" class="animate-ticker flex items-center gap-8 font-medium">
+<div id="liveTickerBanner" class="fixed bottom-0 left-0 right-0 z-40 bg-sdaNavy-900/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-amber-500/30 text-white text-xs py-2.5 px-4 shadow-2xl overflow-hidden hidden">
+    <div class="overflow-hidden whitespace-nowrap relative w-full">
+        <div id="tickerContent" class="animate-continuous-ticker flex items-center gap-12 font-medium">
             <!-- Dynamically populated activity items -->
         </div>
     </div>
@@ -2280,18 +2277,19 @@ function renderLiveTicker() {
 
     banner.classList.remove('hidden');
 
-    let tickerHtml = '';
+    let singleSetHtml = '';
     adminLogs.forEach(log => {
-        tickerHtml += `
-            <span class="inline-flex items-center gap-2">
-                <i class="fa-solid fa-user-shield text-amber-400"></i>
+        singleSetHtml += `
+            <span class="inline-flex items-center gap-2 px-6">
+                <i class="fa-solid fa-shield-halved text-amber-400"></i>
                 <span><strong>${escapeHtml(log.name)}</strong> performed action: <span class="text-amber-300 font-bold">${escapeHtml(log.action)}</span> at ${escapeHtml(log.time)}.</span>
             </span>
             <span class="text-amber-500">•</span>
         `;
     });
 
-    content.innerHTML = tickerHtml;
+    // Duplicate content twice to guarantee a smooth, seamless infinite loop without restarting gaps
+    content.innerHTML = singleSetHtml + singleSetHtml;
 }
 
 function handlePortalLogin(event) {
