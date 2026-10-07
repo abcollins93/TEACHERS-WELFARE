@@ -624,12 +624,20 @@ body {
                 <i id="themeIcon" class="fa-solid fa-moon text-sm"></i>
             </button>
 
-            <button id="adminToggleBtn"
-                    onclick="openAdminModal()"
-                    class="px-4 py-2.5 text-xs font-extrabold rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-sdaNavy-900 shadow-md shadow-amber-500/20 flex items-center gap-2 transition-all">
-                <i class="fa-solid fa-lock text-[11px]"></i>
-                <span id="adminBtnText">Admin Access</span>
-            </button>
+            <!-- REPLACED ADMIN ACCESS BUTTON WITH PASSPORT UPLOAD CONTAINER / AVATAR -->
+            <div class="relative group">
+                <input type="file" id="headerPassportInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="handleHeaderPassportUpload(event)" title="Click to upload passport picture">
+                <div id="headerPassportContainer" class="w-11 h-11 rounded-2xl bg-slate-200 dark:bg-slate-800 border-2 border-amber-500 overflow-hidden flex items-center justify-center shadow-md relative group-hover:scale-105 transition-all">
+                    <!-- Default fallback icon or uploaded image -->
+                    <div id="headerPassportPlaceholder" class="text-amber-600 dark:text-amber-400 text-sm font-bold flex items-center justify-center w-full h-full bg-amber-500/10">
+                        <i class="fa-solid fa-camera"></i>
+                    </div>
+                    <img id="headerPassportImg" class="w-full h-full object-cover hidden" alt="Passport">
+                </div>
+                <div class="absolute -bottom-8 right-0 bg-slate-900 text-white text-[10px] font-bold px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-lg">
+                    Upload Passport
+                </div>
+            </div>
         </div>
     </div>
 </header>
@@ -772,8 +780,9 @@ body {
     <div class="glass-card rounded-2xl p-6 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div class="flex items-center gap-5">
             <div id="teacherAvatar"
-                 class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-sdaNavy-900 to-sdaNavy-700 text-amber-400 font-black text-2xl flex items-center justify-center shadow-lg shadow-sdaNavy-900/20">
-                --
+                 class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-sdaNavy-900 to-sdaNavy-700 text-amber-400 font-black text-2xl flex items-center justify-center shadow-lg shadow-sdaNavy-900/20 overflow-hidden relative">
+                <span id="teacherAvatarInitials">--</span>
+                <img id="teacherAvatarImg" class="w-full h-full object-cover hidden" alt="Avatar">
             </div>
             <div>
                 <div class="flex flex-wrap items-center gap-3">
@@ -1348,7 +1357,8 @@ body {
 ========================================================= -->
 <div id="liveTickerBanner" class="fixed bottom-0 left-0 right-0 z-40 bg-sdaNavy-900/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-amber-500/30 text-white text-xs py-2.5 px-4 shadow-2xl overflow-hidden hidden">
     <div class="overflow-hidden whitespace-nowrap relative w-full">
-        <div id="tickerContent" class="animate-continuous-ticker flex items-center gap-12 font-medium">
+        <!-- REDUCED BANNER SPEED TO 50s -->
+        <div id="tickerContent" class="animate-continuous-ticker flex items-center gap-12 font-medium" style="animation-duration: 50s;">
             <!-- Dynamically populated activity items -->
         </div>
     </div>
@@ -1452,14 +1462,23 @@ body {
 <div id="pdfRenderArea" class="pdf-render-area">
     <!-- Individual Statement Template -->
     <div id="statementPdfTemplate" class="pdf-page" style="font-size: 13px;">
-        <div class="text-center border-b-2 border-slate-800 pb-4 pdf-avoid-break">
-            <h2 class="text-2xl font-extrabold">GHANA EDUCATION SERVICE</h2>
-            <h1 class="text-3xl font-black text-blue-900">NTONSO SDA PRIMARY 'A'</h1>
-            <p class="text-sm font-bold text-amber-700 uppercase">TEACHERS WELFARE FUND</p>
-            <p class="text-xs text-slate-500">Official Member Contribution & Welfare Statement</p>
+        <!-- Top Header with Passport Picture at Top Right -->
+        <div class="relative border-b-2 border-slate-800 pb-4 mb-5 pdf-avoid-break">
+            <!-- Passport Picture Positioned Top Right in PDF -->
+            <div id="pdfPassportContainer" class="absolute right-0 top-0 w-24 h-28 border-2 border-slate-700 bg-slate-100 flex items-center justify-center overflow-hidden shadow">
+                <span id="pdfPassportPlaceholderText" class="text-[10px] text-slate-400 font-bold text-center px-1">Passport Photo</span>
+                <img id="pdfPassportImg" class="w-full h-full object-cover hidden" alt="Passport">
+            </div>
+
+            <div class="pr-28 text-center sm:text-left">
+                <h2 class="text-xl font-extrabold">GHANA EDUCATION SERVICE</h2>
+                <h1 class="text-2xl font-black text-blue-900">NTONSO SDA PRIMARY 'A'</h1>
+                <p class="text-xs font-bold text-amber-700 uppercase">TEACHERS WELFARE FUND</p>
+                <p class="text-[11px] text-slate-500 mt-1">Official Member Contribution & Welfare Statement</p>
+            </div>
         </div>
 
-        <div class="flex justify-between mt-5 mb-5 text-sm pdf-avoid-break">
+        <div class="flex justify-between mt-3 mb-4 text-sm pdf-avoid-break">
             <div>
                 <p><strong>Document ID:</strong> <span id="pdfDocId"></span></p>
                 <p><strong>Academic Year:</strong> <span id="pdfAcademicYear">2026/2027</span></p>
@@ -1469,7 +1488,7 @@ body {
             </div>
         </div>
 
-        <div class="border border-slate-300 rounded-lg p-5 mb-5 text-sm pdf-avoid-break">
+        <div class="border border-slate-300 rounded-lg p-4 mb-5 text-sm pdf-avoid-break">
             <h3 class="font-bold border-b pb-2 mb-3 text-base">MEMBER INFORMATION</h3>
             <div class="grid grid-cols-2 gap-y-2">
                 <p><strong>Name:</strong> <span id="pdfTeacherName"></span></p>
@@ -1827,9 +1846,9 @@ function loadData() {
         if (!saved) {
             return {
                 teachers: [
-                    { id: 'STF001', name: 'Collins Adarkwa Baiden', phone: '0240000001', rank: 'Assistant Director II', className: 'BS6', payments: [{ date: '2026-09-01', amount: 100, reference: 'PAY-001' }], payouts: [] },
-                    { id: 'STF002', name: 'Edwardina Appiah Mensah', phone: '0240000002', rank: 'ADII', className: 'BS5', payments: [{ date: '2026-09-01', amount: 100, reference: 'PAY-002' }], payouts: [] },
-                    { id: 'STF003', name: 'Madam Cassandra Yeboah', phone: '0240000003', rank: 'ADI', className: 'BS4', payments: [{ date: '2026-09-01', amount: 100, reference: 'PAY-003' }], payouts: [] }
+                    { id: 'STF001', name: 'Collins Adarkwa Baiden', phone: '0240000001', rank: 'Assistant Director II', className: 'BS6', passport: '', payments: [{ date: '2026-09-01', amount: 100, reference: 'PAY-001' }], payouts: [] },
+                    { id: 'STF002', name: 'Edwardina Appiah Mensah', phone: '0240000002', rank: 'ADII', className: 'BS5', passport: '', payments: [{ date: '2026-09-01', amount: 100, reference: 'PAY-002' }], payouts: [] },
+                    { id: 'STF003', name: 'Madam Cassandra Yeboah', phone: '0240000003', rank: 'ADI', className: 'BS4', passport: '', payments: [{ date: '2026-09-01', amount: 100, reference: 'PAY-003' }], payouts: [] }
                 ]
             };
         }
@@ -1840,6 +1859,7 @@ function loadData() {
         parsed.teachers.forEach(teacher => {
             if (!Array.isArray(teacher.payments)) teacher.payments = [];
             if (!Array.isArray(teacher.payouts)) teacher.payouts = [];
+            if (teacher.passport === undefined) teacher.passport = '';
         });
         return parsed;
     } catch (error) {
@@ -2018,6 +2038,47 @@ function renderAll() {
     renderAdminUsersTable();
     renderLiveTicker();
     renderMemberLiveTicker();
+    renderHeaderPassport();
+}
+
+function renderHeaderPassport() {
+    const teacher = getSelectedTeacher();
+    const imgEl = document.getElementById('headerPassportImg');
+    const placeholderEl = document.getElementById('headerPassportPlaceholder');
+    if (!imgEl || !placeholderEl) return;
+
+    if (teacher && teacher.passport) {
+        imgEl.src = teacher.passport;
+        imgEl.classList.remove('hidden');
+        placeholderEl.classList.add('hidden');
+    } else {
+        imgEl.src = '';
+        imgEl.classList.add('hidden');
+        placeholderEl.classList.remove('hidden');
+    }
+}
+
+function handleHeaderPassportUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const teacher = getSelectedTeacher();
+    if (!teacher) {
+        showToast('Please select or log into a teacher profile first.', 'error');
+        event.target.value = '';
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        teacher.passport = e.target.result;
+        saveData();
+        renderHeaderPassport();
+        renderDashboard();
+        showToast('Passport picture uploaded successfully!', 'success');
+        logAdminAction(`Updated passport picture for ${teacher.name}`, teacher.id);
+    };
+    reader.readAsDataURL(file);
 }
 
 function renderDashboard() {
@@ -2039,7 +2100,9 @@ function renderDashboard() {
         document.getElementById('currentTeacherStaffId').textContent = '--';
         document.getElementById('currentTeacherPhone').textContent = '--';
         document.getElementById('currentTeacherClass').textContent = '--';
-        document.getElementById('teacherAvatar').textContent = '--';
+        document.getElementById('teacherAvatarInitials').textContent = '--';
+        document.getElementById('teacherAvatarImg').classList.add('hidden');
+        document.getElementById('teacherAvatarInitials').classList.remove('hidden');
         document.getElementById('statMemberTotal').textContent = money(0);
         document.getElementById('statMemberContribCount').textContent = '0 Payments recorded';
         document.getElementById('statLastPayment').textContent = 'N/A';
@@ -2055,7 +2118,19 @@ function renderDashboard() {
     document.getElementById('currentTeacherStaffId').textContent = teacher.id || '--';
     document.getElementById('currentTeacherPhone').textContent = teacher.phone || '--';
     document.getElementById('currentTeacherClass').textContent = teacher.className || '--';
-    document.getElementById('teacherAvatar').textContent = initials(teacher.name);
+
+    const avatarImg = document.getElementById('teacherAvatarImg');
+    const avatarInitials = document.getElementById('teacherAvatarInitials');
+    if (teacher.passport) {
+        avatarImg.src = teacher.passport;
+        avatarImg.classList.remove('hidden');
+        avatarInitials.classList.add('hidden');
+    } else {
+        avatarImg.src = '';
+        avatarImg.classList.add('hidden');
+        avatarInitials.textContent = initials(teacher.name);
+        avatarInitials.classList.remove('hidden');
+    }
 
     const memberTotal = teacher.payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
     document.getElementById('statMemberTotal').textContent = money(memberTotal);
@@ -2545,7 +2620,7 @@ function handleAddNewStaff(event) {
         return;
     }
 
-    const teacher = { id, name, phone, rank, className, payments: [], payouts: [] };
+    const teacher = { id, name, phone, rank, className, passport: '', payments: [], payouts: [] };
     welfareData.teachers.push(teacher);
     saveData();
     selectedTeacherId = id;
@@ -2778,8 +2853,6 @@ function handleAdminLogin(event) {
 }
 
 function updateAdminInterface() {
-    const btn = document.getElementById('adminToggleBtn');
-    const text = document.getElementById('adminBtnText');
     const summaryButton = document.getElementById('fundSummaryButton');
     const summaryText = document.getElementById('summaryAccessText');
     const monthlySummaryButton = document.getElementById('monthlySummaryButton');
@@ -2789,10 +2862,6 @@ function updateAdminInterface() {
     const statementSelect = document.getElementById('statementTeacherSelect');
 
     if (adminLoggedIn) {
-        btn.classList.remove('bg-gradient-to-r', 'from-amber-500', 'to-amber-600');
-        btn.classList.add('bg-emerald-600', 'text-white');
-        text.textContent = 'Admin Active';
-
         summaryButton.classList.remove('opacity-50', 'cursor-not-allowed');
         summaryButton.disabled = false;
         summaryButton.innerHTML = '<i class="fa-solid fa-file-pdf mr-2"></i><span>Download Complete Summary (Admin)</span>';
@@ -2808,10 +2877,6 @@ function updateAdminInterface() {
         if (sidebarUserRoleText) sidebarUserRoleText.textContent = currentAdminUser ? currentAdminUser.name : 'Administrator';
         if (sidebarAuthIcon) sidebarAuthIcon.className = 'fa-solid fa-right-from-bracket';
     } else {
-        btn.classList.add('bg-gradient-to-r', 'from-amber-500', 'to-amber-600');
-        btn.classList.remove('bg-emerald-600', 'text-white');
-        text.textContent = 'Admin Access';
-
         summaryButton.classList.add('opacity-50', 'cursor-not-allowed');
         summaryButton.disabled = true;
         summaryButton.innerHTML = '<i class="fa-solid fa-file-pdf mr-2"></i><span>Download Complete Summary (Admin)</span>';
@@ -2932,6 +2997,19 @@ async function downloadPDF() {
     document.getElementById('pdfPhone').textContent = teacher.phone;
     document.getElementById('pdfGrade').textContent = teacher.rank;
     document.getElementById('pdfClass').textContent = teacher.className;
+
+    // Handle passport picture in PDF
+    const pdfImg = document.getElementById('pdfPassportImg');
+    const pdfPlaceholderText = document.getElementById('pdfPassportPlaceholderText');
+    if (teacher.passport) {
+        pdfImg.src = teacher.passport;
+        pdfImg.classList.remove('hidden');
+        pdfPlaceholderText.classList.add('hidden');
+    } else {
+        pdfImg.src = '';
+        pdfImg.classList.add('hidden');
+        pdfPlaceholderText.classList.remove('hidden');
+    }
 
     const totalPaid = teacher.payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
     const totalWithdrawn = teacher.payouts.reduce((sum, payout) => sum + Number(payout.amount || 0), 0);
@@ -3143,7 +3221,7 @@ async function downloadFundSummaryPDF() {
             allPayouts.push({ teacher, payout });
         });
     });
-    allPayouts.sort((a, b) => String(a.payout.date).localeCompare(String(b.payout.date)));
+    allPayouts.sort((a, b) => String(b.payout.date).localeCompare(String(a.payout.date)));
 
     if (!allPayouts.length) {
         payoutBody.innerHTML = `<tr><td colspan="6" class="border px-2 py-3 text-center text-slate-500">No welfare payouts recorded.</td></tr>`;
