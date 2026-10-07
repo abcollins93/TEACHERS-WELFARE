@@ -842,33 +842,6 @@ body {
                 Download Complete Fund Summary
             </button>
         </div>
-
-        <!-- MONTHLY FUND SUMMARY CARD (ADMIN ONLY) -->
-        <div id="monthlySummaryCard"
-             class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 lg:col-span-2">
-            <div class="w-12 h-12 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center mb-4">
-                <i class="fa-solid fa-calendar-days text-xl"></i>
-            </div>
-            <h3 class="font-extrabold text-lg">Monthly Fund Summary Report</h3>
-            <p id="monthlySummaryAccessText" class="text-sm text-slate-500 mt-1 mb-5">
-                This report is available to the Administrator only.
-            </p>
-
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                <div class="sm:col-span-2">
-                    <label class="block text-xs font-bold mb-1">Select Month / Year</label>
-                    <input type="month" id="reportMonthInput" class="form-input">
-                </div>
-                <div class="flex items-end">
-                    <button id="monthlySummaryButton"
-                            onclick="downloadMonthlySummaryPDF()"
-                            class="w-full py-2.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm flex items-center justify-center">
-                        <i class="fa-solid fa-file-pdf mr-2"></i>
-                        Download Monthly Report
-                    </button>
-                </div>
-            </div>
-        </div>
     </div>
 </section>
 
@@ -1352,86 +1325,6 @@ body {
             Ntonso SDA Primary 'A' Teachers Welfare Fund | Complete Financial Summary
         </div>
     </div>
-
-    <!-- MONTHLY SUMMARY TEMPLATE -->
-    <div id="monthlySummaryPdfTemplate" class="pdf-summary-page">
-        <div class="text-center border-b-2 border-slate-800 pb-4 pdf-avoid-break">
-            <h2 class="text-xl font-extrabold">GHANA EDUCATION SERVICE</h2>
-            <h1 class="text-2xl font-black text-blue-900">NTONSO SDA PRIMARY 'A'</h1>
-            <p class="text-xs font-bold text-amber-700 uppercase">TEACHERS WELFARE FUND</p>
-            <p class="text-[10px] text-slate-500">Monthly Contribution & Financial Summary Report</p>
-        </div>
-
-        <div class="flex justify-between mt-5 mb-5 text-xs pdf-avoid-break">
-            <div>
-                <p><strong>Report ID:</strong> <span id="monthlySummaryReportId"></span></p>
-                <p><strong>Target Month:</strong> <span id="monthlySummaryTargetMonth"></span></p>
-            </div>
-            <div class="text-right">
-                <p><strong>Date Generated:</strong> <span id="monthlySummaryDate"></span></p>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-3 gap-3 mb-6 pdf-avoid-break">
-            <div class="border border-blue-200 bg-blue-50 rounded-lg p-3 text-center">
-                <p class="text-[9px] font-bold text-blue-800">CONTRIBUTING MEMBERS</p>
-                <p id="monthlySummaryMembersCount" class="text-lg font-extrabold text-blue-900">0</p>
-            </div>
-            <div class="border border-emerald-200 bg-emerald-50 rounded-lg p-3 text-center">
-                <p class="text-[9px] font-bold text-emerald-800">MONTHLY TOTAL</p>
-                <p id="monthlySummaryTotalContrib" class="text-lg font-extrabold text-emerald-900">GHS 0.00</p>
-            </div>
-            <div class="border border-purple-200 bg-purple-50 rounded-lg p-3 text-center">
-                <p class="text-[9px] font-bold text-purple-800">PAYOUTS THIS MONTH</p>
-                <p id="monthlySummaryTotalPayouts" class="text-lg font-extrabold text-purple-900">GHS 0.00</p>
-            </div>
-        </div>
-
-        <h3 class="text-xs font-extrabold uppercase mb-2">1. Contributions Received for the Month</h3>
-        <table class="pdf-summary-table mb-6">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th class="text-left">Staff ID</th>
-                    <th class="text-left">Member Name</th>
-                    <th class="text-left">Reference</th>
-                    <th class="text-left">Date Paid</th>
-                    <th class="text-right">Amount</th>
-                </tr>
-            </thead>
-            <tbody id="monthlySummaryContributionsBody"></tbody>
-        </table>
-
-        <h3 class="text-xs font-extrabold uppercase mb-2">2. Payouts Disbursed in the Month</h3>
-        <table class="pdf-summary-table mb-6">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th class="text-left">Date</th>
-                    <th class="text-left">Beneficiary</th>
-                    <th class="text-left">Reason</th>
-                    <th class="text-left">Reference</th>
-                    <th class="text-right">Amount</th>
-                </tr>
-            </thead>
-            <tbody id="monthlySummaryPayoutsBody"></tbody>
-        </table>
-
-        <div class="mt-12 grid grid-cols-2 gap-12 text-[10px] pdf-avoid-break">
-            <div class="text-center">
-                <div class="border-b border-dashed border-slate-500 h-8"></div>
-                <p class="font-bold mt-2">Welfare Financial Secretary</p>
-            </div>
-            <div class="text-center">
-                <div class="border-b border-dashed border-slate-500 h-8"></div>
-                <p class="font-bold mt-2">Headteacher / Patron</p>
-            </div>
-        </div>
-
-        <div class="pdf-footer">
-            Ntonso SDA Primary 'A' Teachers Welfare Fund | Monthly Summary Report
-        </div>
-    </div>
 </div>
 
 <script>
@@ -1521,11 +1414,8 @@ function initializeDates() {
     const today = todayISO();
     const paymentDate = document.getElementById('adminPaymentDate');
     const withdrawalDate = document.getElementById('adminWithdrawalDate');
-    const reportMonthInput = document.getElementById('reportMonthInput');
-
     if (paymentDate) paymentDate.value = today;
     if (withdrawalDate) withdrawalDate.value = today;
-    if (reportMonthInput) reportMonthInput.value = today.slice(0, 7);
 }
 
 function money(amount) {
@@ -2094,8 +1984,6 @@ function updateAdminInterface() {
     const text = document.getElementById('adminBtnText');
     const summaryButton = document.getElementById('fundSummaryButton');
     const summaryText = document.getElementById('summaryAccessText');
-    const monthlySummaryButton = document.getElementById('monthlySummaryButton');
-    const monthlySummaryText = document.getElementById('monthlySummaryAccessText');
     const sidebarUserRoleText = document.getElementById('sidebarUserRoleText');
     const sidebarAuthIcon = document.getElementById('sidebarAuthIcon');
 
@@ -2108,10 +1996,6 @@ function updateAdminInterface() {
         summaryButton.disabled = false;
         summaryText.textContent = 'Administrator access is active. You can generate the complete fund report.';
 
-        monthlySummaryButton.classList.remove('opacity-50', 'cursor-not-allowed');
-        monthlySummaryButton.disabled = false;
-        monthlySummaryText.textContent = 'Administrator access is active. Select a target month and generate the report.';
-
         if (sidebarUserRoleText) sidebarUserRoleText.textContent = 'Administrator';
         if (sidebarAuthIcon) sidebarAuthIcon.className = 'fa-solid fa-right-from-bracket';
     } else {
@@ -2122,10 +2006,6 @@ function updateAdminInterface() {
         summaryButton.classList.add('opacity-50', 'cursor-not-allowed');
         summaryButton.disabled = true;
         summaryText.textContent = 'This report is available to the Administrator only.';
-
-        monthlySummaryButton.classList.add('opacity-50', 'cursor-not-allowed');
-        monthlySummaryButton.disabled = true;
-        monthlySummaryText.textContent = 'This report is available to the Administrator only.';
 
         if (sidebarUserRoleText) sidebarUserRoleText.textContent = 'Public Portal';
         if (sidebarAuthIcon) sidebarAuthIcon.className = 'fa-solid fa-right-to-bracket';
@@ -2352,67 +2232,244 @@ async function downloadFundSummaryPDF() {
     showToast('Complete fund summary downloaded successfully.', 'success');
 }
 
-async function downloadMonthlySummaryPDF() {
-    if (!requireAdmin()) return;
+async function renderPDFElement(element, options = {}) {
+    const originalStyle = {
+        position: element.style.position,
+        left: element.style.left,
+        top: element.style.top,
+        display: element.style.display,
+        visibility: element.style.visibility,
+        width: element.style.width
+    };
 
-    if (typeof html2pdf === 'undefined') {
-        showToast('PDF library could not be loaded.', 'error');
+    try {
+        element.style.position = 'relative';
+        element.style.left = 'auto';
+        element.style.top = 'auto';
+        element.style.display = 'block';
+        element.style.visibility = 'visible';
+
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+        const orientation = options.orientation || 'portrait';
+        const isLandscape = orientation === 'landscape';
+
+        const pdfOptions = {
+            margin: [8, 8, 8, 8],
+            filename: options.filename || 'welfare-report.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: {
+                scale: 2,
+                useCORS: true,
+                allowTaint: false,
+                backgroundColor: '#ffffff',
+                logging: false,
+                scrollX: 0,
+                scrollY: 0,
+                windowWidth: isLandscape ? 1120 : 794
+            },
+            jsPDF: {
+                unit: 'mm',
+                format: 'a4',
+                orientation: orientation,
+                compress: true
+            },
+            pagebreak: {
+                mode: ['css', 'legacy'],
+                avoid: ['tr', '.pdf-avoid-break']
+            }
+        };
+
+        await html2pdf().set(pdfOptions).from(element).save();
+    } finally {
+        element.style.position = originalStyle.position;
+        element.style.left = originalStyle.left;
+        element.style.top = originalStyle.top;
+        element.style.display = originalStyle.display;
+        element.style.visibility = originalStyle.visibility;
+        element.style.width = originalStyle.width;
+    }
+}
+
+function showSection(section, button = null, bypassAdmin = false) {
+    if (section === 'admin' && !adminLoggedIn && !bypassAdmin) {
+        toggleAdminModal();
         return;
     }
 
-    const monthInputVal = document.getElementById('reportMonthInput').value;
-    if (!monthInputVal) {
-        showToast('Please select a target month for the report.', 'error');
-        return;
-    }
-
-    // monthInputVal format is "YYYY-MM"
-    const [targetYear, targetMonth] = monthInputVal.split('-');
-
-    const template = document.getElementById('monthlySummaryPdfTemplate');
-
-    // Filter contributions and payouts matching target year and month
-    const matchingContributions = [];
-    welfareData.teachers.forEach(teacher => {
-        teacher.payments.forEach(payment => {
-            if (payment.date && payment.date.startsWith(`${targetYear}-${targetMonth}`)) {
-                matchingContributions.push({ teacher, payment });
-            }
-        });
+    document.querySelectorAll('.page-section').forEach(page => {
+        page.classList.remove('active');
     });
 
-    const matchingPayouts = [];
-    welfareData.teachers.forEach(teacher => {
-        teacher.payouts.forEach(payout => {
-            if (payout.date && payout.date.startsWith(`${targetYear}-${targetMonth}`)) {
-                matchingPayouts.push({ teacher, payout });
-            }
-        });
+    const target = document.getElementById(`section-${section}`);
+    if (!target) return;
+
+    target.classList.add('active');
+
+    document.querySelectorAll('.nav-button').forEach(nav => {
+        nav.classList.remove('active');
     });
 
-    const totalMonthContrib = matchingContributions.reduce((sum, item) => sum + Number(item.payment.amount || 0), 0);
-    const totalMonthPayouts = matchingPayouts.reduce((sum, item) => sum + Number(item.payout.amount || 0), 0);
-    
-    // Unique contributing members count
-    const uniqueContributingMembers = new Set(matchingContributions.map(item => item.teacher.id)).size;
-
-    const formattedMonthName = new Date(`${targetYear}-${targetMonth}-01T00:00:00`).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
-
-    document.getElementById('monthlySummaryReportId').textContent = generateDocumentId('MON');
-    document.getElementById('monthlySummaryTargetMonth').textContent = formattedMonthName;
-    document.getElementById('monthlySummaryDate').textContent = formatDate(todayISO());
-
-    document.getElementById('monthlySummaryMembersCount').textContent = uniqueContributingMembers;
-    document.getElementById('monthlySummaryTotalContrib').textContent = money(totalMonthContrib);
-    document.getElementById('monthlySummaryTotalPayouts').textContent = money(totalMonthPayouts);
-
-    const contribBody = document.getElementById('monthlySummaryContributionsBody');
-    if (!matchingContributions.length) {
-        contribBody.innerHTML = `<tr><td colspan="6" class="border px-2 py-3 text-center text-slate-500">No contributions recorded for this month.</td></tr>`;
+    if (button) {
+        button.classList.add('active');
     } else {
-        contribBody.innerHTML = matchingContributions.map((record, index) => {
-            return `
-                <tr>
-                    <td>${index + 1}</td>
-                    <td>${escapeHtml(record.teacher.id)}</td>
-                    <td class="font-bold">${escapeHtml(record.teacher.name)}</td>
+        const navButtons = document.querySelectorAll('.nav-button');
+        navButtons.forEach(btn => {
+            const onclick = btn.getAttribute('onclick') || '';
+            if (onclick.includes(`'${section}'`)) {
+                btn.classList.add('active');
+            }
+        });
+    }
+
+    const titles = {
+        dashboard: 'Dashboard',
+        teachers: 'Teachers & Members',
+        payments: 'Contributions',
+        welfare: 'Welfare & Payouts',
+        statements: 'Statements & Reports',
+        admin: 'Administration'
+    };
+
+    document.getElementById('pageTitle').textContent = titles[section] || 'Dashboard';
+    closeMobileSidebar();
+}
+
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const main = document.getElementById('mainWrapper');
+    const icon = document.getElementById('sidebarToggleIcon');
+
+    sidebar.classList.toggle('sidebar-collapsed');
+
+    if (sidebar.classList.contains('sidebar-collapsed')) {
+        main.classList.remove('ml-72');
+        main.classList.add('ml-[76px]');
+        icon.className = 'fa-solid fa-angles-right';
+    } else {
+        main.classList.remove('ml-[76px]');
+        main.classList.add('ml-72');
+        icon.className = 'fa-solid fa-angles-left';
+    }
+}
+
+function openMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('mobileOverlay');
+    sidebar.classList.add('mobile-open');
+    overlay.classList.add('show');
+}
+
+function closeMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('mobileOverlay');
+    sidebar.classList.remove('mobile-open');
+    overlay.classList.remove('show');
+}
+
+function toggleDarkMode() {
+    document.documentElement.classList.toggle('dark');
+    const dark = document.documentElement.classList.contains('dark');
+    localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light');
+    updateThemeIcons();
+}
+
+function applySavedTheme() {
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved === 'dark') {
+        document.documentElement.classList.add('dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+    }
+    updateThemeIcons();
+}
+
+function updateThemeIcons() {
+    const dark = document.documentElement.classList.contains('dark');
+    const themeIcon = document.getElementById('themeIcon');
+    const sidebarThemeIcon = document.getElementById('sidebarThemeIcon');
+
+    if (themeIcon) {
+        themeIcon.className = dark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+    }
+    if (sidebarThemeIcon) {
+        sidebarThemeIcon.className = dark ? 'fa-solid fa-sun w-6 text-center mr-3' : 'fa-solid fa-moon w-6 text-center mr-3';
+    }
+}
+
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    const inner = document.getElementById('toastInner');
+    const messageElement = document.getElementById('toastMessage');
+
+    messageElement.textContent = message;
+    inner.className = 'rounded-xl shadow-2xl px-5 py-4 text-sm font-semibold text-white ' + (type === 'error' ? 'bg-rose-600' : 'bg-emerald-600');
+
+    toast.classList.remove('hidden');
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(() => {
+        toast.classList.add('hidden');
+    }, 3500);
+}
+
+function emptyRow(colspan, message) {
+    return `
+        <tr>
+            <td colspan="${colspan}" class="px-5 py-8 text-center text-slate-400">
+                <i class="fa-solid fa-folder-open mb-2 text-lg"></i>
+                <div>${escapeHtml(message)}</div>
+            </td>
+        </tr>
+    `;
+}
+
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function escapeAttr(value) {
+    return String(value ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+function safeFilename(value) {
+    return String(value || 'Member').replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, '');
+}
+
+document.addEventListener('change', event => {
+    if (event.target && event.target.id === 'adminPaymentTeacherSelect') {
+        const amount = document.getElementById('adminPaymentAmount');
+        if (amount && !amount.value) {
+            amount.value = standardMonthlyDues;
+        }
+    }
+});
+
+document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    const adminModal = document.getElementById('adminModal');
+    const editModal = document.getElementById('editMemberModal');
+
+    if (adminModal && !adminModal.classList.contains('hidden')) {
+        toggleAdminModal();
+    }
+    if (editModal && !editModal.classList.contains('hidden')) {
+        closeEditMemberModal();
+    }
+});
+
+setTimeout(() => {
+    const paymentAmount = document.getElementById('adminPaymentAmount');
+    if (paymentAmount) {
+        paymentAmount.value = standardMonthlyDues;
+    }
+}, 100);
+</script>
+
+</body>
+</html>
+
