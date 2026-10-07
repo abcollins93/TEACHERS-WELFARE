@@ -550,8 +550,8 @@ body {
         </div>
     </div>
 
-    <!-- Teacher Selector -->
-    <div class="bg-white dark:bg-slate-900 rounded-xl p-4 shadow-sm border border-slate-200 dark:border-slate-800 mb-6">
+    <!-- Teacher Selector (Visible to Admin Only) -->
+    <div id="teacherSelectorContainer" class="bg-white dark:bg-slate-900 rounded-xl p-4 shadow-sm border border-slate-200 dark:border-slate-800 mb-6">
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-2">
                 <div class="w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
@@ -866,7 +866,7 @@ body {
                 <i class="fa-solid fa-file-invoice text-xl"></i>
             </div>
             <h3 class="font-extrabold text-lg">Individual Member Statement</h3>
-            <p class="text-sm text-slate-500 mt-1 mb-5">Generate a full A4 statement for a selected teacher.</p>
+            <p class="text-sm text-slate-500 mt-1 mb-5">Generate a full A4 statement for your account.</p>
 
             <select id="statementTeacherSelect"
                     onchange="switchTeacher(this.value)"
@@ -1404,6 +1404,7 @@ const RANK_OPTIONS = [
 ];
 
 let adminLoggedIn = false;
+let loggedInTeacherId = null;
 let selectedTeacherId = null;
 let editingMemberId = null;
 
@@ -1522,6 +1523,9 @@ function getTeacherById(id) {
 }
 
 function getSelectedTeacher() {
+    if (!adminLoggedIn && loggedInTeacherId) {
+        return getTeacherById(loggedInTeacherId);
+    }
     if (!selectedTeacherId) {
         if (welfareData.teachers.length) {
             selectedTeacherId = welfareData.teachers[0].id;
@@ -1533,6 +1537,7 @@ function getSelectedTeacher() {
 }
 
 function switchTeacher(id) {
+    if (!adminLoggedIn) return;
     if (!id) return;
     selectedTeacherId = id;
     const teacherSelect = document.getElementById('teacherSelect');
@@ -1591,6 +1596,11 @@ function renderDashboard() {
 
     document.getElementById('statTotalFund').textContent = money(totalFund);
     document.getElementById('statMonthlyRate').textContent = money(standardMonthlyDues);
+
+    const selectorContainer = document.getElementById('teacherSelectorContainer');
+    if (selectorContainer) {
+        selectorContainer.style.display = adminLoggedIn ? 'block' : 'none';
+    }
 
     if (!teacher) {
         document.getElementById('headerTeacherName').textContent = 'No Teacher';
@@ -1831,6 +1841,7 @@ function handlePortalLogin(event) {
 
     if (ADMIN_PASSWORDS.includes(password) || ADMIN_PASSWORDS.includes(staffId)) {
         adminLoggedIn = true;
+        loggedInTeacherId = null;
         document.getElementById('loginGatewayModal').classList.add('hidden');
         updateAdminInterface();
         renderAll();
@@ -1841,6 +1852,7 @@ function handlePortalLogin(event) {
     const matched = welfareData.teachers.find(t => String(t.id).toLowerCase() === staffId.toLowerCase() || String(t.id).toLowerCase() === password.toLowerCase() || String(t.name).toLowerCase().includes(staffId.toLowerCase()));
     if (matched) {
         adminLoggedIn = false;
+        loggedInTeacherId = matched.id;
         selectedTeacherId = matched.id;
         document.getElementById('loginGatewayModal').classList.add('hidden');
         updateAdminInterface();
@@ -2064,6 +2076,7 @@ function handleAdminLogin(event) {
 
     if (ADMIN_PASSWORDS.includes(password)) {
         adminLoggedIn = true;
+        loggedInTeacherId = null;
         document.getElementById('adminAuthError').classList.add('hidden');
         document.getElementById('adminPasswordInput').value = '';
         toggleAdminModal();
@@ -2083,6 +2096,7 @@ function updateAdminInterface() {
     const summaryText = document.getElementById('summaryAccessText');
     const sidebarUserRoleText = document.getElementById('sidebarUserRoleText');
     const sidebarAuthIcon = document.getElementById('sidebarAuthIcon');
+    const statementSelect = document.getElementById('statementTeacherSelect');
 
     if (adminLoggedIn) {
         btn.classList.remove('bg-sdaGold-500');
@@ -2092,6 +2106,8 @@ function updateAdminInterface() {
         summaryButton.classList.remove('opacity-50', 'cursor-not-allowed');
         summaryButton.disabled = false;
         summaryText.textContent = 'Administrator access is active. You can generate the complete fund report.';
+
+        if (statementSelect) statementSelect.disabled = false;
 
         if (sidebarUserRoleText) sidebarUserRoleText.textContent = 'Administrator';
         if (sidebarAuthIcon) sidebarAuthIcon.className = 'fa-solid fa-right-from-bracket';
@@ -2104,13 +2120,15 @@ function updateAdminInterface() {
         summaryButton.disabled = true;
         summaryText.textContent = 'This report is available to the Administrator only.';
 
-        if (sidebarUserRoleText) sidebarUserRoleText.textContent = 'Public Portal';
+        if (statementSelect) statementSelect.disabled = true;
+
+        if (sidebarUserRoleText) sidebarUserRoleText.textContent = loggedInTeacherId ? 'Teacher Member' : 'Public Portal';
         if (sidebarAuthIcon) sidebarAuthIcon.className = 'fa-solid fa-right-to-bracket';
     }
 }
 
 function handleSidebarAuthAction() {
-    if (adminLoggedIn) {
+    if (adminLoggedIn || loggedInTeacherId) {
         logoutAdmin();
     } else {
         document.getElementById('gatewayStaffId').value = '';
@@ -2137,12 +2155,14 @@ function requestAdminSection() {
 
 function logoutAdmin() {
     adminLoggedIn = false;
+    loggedInTeacherId = null;
+    selectedTeacherId = null;
     updateAdminInterface();
     document.getElementById('gatewayStaffId').value = '';
     document.getElementById('gatewayPassword').value = '';
     document.getElementById('gatewayError').classList.add('hidden');
     document.getElementById('loginGatewayModal').classList.remove('hidden');
-    showToast('Admin session ended.', 'success');
+    showToast('Session ended. Please sign in.', 'success');
 }
 
 function confirmResetAllData() {
@@ -2159,6 +2179,7 @@ function confirmResetAllData() {
 
     welfareData = { teachers: [] };
     selectedTeacherId = null;
+    loggedInTeacherId = null;
     saveData();
     renderAll();
     initializeDates();
