@@ -1,3 +1,5 @@
+That happens because the desktop sidebar collapse button was being triggered on a mobile screen size, causing the sidebar to shrink into a narrow strip over the page content instead of hiding properly.
+Here is the updated app.js file with a safety check so the collapse button only affects desktop screens, keeping mobile views clean and properly aligned:
 const STORAGE_KEY = 'ntonso_sda_welfare_data_v3';
 const DUES_KEY = 'ntonso_sda_standard_dues_v3';
 const THEME_KEY = 'ntonso_sda_theme_v3';
@@ -499,6 +501,7 @@ function showSection(sec, btn) {
 }
 
 function toggleSidebar() {
+    if (window.innerWidth < 1024) return; // Prevent collapse action on mobile screens
     const s = document.getElementById('sidebar');
     const m = document.getElementById('mainWrapper');
     s.classList.toggle('sidebar-collapsed');
@@ -537,3 +540,5 @@ function showToast(msg, type = 'success') {
     clearTimeout(window.__t);
     window.__t = setTimeout(() => toast.classList.add('hidden'), 3500);
 }
+
+Update your app.js file on GitHub with this code, and your mobile view will stay wide, clean, and properly structured!
