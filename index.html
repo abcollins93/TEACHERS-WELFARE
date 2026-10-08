@@ -177,8 +177,8 @@ body {
     background: #f8fafc;
     border: 1px solid #cbd5e1;
     border-radius: .75rem;
-    padding: .75rem 1rem;
-    font-size: .85rem;
+    padding: .85rem 1.125rem;
+    font-size: .95rem;
     outline: none;
     transition: all .25s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -395,52 +395,52 @@ body {
         <div class="absolute -bottom-24 -left-24 w-56 h-56 bg-gradient-to-tr from-amber-500/15 to-amber-400/0 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-700"></div>
         <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-400"></div>
 
-        <!-- Refined Gateway Emblem with Subtle Light Sweep -->
+        <!-- Refined Gateway Emblem with Subtle Light Sweep & Increased Shield Size -->
         <div class="relative text-center mb-7 animate-fade-up-1">
             <div class="w-20 h-20 mx-auto bg-gradient-to-tr from-emerald-700 via-emerald-600 to-teal-500 text-white rounded-[1.5rem] flex items-center justify-center mb-5 shadow-xl shadow-emerald-600/30 animate-float border border-white/20 relative overflow-hidden group/emblem">
                 <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/emblem:translate-x-full transition-transform duration-1000"></div>
-                <div class="relative flex items-center justify-center">
-                    <i class="fa-solid fa-shield text-2xl text-emerald-100 absolute"></i>
-                    <i class="fa-solid fa-users text-xs text-amber-300 relative z-10 translate-y-1"></i>
+                <div class="relative flex items-center justify-center scale-125">
+                    <i class="fa-solid fa-shield text-3xl text-emerald-100 absolute"></i>
+                    <i class="fa-solid fa-users text-sm text-amber-300 relative z-10 translate-y-1"></i>
                 </div>
             </div>
-            <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                 Ntonso SDA Primary 'A'
             </h2>
-            <div class="mt-2 inline-flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/50 py-1.5 px-3.5 rounded-full shadow-sm">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                <p class="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">
+            <div class="mt-2.5 inline-flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/50 py-2 px-4 rounded-full shadow-sm">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+                <p class="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">
                     Welfare Portal Gateway
                 </p>
             </div>
         </div>
 
         <div id="loginFormView" class="relative z-10 animate-fade-up-2">
-            <form onsubmit="handlePortalLogin(event)" class="space-y-4">
+            <form onsubmit="handlePortalLogin(event)" class="space-y-5">
                 <div>
-                    <label class="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5 tracking-wide">Staff Number / ID</label>
+                    <label class="block text-sm font-extrabold text-slate-700 dark:text-slate-300 mb-2 tracking-wide">Staff Number / ID</label>
                     <div class="relative group/input">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 group-focus-within/input:text-emerald-600 dark:group-focus-within/input:text-amber-400 transition-colors duration-300">
-                            <i class="fa-solid fa-id-card text-xs group-focus-within/input:scale-110 transition-transform"></i>
+                            <i class="fa-solid fa-id-card text-sm group-focus-within/input:scale-110 transition-transform"></i>
                         </span>
-                        <input type="text" id="gatewayStaffId" class="form-input !pl-11 !py-3.5 font-semibold text-xs sm:text-sm" placeholder="e.g. STF001" required>
+                        <input type="text" id="gatewayStaffId" class="form-input !pl-12 !py-4 font-semibold text-sm sm:text-base" placeholder="e.g. STF001" required>
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5 tracking-wide">Password / Passcode</label>
+                    <label class="block text-sm font-extrabold text-slate-700 dark:text-slate-300 mb-2 tracking-wide">Password / Passcode</label>
                     <div class="relative group/input">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 group-focus-within/input:text-emerald-600 dark:group-focus-within/input:text-amber-400 transition-colors duration-300">
-                            <i class="fa-solid fa-lock text-xs group-focus-within/input:scale-110 transition-transform"></i>
+                            <i class="fa-solid fa-lock text-sm group-focus-within/input:scale-110 transition-transform"></i>
                         </span>
-                        <input type="password" id="gatewayPassword" class="form-input !pl-11 !pr-11 !py-3.5 font-semibold text-xs sm:text-sm" placeholder="Enter password" required>
+                        <input type="password" id="gatewayPassword" class="form-input !pl-12 !pr-12 !py-4 font-semibold text-sm sm:text-base" placeholder="Enter password" required>
                         <button type="button" onclick="toggleGatewayPasswordVisibility()" class="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-emerald-600 dark:hover:text-amber-400 transition-colors" title="Toggle Password Visibility">
-                            <i id="gatewayPassIcon" class="fa-solid fa-eye text-xs"></i>
+                            <i id="gatewayPassIcon" class="fa-solid fa-eye text-sm"></i>
                         </button>
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between text-xs pt-1">
+                <div class="flex items-center justify-between text-sm pt-1">
                     <label class="flex items-center gap-2.5 cursor-pointer group/check select-none">
                         <input type="checkbox" id="gatewayRememberCheck" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4 transition-all duration-200 group-hover/check:scale-105 cursor-pointer">
                         <span class="text-slate-600 dark:text-slate-400 font-semibold transition-colors group-hover/check:text-slate-900 dark:group-hover/check:text-slate-200">Remember me</span>
@@ -450,7 +450,7 @@ body {
 
                 <p id="gatewayError" class="text-xs text-rose-500 font-semibold text-center hidden bg-rose-50 dark:bg-rose-950/40 p-3 rounded-xl border border-rose-200 dark:border-rose-900 animate-[smoothFadeIn_0.2s_ease-out]">Invalid staff number or password.</p>
 
-                <button type="submit" id="gatewaySubmitBtn" class="w-full py-4 bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-700 hover:to-teal-600 text-white font-extrabold rounded-xl shadow-lg shadow-emerald-600/30 hover:shadow-xl hover:shadow-emerald-600/40 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 text-sm mt-2 flex items-center justify-center gap-2 group/btn">
+                <button type="submit" id="gatewaySubmitBtn" class="w-full py-4 bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-700 hover:to-teal-600 text-white font-extrabold rounded-xl shadow-lg shadow-emerald-600/30 hover:shadow-xl hover:shadow-emerald-600/40 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 text-base mt-2 flex items-center justify-center gap-2.5 group/btn">
                     <span id="gatewayBtnText">Secure Sign In</span>
                     <i id="gatewayBtnIcon" class="fa-solid fa-arrow-right-to-bracket transition-transform group-hover/btn:translate-x-1"></i>
                 </button>
@@ -459,38 +459,38 @@ body {
 
         <div id="resetPasswordView" class="hidden relative z-10 animate-fade-up-2">
             <div class="mb-4 text-center">
-                <h3 class="text-sm font-extrabold text-slate-800 dark:text-slate-200">Reset Teacher Password</h3>
-                <p class="text-[11px] text-slate-500 mt-1">Enter your Staff ID and registered Phone Number to set a new password.</p>
+                <h3 class="text-base font-extrabold text-slate-800 dark:text-slate-200">Reset Teacher Password</h3>
+                <p class="text-xs text-slate-500 mt-1">Enter your Staff ID and registered Phone Number to set a new password.</p>
             </div>
 
-            <form onsubmit="handlePasswordReset(event)" class="space-y-3.5">
+            <form onsubmit="handlePasswordReset(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1">Staff ID</label>
-                    <input type="text" id="resetStaffId" class="form-input !py-3 font-semibold text-xs" placeholder="e.g. STF001" required>
+                    <label class="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5">Staff ID</label>
+                    <input type="text" id="resetStaffId" class="form-input !py-3 font-semibold text-sm" placeholder="e.g. STF001" required>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1">Registered Phone Number</label>
-                    <input type="text" id="resetPhone" class="form-input !py-3 font-semibold text-xs" placeholder="e.g. 0240000001" required>
+                    <label class="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5">Registered Phone Number</label>
+                    <input type="text" id="resetPhone" class="form-input !py-3 font-semibold text-sm" placeholder="e.g. 0240000001" required>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1">New Password / Passcode</label>
-                    <input type="password" id="resetNewPassword" class="form-input !py-3 font-semibold text-xs" placeholder="Enter new password" required>
+                    <label class="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5">New Password / Passcode</label>
+                    <input type="password" id="resetNewPassword" class="form-input !py-3 font-semibold text-sm" placeholder="Enter new password" required>
                 </div>
 
                 <p id="resetError" class="text-xs text-rose-500 font-semibold text-center hidden bg-rose-50 p-2.5 rounded-lg border border-rose-200">Verification failed. Check Staff ID or Phone.</p>
 
-                <div class="flex gap-2.5 pt-2">
-                    <button type="button" onclick="showLoginView()" class="w-1/2 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Cancel</button>
-                    <button type="submit" class="w-1/2 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all">Update Password</button>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="showLoginView()" class="w-1/2 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Cancel</button>
+                    <button type="submit" class="w-1/2 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold shadow-md hover:shadow-lg transition-all">Update Password</button>
                 </div>
             </form>
         </div>
 
         <div class="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800/80 text-center relative z-10 animate-fade-up-3">
-            <button onclick="openAdminModalFromGateway()" class="w-full py-3.5 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-sdaNavy-900 font-extrabold rounded-xl text-xs shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 group/adminbtn">
-                <i class="fa-solid fa-user-shield transition-transform group-hover/adminbtn:scale-110"></i>
+            <button onclick="openAdminModalFromGateway()" class="w-full py-4 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-sdaNavy-900 font-extrabold rounded-xl text-sm shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2.5 group/adminbtn">
+                <i class="fa-solid fa-user-shield text-base transition-transform group-hover/adminbtn:scale-110"></i>
                 <span>Log in as Executive Admin</span>
             </button>
         </div>
@@ -1522,6 +1522,25 @@ body {
 </div>
 
 <!-- =========================================================
+     INACTIVITY WARNING MODAL
+========================================================= -->
+<div id="inactivityWarningModal"
+     class="hidden fixed inset-0 modal-backdrop z-[350] flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-amber-500/50 text-center transform transition-all animate-[smoothFadeIn_0.3s_ease-out]">
+        <div class="w-14 h-14 mx-auto bg-amber-500/20 text-amber-500 rounded-2xl flex items-center justify-center mb-4 text-2xl">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h3 class="text-lg font-black text-slate-900 dark:text-white">Session Expiring Soon</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 mb-6">
+            You will be logged out in <strong id="inactivityCountdownText" class="text-amber-600 dark:text-amber-400 font-bold">1 minute</strong> due to inactivity.
+        </p>
+        <button onclick="dismissInactivityWarning()" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-xs shadow-md transition-all">
+            Stay Signed In
+        </button>
+    </div>
+</div>
+
+<!-- =========================================================
      EDIT MEMBER MODAL
 ========================================================= -->
 <div id="editMemberModal"
@@ -1883,6 +1902,7 @@ const ADMIN_USERS_KEY = 'ntonso_sda_admin_users_v4';
 const ADMIN_LOGS_KEY = 'ntonso_sda_admin_logs_v4';
 const BROADCAST_KEY = 'ntonso_sda_broadcast_message_v4';
 const SESSION_KEY = 'ntonso_sda_session_v4';
+const LAST_ACTIVITY_KEY = 'ntonso_sda_last_activity_v4';
 
 const DEFAULT_ADMINS = [
     { username: 'admin', name: 'Default Executive Admin', password: '1234', secQuestion: 'What was the name of your first primary school?', secAnswer: 'Prempeh' },
@@ -1914,6 +1934,58 @@ let adminUsers = loadAdminUsers();
 let adminLogs = loadAdminLogs();
 let standardMonthlyDues = Number(localStorage.getItem(DUES_KEY) || 100);
 let currentBroadcastMessage = localStorage.getItem(BROADCAST_KEY) || '';
+
+// Inactivity Timeout Configuration (10 minutes total, warning at 9 minutes)
+const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000;
+const WARNING_TIMEOUT_MS = 9 * 60 * 1000;
+let inactivityTimer = null;
+let warningTimer = null;
+
+function resetInactivityTimers() {
+    if (!adminLoggedIn && !loggedInTeacherId) return;
+
+    localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
+
+    clearTimeout(inactivityTimer);
+    clearTimeout(warningTimer);
+
+    warningTimer = setTimeout(() => {
+        showInactivityWarning();
+    }, WARNING_TIMEOUT_MS);
+
+    inactivityTimer = setTimeout(() => {
+        triggerInactivityLogout();
+    }, INACTIVITY_TIMEOUT_MS);
+}
+
+function showInactivityWarning() {
+    const modal = document.getElementById('inactivityWarningModal');
+    if (modal) modal.classList.remove('hidden');
+}
+
+function dismissInactivityWarning() {
+    const modal = document.getElementById('inactivityWarningModal');
+    if (modal) modal.classList.add('hidden');
+    resetInactivityTimers();
+}
+
+function triggerInactivityLogout() {
+    const modal = document.getElementById('inactivityWarningModal');
+    if (modal) modal.classList.add('hidden');
+
+    logoutAdmin();
+    showToast('Your session has expired due to inactivity. Please sign in again.', 'error');
+}
+
+// Bind activity listeners
+['mousemove', 'mousedown', 'keypress', 'touchstart', 'scroll', 'click'].forEach(evt => {
+    document.addEventListener(evt, () => {
+        if (adminLoggedIn || loggedInTeacherId) {
+            // Check cross-tab last activity if needed or reset directly
+            resetInactivityTimers();
+        }
+    }, true);
+});
 
 function loadAdminUsers() {
     try {
@@ -2016,6 +2088,7 @@ function saveSessionState() {
         selectedTeacherId
     };
     localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    resetInactivityTimers();
 }
 
 function restoreSessionState() {
@@ -2033,6 +2106,7 @@ function restoreSessionState() {
 
         if (adminLoggedIn || loggedInTeacherId) {
             document.getElementById('loginGatewayModal').classList.add('hidden');
+            resetInactivityTimers();
         } else {
             document.getElementById('loginGatewayModal').classList.remove('hidden');
         }
@@ -2680,10 +2754,10 @@ function toggleGatewayPasswordVisibility() {
     if (!passInput || !passIcon) return;
     if (passInput.type === 'password') {
         passInput.type = 'text';
-        passIcon.className = 'fa-solid fa-eye-slash text-xs';
+        passIcon.className = 'fa-solid fa-eye-slash text-sm';
     } else {
         passInput.type = 'password';
-        passIcon.className = 'fa-solid fa-eye text-xs';
+        passIcon.className = 'fa-solid fa-eye text-sm';
     }
 }
 
@@ -3297,6 +3371,8 @@ function logoutAdmin() {
     loggedInTeacherId = null;
     selectedTeacherId = null;
     localStorage.removeItem(SESSION_KEY);
+    clearTimeout(inactivityTimer);
+    clearTimeout(warningTimer);
     updateAdminInterface();
     document.getElementById('gatewayStaffId').value = '';
     document.getElementById('gatewayPassword').value = '';
@@ -3382,7 +3458,6 @@ async function downloadPDF() {
         pdfPlaceholderContent.classList.remove('hidden');
     }
 
-    // Generate QR Code dynamically for statement verification
     const qrContainer = document.getElementById('pdfQrCodeContainer');
     qrContainer.innerHTML = '';
     if (typeof QRCode !== 'undefined') {
