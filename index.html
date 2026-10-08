@@ -361,7 +361,7 @@ body {
      LOGIN GATEWAY MODAL
 ========================================================= -->
 <div id="loginGatewayModal"
-     class="fixed inset-0 modal-backdrop z-[300] flex items-center justify-center p-4 overflow-y-auto">
+     class="fixed inset-0 modal-backdrop z-[300] flex items-center justify-center p-4 overflow-y-auto hidden">
     <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-8 shadow-2xl border border-slate-200 dark:border-slate-800 my-auto transform transition-all animate-[smoothFadeIn_0.4s_ease-out]">
         <div class="text-center mb-6">
             <div class="w-20 h-20 mx-auto bg-gradient-to-tr from-emerald-500 to-teal-400 text-white rounded-3xl flex items-center justify-center mb-4 shadow-lg shadow-emerald-500/30 animate-float">
@@ -379,12 +379,12 @@ body {
         <div id="loginFormView">
             <form onsubmit="handlePortalLogin(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Staff Number / ID / Admin Username</label>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Staff Number / ID</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                             <i class="fa-solid fa-id-card text-xs"></i>
                         </span>
-                        <input type="text" id="gatewayStaffId" class="form-input !pl-10 !py-3.5 font-semibold" placeholder="e.g. STF001 or admin" required>
+                        <input type="text" id="gatewayStaffId" class="form-input !pl-10 !py-3.5 font-semibold" placeholder="e.g. STF001" required>
                     </div>
                 </div>
 
@@ -1178,7 +1178,7 @@ body {
         <div id="admin-users-box" class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 scroll-mt-24">
             <h3 class="font-extrabold text-base mb-4 text-slate-900 dark:text-white flex items-center gap-2">
                 <i class="fa-solid fa-user-shield text-amber-500"></i>
-                Admin User Registration & Passcode Management
+                Admin User Registration & Recovery Settings
             </h3>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
@@ -1187,7 +1187,7 @@ body {
                     </h4>
                     <form onsubmit="handleRegisterAdmin(event)" class="space-y-3">
                         <div>
-                            <label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">Admin Username / ID</label>
+                            <label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">Admin Username</label>
                             <input type="text" id="newAdminUsername" class="form-input text-xs" placeholder="e.g. headteacher_ntonso" required>
                         </div>
                         <div>
@@ -1195,8 +1195,22 @@ body {
                             <input type="text" id="newAdminName" class="form-input text-xs" placeholder="e.g. Obeng David (Headteacher)" required>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">Initial Passcode</label>
-                            <input type="password" id="newAdminPassword" class="form-input text-xs" placeholder="Enter secure passcode" required>
+                            <label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">Password</label>
+                            <input type="password" id="newAdminPassword" class="form-input text-xs" placeholder="Enter secure password" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">Security Recovery Question</label>
+                            <select id="newAdminSecQuestion" class="form-input text-xs font-semibold" required>
+                                <option value="">Select a security question</option>
+                                <option value="What is your mother's maiden name?">What is your mother's maiden name?</option>
+                                <option value="What was the name of your first primary school?">What was the name of your first primary school?</option>
+                                <option value="What is your favorite book or novel?">What is your favorite book or novel?</option>
+                                <option value="In what town or city was your first posting?">In what town or city was your first posting?</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">Security Answer</label>
+                            <input type="text" id="newAdminSecAnswer" class="form-input text-xs" placeholder="Enter answer (case-insensitive)" required>
                         </div>
                         <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-xs shadow-md transition-all">
                             Register Administrator Account
@@ -1206,7 +1220,7 @@ body {
 
                 <div class="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
                     <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
-                        <i class="fa-solid fa-key text-amber-500"></i> Change Admin Passcode
+                        <i class="fa-solid fa-key text-amber-500"></i> Change Admin Password
                     </h4>
                     <form onsubmit="handleChangeAdminPasscode(event)" class="space-y-3">
                         <div>
@@ -1214,15 +1228,15 @@ body {
                             <select id="adminAccountSelect" class="form-input text-xs font-semibold" required></select>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">Current Passcode</label>
-                            <input type="password" id="currentAdminPasscode" class="form-input text-xs" placeholder="Enter current passcode" required>
+                            <label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">Current Password</label>
+                            <input type="password" id="currentAdminPasscode" class="form-input text-xs" placeholder="Enter current password" required>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">New Passcode</label>
-                            <input type="password" id="newAdminPasscode" class="form-input text-xs" placeholder="Enter new passcode" required>
+                            <label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">New Password</label>
+                            <input type="password" id="newAdminPasscode" class="form-input text-xs" placeholder="Enter new password" required>
                         </div>
                         <button type="submit" class="w-full py-3 bg-amber-600 hover:bg-amber-700 text-sdaNavy-900 font-extrabold rounded-xl text-xs shadow-md transition-all">
-                            Update Passcode
+                            Update Password
                         </button>
                     </form>
                 </div>
@@ -1235,6 +1249,7 @@ body {
                         <tr>
                             <th class="px-4 py-3 text-left">Username</th>
                             <th class="px-4 py-3 text-left">Name / Title</th>
+                            <th class="px-4 py-3 text-left">Security Question</th>
                             <th class="px-4 py-3 text-left">Action</th>
                         </tr>
                     </thead>
@@ -1414,7 +1429,7 @@ body {
 </div>
 
 <!-- =========================================================
-     ADMIN MODAL
+     ADMIN MODAL (RESTRICTED TO USERNAME & PASSWORD ONLY)
 ========================================================= -->
 <div id="adminModal"
      class="hidden fixed inset-0 modal-backdrop z-[250] items-center justify-center p-4">
@@ -1422,25 +1437,63 @@ body {
         <div class="flex justify-between items-center mb-5">
             <h3 class="font-extrabold text-lg text-slate-900 dark:text-white flex items-center gap-2">
                 <i class="fa-solid fa-lock text-amber-500"></i>
-                Executive Admin Verification
+                Executive Admin Login
             </h3>
             <button type="button" onclick="closeAdminModal()" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white transition-all">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
 
-        <form onsubmit="handleAdminLogin(event)" class="space-y-4">
-            <div>
-                <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Admin Username / Passcode</label>
-                <input type="password" id="adminPasswordInput" class="form-input !py-3.5 font-semibold" placeholder="Enter admin username or passcode" required>
-            </div>
-            <p id="adminAuthError" class="text-xs text-rose-500 font-semibold hidden bg-rose-50 p-2.5 rounded-xl border border-rose-200">Invalid passcode or username.</p>
+        <div id="adminLoginFormView">
+            <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Admin Username</label>
+                    <input type="text" id="adminUsernameInput" class="form-input !py-3 font-semibold" placeholder="Enter username" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Password</label>
+                    <input type="password" id="adminPasswordInput" class="form-input !py-3 font-semibold" placeholder="Enter password" required>
+                </div>
+                <div class="text-right">
+                    <a href="#" onclick="showAdminForgotPassView(); return false;" class="text-xs text-amber-600 dark:text-amber-400 font-bold hover:underline">Forgot admin password?</a>
+                </div>
+                <p id="adminAuthError" class="text-xs text-rose-500 font-semibold hidden bg-rose-50 p-2.5 rounded-xl border border-rose-200">Invalid username or password.</p>
 
-            <div class="flex gap-3 pt-2">
-                <button type="button" onclick="closeAdminModal()" class="w-1/2 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-200">Cancel</button>
-                <button type="submit" class="w-1/2 py-3.5 bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white rounded-xl text-xs font-extrabold shadow-md">Authenticate</button>
-            </div>
-        </form>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeAdminModal()" class="w-1/2 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-200">Cancel</button>
+                    <button type="submit" class="w-1/2 py-3.5 bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white rounded-xl text-xs font-extrabold shadow-md">Authenticate</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- ADMIN FORGOT PASSWORD VIEW WITH SECURITY QUESTION -->
+        <div id="adminForgotPassView" class="hidden space-y-4">
+            <p class="text-xs text-slate-500 dark:text-slate-400">Enter your admin username and answer your security recovery question to reset your password.</p>
+            <form onsubmit="handleAdminPasswordRecovery(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">Admin Username</label>
+                    <input type="text" id="recoveryAdminUsername" class="form-input text-xs font-semibold" placeholder="Enter admin username" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">Security Question</label>
+                    <p id="recoveryQuestionDisplay" class="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 p-2.5 rounded-lg border border-amber-200">Enter username above first or account not found.</p>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">Security Answer</label>
+                    <input type="text" id="recoveryAdminAnswer" class="form-input text-xs font-semibold" placeholder="Enter security answer" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">New Password</label>
+                    <input type="password" id="recoveryNewPassword" class="form-input text-xs font-semibold" placeholder="Enter new password" required>
+                </div>
+                <p id="adminRecoveryError" class="text-xs text-rose-500 font-semibold hidden bg-rose-50 p-2 rounded-lg">Incorrect security answer or username.</p>
+
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="showAdminLoginView()" class="w-1/2 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold">Cancel</button>
+                    <button type="submit" class="w-1/2 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md">Reset Password</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -1787,16 +1840,17 @@ body {
 </div>
 
 <script>
-const STORAGE_KEY = 'ntonso_sda_welfare_data_v3';
-const DUES_KEY = 'ntonso_sda_standard_dues_v3';
-const THEME_KEY = 'ntonso_sda_theme_v3';
-const ADMIN_USERS_KEY = 'ntonso_sda_admin_users_v3';
-const ADMIN_LOGS_KEY = 'ntonso_sda_admin_logs_v3';
-const BROADCAST_KEY = 'ntonso_sda_broadcast_message_v3';
+const STORAGE_KEY = 'ntonso_sda_welfare_data_v4';
+const DUES_KEY = 'ntonso_sda_standard_dues_v4';
+const THEME_KEY = 'ntonso_sda_theme_v4';
+const ADMIN_USERS_KEY = 'ntonso_sda_admin_users_v4';
+const ADMIN_LOGS_KEY = 'ntonso_sda_admin_logs_v4';
+const BROADCAST_KEY = 'ntonso_sda_broadcast_message_v4';
+const SESSION_KEY = 'ntonso_sda_session_v4';
 
 const DEFAULT_ADMINS = [
-    { username: 'admin', name: 'Default Executive Admin', password: '1234' },
-    { username: 'sda2026', name: 'Executive Committee', password: 'sda2026' }
+    { username: 'admin', name: 'Default Executive Admin', password: '1234', secQuestion: 'What was the name of your first primary school?', secAnswer: 'Prempeh' },
+    { username: 'sda2026', name: 'Executive Committee', password: 'sda2026', secQuestion: 'In what town or city was your first posting?', secAnswer: 'Ntonso' }
 ];
 
 const RANK_OPTIONS = [
@@ -1918,10 +1972,44 @@ function saveData() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(welfareData));
 }
 
+function saveSessionState() {
+    const session = {
+        adminLoggedIn,
+        currentAdminUser,
+        loggedInTeacherId,
+        selectedTeacherId
+    };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+}
+
+function restoreSessionState() {
+    try {
+        const saved = localStorage.getItem(SESSION_KEY);
+        if (!saved) {
+            document.getElementById('loginGatewayModal').classList.remove('hidden');
+            return;
+        }
+        const session = JSON.parse(saved);
+        adminLoggedIn = !!session.adminLoggedIn;
+        currentAdminUser = session.currentAdminUser || null;
+        loggedInTeacherId = session.loggedInTeacherId || null;
+        selectedTeacherId = session.selectedTeacherId || (welfareData.teachers.length ? welfareData.teachers[0].id : null);
+
+        if (adminLoggedIn || loggedInTeacherId) {
+            document.getElementById('loginGatewayModal').classList.add('hidden');
+        } else {
+            document.getElementById('loginGatewayModal').classList.remove('hidden');
+        }
+    } catch {
+        document.getElementById('loginGatewayModal').classList.remove('hidden');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     populateRankSelects();
     initializeDates();
     applySavedTheme();
+    restoreSessionState();
     renderAll();
     updateAdminInterface();
 });
@@ -2018,6 +2106,7 @@ function switchTeacher(id) {
     if (!adminLoggedIn) return;
     if (!id) return;
     selectedTeacherId = id;
+    saveSessionState();
     const teacherSelect = document.getElementById('teacherSelect');
     const statementSelect = document.getElementById('statementTeacherSelect');
     if (teacherSelect) teacherSelect.value = id;
@@ -2447,7 +2536,7 @@ function renderAdminUsersTable() {
     const body = document.getElementById('adminUsersTableBody');
     if (!body) return;
     if (!adminUsers.length) {
-        body.innerHTML = `<tr><td colspan="3" class="px-4 py-4 text-center text-slate-400">No admin accounts found.</td></tr>`;
+        body.innerHTML = `<tr><td colspan="4" class="px-4 py-4 text-center text-slate-400">No admin accounts found.</td></tr>`;
         return;
     }
     body.innerHTML = adminUsers.map(adm => {
@@ -2455,6 +2544,7 @@ function renderAdminUsersTable() {
             <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                 <td class="px-4 py-3 font-mono font-bold">${escapeHtml(adm.username)}</td>
                 <td class="px-4 py-3 font-semibold">${escapeHtml(adm.name)}</td>
+                <td class="px-4 py-3 text-slate-500 italic">${escapeHtml(adm.secQuestion || 'Not set')}</td>
                 <td class="px-4 py-3">
                     ${adminUsers.length > 1 ? `<button onclick="handleRemoveAdmin('${escapeAttr(adm.username)}')" class="text-rose-500 hover:text-rose-700 font-bold text-[11px]"><i class="fa-solid fa-trash"></i> Remove</button>` : '<span class="text-slate-400 text-[10px]">Primary</span>'}
                 </td>
@@ -2555,20 +2645,8 @@ function handlePortalLogin(event) {
     const errorEl = document.getElementById('gatewayError');
 
     if (!staffId || !password) {
-        errorEl.textContent = 'Please enter your staff number or username and password.';
+        errorEl.textContent = 'Please enter your ID and password.';
         errorEl.classList.remove('hidden');
-        return;
-    }
-
-    const matchedAdmin = adminUsers.find(a => a.username.toLowerCase() === staffId.toLowerCase() && a.password === password);
-    if (matchedAdmin) {
-        adminLoggedIn = true;
-        currentAdminUser = matchedAdmin;
-        loggedInTeacherId = null;
-        document.getElementById('loginGatewayModal').classList.add('hidden');
-        updateAdminInterface();
-        renderAll();
-        showToast(`Administrator session started (${matchedAdmin.name}).`, 'success');
         return;
     }
 
@@ -2588,13 +2666,14 @@ function handlePortalLogin(event) {
         currentAdminUser = null;
         loggedInTeacherId = matched.id;
         selectedTeacherId = matched.id;
+        saveSessionState();
         document.getElementById('loginGatewayModal').classList.add('hidden');
         updateAdminInterface();
         renderAll();
         showSection('dashboard', null, true);
         showToast(`Welcome back, ${matched.name}!`, 'success');
     } else {
-        errorEl.textContent = 'Invalid username/staff ID or password.';
+        errorEl.textContent = 'Invalid Staff ID or password.';
         errorEl.classList.remove('hidden');
     }
 }
@@ -2647,9 +2726,11 @@ function handleRegisterAdmin(event) {
     const username = document.getElementById('newAdminUsername').value.trim();
     const name = document.getElementById('newAdminName').value.trim();
     const password = document.getElementById('newAdminPassword').value.trim();
+    const secQuestion = document.getElementById('newAdminSecQuestion').value;
+    const secAnswer = document.getElementById('newAdminSecAnswer').value.trim().toLowerCase();
 
-    if (!username || !name || !password) {
-        showToast('Please complete all admin registration fields.', 'error');
+    if (!username || !name || !password || !secQuestion || !secAnswer) {
+        showToast('Please complete all admin registration and recovery fields.', 'error');
         return;
     }
 
@@ -2659,12 +2740,14 @@ function handleRegisterAdmin(event) {
         return;
     }
 
-    adminUsers.push({ username, name, password });
+    adminUsers.push({ username, name, password, secQuestion, secAnswer });
     saveAdminUsersList();
     renderAll();
     document.getElementById('newAdminUsername').value = '';
     document.getElementById('newAdminName').value = '';
     document.getElementById('newAdminPassword').value = '';
+    document.getElementById('newAdminSecQuestion').value = '';
+    document.getElementById('newAdminSecAnswer').value = '';
     
     logAdminAction(`Registered new administrator account: ${name} (${username})`);
     showToast(`Administrator ${name} registered successfully.`, 'success');
@@ -2685,7 +2768,7 @@ function handleChangeAdminPasscode(event) {
     }
 
     if (adminAcc.password !== currentPass) {
-        showToast('Current passcode is incorrect.', 'error');
+        showToast('Current password is incorrect.', 'error');
         return;
     }
 
@@ -2694,8 +2777,8 @@ function handleChangeAdminPasscode(event) {
     document.getElementById('currentAdminPasscode').value = '';
     document.getElementById('newAdminPasscode').value = '';
     
-    logAdminAction(`Updated passcode for admin account: ${adminAcc.name}`);
-    showToast(`Passcode for ${adminAcc.name} updated successfully.`, 'success');
+    logAdminAction(`Updated password for admin account: ${adminAcc.name}`);
+    showToast(`Password for ${adminAcc.name} updated successfully.`, 'success');
 }
 
 function handleRemoveAdmin(username) {
@@ -2740,6 +2823,7 @@ function handleAddNewStaff(event) {
     welfareData.teachers.push(teacher);
     saveData();
     selectedTeacherId = id;
+    saveSessionState();
     document.getElementById('addStaffForm').reset();
     initializeDates();
     renderAll();
@@ -2777,6 +2861,7 @@ function handleRecordPayment(event) {
     teacher.payments.push(payment);
     saveData();
     selectedTeacherId = teacher.id;
+    saveSessionState();
     document.getElementById('adminPaymentAmount').value = standardMonthlyDues;
     document.getElementById('adminPaymentDate').value = todayISO();
     renderAll();
@@ -2872,6 +2957,7 @@ function saveEditedMember(event) {
     teacher.className = document.getElementById('editStaffClass').value.trim();
 
     selectedTeacherId = teacher.id;
+    saveSessionState();
     saveData();
     closeEditMemberModal();
     renderAll();
@@ -2895,6 +2981,7 @@ function handleRemoveStaff(id) {
     }
 
     saveData();
+    saveSessionState();
     renderAll();
     
     logAdminAction(`Removed staff member: ${removedName}`, id);
@@ -2928,8 +3015,9 @@ function openAdminModal() {
     const modal = document.getElementById('adminModal');
     modal.classList.remove('hidden');
     modal.classList.add('flex');
+    showAdminLoginView();
     setTimeout(() => {
-        const input = document.getElementById('adminPasswordInput');
+        const input = document.getElementById('adminUsernameInput');
         if (input) input.focus();
     }, 100);
 }
@@ -2943,19 +3031,78 @@ function closeAdminModal() {
     const modal = document.getElementById('adminModal');
     modal.classList.add('hidden');
     modal.classList.remove('flex');
+    document.getElementById('adminUsernameInput').value = '';
+    document.getElementById('adminPasswordInput').value = '';
+    document.getElementById('adminAuthError').classList.add('hidden');
+    
+    if (!adminLoggedIn && !loggedInTeacherId) {
+        document.getElementById('loginGatewayModal').classList.remove('hidden');
+    }
+}
+
+function showAdminForgotPassView() {
+    document.getElementById('adminLoginFormView').classList.add('hidden');
+    document.getElementById('adminForgotPassView').classList.remove('hidden');
+    document.getElementById('recoveryAdminUsername').value = '';
+    document.getElementById('recoveryAdminAnswer').value = '';
+    document.getElementById('recoveryNewPassword').value = '';
+    document.getElementById('recoveryQuestionDisplay').textContent = 'Enter your admin username above.';
+    document.getElementById('adminRecoveryError').classList.add('hidden');
+}
+
+function showAdminLoginView() {
+    document.getElementById('adminForgotPassView').classList.add('hidden');
+    document.getElementById('adminLoginFormView').classList.remove('hidden');
+    document.getElementById('adminUsernameInput').value = '';
     document.getElementById('adminPasswordInput').value = '';
     document.getElementById('adminAuthError').classList.add('hidden');
 }
 
+document.addEventListener('input', event => {
+    if (event.target && event.target.id === 'recoveryAdminUsername') {
+        const uname = event.target.value.trim().toLowerCase();
+        const disp = document.getElementById('recoveryQuestionDisplay');
+        const adminAcc = adminUsers.find(a => a.username.toLowerCase() === uname);
+        if (adminAcc && adminAcc.secQuestion) {
+            disp.textContent = adminAcc.secQuestion;
+        } else {
+            disp.textContent = uname ? 'Admin account not found.' : 'Enter your admin username above.';
+        }
+    }
+});
+
+function handleAdminPasswordRecovery(event) {
+    event.preventDefault();
+    const uname = document.getElementById('recoveryAdminUsername').value.trim();
+    const answer = document.getElementById('recoveryAdminAnswer').value.trim().toLowerCase();
+    const newPass = document.getElementById('recoveryNewPassword').value.trim();
+    const err = document.getElementById('adminRecoveryError');
+
+    const adminAcc = adminUsers.find(a => a.username.toLowerCase() === uname.toLowerCase());
+    if (!adminAcc || !adminAcc.secAnswer || adminAcc.secAnswer !== answer) {
+        err.textContent = 'Incorrect security answer or username.';
+        err.classList.remove('hidden');
+        return;
+    }
+
+    adminAcc.password = newPass;
+    saveAdminUsersList();
+    showToast('Admin password reset successfully! Please log in.', 'success');
+    showAdminLoginView();
+    document.getElementById('adminUsernameInput').value = adminAcc.username;
+}
+
 function handleAdminLogin(event) {
     event.preventDefault();
-    const inputVal = document.getElementById('adminPasswordInput').value.trim();
+    const usernameInput = document.getElementById('adminUsernameInput').value.trim();
+    const passwordInput = document.getElementById('adminPasswordInput').value.trim();
 
-    const matched = adminUsers.find(a => a.username.toLowerCase() === inputVal.toLowerCase() || a.password === inputVal);
+    const matched = adminUsers.find(a => a.username.toLowerCase() === usernameInput.toLowerCase() && a.password === passwordInput);
     if (matched) {
         adminLoggedIn = true;
         currentAdminUser = matched;
         loggedInTeacherId = null;
+        saveSessionState();
         closeAdminModal();
         updateAdminInterface();
         renderAll();
@@ -3088,6 +3235,7 @@ function logoutAdmin() {
     currentAdminUser = null;
     loggedInTeacherId = null;
     selectedTeacherId = null;
+    localStorage.removeItem(SESSION_KEY);
     updateAdminInterface();
     document.getElementById('gatewayStaffId').value = '';
     document.getElementById('gatewayPassword').value = '';
@@ -3115,6 +3263,7 @@ function confirmResetAllData() {
     loggedInTeacherId = null;
     currentBroadcastMessage = '';
     localStorage.removeItem(BROADCAST_KEY);
+    localStorage.removeItem(SESSION_KEY);
     saveData();
     renderAll();
     initializeDates();
