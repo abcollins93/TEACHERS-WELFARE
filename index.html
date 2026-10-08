@@ -395,13 +395,13 @@ body {
         <div class="absolute -bottom-24 -left-24 w-56 h-56 bg-gradient-to-tr from-amber-500/15 to-amber-400/0 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-700"></div>
         <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-400"></div>
 
-        <!-- Refined Gateway Emblem with Subtle Light Sweep -->
+        <!-- Refined Gateway Emblem with Subtle Light Sweep (Shield icon enlarged ~25%) -->
         <div class="relative text-center mb-7 animate-fade-up-1">
             <div class="w-20 h-20 mx-auto bg-gradient-to-tr from-emerald-700 via-emerald-600 to-teal-500 text-white rounded-[1.5rem] flex items-center justify-center mb-5 shadow-xl shadow-emerald-600/30 animate-float border border-white/20 relative overflow-hidden group/emblem">
                 <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/emblem:translate-x-full transition-transform duration-1000"></div>
                 <div class="relative flex items-center justify-center">
-                    <i class="fa-solid fa-shield text-2xl text-emerald-100 absolute"></i>
-                    <i class="fa-solid fa-users text-xs text-amber-300 relative z-10 translate-y-1"></i>
+                    <i class="fa-solid fa-shield text-3xl text-emerald-100 absolute"></i>
+                    <i class="fa-solid fa-users text-sm text-amber-300 relative z-10 translate-y-1"></i>
                 </div>
             </div>
             <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
@@ -492,6 +492,27 @@ body {
             <button onclick="openAdminModalFromGateway()" class="w-full py-3.5 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-sdaNavy-900 font-extrabold rounded-xl text-xs shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 group/adminbtn">
                 <i class="fa-solid fa-user-shield transition-transform group-hover/adminbtn:scale-110"></i>
                 <span>Log in as Executive Admin</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================
+     INACTIVITY WARNING MODAL
+========================================================= -->
+<div id="inactivityWarningModal"
+     class="hidden fixed inset-0 modal-backdrop z-[400] flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-8 shadow-2xl border border-amber-500/30 text-center transform transition-all animate-[smoothFadeIn_0.3s_ease-out]">
+        <div class="w-16 h-16 mx-auto bg-amber-500/20 text-amber-500 rounded-2xl flex items-center justify-center mb-4 text-2xl shadow-inner">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+        </div>
+        <h3 class="text-xl font-extrabold text-slate-900 dark:text-white">Session Expiring Soon</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+            You will be logged out in <strong id="inactivityCountdown" class="text-amber-600 dark:text-amber-400">1 minute</strong> due to inactivity.
+        </p>
+        <div class="mt-6">
+            <button onclick="resetInactivityTimer()" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-sdaNavy-900 font-extrabold rounded-xl text-xs shadow-lg transition-all">
+                Stay signed in
             </button>
         </div>
     </div>
@@ -1915,6 +1936,59 @@ let adminLogs = loadAdminLogs();
 let standardMonthlyDues = Number(localStorage.getItem(DUES_KEY) || 100);
 let currentBroadcastMessage = localStorage.getItem(BROADCAST_KEY) || '';
 
+// Inactivity Timeout Variables (10 minutes total, warning at 9 minutes)
+let inactivityTimer = null;
+let warningTimer = null;
+const INACTIVITY_LIMIT_MS = 10 * 60 * 1000;
+const WARNING_LIMIT_MS = 9 * 60 * 1000;
+
+function setupInactivityTimers() {
+    clearTimeout(inactivityTimer);
+    clearTimeout(warningTimer);
+
+    if (!adminLoggedIn && !loggedInTeacherId) return;
+
+    warningTimer = setTimeout(() => {
+        showInactivityWarningModal();
+    }, WARNING_LIMIT_MS);
+
+    inactivityTimer = setTimeout(() => {
+        performInactivityLogout();
+    }, INACTIVITY_LIMIT_MS);
+}
+
+function resetInactivityTimer() {
+    const warningModal = document.getElementById('inactivityWarningModal');
+    if (warningModal) warningModal.classList.add('hidden');
+    setupInactivityTimers();
+}
+
+function showInactivityWarningModal() {
+    const warningModal = document.getElementById('inactivityWarningModal');
+    if (warningModal) warningModal.classList.remove('hidden');
+}
+
+function performInactivityLogout() {
+    const warningModal = document.getElementById('inactivityWarningModal');
+    if (warningModal) warningModal.classList.add('hidden');
+
+    logoutAdmin();
+    showToast('Your session has expired due to inactivity. Please sign in again.', 'error');
+}
+
+// Attach activity listeners to reset timer
+['click', 'mousemove', 'keydown', 'scroll', 'touchstart'].forEach(evt => {
+    document.addEventListener(evt, () => {
+        if (adminLoggedIn || loggedInTeacherId) {
+            const warningModal = document.getElementById('inactivityWarningModal');
+            // If warning modal is open, don't auto reset unless "Stay signed in" is clicked or user interacts deliberately, or reset straight away
+            if (warningModal && warningModal.classList.contains('hidden')) {
+                setupInactivityTimers();
+            }
+        }
+    }, true);
+});
+
 function loadAdminUsers() {
     try {
         const saved = localStorage.getItem(ADMIN_USERS_KEY);
@@ -2033,6 +2107,7 @@ function restoreSessionState() {
 
         if (adminLoggedIn || loggedInTeacherId) {
             document.getElementById('loginGatewayModal').classList.add('hidden');
+            setupInactivityTimers();
         } else {
             document.getElementById('loginGatewayModal').classList.remove('hidden');
         }
@@ -2724,6 +2799,7 @@ function handlePortalLogin(event) {
             loggedInTeacherId = matched.id;
             selectedTeacherId = matched.id;
             saveSessionState();
+            setupInactivityTimers();
             document.getElementById('loginGatewayModal').classList.add('hidden');
             if (submitBtn) submitBtn.disabled = false;
             if (btnText) btnText.textContent = 'Secure Sign In';
@@ -3164,6 +3240,7 @@ function handleAdminLogin(event) {
         currentAdminUser = matched;
         loggedInTeacherId = null;
         saveSessionState();
+        setupInactivityTimers();
         closeAdminModal();
         updateAdminInterface();
         renderAll();
@@ -3297,6 +3374,12 @@ function logoutAdmin() {
     loggedInTeacherId = null;
     selectedTeacherId = null;
     localStorage.removeItem(SESSION_KEY);
+    clearTimeout(inactivityTimer);
+    clearTimeout(warningTimer);
+    
+    const warningModal = document.getElementById('inactivityWarningModal');
+    if (warningModal) warningModal.classList.add('hidden');
+
     updateAdminInterface();
     document.getElementById('gatewayStaffId').value = '';
     document.getElementById('gatewayPassword').value = '';
