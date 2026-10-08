@@ -44,8 +44,20 @@ tailwind.config = {
                 'float': 'float 4s ease-in-out infinite',
                 'shimmer': 'shimmer 3s linear infinite',
                 'glow': 'glow 3s ease-in-out infinite alternate',
+                'gateway-in': 'gatewayIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                'fade-up-1': 'fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards',
+                'fade-up-2': 'fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards',
+                'fade-up-3': 'fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards',
             },
             keyframes: {
+                gatewayIn: {
+                    '0%': { opacity: '0', transform: 'scale(0.95) translateY(10px)' },
+                    '100%': { opacity: '1', transform: 'scale(1) translateY(0)' }
+                },
+                fadeUp: {
+                    '0%': { opacity: '0', transform: 'translateY(8px)' },
+                    '100%': { opacity: '1', transform: 'translateY(0)' }
+                },
                 float: {
                     '0%, 100%': { transform: 'translateY(0)' },
                     '50%': { transform: 'translateY(-6px)' }
@@ -377,15 +389,20 @@ body {
 ========================================================= -->
 <div id="loginGatewayModal"
      class="fixed inset-0 modal-backdrop z-[300] flex items-center justify-center p-4 overflow-y-auto hidden">
-    <div class="relative bg-white dark:bg-slate-900 rounded-[2.5rem] max-w-md w-full p-8 sm:p-10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] border border-slate-100 dark:border-slate-800/80 my-auto transform transition-all duration-500 animate-[smoothFadeIn_0.5s_cubic-bezier(0.16,1,0.3,1)] overflow-hidden group">
+    <div class="relative bg-white dark:bg-slate-900 rounded-[2.5rem] max-w-md w-full p-8 sm:p-10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] border border-slate-100 dark:border-slate-800/80 my-auto transform transition-all duration-500 animate-gateway-in overflow-hidden group">
         
         <div class="absolute -top-24 -right-24 w-56 h-56 bg-gradient-to-br from-emerald-500/20 to-teal-500/0 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-700"></div>
         <div class="absolute -bottom-24 -left-24 w-56 h-56 bg-gradient-to-tr from-amber-500/15 to-amber-400/0 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-700"></div>
         <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-400"></div>
 
-        <div class="relative text-center mb-7">
-            <div class="w-20 h-20 mx-auto bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-400 text-white rounded-[1.25rem] flex items-center justify-center mb-5 shadow-xl shadow-emerald-500/30 animate-float border border-white/20">
-                <i class="fa-solid fa-shield-halved text-3xl drop-shadow-md"></i>
+        <!-- Refined Gateway Emblem with Subtle Light Sweep -->
+        <div class="relative text-center mb-7 animate-fade-up-1">
+            <div class="w-20 h-20 mx-auto bg-gradient-to-tr from-emerald-700 via-emerald-600 to-teal-500 text-white rounded-[1.5rem] flex items-center justify-center mb-5 shadow-xl shadow-emerald-600/30 animate-float border border-white/20 relative overflow-hidden group/emblem">
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/emblem:translate-x-full transition-transform duration-1000"></div>
+                <div class="relative flex items-center justify-center">
+                    <i class="fa-solid fa-shield text-2xl text-emerald-100 absolute"></i>
+                    <i class="fa-solid fa-users text-xs text-amber-300 relative z-10 translate-y-1"></i>
+                </div>
             </div>
             <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                 Ntonso SDA Primary 'A'
@@ -398,13 +415,13 @@ body {
             </div>
         </div>
 
-        <div id="loginFormView" class="relative z-10">
+        <div id="loginFormView" class="relative z-10 animate-fade-up-2">
             <form onsubmit="handlePortalLogin(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5 tracking-wide">Staff Number / ID</label>
                     <div class="relative group/input">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 group-focus-within/input:text-emerald-600 dark:group-focus-within/input:text-amber-400 transition-colors">
-                            <i class="fa-solid fa-id-card text-xs"></i>
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 group-focus-within/input:text-emerald-600 dark:group-focus-within/input:text-amber-400 transition-colors duration-300">
+                            <i class="fa-solid fa-id-card text-xs group-focus-within/input:scale-110 transition-transform"></i>
                         </span>
                         <input type="text" id="gatewayStaffId" class="form-input !pl-11 !py-3.5 font-semibold text-xs sm:text-sm" placeholder="e.g. STF001" required>
                     </div>
@@ -413,31 +430,34 @@ body {
                 <div>
                     <label class="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5 tracking-wide">Password / Passcode</label>
                     <div class="relative group/input">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 group-focus-within/input:text-emerald-600 dark:group-focus-within/input:text-amber-400 transition-colors">
-                            <i class="fa-solid fa-lock text-xs"></i>
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 group-focus-within/input:text-emerald-600 dark:group-focus-within/input:text-amber-400 transition-colors duration-300">
+                            <i class="fa-solid fa-lock text-xs group-focus-within/input:scale-110 transition-transform"></i>
                         </span>
-                        <input type="password" id="gatewayPassword" class="form-input !pl-11 !py-3.5 font-semibold text-xs sm:text-sm" placeholder="Enter password" required>
+                        <input type="password" id="gatewayPassword" class="form-input !pl-11 !pr-11 !py-3.5 font-semibold text-xs sm:text-sm" placeholder="Enter password" required>
+                        <button type="button" onclick="toggleGatewayPasswordVisibility()" class="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-emerald-600 dark:hover:text-amber-400 transition-colors" title="Toggle Password Visibility">
+                            <i id="gatewayPassIcon" class="fa-solid fa-eye text-xs"></i>
+                        </button>
                     </div>
                 </div>
 
                 <div class="flex items-center justify-between text-xs pt-1">
-                    <label class="flex items-center gap-2 cursor-pointer group/check">
-                        <input type="checkbox" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4 transition-transform group-hover/check:scale-105">
-                        <span class="text-slate-600 dark:text-slate-400 font-semibold">Remember me</span>
+                    <label class="flex items-center gap-2.5 cursor-pointer group/check select-none">
+                        <input type="checkbox" id="gatewayRememberCheck" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4 transition-all duration-200 group-hover/check:scale-105 cursor-pointer">
+                        <span class="text-slate-600 dark:text-slate-400 font-semibold transition-colors group-hover/check:text-slate-900 dark:group-hover/check:text-slate-200">Remember me</span>
                     </label>
                     <a href="#" onclick="showResetPasswordView(); return false;" class="text-emerald-600 dark:text-emerald-400 font-bold hover:text-emerald-700 dark:hover:text-amber-300 transition-colors hover:underline">Forgot password?</a>
                 </div>
 
                 <p id="gatewayError" class="text-xs text-rose-500 font-semibold text-center hidden bg-rose-50 dark:bg-rose-950/40 p-3 rounded-xl border border-rose-200 dark:border-rose-900 animate-[smoothFadeIn_0.2s_ease-out]">Invalid staff number or password.</p>
 
-                <button type="submit" class="w-full py-4 bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-700 hover:to-teal-600 text-white font-extrabold rounded-xl shadow-lg shadow-emerald-600/30 hover:shadow-xl hover:shadow-emerald-600/40 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 text-sm mt-2 flex items-center justify-center gap-2 group/btn">
-                    <span>Secure Sign In</span>
-                    <i class="fa-solid fa-arrow-right-to-bracket transition-transform group-hover/btn:translate-x-1"></i>
+                <button type="submit" id="gatewaySubmitBtn" class="w-full py-4 bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-700 hover:to-teal-600 text-white font-extrabold rounded-xl shadow-lg shadow-emerald-600/30 hover:shadow-xl hover:shadow-emerald-600/40 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 text-sm mt-2 flex items-center justify-center gap-2 group/btn">
+                    <span id="gatewayBtnText">Secure Sign In</span>
+                    <i id="gatewayBtnIcon" class="fa-solid fa-arrow-right-to-bracket transition-transform group-hover/btn:translate-x-1"></i>
                 </button>
             </form>
         </div>
 
-        <div id="resetPasswordView" class="hidden relative z-10">
+        <div id="resetPasswordView" class="hidden relative z-10 animate-fade-up-2">
             <div class="mb-4 text-center">
                 <h3 class="text-sm font-extrabold text-slate-800 dark:text-slate-200">Reset Teacher Password</h3>
                 <p class="text-[11px] text-slate-500 mt-1">Enter your Staff ID and registered Phone Number to set a new password.</p>
@@ -468,8 +488,8 @@ body {
             </form>
         </div>
 
-        <div class="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800/80 text-center relative z-10">
-            <button onclick="openAdminModalFromGateway()" class="w-full py-3.5 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-sdaNavy-900 font-extrabold rounded-xl text-xs shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2 group/adminbtn">
+        <div class="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800/80 text-center relative z-10 animate-fade-up-3">
+            <button onclick="openAdminModalFromGateway()" class="w-full py-3.5 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-sdaNavy-900 font-extrabold rounded-xl text-xs shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 group/adminbtn">
                 <i class="fa-solid fa-user-shield transition-transform group-hover/adminbtn:scale-110"></i>
                 <span>Log in as Executive Admin</span>
             </button>
@@ -2654,11 +2674,27 @@ function renderMemberLiveTicker() {
     content.innerHTML = singleSetHtml + singleSetHtml;
 }
 
+function toggleGatewayPasswordVisibility() {
+    const passInput = document.getElementById('gatewayPassword');
+    const passIcon = document.getElementById('gatewayPassIcon');
+    if (!passInput || !passIcon) return;
+    if (passInput.type === 'password') {
+        passInput.type = 'text';
+        passIcon.className = 'fa-solid fa-eye-slash text-xs';
+    } else {
+        passInput.type = 'password';
+        passIcon.className = 'fa-solid fa-eye text-xs';
+    }
+}
+
 function handlePortalLogin(event) {
     event.preventDefault();
     const staffId = document.getElementById('gatewayStaffId').value.trim();
     const password = document.getElementById('gatewayPassword').value.trim();
     const errorEl = document.getElementById('gatewayError');
+    const btnText = document.getElementById('gatewayBtnText');
+    const btnIcon = document.getElementById('gatewayBtnIcon');
+    const submitBtn = document.getElementById('gatewaySubmitBtn');
 
     if (!staffId || !password) {
         errorEl.textContent = 'Please enter your ID and password.';
@@ -2678,16 +2714,25 @@ function handlePortalLogin(event) {
     });
 
     if (matched) {
-        adminLoggedIn = false;
-        currentAdminUser = null;
-        loggedInTeacherId = matched.id;
-        selectedTeacherId = matched.id;
-        saveSessionState();
-        document.getElementById('loginGatewayModal').classList.add('hidden');
-        updateAdminInterface();
-        renderAll();
-        showSection('dashboard', null, true);
-        showToast(`Welcome back, ${matched.name}!`, 'success');
+        if (submitBtn) submitBtn.disabled = true;
+        if (btnText) btnText.textContent = 'Signing in...';
+        if (btnIcon) btnIcon.className = 'fa-solid fa-spinner fa-spin';
+
+        setTimeout(() => {
+            adminLoggedIn = false;
+            currentAdminUser = null;
+            loggedInTeacherId = matched.id;
+            selectedTeacherId = matched.id;
+            saveSessionState();
+            document.getElementById('loginGatewayModal').classList.add('hidden');
+            if (submitBtn) submitBtn.disabled = false;
+            if (btnText) btnText.textContent = 'Secure Sign In';
+            if (btnIcon) btnIcon.className = 'fa-solid fa-arrow-right-to-bracket';
+            updateAdminInterface();
+            renderAll();
+            showSection('dashboard', null, true);
+            showToast(`Welcome back, ${matched.name}!`, 'success');
+        }, 600);
     } else {
         errorEl.textContent = 'Invalid Staff ID or password.';
         errorEl.classList.remove('hidden');
