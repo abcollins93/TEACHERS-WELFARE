@@ -297,7 +297,7 @@ body {
     display: flex;
     white-space: nowrap;
     width: max-content;
-    animation: continuousScroll 180s linear infinite; /* Adjusted speed to 180s for very slow, smooth scroll */
+    animation: continuousScroll 300s linear infinite; /* Slower rolling banner speed set to 300s */
 }
 
 .animate-continuous-ticker:hover {
@@ -600,15 +600,54 @@ body {
                 <i class="fa-solid fa-bars"></i>
             </button>
             <div>
-                <!-- INCREASED FONT SIZE & SET TO "HI, ADMIN!" WHEN ADMIN LOGGED IN -->
                 <p id="headerGreetingText" class="text-xs sm:text-sm font-black uppercase tracking-widest text-amber-600 dark:text-amber-400 flex items-center gap-2">
                     <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
                     Hi, Guest!
                 </p>
-                <h2 id="pageTitle"
-                    class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                    Dashboard
-                </h2>
+                
+                <!-- HEADER TITLE CONTAINER WITH EXQUISITE QUICK-NAVIGATION DROPDOWN -->
+                <div class="flex items-center gap-2 relative">
+                    <h2 id="pageTitle" class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                        Dashboard
+                    </h2>
+                    
+                    <!-- Exquisite Modern Quick-Action Dropdown Arrow for Admin -->
+                    <div id="adminQuickNavContainer" class="relative hidden">
+                        <button onclick="toggleAdminDropdown(event)" class="w-8 h-8 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center transition-all shadow-sm group" title="Quick Admin Navigation">
+                            <i id="adminDropdownChevron" class="fa-solid fa-chevron-down text-xs transition-transform duration-300"></i>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div id="adminQuickDropdownMenu" class="absolute left-0 mt-2 w-72 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 py-2 z-50 hidden transform origin-top-left transition-all animate-[smoothFadeIn_0.2s_ease-out]">
+                            <div class="px-4 py-2 border-b border-slate-100 dark:border-slate-800">
+                                <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Admin Quick Actions</p>
+                            </div>
+                            <div class="max-h-72 overflow-y-auto py-1">
+                                <a href="#admin-settings-box" onclick="jumpToAdminSection('admin-settings-box'); return false;" class="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                                    <i class="fa-solid fa-sliders text-amber-500 w-4 text-center"></i> Welfare Fund Settings
+                                </a>
+                                <a href="#admin-users-box" onclick="jumpToAdminSection('admin-users-box'); return false;" class="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                                    <i class="fa-solid fa-user-shield text-amber-500 w-4 text-center"></i> Admin Accounts & Passcodes
+                                </a>
+                                <a href="#admin-staff-box" onclick="jumpToAdminSection('admin-staff-box'); return false;" class="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                                    <i class="fa-solid fa-user-plus text-blue-500 w-4 text-center"></i> Register New Staff
+                                </a>
+                                <a href="#admin-payment-box" onclick="jumpToAdminSection('admin-payment-box'); return false;" class="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                                    <i class="fa-solid fa-money-check-dollar text-emerald-500 w-4 text-center"></i> Log Dues Payment
+                                </a>
+                                <a href="#admin-withdrawal-box" onclick="jumpToAdminSection('admin-withdrawal-box'); return false;" class="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                                    <i class="fa-solid fa-money-bill-transfer text-rose-500 w-4 text-center"></i> Process Welfare Withdrawal
+                                </a>
+                                <a href="#admin-roster-box" onclick="jumpToAdminSection('admin-roster-box'); return false;" class="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                                    <i class="fa-solid fa-users-viewfinder text-blue-500 w-4 text-center"></i> Master Member Roster
+                                </a>
+                                <a href="#admin-reset-box" onclick="jumpToAdminSection('admin-reset-box'); return false;" class="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all border-t border-slate-100 dark:border-slate-800">
+                                    <i class="fa-solid fa-triangle-exclamation text-rose-500 w-4 text-center"></i> Reset Welfare Data
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -673,7 +712,7 @@ body {
     <!-- Teacher/Member Rolling Ticker Banner -->
     <div id="memberTickerBanner" class="mb-6 bg-sdaNavy-900/90 dark:bg-slate-900/90 backdrop-blur-md border border-amber-500/30 rounded-2xl text-white text-xs py-3 px-4 shadow-lg overflow-hidden hidden">
         <div class="overflow-hidden whitespace-nowrap relative w-full">
-            <div id="memberTickerContent" class="animate-continuous-ticker flex items-center gap-12 font-medium" style="animation-duration: 180s;">
+            <div id="memberTickerContent" class="animate-continuous-ticker flex items-center gap-12 font-medium" style="animation-duration: 300s;">
             </div>
         </div>
     </div>
@@ -1091,7 +1130,7 @@ body {
 
     <div class="space-y-6">
         <!-- Settings -->
-        <div class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800">
+        <div id="admin-settings-box" class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 scroll-mt-24">
             <h3 class="font-extrabold text-base mb-4 text-slate-900 dark:text-white flex items-center gap-2">
                 <i class="fa-solid fa-sliders text-amber-500"></i>
                 Welfare Fund Settings
@@ -1118,7 +1157,7 @@ body {
         </div>
 
         <!-- Admin Accounts & Passcode Management Section -->
-        <div class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800">
+        <div id="admin-users-box" class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 scroll-mt-24">
             <h3 class="font-extrabold text-base mb-4 text-slate-900 dark:text-white flex items-center gap-2">
                 <i class="fa-solid fa-user-shield text-amber-500"></i>
                 Admin User Registration & Passcode Management
@@ -1190,7 +1229,7 @@ body {
         </div>
 
         <!-- Add Staff -->
-        <div class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800">
+        <div id="admin-staff-box" class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 scroll-mt-24">
             <h3 class="font-extrabold text-base mb-4 text-slate-900 dark:text-white flex items-center gap-2">
                 <i class="fa-solid fa-user-plus text-blue-500"></i>
                 Register New Staff Member
@@ -1227,7 +1266,7 @@ body {
         <!-- Payments & Withdrawals Forms Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Log Dues -->
-            <div class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800">
+            <div id="admin-payment-box" class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 scroll-mt-24">
                 <h3 class="font-extrabold text-base mb-4 text-slate-900 dark:text-white flex items-center gap-2">
                     <i class="fa-solid fa-money-check-dollar text-emerald-500"></i>
                     Log New Dues Payment
@@ -1252,7 +1291,7 @@ body {
             </div>
 
             <!-- Process Withdrawal -->
-            <div class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800">
+            <div id="admin-withdrawal-box" class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 scroll-mt-24">
                 <h3 class="font-extrabold text-base mb-4 text-slate-900 dark:text-white flex items-center gap-2">
                     <i class="fa-solid fa-money-bill-transfer text-rose-500"></i>
                     Process Welfare Withdrawal
@@ -1288,7 +1327,7 @@ body {
         </div>
 
         <!-- Master Roster Table -->
-        <div class="glass-card rounded-2xl shadow-sm overflow-hidden border border-slate-200 dark:border-slate-800">
+        <div id="admin-roster-box" class="glass-card rounded-2xl shadow-sm overflow-hidden border border-slate-200 dark:border-slate-800 scroll-mt-24">
             <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-800">
                 <h3 class="font-extrabold text-base text-slate-900 dark:text-white flex items-center gap-2">
                     <i class="fa-solid fa-users-viewfinder text-blue-500"></i>
@@ -1315,7 +1354,7 @@ body {
         </div>
 
         <!-- Data Reset Box -->
-        <div class="bg-rose-50 dark:bg-rose-950/30 rounded-2xl p-6 border-2 border-rose-200 dark:border-rose-900">
+        <div id="admin-reset-box" class="bg-rose-50 dark:bg-rose-950/30 rounded-2xl p-6 border-2 border-rose-200 dark:border-rose-900 scroll-mt-24">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
                 <div>
                     <h3 class="font-extrabold text-base text-rose-700 dark:text-rose-400 flex items-center gap-2">
@@ -1352,12 +1391,12 @@ body {
 </div>
 
 <!-- =========================================================
-     LIVE ROLLING ACTIVITY BANNER (Fixed Bottom Ticker - 180s speed)
+     LIVE ROLLING ACTIVITY BANNER (Fixed Bottom Ticker - Slower 300s speed)
 ========================================================= -->
 <div id="liveTickerBanner" class="fixed bottom-0 left-0 right-0 z-40 bg-sdaNavy-900/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-amber-500/30 text-white text-xs py-2.5 px-4 shadow-2xl overflow-hidden hidden">
     <div class="overflow-hidden whitespace-nowrap relative w-full">
-        <!-- SLOWER BANNER SPEED SET TO 180s -->
-        <div id="tickerContent" class="animate-continuous-ticker flex items-center gap-12 font-medium" style="animation-duration: 180s;">
+        <!-- SLOWER BANNER SPEED SET TO 300s -->
+        <div id="tickerContent" class="animate-continuous-ticker flex items-center gap-12 font-medium" style="animation-duration: 300s;">
         </div>
     </div>
 </div>
@@ -2049,7 +2088,6 @@ function renderHeaderGreeting() {
             greetingName = teacher.name.trim().split(/\s+/)[0];
         }
     } else if (adminLoggedIn) {
-        // CHANGED TO DISPLAY "ADMIN" INSTEAD OF THE DEFAULT NAME
         greetingName = 'Admin';
     } else {
         const teacher = getSelectedTeacher();
@@ -2883,6 +2921,7 @@ function updateAdminInterface() {
     const sidebarUserRoleText = document.getElementById('sidebarUserRoleText');
     const sidebarAuthIcon = document.getElementById('sidebarAuthIcon');
     const statementSelect = document.getElementById('statementTeacherSelect');
+    const adminQuickNavContainer = document.getElementById('adminQuickNavContainer');
 
     if (adminLoggedIn) {
         summaryButton.classList.remove('opacity-50', 'cursor-not-allowed');
@@ -2899,6 +2938,13 @@ function updateAdminInterface() {
 
         if (sidebarUserRoleText) sidebarUserRoleText.textContent = currentAdminUser ? currentAdminUser.name : 'Administrator';
         if (sidebarAuthIcon) sidebarAuthIcon.className = 'fa-solid fa-right-from-bracket';
+        if (adminQuickNavContainer) {
+            if (document.getElementById('pageTitle').textContent === 'Administration') {
+                adminQuickNavContainer.classList.remove('hidden');
+            } else {
+                adminQuickNavContainer.classList.add('hidden');
+            }
+        }
     } else {
         summaryButton.classList.add('opacity-50', 'cursor-not-allowed');
         summaryButton.disabled = true;
@@ -2914,6 +2960,42 @@ function updateAdminInterface() {
 
         if (sidebarUserRoleText) sidebarUserRoleText.textContent = loggedInTeacherId ? 'Teacher Member' : 'Public Portal';
         if (sidebarAuthIcon) sidebarAuthIcon.className = 'fa-solid fa-right-to-bracket';
+        if (adminQuickNavContainer) adminQuickNavContainer.classList.add('hidden');
+    }
+}
+
+function toggleAdminDropdown(event) {
+    event.stopPropagation();
+    const menu = document.getElementById('adminQuickDropdownMenu');
+    const chevron = document.getElementById('adminDropdownChevron');
+    if (!menu) return;
+    const isOpen = !menu.classList.contains('hidden');
+    if (isOpen) {
+        menu.classList.add('hidden');
+        chevron.style.transform = 'rotate(0deg)';
+    } else {
+        menu.classList.remove('hidden');
+        chevron.style.transform = 'rotate(180deg)';
+    }
+}
+
+document.addEventListener('click', () => {
+    const menu = document.getElementById('adminQuickDropdownMenu');
+    const chevron = document.getElementById('adminDropdownChevron');
+    if (menu && !menu.classList.contains('hidden')) {
+        menu.classList.add('hidden');
+        if (chevron) chevron.style.transform = 'rotate(0deg)';
+    }
+});
+
+function jumpToAdminSection(sectionId) {
+    const el = document.getElementById(sectionId);
+    if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        el.classList.add('ring-2', 'ring-amber-500', 'transition-all', 'duration-500');
+        setTimeout(() => {
+            el.classList.remove('ring-2', 'ring-amber-500');
+        }, 2000);
     }
 }
 
@@ -3372,6 +3454,16 @@ function showSection(section, button = null, bypassAdmin = false) {
     };
 
     document.getElementById('pageTitle').textContent = titles[section] || 'Dashboard';
+    
+    const adminQuickNavContainer = document.getElementById('adminQuickNavContainer');
+    if (adminQuickNavContainer) {
+        if (adminLoggedIn && section === 'admin') {
+            adminQuickNavContainer.classList.remove('hidden');
+        } else {
+            adminQuickNavContainer.classList.add('hidden');
+        }
+    }
+
     closeMobileSidebar();
 }
 
