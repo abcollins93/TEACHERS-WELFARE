@@ -13,6 +13,9 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
+<!-- QRCode Generator Script Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
 <script>
 tailwind.config = {
     darkMode: 'class',
@@ -69,7 +72,7 @@ tailwind.config = {
 }
 
 body {
-    font-family: 'Plus Jakarta+Sans', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     -webkit-font-smoothing: antialiased;
 }
 
@@ -246,10 +249,10 @@ body {
 }
 
 .pdf-footer {
-    margin-top: 12mm;
+    margin-top: 10mm;
     border-top: 1px solid #cbd5e1;
-    padding-top: 4mm;
-    font-size: 11px;
+    padding-top: 3mm;
+    font-size: 10px;
     color: #64748b;
     text-align: center;
 }
@@ -370,17 +373,14 @@ body {
 <body class="bg-slate-100 text-slate-800 dark:bg-slate-950 dark:text-slate-100 pb-16 selection:bg-amber-500 selection:text-slate-950">
 
 <!-- =========================================================
-     LOGIN GATEWAY MODAL (Enhanced Classic & Elegant Design)
+     LOGIN GATEWAY MODAL
 ========================================================= -->
 <div id="loginGatewayModal"
      class="fixed inset-0 modal-backdrop z-[300] flex items-center justify-center p-4 overflow-y-auto hidden">
     <div class="relative bg-white dark:bg-slate-900 rounded-[2.5rem] max-w-md w-full p-8 sm:p-10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] border border-slate-100 dark:border-slate-800/80 my-auto transform transition-all duration-500 animate-[smoothFadeIn_0.5s_cubic-bezier(0.16,1,0.3,1)] overflow-hidden group">
         
-        <!-- Decorative Ambient Background Glows -->
         <div class="absolute -top-24 -right-24 w-56 h-56 bg-gradient-to-br from-emerald-500/20 to-teal-500/0 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-700"></div>
         <div class="absolute -bottom-24 -left-24 w-56 h-56 bg-gradient-to-tr from-amber-500/15 to-amber-400/0 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-700"></div>
-
-        <!-- Subtle Top Border Accent Bar -->
         <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-400"></div>
 
         <div class="relative text-center mb-7">
@@ -398,7 +398,6 @@ body {
             </div>
         </div>
 
-        <!-- LOGIN FORM VIEW -->
         <div id="loginFormView" class="relative z-10">
             <form onsubmit="handlePortalLogin(event)" class="space-y-4">
                 <div>
@@ -438,7 +437,6 @@ body {
             </form>
         </div>
 
-        <!-- PASSWORD RESET VIEW -->
         <div id="resetPasswordView" class="hidden relative z-10">
             <div class="mb-4 text-center">
                 <h3 class="text-sm font-extrabold text-slate-800 dark:text-slate-200">Reset Teacher Password</h3>
@@ -470,7 +468,6 @@ body {
             </form>
         </div>
 
-        <!-- Admin Login Button Beneath Interface -->
         <div class="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800/80 text-center relative z-10">
             <button onclick="openAdminModalFromGateway()" class="w-full py-3.5 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-sdaNavy-900 font-extrabold rounded-xl text-xs shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2 group/adminbtn">
                 <i class="fa-solid fa-user-shield transition-transform group-hover/adminbtn:scale-110"></i>
@@ -480,9 +477,6 @@ body {
     </div>
 </div>
 
-<!-- =========================================================
-     MOBILE OVERLAY
-========================================================= -->
 <div id="mobileOverlay"
      onclick="closeMobileSidebar()"
      class="mobile-overlay fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-40 lg:hidden"></div>
@@ -730,7 +724,6 @@ body {
         </div>
     </div>
 
-    <!-- Teacher/Member Rolling Ticker Banner -->
     <div id="memberTickerBanner" class="mb-6 bg-sdaNavy-900/90 dark:bg-slate-900/90 backdrop-blur-md border border-amber-500/30 rounded-2xl text-white text-xs py-3 px-4 shadow-lg overflow-hidden hidden">
         <div class="overflow-hidden whitespace-nowrap relative w-full">
             <div id="memberTickerContent" class="animate-continuous-ticker flex items-center gap-12 font-medium" style="animation-duration: 300s;">
@@ -763,7 +756,6 @@ body {
         </div>
     </div>
 
-    <!-- STAT CARDS -->
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
         <div class="stat-card glass-card rounded-2xl p-6 shadow-sm flex items-center border-l-4 border-l-blue-600">
             <div class="p-4 rounded-2xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 mr-4 shadow-inner">
@@ -834,7 +826,6 @@ body {
         </div>
     </div>
 
-    <!-- PROFILE CARD -->
     <div class="glass-card rounded-2xl p-6 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div class="flex items-center gap-5">
             <div id="teacherAvatar"
@@ -869,7 +860,6 @@ body {
         </button>
     </div>
 
-    <!-- PAYMENT LEDGER -->
     <div class="glass-card rounded-2xl shadow-sm overflow-hidden mb-8">
         <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
             <h3 class="font-extrabold text-base flex items-center gap-2 text-slate-900 dark:text-white">
@@ -895,7 +885,6 @@ body {
         </div>
     </div>
 
-    <!-- WITHDRAWALS -->
     <div class="glass-card rounded-2xl shadow-sm overflow-hidden">
         <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
             <h3 class="font-extrabold text-base flex items-center gap-2 text-slate-900 dark:text-white">
@@ -923,7 +912,7 @@ body {
 </section>
 
 <!-- =========================================================
-     TEACHERS (Admin Only)
+     TEACHERS
 ========================================================= -->
 <section id="section-teachers" class="page-section">
     <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -1146,7 +1135,6 @@ body {
     </div>
 
     <div class="space-y-6">
-        <!-- BROADCAST MESSAGE BOX -->
         <div id="admin-broadcast-box" class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 scroll-mt-24">
             <h3 class="font-extrabold text-base mb-2 text-slate-900 dark:text-white flex items-center gap-2">
                 <i class="fa-solid fa-bullhorn text-purple-500"></i>
@@ -1170,7 +1158,6 @@ body {
             </form>
         </div>
 
-        <!-- Settings -->
         <div id="admin-settings-box" class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 scroll-mt-24">
             <h3 class="font-extrabold text-base mb-4 text-slate-900 dark:text-white flex items-center gap-2">
                 <i class="fa-solid fa-sliders text-amber-500"></i>
@@ -1197,7 +1184,6 @@ body {
             </div>
         </div>
 
-        <!-- Admin Accounts & Passcode Management Section -->
         <div id="admin-users-box" class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 scroll-mt-24">
             <h3 class="font-extrabold text-base mb-4 text-slate-900 dark:text-white flex items-center gap-2">
                 <i class="fa-solid fa-user-shield text-amber-500"></i>
@@ -1281,7 +1267,6 @@ body {
             </div>
         </div>
 
-        <!-- Add Staff -->
         <div id="admin-staff-box" class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 scroll-mt-24">
             <h3 class="font-extrabold text-base mb-4 text-slate-900 dark:text-white flex items-center gap-2">
                 <i class="fa-solid fa-user-plus text-blue-500"></i>
@@ -1316,7 +1301,6 @@ body {
             </form>
         </div>
 
-        <!-- Payments & Withdrawals Forms Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div id="admin-payment-box" class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 scroll-mt-24">
                 <h3 class="font-extrabold text-base mb-4 text-slate-900 dark:text-white flex items-center gap-2">
@@ -1377,7 +1361,6 @@ body {
             </div>
         </div>
 
-        <!-- Master Roster Table -->
         <div id="admin-roster-box" class="glass-card rounded-2xl shadow-sm overflow-hidden border border-slate-200 dark:border-slate-800 scroll-mt-24">
             <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-800">
                 <h3 class="font-extrabold text-base text-slate-900 dark:text-white flex items-center gap-2">
@@ -1404,7 +1387,6 @@ body {
             </div>
         </div>
 
-        <!-- Data Reset Box -->
         <div id="admin-reset-box" class="bg-rose-50 dark:bg-rose-950/30 rounded-2xl p-6 border-2 border-rose-200 dark:border-rose-900 scroll-mt-24">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
                 <div>
@@ -1452,7 +1434,7 @@ body {
 </div>
 
 <!-- =========================================================
-     ADMIN MODAL (RESTRICTED TO USERNAME & PASSWORD ONLY)
+     ADMIN MODAL
 ========================================================= -->
 <div id="adminModal"
      class="hidden fixed inset-0 modal-backdrop z-[250] items-center justify-center p-4">
@@ -1489,7 +1471,6 @@ body {
             </form>
         </div>
 
-        <!-- ADMIN FORGOT PASSWORD VIEW WITH SECURITY QUESTION -->
         <div id="adminForgotPassView" class="hidden space-y-4">
             <p class="text-xs text-slate-500 dark:text-slate-400">Enter your admin username and answer your security recovery question to reset your password.</p>
             <form onsubmit="handleAdminPasswordRecovery(event)" class="space-y-3">
@@ -1587,9 +1568,13 @@ body {
 <div id="pdfRenderArea" class="pdf-render-area">
     <div id="statementPdfTemplate" class="pdf-page" style="font-size: 13px;">
         <div class="relative border-b-2 border-slate-800 pb-4 mb-5 pdf-avoid-break">
-            <div id="pdfPassportContainer" class="absolute right-0 top-0 w-24 h-28 border-2 border-slate-700 bg-slate-100 flex items-center justify-center overflow-hidden shadow">
-                <span id="pdfPassportPlaceholderText" class="text-[10px] text-slate-400 font-bold text-center px-1">Passport Photo</span>
-                <img id="pdfPassportImg" class="w-full h-full object-cover hidden" alt="Passport">
+            <!-- Updated Rectangular Passport Frame with Camera Icon & Label -->
+            <div id="pdfPassportContainer" class="absolute right-0 top-0 w-24 h-32 border border-slate-300 rounded-lg bg-slate-50/80 flex flex-col items-center justify-center overflow-hidden shadow-sm">
+                <div id="pdfPassportPlaceholderContent" class="flex flex-col items-center justify-center w-full h-full text-slate-400">
+                    <i class="fa-solid fa-camera text-base mb-1 text-slate-400"></i>
+                    <span class="text-[9px] font-extrabold uppercase tracking-tighter text-slate-400 text-center px-1 leading-tight">Passport Photo</span>
+                </div>
+                <img id="pdfPassportImg" class="w-full h-full object-cover hidden absolute inset-0" alt="Passport">
             </div>
 
             <div class="pr-28 text-center sm:text-left">
@@ -1647,7 +1632,7 @@ body {
         </table>
 
         <h3 class="text-sm font-extrabold uppercase mb-2">2. Welfare Payouts / Fund Withdrawals</h3>
-        <table class="pdf-table">
+        <table class="pdf-table mb-6">
             <thead>
                 <tr>
                     <th>#</th>
@@ -1661,16 +1646,24 @@ body {
             <tbody id="pdfWithdrawalTableBody"></tbody>
         </table>
 
-        <div class="grid grid-cols-2 gap-12 mt-14 text-xs pdf-avoid-break">
+        <!-- Signatures and QR Code section -->
+        <div class="grid grid-cols-3 gap-6 items-center mt-10 pdf-avoid-break">
             <div class="text-center">
                 <div class="border-b border-dashed border-slate-500 h-8"></div>
-                <p class="font-bold mt-2">Welfare Financial Secretary</p>
-                <p class="text-slate-500">Signature & Date</p>
+                <p class="font-bold mt-2 text-xs">Welfare Financial Secretary</p>
+                <p class="text-[10px] text-slate-500">Signature & Date</p>
             </div>
+            
+            <!-- QR Code container placed centrally -->
+            <div class="flex flex-col items-center justify-center">
+                <div id="pdfQrCodeContainer" class="p-1.5 bg-white border border-slate-300 rounded shadow-sm inline-block"></div>
+                <p class="text-[9px] font-bold text-slate-500 mt-1 uppercase tracking-wider">Scan to Verify</p>
+            </div>
+
             <div class="text-center">
                 <div class="border-b border-dashed border-slate-500 h-8"></div>
-                <p class="font-bold mt-2">Headteacher / Patron</p>
-                <p class="text-slate-500">Ntonso SDA Primary 'A'</p>
+                <p class="font-bold mt-2 text-xs">Headteacher / Patron</p>
+                <p class="text-[10px] text-slate-500">Ntonso SDA Primary 'A'</p>
             </div>
         </div>
 
@@ -3333,15 +3326,29 @@ async function downloadPDF() {
     document.getElementById('pdfClass').textContent = teacher.className;
 
     const pdfImg = document.getElementById('pdfPassportImg');
-    const pdfPlaceholderText = document.getElementById('pdfPassportPlaceholderText');
+    const pdfPlaceholderContent = document.getElementById('pdfPassportPlaceholderContent');
     if (teacher.passport) {
         pdfImg.src = teacher.passport;
         pdfImg.classList.remove('hidden');
-        pdfPlaceholderText.classList.add('hidden');
+        pdfPlaceholderContent.classList.add('hidden');
     } else {
         pdfImg.src = '';
         pdfImg.classList.add('hidden');
-        pdfPlaceholderText.classList.remove('hidden');
+        pdfPlaceholderContent.classList.remove('hidden');
+    }
+
+    // Generate QR Code dynamically for statement verification
+    const qrContainer = document.getElementById('pdfQrCodeContainer');
+    qrContainer.innerHTML = '';
+    if (typeof QRCode !== 'undefined') {
+        new QRCode(qrContainer, {
+            text: `NTONSO SDA PRIMARY A - WELFARE STATEMENT\nName: ${teacher.name}\nStaff ID: ${teacher.id}\nDoc: ${document.getElementById('pdfDocId').textContent}`,
+            width: 64,
+            height: 64,
+            colorDark: "#061224",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
     }
 
     const totalPaid = teacher.payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
