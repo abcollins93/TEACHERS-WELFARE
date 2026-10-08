@@ -804,7 +804,7 @@ body {
             </div>
             <div>
                 <p class="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    Net Fund Balance
+                    Total Fund Balance
                 </p>
                 <h3 id="statTotalFund" class="text-2xl font-black mt-1 text-slate-900 dark:text-white">
                     GHS 0.00
@@ -1776,14 +1776,18 @@ body {
             <tbody id="monthlySummaryPayoutBody"></tbody>
         </table>
 
-        <div class="mt-12 grid grid-cols-2 gap-12 text-xs pdf-avoid-break">
+        <div class="grid grid-cols-3 gap-6 items-center mt-10 pdf-avoid-break">
             <div class="text-center">
                 <div class="border-b border-dashed border-slate-500 h-8"></div>
-                <p class="font-bold mt-2">Welfare Financial Secretary</p>
+                <p class="font-bold mt-2 text-xs">Welfare Financial Secretary</p>
+            </div>
+            <div class="flex flex-col items-center justify-center">
+                <div id="monthlySummaryQrCodeContainer" class="p-1.5 bg-white border border-slate-300 rounded shadow-sm inline-block"></div>
+                <p class="text-[9px] font-bold text-slate-500 mt-1 uppercase tracking-wider">Scan to Verify</p>
             </div>
             <div class="text-center">
                 <div class="border-b border-dashed border-slate-500 h-8"></div>
-                <p class="font-bold mt-2">Headteacher / Patron</p>
+                <p class="font-bold mt-2 text-xs">Headteacher / Patron</p>
             </div>
         </div>
 
@@ -1824,7 +1828,7 @@ body {
                 <p id="summaryPayouts" class="text-xl font-extrabold text-rose-900">GHS 0.00</p>
             </div>
             <div class="border border-amber-200 bg-amber-50 rounded-lg p-3 text-center">
-                <p class="text-[11px] font-bold text-amber-800">NET FUND</p>
+                <p class="text-[11px] font-bold text-amber-800">TOTAL FUND BALANCE</p>
                 <p id="summaryNetFund" class="text-xl font-extrabold text-amber-900">GHS 0.00</p>
             </div>
         </div>
@@ -1874,19 +1878,23 @@ body {
                 <strong id="summaryDetailMonthlyDues">GHS 0.00</strong>
             </div>
             <div class="flex justify-between px-4 py-3 bg-slate-100 font-extrabold text-base">
-                <span>NET AVAILABLE FUND</span>
+                <span>TOTAL FUND BALANCE</span>
                 <strong id="summaryDetailNet">GHS 0.00</strong>
             </div>
         </div>
 
-        <div class="mt-12 grid grid-cols-2 gap-12 text-xs pdf-avoid-break">
+        <div class="grid grid-cols-3 gap-6 items-center mt-10 pdf-avoid-break">
             <div class="text-center">
                 <div class="border-b border-dashed border-slate-500 h-8"></div>
-                <p class="font-bold mt-2">Welfare Financial Secretary</p>
+                <p class="font-bold mt-2 text-xs">Welfare Financial Secretary</p>
+            </div>
+            <div class="flex flex-col items-center justify-center">
+                <div id="completeSummaryQrCodeContainer" class="p-1.5 bg-white border border-slate-300 rounded shadow-sm inline-block"></div>
+                <p class="text-[9px] font-bold text-slate-500 mt-1 uppercase tracking-wider">Scan to Verify</p>
             </div>
             <div class="text-center">
                 <div class="border-b border-dashed border-slate-500 h-8"></div>
-                <p class="font-bold mt-2">Headteacher / Patron</p>
+                <p class="font-bold mt-2 text-xs">Headteacher / Patron</p>
             </div>
         </div>
 
@@ -1897,13 +1905,14 @@ body {
 </div>
 
 <script>
-const STORAGE_KEY = 'ntonso_sda_welfare_data_v4';
-const DUES_KEY = 'ntonso_sda_standard_dues_v4';
-const THEME_KEY = 'ntonso_sda_theme_v4';
-const ADMIN_USERS_KEY = 'ntonso_sda_admin_users_v4';
-const ADMIN_LOGS_KEY = 'ntonso_sda_admin_logs_v4';
-const BROADCAST_KEY = 'ntonso_sda_broadcast_message_v4';
-const SESSION_KEY = 'ntonso_sda_session_v4';
+const STORAGE_KEY = 'ntonso_sda_welfare_data_v5';
+const HISTORICAL_CONTRIB_KEY = 'ntonso_sda_historical_contrib_v5';
+const DUES_KEY = 'ntonso_sda_standard_dues_v5';
+const THEME_KEY = 'ntonso_sda_theme_v5';
+const ADMIN_USERS_KEY = 'ntonso_sda_admin_users_v5';
+const ADMIN_LOGS_KEY = 'ntonso_sda_admin_logs_v5';
+const BROADCAST_KEY = 'ntonso_sda_broadcast_message_v5';
+const SESSION_KEY = 'ntonso_sda_session_v5';
 
 const DEFAULT_ADMINS = [
     { username: 'admin', name: 'Default Executive Admin', password: '1234', secQuestion: 'What was the name of your first primary school?', secAnswer: 'Prempeh' },
@@ -1931,6 +1940,7 @@ let selectedTeacherId = null;
 let editingMemberId = null;
 
 let welfareData = loadData();
+let historicalTotalContributions = loadHistoricalContributions();
 let adminUsers = loadAdminUsers();
 let adminLogs = loadAdminLogs();
 let standardMonthlyDues = Number(localStorage.getItem(DUES_KEY) || 100);
@@ -1976,12 +1986,11 @@ function performInactivityLogout() {
     showToast('Your session has expired due to inactivity. Please sign in again.', 'error');
 }
 
-// Attach activity listeners to reset timer
+// Attach activity listeners to reset timer for both users and admins
 ['click', 'mousemove', 'keydown', 'scroll', 'touchstart'].forEach(evt => {
     document.addEventListener(evt, () => {
         if (adminLoggedIn || loggedInTeacherId) {
             const warningModal = document.getElementById('inactivityWarningModal');
-            // If warning modal is open, don't auto reset unless "Stay signed in" is clicked or user interacts deliberately, or reset straight away
             if (warningModal && warningModal.classList.contains('hidden')) {
                 setupInactivityTimers();
             }
@@ -2017,6 +2026,19 @@ function loadAdminLogs() {
 
 function saveAdminLogsList() {
     localStorage.setItem(ADMIN_LOGS_KEY, JSON.stringify(adminLogs));
+}
+
+function loadHistoricalContributions() {
+    const saved = localStorage.getItem(HISTORICAL_CONTRIB_KEY);
+    if (saved !== null) {
+        return Number(saved) || 0;
+    }
+    // Default initial historical baseline from initial teachers
+    return 300;
+}
+
+function saveHistoricalContributions() {
+    localStorage.setItem(HISTORICAL_CONTRIB_KEY, String(historicalTotalContributions));
 }
 
 function logAdminAction(actionDescription, targetTeacherId = null) {
@@ -3111,6 +3133,11 @@ function handleRemoveStaff(id) {
     const confirmed = confirm(`Remove ${teacher.name} and all of this member's contribution/payout records?`);
     if (!confirmed) return;
 
+    // Preserve past contributions into historical total so Net Fund balance doesn't drop
+    const memberTotalContrib = teacher.payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+    historicalTotalContributions += memberTotalContrib;
+    saveHistoricalContributions();
+
     const removedName = teacher.name;
     welfareData.teachers = welfareData.teachers.filter(member => String(member.id) !== String(id));
     if (String(selectedTeacherId) === String(id)) {
@@ -3122,7 +3149,7 @@ function handleRemoveStaff(id) {
     renderAll();
     
     logAdminAction(`Removed staff member: ${removedName}`, id);
-    showToast('Member removed successfully.', 'success');
+    showToast('Member removed successfully (contributions preserved in Total Fund Balance).', 'success');
 }
 
 function saveMonthlyDues() {
@@ -3403,6 +3430,8 @@ function confirmResetAllData() {
 
     logAdminAction(`Reset all welfare fund data and records`);
     welfareData = { teachers: [] };
+    historicalTotalContributions = 0;
+    saveHistoricalContributions();
     selectedTeacherId = null;
     loggedInTeacherId = null;
     currentBroadcastMessage = '';
@@ -3420,9 +3449,10 @@ function confirmResetAllData() {
 }
 
 function getTotalContributions() {
-    return welfareData.teachers.reduce((total, teacher) => {
+    const currentTeachersTotal = welfareData.teachers.reduce((total, teacher) => {
         return total + teacher.payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
     }, 0);
+    return currentTeachersTotal + historicalTotalContributions;
 }
 
 function getTotalPayouts() {
@@ -3561,6 +3591,20 @@ async function downloadMonthlySummaryPDF() {
     document.getElementById('monthlyReportMonthLabel').textContent = monthFormattedName;
     document.getElementById('monthlyReportDate').textContent = formatDate(todayISO());
 
+    // Generate QR Code dynamically for monthly summary report
+    const monthlyQrContainer = document.getElementById('monthlySummaryQrCodeContainer');
+    monthlyQrContainer.innerHTML = '';
+    if (typeof QRCode !== 'undefined') {
+        new QRCode(monthlyQrContainer, {
+            text: `NTONSO SDA PRIMARY A - MONTHLY SUMMARY\nMonth: ${monthFormattedName}\nDoc: ${document.getElementById('monthlyReportId').textContent}`,
+            width: 64,
+            height: 64,
+            colorDark: "#061224",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    }
+
     const monthlyPayments = [];
     welfareData.teachers.forEach(teacher => {
         teacher.payments.forEach(payment => {
@@ -3662,6 +3706,20 @@ async function downloadFundSummaryPDF() {
     document.getElementById('summaryDetailPayouts').textContent = money(totalPayouts);
     document.getElementById('summaryDetailMonthlyDues').textContent = money(standardMonthlyDues);
     document.getElementById('summaryDetailNet').textContent = money(netFund);
+
+    // Generate QR Code dynamically for complete fund summary report
+    const summaryQrContainer = document.getElementById('completeSummaryQrCodeContainer');
+    summaryQrContainer.innerHTML = '';
+    if (typeof QRCode !== 'undefined') {
+        new QRCode(summaryQrContainer, {
+            text: `NTONSO SDA PRIMARY A - COMPLETE FUND SUMMARY\nTotal Fund: ${money(netFund)}\nDoc: ${document.getElementById('summaryReportId').textContent}`,
+            width: 64,
+            height: 64,
+            colorDark: "#061224",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    }
 
     const membersBody = document.getElementById('summaryMembersBody');
     if (!welfareData.teachers.length) {
