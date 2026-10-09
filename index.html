@@ -3692,10 +3692,8 @@ function handleRemoveStaff(id) {
 
     const removedName = teacher.name;
     
-    // Remove from active teachers list
     welfareData.teachers = welfareData.teachers.filter(member => String(member.id) !== String(id));
     
-    // Add to removed members list so records remain accessible for history/statements
     if (!removedMembers.some(m => String(m.id) === String(id))) {
         removedMembers.push(teacher);
         saveRemovedMembers();
@@ -4622,5 +4620,3 @@ setTimeout(() => {
 
 </body>
 </html>
-
-
