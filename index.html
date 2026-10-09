@@ -957,6 +957,7 @@ body {
                         <th class="px-6 py-4">Amount Paid</th>
                         <th class="px-6 py-4">Date Paid</th>
                         <th class="px-6 py-4">Status</th>
+                        <th class="px-6 py-4 text-right">Action</th>
                     </tr>
                 </thead>
                 <tbody id="paymentTableBody" class="divide-y divide-slate-200 dark:divide-slate-800/80 font-medium">
@@ -982,6 +983,7 @@ body {
                         <th class="px-6 py-4">Reason</th>
                         <th class="px-6 py-4">Amount</th>
                         <th class="px-6 py-4">Date</th>
+                        <th class="px-6 py-4 text-right">Action</th>
                     </tr>
                 </thead>
                 <tbody id="withdrawalTableBody" class="divide-y divide-slate-200 dark:divide-slate-800/80 font-medium">
@@ -1189,6 +1191,7 @@ body {
                         <th class="px-6 py-4 text-left">Reference</th>
                         <th class="px-6 py-4 text-left">Amount</th>
                         <th class="px-6 py-4 text-left">Date</th>
+                        <th class="px-6 py-4 text-right">Action</th>
                     </tr>
                 </thead>
                 <tbody id="allPaymentsBody" class="divide-y divide-slate-200 dark:divide-slate-800/80 font-medium">
@@ -1232,6 +1235,7 @@ body {
                         <th class="px-6 py-4 text-left">Reason</th>
                         <th class="px-6 py-4 text-left">Amount</th>
                         <th class="px-6 py-4 text-left">Date</th>
+                        <th class="px-6 py-4 text-right">Action</th>
                     </tr>
                 </thead>
                 <tbody id="allWithdrawalsBody" class="divide-y divide-slate-200 dark:divide-slate-800/80 font-medium">
@@ -2780,8 +2784,8 @@ function renderDashboard() {
         document.getElementById('statMemberContribCount').textContent = '0 Payments recorded';
         document.getElementById('statLastPayment').textContent = 'N/A';
         document.getElementById('statLastMonthName').textContent = '-';
-        document.getElementById('paymentTableBody').innerHTML = emptyRow(5, 'No member registered.');
-        document.getElementById('withdrawalTableBody').innerHTML = emptyRow(5, 'No member registered.');
+        document.getElementById('paymentTableBody').innerHTML = emptyRow(6, 'No member registered.');
+        document.getElementById('withdrawalTableBody').innerHTML = emptyRow(6, 'No member registered.');
         return;
     }
 
@@ -2897,10 +2901,18 @@ function renderMemberPaymentTable(teacher) {
     const body = document.getElementById('paymentTableBody');
     const payments = [...teacher.payments].sort((a, b) => String(b.date).localeCompare(String(a.date)));
     if (!payments.length) {
-        body.innerHTML = emptyRow(5, 'No contribution records found.');
+        body.innerHTML = emptyRow(6, 'No contribution records found.');
         return;
     }
-    body.innerHTML = payments.map(payment => {
+    body.innerHTML = payments.map((payment, index) => {
+        // Find the original index in teacher.payments for reversal referencing
+        const origIndex = teacher.payments.indexOf(payment);
+        const reverseBtn = adminLoggedIn ? `
+            <button onclick="handleReverseContribution('${escapeAttr(teacher.id)}', ${origIndex})" class="px-2.5 py-1.5 rounded-xl bg-rose-100 hover:bg-rose-200 dark:bg-rose-950 dark:hover:bg-rose-900 text-rose-700 dark:text-rose-300 font-bold text-[11px] transition-all shadow-sm" title="Reverse Contribution Transaction">
+                <i class="fa-solid fa-rotate-left mr-1"></i> Reverse
+            </button>
+        ` : `<span class="text-slate-400 text-[10px] italic">Admin Only</span>`;
+
         return `
             <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
                 <td class="px-6 py-4 font-semibold">${escapeHtml(monthYear(payment.date))}</td>
@@ -2910,6 +2922,7 @@ function renderMemberPaymentTable(teacher) {
                 <td class="px-6 py-4">
                     <span class="inline-flex px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 text-[10px] font-extrabold border border-emerald-200 dark:border-emerald-900">Verified Paid</span>
                 </td>
+                <td class="px-6 py-4 text-right">${reverseBtn}</td>
             </tr>
         `;
     }).join('');
@@ -2921,18 +2934,24 @@ function renderUniversalWithdrawalTable() {
     
     const allPayouts = [];
     getAllTeachers().forEach(teacher => {
-        teacher.payouts.forEach(payout => {
-            allPayouts.push({ teacher, payout });
+        teacher.payouts.forEach((payout, pIndex) => {
+            allPayouts.push({ teacher, payout, pIndex });
         });
     });
     allPayouts.sort((a, b) => String(b.payout.date).localeCompare(String(a.payout.date)));
 
     if (!allPayouts.length) {
-        body.innerHTML = emptyRow(5, 'No welfare payouts recorded.');
+        body.innerHTML = emptyRow(6, 'No welfare payouts recorded.');
         return;
     }
 
     body.innerHTML = allPayouts.map(record => {
+        const reverseBtn = adminLoggedIn ? `
+            <button onclick="handleReversePayout('${escapeAttr(record.teacher.id)}', ${record.pIndex})" class="px-2.5 py-1.5 rounded-xl bg-rose-100 hover:bg-rose-200 dark:bg-rose-950 dark:hover:bg-rose-900 text-rose-700 dark:text-rose-300 font-bold text-[11px] transition-all shadow-sm" title="Reverse Payout Transaction">
+                <i class="fa-solid fa-rotate-left mr-1"></i> Reverse
+            </button>
+        ` : `<span class="text-slate-400 text-[10px] italic">Admin Only</span>`;
+
         return `
             <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
                 <td class="px-6 py-4 font-mono text-xs text-slate-500">${escapeHtml(record.payout.reference || '-')}</td>
@@ -2940,9 +2959,75 @@ function renderUniversalWithdrawalTable() {
                 <td class="px-6 py-4 font-semibold text-slate-600 dark:text-slate-300">${escapeHtml(record.payout.reason || '-')}</td>
                 <td class="px-6 py-4 font-black text-rose-600 dark:text-rose-400">${money(record.payout.amount)}</td>
                 <td class="px-6 py-4">${formatDate(record.payout.date)}</td>
+                <td class="px-6 py-4 text-right">${reverseBtn}</td>
             </tr>
         `;
     }).join('');
+}
+
+// STRICT TRANSACTION REVERSAL FUNCTIONS
+function handleReverseContribution(teacherId, paymentIndex) {
+    if (!requireAdmin()) return;
+    const teacher = getTeacherById(teacherId);
+    if (!teacher || !teacher.payments[paymentIndex]) {
+        showToast('Contribution transaction not found.', 'error');
+        return;
+    }
+
+    const payment = teacher.payments[paymentIndex];
+    
+    // Two-step confirmation and mandatory remark prompt
+    const firstConfirm = confirm(`REVERSAL WARNING: You are about to reverse a contribution of ${money(payment.amount)} for member ${teacher.name} (Ref: ${payment.reference || 'N/A'}). Do you wish to proceed?`);
+    if (!firstConfirm) return;
+
+    const remark = prompt('Mandatory Reversal Remark / Reason (Required for audit logging):');
+    if (!remark || !remark.trim()) {
+        showToast('Transaction reversal cancelled: A mandatory remark/reason is required.', 'error');
+        return;
+    }
+
+    const secondConfirm = confirm(`FINAL CONFIRMATION: This will permanently subtract ${money(payment.amount)} from ${teacher.name}'s total and recalculate the fund balance. Proceed?`);
+    if (!secondConfirm) return;
+
+    // Perform reversal
+    teacher.payments.splice(paymentIndex, 1);
+    saveData();
+    renderAll();
+
+    logAdminAction('FINANCE', 'REVERSE_CONTRIBUTION', `Reversed contribution of ${money(payment.amount)} for ${teacher.name}. Reason: ${remark.trim()}`, money(payment.amount), 'GHS 0.00 (Reversed)', 'SUCCESS', teacher.id);
+    showToast(`Contribution of ${money(payment.amount)} successfully reversed. Fund balances recalculated.`, 'success');
+}
+
+function handleReversePayout(teacherId, payoutIndex) {
+    if (!requireAdmin()) return;
+    const teacher = getTeacherById(teacherId);
+    if (!teacher || !teacher.payouts[payoutIndex]) {
+        showToast('Payout transaction not found.', 'error');
+        return;
+    }
+
+    const payout = teacher.payouts[payoutIndex];
+
+    // Two-step confirmation and mandatory remark prompt
+    const firstConfirm = confirm(`REVERSAL WARNING: You are about to reverse a welfare payout of ${money(payout.amount)} for ${teacher.name} (${payout.reason}, Ref: ${payout.reference || 'N/A'}). Do you wish to proceed?`);
+    if (!firstConfirm) return;
+
+    const remark = prompt('Mandatory Reversal Remark / Reason (Required for audit logging):');
+    if (!remark || !remark.trim()) {
+        showToast('Transaction reversal cancelled: A mandatory remark/reason is required.', 'error');
+        return;
+    }
+
+    const secondConfirm = confirm(`FINAL CONFIRMATION: This will permanently cancel the payout of ${money(payout.amount)} and restore it to the welfare fund balance. Proceed?`);
+    if (!secondConfirm) return;
+
+    // Perform reversal
+    teacher.payouts.splice(payoutIndex, 1);
+    saveData();
+    renderAll();
+
+    logAdminAction('FINANCE', 'REVERSE_PAYOUT', `Reversed welfare payout of ${money(payout.amount)} for ${teacher.name} (${payout.reason}). Reason: ${remark.trim()}`, money(payout.amount), 'GHS 0.00 (Reversed)', 'SUCCESS', teacher.id);
+    showToast(`Welfare payout of ${money(payout.amount)} successfully reversed. Fund balances recalculated.`, 'success');
 }
 
 function renderTeachersSection() {
@@ -2983,18 +3068,24 @@ function renderPaymentsSection() {
     const body = document.getElementById('allPaymentsBody');
     const records = [];
     getAllTeachers().forEach(teacher => {
-        teacher.payments.forEach(payment => {
-            records.push({ teacher, payment });
+        teacher.payments.forEach((payment, pIndex) => {
+            records.push({ teacher, payment, pIndex });
         });
     });
     records.sort((a, b) => String(b.payment.date).localeCompare(String(a.payment.date)));
 
     if (!records.length) {
-        body.innerHTML = emptyRow(5, 'No contribution records found.');
+        body.innerHTML = emptyRow(6, 'No contribution records found.');
         return;
     }
 
     body.innerHTML = records.map(record => {
+        const reverseBtn = adminLoggedIn ? `
+            <button onclick="handleReverseContribution('${escapeAttr(record.teacher.id)}', ${record.pIndex})" class="px-2.5 py-1.5 rounded-xl bg-rose-100 hover:bg-rose-200 dark:bg-rose-950 dark:hover:bg-rose-900 text-rose-700 dark:text-rose-300 font-bold text-[11px] transition-all shadow-sm" title="Reverse Contribution">
+                <i class="fa-solid fa-rotate-left mr-1"></i> Reverse
+            </button>
+        ` : `<span class="text-slate-400 text-[10px] italic">Admin Only</span>`;
+
         return `
             <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
                 <td class="px-6 py-4 font-extrabold text-slate-900 dark:text-white">${escapeHtml(record.teacher.name)}</td>
@@ -3002,6 +3093,7 @@ function renderPaymentsSection() {
                 <td class="px-6 py-4 font-mono text-xs text-slate-500">${escapeHtml(record.payment.reference || '-')}</td>
                 <td class="px-6 py-4 font-black text-emerald-600 dark:text-emerald-400">${money(record.payment.amount)}</td>
                 <td class="px-6 py-4">${formatDate(record.payment.date)}</td>
+                <td class="px-6 py-4 text-right">${reverseBtn}</td>
             </tr>
         `;
     }).join('');
@@ -3018,18 +3110,24 @@ function renderWelfareSection() {
     const body = document.getElementById('allWithdrawalsBody');
     const records = [];
     getAllTeachers().forEach(teacher => {
-        teacher.payouts.forEach(payout => {
-            records.push({ teacher, payout });
+        teacher.payouts.forEach((payout, pIndex) => {
+            records.push({ teacher, payout, pIndex });
         });
     });
     records.sort((a, b) => String(b.payout.date).localeCompare(String(a.payout.date)));
 
     if (!records.length) {
-        body.innerHTML = emptyRow(5, 'No welfare payouts recorded.');
+        body.innerHTML = emptyRow(6, 'No welfare payouts recorded.');
         return;
     }
 
     body.innerHTML = records.map(record => {
+        const reverseBtn = adminLoggedIn ? `
+            <button onclick="handleReversePayout('${escapeAttr(record.teacher.id)}', ${record.pIndex})" class="px-2.5 py-1.5 rounded-xl bg-rose-100 hover:bg-rose-200 dark:bg-rose-950 dark:hover:bg-rose-900 text-rose-700 dark:text-rose-300 font-bold text-[11px] transition-all shadow-sm" title="Reverse Payout">
+                <i class="fa-solid fa-rotate-left mr-1"></i> Reverse
+            </button>
+        ` : `<span class="text-slate-400 text-[10px] italic">Admin Only</span>`;
+
         return `
             <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
                 <td class="px-6 py-4 font-mono text-xs text-slate-500">${escapeHtml(record.payout.reference || '-')}</td>
@@ -3037,6 +3135,7 @@ function renderWelfareSection() {
                 <td class="px-6 py-4 font-semibold text-slate-600 dark:text-slate-300">${escapeHtml(record.payout.reason || '-')}</td>
                 <td class="px-6 py-4 font-black text-rose-600 dark:text-rose-400">${money(record.payout.amount)}</td>
                 <td class="px-6 py-4">${formatDate(record.payout.date)}</td>
+                <td class="px-6 py-4 text-right">${reverseBtn}</td>
             </tr>
         `;
     }).join('');
