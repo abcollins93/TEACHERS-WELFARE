@@ -1153,16 +1153,16 @@ body {
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
         <div class="glass-card rounded-2xl p-6 shadow-sm border-l-4 border-l-emerald-500">
-            <p class="text-xs uppercase font-extrabold text-slate-400 tracking-wider">Total Contributions</p>
+            <p class="text-xs uppercase font-extrabold text-slate-400 tracking-wider">TOTAL CONTRIBUTIONS</p>
             <h3 id="paymentTotalAll" class="text-2xl font-black mt-2 text-slate-900 dark:text-white">GHS 0.00</h3>
         </div>
-        <div class="glass-card rounded-2xl p-6 shadow-sm border-l-4 border-l-blue-500">
-            <p class="text-xs uppercase font-extrabold text-slate-400 tracking-wider">Active Members</p>
-            <h3 id="paymentMemberCount" class="text-2xl font-black mt-2 text-slate-900 dark:text-white">0</h3>
+        <div class="glass-card rounded-2xl p-6 shadow-sm border-l-4 border-l-rose-500">
+            <p class="text-xs uppercase font-extrabold text-slate-400 tracking-wider">TOTAL DISBURSEMENT</p>
+            <h3 id="paymentTotalDisbursement" class="text-2xl font-black mt-2 text-slate-900 dark:text-white">GHS 0.00</h3>
         </div>
-        <div class="glass-card rounded-2xl p-6 shadow-sm border-l-4 border-l-amber-500">
-            <p class="text-xs uppercase font-extrabold text-slate-400 tracking-wider">Standard Monthly Dues</p>
-            <h3 id="paymentMonthlyRate" class="text-2xl font-black mt-2 text-slate-900 dark:text-white">GHS 100.00</h3>
+        <div class="glass-card rounded-2xl p-6 shadow-sm border-l-4 border-l-blue-500">
+            <p class="text-xs uppercase font-extrabold text-slate-400 tracking-wider">TOTAL NET FUND</p>
+            <h3 id="paymentTotalNetFund" class="text-2xl font-black mt-2 text-slate-900 dark:text-white">GHS 0.00</h3>
         </div>
     </div>
 
@@ -2936,9 +2936,12 @@ function renderTeachersSection() {
 
 function renderPaymentsSection() {
     const total = getTotalContributions();
+    const totalDisbursement = getTotalPayouts();
+    const totalNetFund = total - totalDisbursement;
+
     document.getElementById('paymentTotalAll').textContent = money(total);
-    document.getElementById('paymentMemberCount').textContent = welfareData.teachers.length;
-    document.getElementById('paymentMonthlyRate').textContent = money(standardMonthlyDues);
+    document.getElementById('paymentTotalDisbursement').textContent = money(totalDisbursement);
+    document.getElementById('paymentTotalNetFund').textContent = money(totalNetFund);
 
     const body = document.getElementById('allPaymentsBody');
     const records = [];
@@ -3384,7 +3387,6 @@ function handlePasswordReset(event) {
     saveData();
     logAdminAction('AUTH', 'PASSWORD_RESET', `Password reset successfully for ${teacher.name}`, 'Old Password', 'New Password', 'SUCCESS', teacher.id);
 
-    // Simulate sending SMS confirmation message to registered phone number securely
     console.log(`[SMS Gateway Simulated] Sending SMS to ${teacher.phone}: "Dear Teacher, your Teachers Welfare Portal password has been changed successfully. If you did not authorize this change, please contact the Welfare Administrator immediately. Thank you."`);
 
     showToast('Password updated successfully! Confirmation SMS dispatched. Please sign in.', 'success');
