@@ -25,14 +25,18 @@ tailwind.config = {
                 sdaNavy: {
                     50: '#f0f4f8',
                     100: '#d9e2ec',
-                    500: '#103057',
-                    700: '#0b203c',
-                    900: '#061224'
+                    500: '#0b1d3a',
+                    700: '#071328',
+                    900: '#030a16'
                 },
                 sdaGold: {
-                    400: '#fbbf24',
-                    500: '#d97706',
-                    600: '#b45309'
+                    400: '#fcd34d',
+                    500: '#f59e0b',
+                    600: '#d97706'
+                },
+                sapphire: {
+                    500: '#1d4ed8',
+                    600: '#1e40af'
                 },
                 emeraldAccent: {
                     500: '#059669',
@@ -44,31 +48,31 @@ tailwind.config = {
                 'float': 'float 4s ease-in-out infinite',
                 'shimmer': 'shimmer 3s linear infinite',
                 'glow': 'glow 3s ease-in-out infinite alternate',
-                'gateway-in': 'gatewayIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                'fade-up-1': 'fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards',
-                'fade-up-2': 'fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards',
-                'fade-up-3': 'fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards',
+                'gateway-in': 'gatewayIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                'fade-up-1': 'fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards',
+                'fade-up-2': 'fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards',
+                'fade-up-3': 'fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards',
             },
             keyframes: {
                 gatewayIn: {
-                    '0%': { opacity: '0', transform: 'scale(0.95) translateY(10px)' },
+                    '0%': { opacity: '0', transform: 'scale(0.96) translateY(12px)' },
                     '100%': { opacity: '1', transform: 'scale(1) translateY(0)' }
                 },
                 fadeUp: {
-                    '0%': { opacity: '0', transform: 'translateY(8px)' },
+                    '0%': { opacity: '0', transform: 'translateY(10px)' },
                     '100%': { opacity: '1', transform: 'translateY(0)' }
                 },
                 float: {
                     '0%, 100%': { transform: 'translateY(0)' },
-                    '50%': { transform: 'translateY(-6px)' }
+                    '50%': { transform: 'translateY(-5px)' }
                 },
                 shimmer: {
                     '0%': { backgroundPosition: '-200% 0' },
                     '100%': { backgroundPosition: '200% 0' }
                 },
                 glow: {
-                    '0%': { boxShadow: '0 0 15px rgba(5, 150, 105, 0.2)' },
-                    '100%': { boxShadow: '0 0 30px rgba(5, 150, 105, 0.4), 0 0 10px rgba(251, 191, 36, 0.3)' }
+                    '0%': { boxShadow: '0 0 15px rgba(245, 158, 11, 0.15)' },
+                    '100%': { boxShadow: '0 0 30px rgba(245, 158, 11, 0.3), 0 0 10px rgba(29, 78, 216, 0.2)' }
                 }
             }
         }
@@ -81,6 +85,7 @@ tailwind.config = {
 
 * {
     box-sizing: border-box;
+    font-variant-numeric: tabular-nums;
 }
 
 body {
@@ -89,15 +94,19 @@ body {
 }
 
 .glass-card {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
 .dark .glass-card {
-    background: rgba(15, 23, 42, 0.85);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(51, 65, 85, 0.8);
+    background: rgba(7, 19, 40, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(30, 41, 59, 0.8);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .sidebar {
@@ -127,25 +136,25 @@ body {
 }
 
 .nav-button {
-    transition: all .25s ease;
+    transition: all .25s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
 }
 
 .nav-button.active {
-    background: linear-gradient(135deg, rgba(217,119,6,0.22), rgba(217,119,6,0.08));
-    color: #fbbf24;
-    border-left: 4px solid #fbbf24;
-    box-shadow: 0 4px 15px -3px rgba(217, 119, 6, 0.2);
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(29, 78, 216, 0.12));
+    color: #fcd34d;
+    border-left: 4px solid #f59e0b;
+    box-shadow: 0 4px 20px -3px rgba(245, 158, 11, 0.15);
 }
 
 .nav-button:hover:not(.active) {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.06);
     transform: translateX(3px);
 }
 
 .page-section {
     display: none;
-    animation: smoothFadeIn .3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: smoothFadeIn .35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .page-section.active {
@@ -155,7 +164,7 @@ body {
 @keyframes smoothFadeIn {
     from {
         opacity: 0;
-        transform: translateY(12px) scale(0.99);
+        transform: translateY(10px) scale(0.995);
     }
     to {
         opacity: 1;
@@ -169,37 +178,41 @@ body {
 
 .stat-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.08), 0 10px 15px -8px rgba(0, 0, 0, 0.04);
+}
+
+.dark .stat-card:hover {
+    box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.3), 0 10px 15px -8px rgba(0, 0, 0, 0.2);
 }
 
 .form-input {
     width: 100%;
     background: #f8fafc;
     border: 1px solid #cbd5e1;
-    border-radius: .75rem;
-    padding: .75rem 1rem;
-    font-size: .85rem;
+    border-radius: .875rem;
+    padding: .75rem 1.125rem;
+    font-size: .875rem;
     outline: none;
     transition: all .25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .form-input:focus {
-    border-color: #059669;
+    border-color: #1d4ed8;
     background: #ffffff;
-    box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.15), 0 4px 12px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.12), 0 4px 12px rgba(0, 0, 0, 0.04);
     transform: translateY(-1px);
 }
 
 .dark .form-input {
-    background: #1e293b;
-    border-color: #475569;
+    background: #0b1d3a;
+    border-color: #334155;
     color: white;
 }
 
 .dark .form-input:focus {
-    border-color: #fbbf24;
-    background: #0f172a;
-    box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.15), 0 4px 12px rgba(0, 0, 0, 0.2);
+    border-color: #f59e0b;
+    background: #030a16;
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15), 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .pdf-render-area {
@@ -310,8 +323,9 @@ body {
 }
 
 .modal-backdrop {
-    backdrop-filter: blur(12px);
-    background: rgba(6, 18, 36, 0.82);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background: rgba(3, 10, 22, 0.85);
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -368,7 +382,7 @@ body {
 }
 
 .dark ::-webkit-scrollbar-thumb {
-    background: #475569;
+    background: #334155;
 }
 
 @media print {
@@ -382,34 +396,33 @@ body {
 </style>
 </head>
 
-<body class="bg-slate-100 text-slate-800 dark:bg-slate-950 dark:text-slate-100 pb-16 selection:bg-amber-500 selection:text-slate-950">
+<body class="bg-slate-100/90 text-slate-800 dark:bg-[#030a16] dark:text-slate-100 pb-16 selection:bg-amber-400 selection:text-slate-950">
 
 <!-- =========================================================
      LOGIN GATEWAY MODAL
 ========================================================= -->
 <div id="loginGatewayModal"
      class="fixed inset-0 modal-backdrop z-[300] flex items-center justify-center p-4 overflow-y-auto hidden">
-    <div class="relative bg-white dark:bg-slate-900 rounded-[2.5rem] max-w-md w-full p-8 sm:p-10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] border border-slate-100 dark:border-slate-800/80 my-auto transform transition-all duration-500 animate-gateway-in overflow-hidden group">
+    <div class="relative bg-white dark:bg-[#071328] rounded-[2.5rem] max-w-md w-full p-8 sm:p-10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.4)] border border-slate-200/80 dark:border-slate-800/80 my-auto transform transition-all duration-500 animate-gateway-in overflow-hidden group">
         
-        <div class="absolute -top-24 -right-24 w-56 h-56 bg-gradient-to-br from-emerald-500/20 to-teal-500/0 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-700"></div>
-        <div class="absolute -bottom-24 -left-24 w-56 h-56 bg-gradient-to-tr from-amber-500/15 to-amber-400/0 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-700"></div>
-        <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-400"></div>
+        <div class="absolute -top-24 -right-24 w-56 h-56 bg-gradient-to-br from-amber-500/15 to-amber-500/0 rounded-full blur-3xl pointer-events-none group-hover:scale-125 transition-transform duration-700"></div>
+        <div class="absolute -bottom-24 -left-24 w-56 h-56 bg-gradient-to-tr from-blue-600/15 to-blue-600/0 rounded-full blur-3xl pointer-events-none group-hover:scale-125 transition-transform duration-700"></div>
+        <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-amber-400 to-blue-600"></div>
 
         <div class="relative text-center mb-7 animate-fade-up-1">
-            <div class="w-20 h-20 mx-auto bg-gradient-to-tr from-emerald-700 via-emerald-600 to-teal-500 text-white rounded-[1.5rem] flex items-center justify-center mb-5 shadow-xl shadow-emerald-600/30 animate-float border border-white/20 relative overflow-hidden group/emblem">
-                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/emblem:translate-x-full transition-transform duration-1000"></div>
+            <div class="w-20 h-20 mx-auto bg-gradient-to-tr from-sdaNavy-900 via-sdaNavy-700 to-sapphire-600 text-amber-400 rounded-[1.75rem] flex items-center justify-center mb-5 shadow-xl shadow-sdaNavy-900/30 animate-float border border-white/10 relative overflow-hidden group/emblem">
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/emblem:translate-x-full transition-transform duration-1000"></div>
                 <div class="relative flex items-center justify-center">
-                    <i class="fa-solid fa-shield text-3xl text-emerald-100 absolute"></i>
-                    <i class="fa-solid fa-users text-sm text-amber-300 relative z-10 translate-y-1"></i>
+                    <i class="fa-solid fa-graduation-cap text-3xl text-amber-400"></i>
                 </div>
             </div>
             <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                 Ntonso SDA Primary 'A'
             </h2>
-            <div class="mt-2 inline-flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/50 py-1.5 px-3.5 rounded-full shadow-sm">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                <p class="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">
-                    Welfare Portal Gateway
+            <div class="mt-2 inline-flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/20 py-1 px-3.5 rounded-full shadow-sm">
+                <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                <p class="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest">
+                    Welfare Fund Portal Gateway
                 </p>
             </div>
         </div>
@@ -419,7 +432,7 @@ body {
                 <div>
                     <label class="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5 tracking-wide">Staff Number / ID</label>
                     <div class="relative group/input">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 group-focus-within/input:text-emerald-600 dark:group-focus-within/input:text-amber-400 transition-colors duration-300">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 group-focus-within/input:text-amber-500 transition-colors duration-300">
                             <i class="fa-solid fa-id-card text-xs group-focus-within/input:scale-110 transition-transform"></i>
                         </span>
                         <input type="text" id="gatewayStaffId" class="form-input !pl-11 !py-3.5 font-semibold text-xs sm:text-sm" placeholder="e.g. STF001" required>
@@ -429,11 +442,11 @@ body {
                 <div>
                     <label class="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5 tracking-wide">Password / Passcode</label>
                     <div class="relative group/input">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 group-focus-within/input:text-emerald-600 dark:group-focus-within/input:text-amber-400 transition-colors duration-300">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 group-focus-within/input:text-amber-500 transition-colors duration-300">
                             <i class="fa-solid fa-lock text-xs group-focus-within/input:scale-110 transition-transform"></i>
                         </span>
                         <input type="password" id="gatewayPassword" class="form-input !pl-11 !pr-11 !py-3.5 font-semibold text-xs sm:text-sm" placeholder="Enter password" required>
-                        <button type="button" onclick="toggleGatewayPasswordVisibility()" class="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-emerald-600 dark:hover:text-amber-400 transition-colors" title="Toggle Password Visibility">
+                        <button type="button" onclick="toggleGatewayPasswordVisibility()" class="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-amber-500 transition-colors" title="Toggle Password Visibility">
                             <i id="gatewayPassIcon" class="fa-solid fa-eye text-xs"></i>
                         </button>
                     </div>
@@ -441,15 +454,15 @@ body {
 
                 <div class="flex items-center justify-between text-xs pt-1">
                     <label class="flex items-center gap-2.5 cursor-pointer group/check select-none">
-                        <input type="checkbox" id="gatewayRememberCheck" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4 transition-all duration-200 group-hover/check:scale-105 cursor-pointer">
+                        <input type="checkbox" id="gatewayRememberCheck" class="rounded border-slate-300 text-amber-500 focus:ring-amber-500 w-4 h-4 transition-all duration-200 group-hover/check:scale-105 cursor-pointer">
                         <span class="text-slate-600 dark:text-slate-400 font-semibold transition-colors group-hover/check:text-slate-900 dark:group-hover/check:text-slate-200">Remember me</span>
                     </label>
-                    <a href="#" onclick="showResetPasswordView(); return false;" class="text-emerald-600 dark:text-emerald-400 font-bold hover:text-emerald-700 dark:hover:text-amber-300 transition-colors hover:underline">Forgot password?</a>
+                    <a href="#" onclick="showResetPasswordView(); return false;" class="text-amber-600 dark:text-amber-400 font-bold hover:text-amber-700 dark:hover:text-amber-300 transition-colors hover:underline">Forgot password?</a>
                 </div>
 
                 <p id="gatewayError" class="text-xs text-rose-500 font-semibold text-center hidden bg-rose-50 dark:bg-rose-950/40 p-3 rounded-xl border border-rose-200 dark:border-rose-900 animate-[smoothFadeIn_0.2s_ease-out]">Invalid staff number or password.</p>
 
-                <button type="submit" id="gatewaySubmitBtn" class="w-full py-4 bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-700 hover:to-teal-600 text-white font-extrabold rounded-xl shadow-lg shadow-emerald-600/30 hover:shadow-xl hover:shadow-emerald-600/40 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 text-sm mt-2 flex items-center justify-center gap-2 group/btn">
+                <button type="submit" id="gatewaySubmitBtn" class="w-full py-4 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-slate-950 font-extrabold rounded-xl shadow-lg shadow-amber-500/20 hover:shadow-xl hover:shadow-amber-500/30 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 text-sm mt-2 flex items-center justify-center gap-2 group/btn">
                     <span id="gatewayBtnText">Secure Sign In</span>
                     <i id="gatewayBtnIcon" class="fa-solid fa-arrow-right-to-bracket transition-transform group-hover/btn:translate-x-1"></i>
                 </button>
@@ -477,7 +490,7 @@ body {
                     <label class="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1">New Password / Passcode</label>
                     <div class="relative">
                         <input type="password" id="resetNewPassword" class="form-input !py-3 !pr-10 font-semibold text-xs" placeholder="Enter new password" required>
-                        <button type="button" onclick="toggleResetPassVisibility('resetNewPassword', 'resetNewPassIcon')" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-emerald-600">
+                        <button type="button" onclick="toggleResetPassVisibility('resetNewPassword', 'resetNewPassIcon')" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-amber-500">
                             <i id="resetNewPassIcon" class="fa-solid fa-eye text-xs"></i>
                         </button>
                     </div>
@@ -487,7 +500,7 @@ body {
                     <label class="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1">Confirm New Password</label>
                     <div class="relative">
                         <input type="password" id="resetConfirmPassword" class="form-input !py-3 !pr-10 font-semibold text-xs" placeholder="Confirm new password" required>
-                        <button type="button" onclick="toggleResetPassVisibility('resetConfirmPassword', 'resetConfirmPassIcon')" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-emerald-600">
+                        <button type="button" onclick="toggleResetPassVisibility('resetConfirmPassword', 'resetConfirmPassIcon')" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-amber-500">
                             <i id="resetConfirmPassIcon" class="fa-solid fa-eye text-xs"></i>
                         </button>
                     </div>
@@ -497,14 +510,14 @@ body {
 
                 <div class="flex gap-2.5 pt-2">
                     <button type="button" onclick="showLoginView()" class="w-1/2 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Cancel</button>
-                    <button type="submit" class="w-1/2 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all">Update Password</button>
+                    <button type="submit" class="w-1/2 py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all">Update Password</button>
                 </div>
             </form>
         </div>
 
         <div class="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800/80 text-center relative z-10 animate-fade-up-3">
-            <button onclick="openAdminModalFromGateway()" class="w-full py-3.5 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-sdaNavy-900 font-extrabold rounded-xl text-xs shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 group/adminbtn">
-                <i class="fa-solid fa-user-shield transition-transform group-hover/adminbtn:scale-110"></i>
+            <button onclick="openAdminModalFromGateway()" class="w-full py-3.5 bg-gradient-to-r from-sdaNavy-900 via-sdaNavy-700 to-sapphire-600 hover:from-sdaNavy-700 hover:to-sapphire-700 text-white font-extrabold rounded-xl text-xs shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 group/adminbtn border border-white/10">
+                <i class="fa-solid fa-user-shield text-amber-400 transition-transform group-hover/adminbtn:scale-110"></i>
                 <span>Log in as Executive Admin</span>
             </button>
         </div>
@@ -516,7 +529,7 @@ body {
 ========================================================= -->
 <div id="inactivityWarningModal"
      class="hidden fixed inset-0 modal-backdrop z-[400] flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-8 shadow-2xl border border-amber-500/30 text-center transform transition-all animate-[smoothFadeIn_0.3s_ease-out]">
+    <div class="bg-white dark:bg-[#071328] rounded-3xl max-w-md w-full p-8 shadow-2xl border border-amber-500/30 text-center transform transition-all animate-[smoothFadeIn_0.3s_ease-out]">
         <div class="w-16 h-16 mx-auto bg-amber-500/20 text-amber-500 rounded-2xl flex items-center justify-center mb-4 text-2xl shadow-inner">
             <i class="fa-solid fa-clock-rotate-left"></i>
         </div>
@@ -525,7 +538,7 @@ body {
             You will be logged out in <strong id="inactivityCountdown" class="text-amber-600 dark:text-amber-400">1 minute</strong> due to inactivity.
         </p>
         <div class="mt-6">
-            <button onclick="resetInactivityTimer()" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-sdaNavy-900 font-extrabold rounded-xl text-xs shadow-lg transition-all">
+            <button onclick="resetInactivityTimer()" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-extrabold rounded-xl text-xs shadow-lg transition-all">
                 Stay signed in
             </button>
         </div>
@@ -534,16 +547,16 @@ body {
 
 <div id="mobileOverlay"
      onclick="closeMobileSidebar()"
-     class="mobile-overlay fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-40 lg:hidden"></div>
+     class="mobile-overlay fixed inset-0 bg-slate-950/70 backdrop-blur-md z-40 lg:hidden"></div>
 
 <!-- =========================================================
      SIDEBAR
 ========================================================= -->
 <aside id="sidebar"
-       class="sidebar fixed left-0 top-0 bottom-0 w-72 bg-gradient-to-b from-sdaNavy-900 via-sdaNavy-900 to-slate-950 text-white z-50 flex flex-col shadow-2xl border-r border-white/5">
+       class="sidebar fixed left-0 top-0 bottom-0 w-72 bg-gradient-to-b from-sdaNavy-900 via-sdaNavy-700 to-[#030a16] text-white z-50 flex flex-col shadow-2xl border-r border-white/5">
 
-    <div class="h-20 px-5 border-b border-white/10 flex items-center bg-sdaNavy-900/50 backdrop-blur">
-        <div class="bg-gradient-to-tr from-sdaGold-500 to-amber-300 text-sdaNavy-900 w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/20">
+    <div class="h-20 px-5 border-b border-white/10 flex items-center bg-sdaNavy-900/60 backdrop-blur-md">
+        <div class="bg-gradient-to-tr from-amber-500 to-amber-300 text-sdaNavy-900 w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/20">
             <i class="fa-solid fa-graduation-cap text-lg"></i>
         </div>
 
@@ -676,7 +689,7 @@ body {
 <!-- =========================================================
      HEADER
 ========================================================= -->
-<header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 transition-all shadow-sm">
+<header class="bg-white/85 dark:bg-[#071328]/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 transition-all shadow-sm">
     <div class="h-20 px-4 sm:px-8 flex items-center justify-between">
         <div class="flex items-center gap-3.5">
             <button onclick="openMobileSidebar()"
@@ -699,30 +712,30 @@ body {
                             <i id="adminDropdownChevron" class="fa-solid fa-chevron-down text-xs transition-transform duration-300"></i>
                         </button>
 
-                        <div id="adminQuickDropdownMenu" class="absolute left-0 mt-2 w-72 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 py-2 z-50 hidden transform origin-top-left transition-all animate-[smoothFadeIn_0.2s_ease-out]">
+                        <div id="adminQuickDropdownMenu" class="absolute left-0 mt-2 w-72 bg-white dark:bg-[#071328] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 py-2 z-50 hidden transform origin-top-left transition-all animate-[smoothFadeIn_0.2s_ease-out]">
                             <div class="px-4 py-2 border-b border-slate-100 dark:border-slate-800">
                                 <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Admin Quick Actions</p>
                             </div>
                             <div class="max-h-72 overflow-y-auto py-1">
-                                <a href="#admin-broadcast-box" onclick="jumpToAdminSection('admin-broadcast-box'); return false;" class="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                                <a href="#admin-broadcast-box" onclick="jumpToAdminSection('admin-broadcast-box'); return false;" class="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all">
                                     <i class="fa-solid fa-bullhorn text-purple-500 w-4 text-center"></i> Broadcast Message
                                 </a>
-                                <a href="#admin-settings-box" onclick="jumpToAdminSection('admin-settings-box'); return false;" class="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                                <a href="#admin-settings-box" onclick="jumpToAdminSection('admin-settings-box'); return false;" class="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all">
                                     <i class="fa-solid fa-sliders text-amber-500 w-4 text-center"></i> Welfare Fund Settings
                                 </a>
-                                <a href="#admin-users-box" onclick="jumpToAdminSection('admin-users-box'); return false;" class="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                                <a href="#admin-users-box" onclick="jumpToAdminSection('admin-users-box'); return false;" class="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all">
                                     <i class="fa-solid fa-user-shield text-amber-500 w-4 text-center"></i> Admin Accounts & Passcodes
                                 </a>
-                                <a href="#admin-staff-box" onclick="jumpToAdminSection('admin-staff-box'); return false;" class="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                                <a href="#admin-staff-box" onclick="jumpToAdminSection('admin-staff-box'); return false;" class="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all">
                                     <i class="fa-solid fa-user-plus text-blue-500 w-4 text-center"></i> Register New Staff
                                 </a>
-                                <a href="#admin-payment-box" onclick="jumpToAdminSection('admin-payment-box'); return false;" class="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                                <a href="#admin-payment-box" onclick="jumpToAdminSection('admin-payment-box'); return false;" class="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all">
                                     <i class="fa-solid fa-money-check-dollar text-emerald-500 w-4 text-center"></i> Log Dues Payment
                                 </a>
-                                <a href="#admin-withdrawal-box" onclick="jumpToAdminSection('admin-withdrawal-box'); return false;" class="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                                <a href="#admin-withdrawal-box" onclick="jumpToAdminSection('admin-withdrawal-box'); return false;" class="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all">
                                     <i class="fa-solid fa-money-bill-transfer text-rose-500 w-4 text-center"></i> Process Welfare Withdrawal
                                 </a>
-                                <a href="#admin-roster-box" onclick="jumpToAdminSection('admin-roster-box'); return false;" class="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                                <a href="#admin-roster-box" onclick="jumpToAdminSection('admin-roster-box'); return false;" class="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all">
                                     <i class="fa-solid fa-users-viewfinder text-blue-500 w-4 text-center"></i> Master Member Roster
                                 </a>
                                 <a href="#admin-reset-box" onclick="jumpToAdminSection('admin-reset-box'); return false;" class="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all border-t border-slate-100 dark:border-slate-800">
@@ -773,9 +786,9 @@ body {
      DASHBOARD
 ========================================================= -->
 <section id="section-dashboard" class="page-section active">
-    <div class="mb-8 relative overflow-hidden bg-gradient-to-br from-sdaNavy-700 via-sdaNavy-900 to-slate-950 rounded-3xl p-6 sm:p-10 text-white shadow-2xl border border-white/10">
-        <div class="absolute -right-10 -bottom-10 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute right-1/3 -top-20 w-60 h-60 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
+    <div class="mb-8 relative overflow-hidden bg-gradient-to-br from-sdaNavy-900 via-sdaNavy-700 to-sapphire-600 rounded-[2.25rem] p-6 sm:p-10 text-white shadow-2xl border border-white/10">
+        <div class="absolute -right-10 -bottom-10 w-80 h-80 bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute right-1/3 -top-20 w-60 h-60 bg-blue-500/15 rounded-full blur-2xl pointer-events-none"></div>
         
         <div class="max-w-3xl relative z-10">
             <div class="inline-flex items-center gap-2 bg-amber-400/20 border border-amber-400/30 text-amber-300 text-[11px] font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider backdrop-blur-md">
@@ -785,13 +798,13 @@ body {
             <h1 class="text-3xl sm:text-4xl font-black mt-4 tracking-tight leading-tight">
                 Empowering Our Educators Through Solidarity
             </h1>
-            <p class="text-slate-300 text-sm sm:text-base mt-3 leading-relaxed font-medium">
+            <p class="text-slate-200 text-sm sm:text-base mt-3 leading-relaxed font-medium">
                 Providing mutual financial support, social welfare benefits, and fully transparent monthly record-keeping for Ntonso SDA Primary 'A' School.
             </p>
         </div>
     </div>
 
-    <div id="memberTickerBanner" class="mb-6 bg-sdaNavy-900/90 dark:bg-slate-900/90 backdrop-blur-md border border-amber-500/30 rounded-2xl text-white text-xs py-3 px-4 shadow-lg overflow-hidden hidden">
+    <div id="memberTickerBanner" class="mb-6 bg-sdaNavy-900/90 dark:bg-[#071328]/90 backdrop-blur-md border border-amber-500/30 rounded-2xl text-white text-xs py-3 px-4 shadow-lg overflow-hidden hidden">
         <div class="overflow-hidden whitespace-nowrap relative w-full">
             <div id="memberTickerContent" class="animate-continuous-ticker flex items-center gap-12 font-medium" style="animation-duration: 300s;">
             </div>
@@ -896,7 +909,7 @@ body {
     <div class="glass-card rounded-2xl p-6 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div class="flex items-center gap-5">
             <div id="teacherAvatar"
-                 class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-sdaNavy-900 to-sdaNavy-700 text-amber-400 font-black text-2xl flex items-center justify-center shadow-lg shadow-sdaNavy-900/20 overflow-hidden relative">
+                 class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-sdaNavy-900 to-sapphire-600 text-amber-400 font-black text-2xl flex items-center justify-center shadow-lg shadow-sdaNavy-900/20 overflow-hidden relative">
                 <span id="teacherAvatarInitials">--</span>
                 <img id="teacherAvatarImg" class="w-full h-full object-cover hidden" alt="Avatar">
             </div>
@@ -921,7 +934,7 @@ body {
         </div>
 
         <button onclick="downloadPDF()"
-                class="w-full md:w-auto px-6 py-3.5 bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white text-xs font-extrabold rounded-xl shadow-lg shadow-sdaNavy-500/20 flex items-center justify-center gap-2.5 transition-all transform active:scale-95">
+                class="w-full md:w-auto px-6 py-3.5 bg-gradient-to-r from-sdaNavy-900 to-sapphire-600 hover:from-sdaNavy-700 hover:to-sapphire-700 text-white text-xs font-extrabold rounded-xl shadow-lg shadow-sdaNavy-900/20 flex items-center justify-center gap-2.5 transition-all transform active:scale-95">
             <i class="fa-solid fa-file-pdf text-amber-400 text-base"></i>
             Download Official Statement
         </button>
@@ -988,7 +1001,7 @@ body {
             <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">Comprehensive personal, professional, and membership overview.</p>
         </div>
         <div class="flex items-center gap-3">
-            <button onclick="downloadPDF()" class="px-4 py-2.5 bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white text-xs font-extrabold rounded-xl shadow-md transition-all flex items-center gap-2">
+            <button onclick="downloadPDF()" class="px-4 py-2.5 bg-sdaNavy-900 hover:bg-sdaNavy-700 text-white text-xs font-extrabold rounded-xl shadow-md transition-all flex items-center gap-2">
                 <i class="fa-solid fa-file-pdf text-amber-400"></i> Print / Download Profile Statement
             </button>
         </div>
@@ -1001,7 +1014,7 @@ body {
                 <span id="profileStatusBadge" class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] font-extrabold border border-emerald-200">Active</span>
             </div>
 
-            <div class="w-24 h-24 rounded-2xl bg-gradient-to-tr from-sdaNavy-900 to-sdaNavy-700 text-amber-400 font-black text-3xl flex items-center justify-center shadow-lg shadow-sdaNavy-900/20 overflow-hidden relative my-4">
+            <div class="w-24 h-24 rounded-2xl bg-gradient-to-tr from-sdaNavy-900 to-sapphire-600 text-amber-400 font-black text-3xl flex items-center justify-center shadow-lg shadow-sdaNavy-900/20 overflow-hidden relative my-4">
                 <span id="profileAvatarInitials">--</span>
                 <img id="profileAvatarImg" class="w-full h-full object-cover hidden" alt="Avatar">
             </div>
@@ -1255,7 +1268,7 @@ body {
                 </select>
 
                 <button onclick="downloadPDF()"
-                        class="w-full py-3.5 rounded-xl bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white font-extrabold text-xs shadow-lg shadow-sdaNavy-500/20 flex items-center justify-center gap-2 transition-all">
+                        class="w-full py-3.5 rounded-xl bg-sdaNavy-900 hover:bg-sdaNavy-700 text-white font-extrabold text-xs shadow-lg shadow-sdaNavy-900/20 flex items-center justify-center gap-2 transition-all">
                     <i class="fa-solid fa-file-pdf text-amber-400 text-sm"></i>
                     <span>Download Member Statement</span>
                 </button>
@@ -1282,7 +1295,7 @@ body {
 
                 <button id="monthlySummaryButton"
                         onclick="downloadMonthlySummaryPDF()"
-                        class="w-full py-3.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs shadow-lg shadow-amber-600/20 flex items-center justify-center gap-2 opacity-50 cursor-not-allowed transition-all" disabled>
+                        class="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 opacity-50 cursor-not-allowed transition-all" disabled>
                     <i class="fa-solid fa-file-pdf text-sm"></i>
                     <span>Download Monthly Summary (Admin)</span>
                 </button>
@@ -1364,7 +1377,7 @@ body {
                     <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Standard Monthly Dues (GHS)</label>
                     <div class="flex gap-2.5">
                         <input type="number" id="standardMonthlyDuesInput" min="0" step="0.01" class="form-input font-bold">
-                        <button onclick="saveMonthlyDues()" class="px-6 rounded-xl bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white text-xs font-extrabold shadow-md transition-all">Save</button>
+                        <button onclick="saveMonthlyDues()" class="px-6 rounded-xl bg-sdaNavy-900 hover:bg-sdaNavy-700 text-white text-xs font-extrabold shadow-md transition-all">Save</button>
                     </div>
                     <p class="text-[11px] text-slate-400 mt-2 font-medium">This amount auto-populates as standard monthly dues throughout the portal.</p>
                 </div>
@@ -1440,7 +1453,7 @@ body {
                             <label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">New Password</label>
                             <input type="password" id="newAdminPasscode" class="form-input text-xs" placeholder="Enter new password" required>
                         </div>
-                        <button type="submit" class="w-full py-3 bg-amber-600 hover:bg-amber-700 text-sdaNavy-900 font-extrabold rounded-xl text-xs shadow-md transition-all">
+                        <button type="submit" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold rounded-xl text-xs shadow-md transition-all">
                             Update Password
                         </button>
                     </form>
@@ -1490,7 +1503,7 @@ body {
                     <input id="newStaffClass" class="form-input" placeholder="e.g. BS3 / ICT" required>
                 </div>
                 <div class="flex items-end">
-                    <button type="submit" class="w-full bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white text-xs font-extrabold py-3.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5">
+                    <button type="submit" class="w-full bg-sdaNavy-900 hover:bg-sdaNavy-700 text-white text-xs font-extrabold py-3.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5">
                         <i class="fa-solid fa-plus"></i> Add Staff
                     </button>
                 </div>
@@ -1719,7 +1732,7 @@ body {
 <!-- =========================================================
      LIVE ROLLING ACTIVITY BANNER
 ========================================================= -->
-<div id="liveTickerBanner" class="fixed bottom-0 left-0 right-0 z-40 bg-sdaNavy-900/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-amber-500/30 text-white text-xs py-2.5 px-4 shadow-2xl overflow-hidden hidden">
+<div id="liveTickerBanner" class="fixed bottom-0 left-0 right-0 z-40 bg-sdaNavy-900/95 dark:bg-[#071328]/95 backdrop-blur-md border-t border-amber-500/30 text-white text-xs py-2.5 px-4 shadow-2xl overflow-hidden hidden">
     <div class="overflow-hidden whitespace-nowrap relative w-full">
         <div id="tickerContent" class="animate-continuous-ticker flex items-center gap-12 font-medium" style="animation-duration: 300s;">
         </div>
@@ -1731,7 +1744,7 @@ body {
 ========================================================= -->
 <div id="adminModal"
      class="hidden fixed inset-0 modal-backdrop z-[250] items-center justify-center p-4">
-    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-8 shadow-2xl border border-slate-200 dark:border-slate-800 transform transition-all animate-[smoothFadeIn_0.3s_ease-out]">
+    <div class="bg-white dark:bg-[#071328] rounded-3xl max-w-md w-full p-8 shadow-2xl border border-slate-200 dark:border-slate-800 transform transition-all animate-[smoothFadeIn_0.3s_ease-out]">
         <div class="flex justify-between items-center mb-5">
             <h3 class="font-extrabold text-lg text-slate-900 dark:text-white flex items-center gap-2">
                 <i class="fa-solid fa-lock text-amber-500"></i>
@@ -1759,7 +1772,7 @@ body {
 
                 <div class="flex gap-3 pt-2">
                     <button type="button" onclick="closeAdminModal()" class="w-1/2 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-200">Cancel</button>
-                    <button type="submit" class="w-1/2 py-3.5 bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white rounded-xl text-xs font-extrabold shadow-md">Authenticate</button>
+                    <button type="submit" class="w-1/2 py-3.5 bg-sdaNavy-900 hover:bg-sdaNavy-700 text-white rounded-xl text-xs font-extrabold shadow-md">Authenticate</button>
                 </div>
             </form>
         </div>
@@ -1799,7 +1812,7 @@ body {
 ========================================================= -->
 <div id="editMemberModal"
      class="hidden fixed inset-0 modal-backdrop z-[250] items-center justify-center p-4">
-    <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-2xl shadow-2xl p-8 border border-slate-200 dark:border-slate-800 transform transition-all animate-[smoothFadeIn_0.3s_ease-out]">
+    <div class="bg-white dark:bg-[#071328] rounded-3xl w-full max-w-2xl shadow-2xl p-8 border border-slate-200 dark:border-slate-800 transform transition-all animate-[smoothFadeIn_0.3s_ease-out]">
         <div class="flex justify-between items-center mb-6">
             <div>
                 <h3 class="text-lg font-black text-slate-900 dark:text-white">Edit Teacher / Member Details</h3>
@@ -1837,7 +1850,7 @@ body {
 
             <div class="flex gap-3 pt-4">
                 <button type="button" onclick="closeEditMemberModal()" class="flex-1 py-3.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold">Cancel</button>
-                <button type="submit" class="flex-1 py-3.5 rounded-xl bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white text-xs font-extrabold shadow-lg shadow-sdaNavy-500/20">
+                <button type="submit" class="flex-1 py-3.5 rounded-xl bg-sdaNavy-900 hover:bg-sdaNavy-700 text-white text-xs font-extrabold shadow-lg shadow-sdaNavy-900/20">
                     <i class="fa-solid fa-floppy-disk mr-1.5"></i> Save Changes
                 </button>
             </div>
@@ -4038,7 +4051,7 @@ async function downloadPDF() {
             text: `NTONSO SDA PRIMARY A - WELFARE STATEMENT\nName: ${teacher.name}\nStaff ID: ${teacher.id}\nDoc: ${document.getElementById('pdfDocId').textContent}`,
             width: 64,
             height: 64,
-            colorDark: "#061224",
+            colorDark: "#030a16",
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.H
         });
@@ -4134,7 +4147,7 @@ async function downloadMonthlySummaryPDF() {
             text: `NTONSO SDA PRIMARY A - MONTHLY SUMMARY\nMonth: ${monthFormattedName}\nDoc: ${document.getElementById('monthlyReportId').textContent}`,
             width: 64,
             height: 64,
-            colorDark: "#061224",
+            colorDark: "#030a16",
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.H
         });
@@ -4249,7 +4262,7 @@ async function downloadFundSummaryPDF() {
             text: `NTONSO SDA PRIMARY A - COMPLETE FUND SUMMARY\nTotal Fund: ${money(netFund)}\nDoc: ${document.getElementById('summaryReportId').textContent}`,
             width: 64,
             height: 64,
-            colorDark: "#061224",
+            colorDark: "#030a16",
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.H
         });
