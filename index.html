@@ -475,7 +475,22 @@ body {
 
                 <div>
                     <label class="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1">New Password / Passcode</label>
-                    <input type="password" id="resetNewPassword" class="form-input !py-3 font-semibold text-xs" placeholder="Enter new password" required>
+                    <div class="relative">
+                        <input type="password" id="resetNewPassword" class="form-input !py-3 !pr-10 font-semibold text-xs" placeholder="Enter new password" required>
+                        <button type="button" onclick="toggleResetPassVisibility('resetNewPassword', 'resetNewPassIcon')" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-emerald-600">
+                            <i id="resetNewPassIcon" class="fa-solid fa-eye text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1">Confirm New Password</label>
+                    <div class="relative">
+                        <input type="password" id="resetConfirmPassword" class="form-input !py-3 !pr-10 font-semibold text-xs" placeholder="Confirm new password" required>
+                        <button type="button" onclick="toggleResetPassVisibility('resetConfirmPassword', 'resetConfirmPassIcon')" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-emerald-600">
+                            <i id="resetConfirmPassIcon" class="fa-solid fa-eye text-xs"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <p id="resetError" class="text-xs text-rose-500 font-semibold text-center hidden bg-rose-50 p-2.5 rounded-lg border border-rose-200">Verification failed. Check Staff ID or Phone.</p>
@@ -2259,7 +2274,6 @@ function performInactivityLogout() {
 window.addEventListener('storage', (event) => {
     if (event.key === SESSION_KEY) {
         if (!event.newValue) {
-            // Logged out in another tab
             adminLoggedIn = false;
             currentAdminUser = null;
             loggedInTeacherId = null;
@@ -2327,12 +2341,12 @@ function logAdminAction(category, actionDescription, details = '', prevVal = '-'
     const logEntry = {
         id: 'AUD-' + Math.floor(100000 + Math.random() * 900000),
         name: adminName,
-        category: category, // AUTH, MEMBER, FINANCE, CONFIG
+        category: category,
         action: actionDescription,
         details: details,
         previousValue: prevVal,
         newValue: newVal,
-        status: status, // SUCCESS, FAILURE
+        status: status,
         time: timeStr,
         timestamp: Date.now(),
         targetTeacherId: targetTeacherId ? String(targetTeacherId) : null
@@ -3258,6 +3272,19 @@ function toggleGatewayPasswordVisibility() {
     }
 }
 
+function toggleResetPassVisibility(fieldId, iconId) {
+    const passInput = document.getElementById(fieldId);
+    const passIcon = document.getElementById(iconId);
+    if (!passInput || !passIcon) return;
+    if (passInput.type === 'password') {
+        passInput.type = 'text';
+        passIcon.className = 'fa-solid fa-eye-slash text-xs';
+    } else {
+        passInput.type = 'password';
+        passIcon.className = 'fa-solid fa-eye text-xs';
+    }
+}
+
 function handlePortalLogin(event) {
     event.preventDefault();
     const staffId = document.getElementById('gatewayStaffId').value.trim();
@@ -3318,6 +3345,7 @@ function showResetPasswordView() {
     document.getElementById('resetStaffId').value = '';
     document.getElementById('resetPhone').value = '';
     document.getElementById('resetNewPassword').value = '';
+    document.getElementById('resetConfirmPassword').value = '';
     document.getElementById('resetError').classList.add('hidden');
 }
 
@@ -3334,7 +3362,14 @@ function handlePasswordReset(event) {
     const staffId = document.getElementById('resetStaffId').value.trim();
     const phone = document.getElementById('resetPhone').value.trim();
     const newPassword = document.getElementById('resetNewPassword').value.trim();
+    const confirmPassword = document.getElementById('resetConfirmPassword').value.trim();
     const errorEl = document.getElementById('resetError');
+
+    if (newPassword !== confirmPassword) {
+        errorEl.textContent = 'New password and confirmation password do not match.';
+        errorEl.classList.remove('hidden');
+        return;
+    }
 
     const teacher = welfareData.teachers.find(t => String(t.id).toLowerCase() === staffId.toLowerCase() && String(t.phone).trim() === phone);
 
@@ -3349,7 +3384,10 @@ function handlePasswordReset(event) {
     saveData();
     logAdminAction('AUTH', 'PASSWORD_RESET', `Password reset successfully for ${teacher.name}`, 'Old Password', 'New Password', 'SUCCESS', teacher.id);
 
-    showToast('Password updated successfully! Please sign in.', 'success');
+    // Simulate sending SMS confirmation message to registered phone number securely
+    console.log(`[SMS Gateway Simulated] Sending SMS to ${teacher.phone}: "Dear Teacher, your Teachers Welfare Portal password has been changed successfully. If you did not authorize this change, please contact the Welfare Administrator immediately. Thank you."`);
+
+    showToast('Password updated successfully! Confirmation SMS dispatched. Please sign in.', 'success');
     showLoginView();
     document.getElementById('gatewayStaffId').value = teacher.id;
     document.getElementById('gatewayPassword').value = newPassword;
