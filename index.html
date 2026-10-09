@@ -338,7 +338,7 @@ body {
     display: flex;
     white-space: nowrap;
     width: max-content;
-    animation: continuousScroll 300s linear infinite;
+    animation: continuousScroll 600s linear infinite;
 }
 
 .animate-continuous-ticker:hover {
@@ -806,7 +806,7 @@ body {
 
     <div id="memberTickerBanner" class="mb-6 bg-sdaNavy-900/90 dark:bg-[#071328]/90 backdrop-blur-md border border-amber-500/30 rounded-2xl text-white text-xs py-3 px-4 shadow-lg overflow-hidden hidden">
         <div class="overflow-hidden whitespace-nowrap relative w-full">
-            <div id="memberTickerContent" class="animate-continuous-ticker flex items-center gap-12 font-medium" style="animation-duration: 300s;">
+            <div id="memberTickerContent" class="animate-continuous-ticker flex items-center gap-12 font-medium" style="animation-duration: 600s;">
             </div>
         </div>
     </div>
@@ -1734,7 +1734,7 @@ body {
 ========================================================= -->
 <div id="liveTickerBanner" class="fixed bottom-0 left-0 right-0 z-40 bg-sdaNavy-900/95 dark:bg-[#071328]/95 backdrop-blur-md border-t border-amber-500/30 text-white text-xs py-2.5 px-4 shadow-2xl overflow-hidden hidden">
     <div class="overflow-hidden whitespace-nowrap relative w-full">
-        <div id="tickerContent" class="animate-continuous-ticker flex items-center gap-12 font-medium" style="animation-duration: 300s;">
+        <div id="tickerContent" class="animate-continuous-ticker flex items-center gap-12 font-medium" style="animation-duration: 600s;">
         </div>
     </div>
 </div>
@@ -2169,6 +2169,7 @@ body {
 <script>
 const STORAGE_KEY = 'ntonso_sda_welfare_data_v5';
 const HISTORICAL_CONTRIB_KEY = 'ntonso_sda_historical_contrib_v5';
+const REMOVED_MEMBERS_KEY = 'ntonso_sda_removed_members_v5';
 const DUES_KEY = 'ntonso_sda_standard_dues_v5';
 const THEME_KEY = 'ntonso_sda_theme_v5';
 const ADMIN_USERS_KEY = 'ntonso_sda_admin_users_v5';
@@ -2210,6 +2211,7 @@ let editingMemberId = null;
 
 let welfareData = loadData();
 let historicalTotalContributions = loadHistoricalContributions();
+let removedMembers = loadRemovedMembers();
 let adminUsers = loadAdminUsers();
 let adminLogs = loadAdminLogs();
 let standardMonthlyDues = Number(localStorage.getItem(DUES_KEY) || 100);
@@ -2346,6 +2348,21 @@ function saveHistoricalContributions() {
     localStorage.setItem(HISTORICAL_CONTRIB_KEY, String(historicalTotalContributions));
 }
 
+function loadRemovedMembers() {
+    try {
+        const saved = localStorage.getItem(REMOVED_MEMBERS_KEY);
+        if (!saved) return [];
+        const parsed = JSON.parse(saved);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+}
+
+function saveRemovedMembers() {
+    localStorage.setItem(REMOVED_MEMBERS_KEY, JSON.stringify(removedMembers));
+}
+
 function logAdminAction(category, actionDescription, details = '', prevVal = '-', newVal = '-', status = 'SUCCESS', targetTeacherId = null) {
     const adminName = currentAdminUser ? currentAdminUser.name : (loggedInTeacherId ? 'Teacher Member' : 'System / Guest');
     const now = new Date();
@@ -2439,7 +2456,7 @@ function restoreSessionState() {
         adminLoggedIn = !!session.adminLoggedIn;
         currentAdminUser = session.currentAdminUser || null;
         loggedInTeacherId = session.loggedInTeacherId || null;
-        selectedTeacherId = session.selectedTeacherId || (welfareData.teachers.length ? welfareData.teachers[0].id : null);
+        selectedTeacherId = session.selectedTeacherId || (getAllTeachers().length ? getAllTeachers()[0].id : null);
 
         if (adminLoggedIn || loggedInTeacherId) {
             document.getElementById('loginGatewayModal').classList.add('hidden');
@@ -2531,8 +2548,12 @@ function populateRankSelects() {
     });
 }
 
+function getAllTeachers() {
+    return [...welfareData.teachers, ...removedMembers];
+}
+
 function getTeacherById(id) {
-    return welfareData.teachers.find(teacher => String(teacher.id) === String(id));
+    return getAllTeachers().find(teacher => String(teacher.id) === String(id));
 }
 
 function getSelectedTeacher() {
@@ -2540,8 +2561,9 @@ function getSelectedTeacher() {
         return getTeacherById(loggedInTeacherId);
     }
     if (!selectedTeacherId) {
-        if (welfareData.teachers.length) {
-            selectedTeacherId = welfareData.teachers[0].id;
+        const all = getAllTeachers();
+        if (all.length) {
+            selectedTeacherId = all[0].id;
         } else {
             return null;
         }
@@ -2569,26 +2591,28 @@ function populateTeacherSelects() {
         document.getElementById('adminWithdrawalTeacherSelect')
     ];
 
+    const allActive = welfareData.teachers;
+
     selects.forEach(select => {
         if (!select) return;
         const currentValue = select.value;
         select.innerHTML = '';
-        if (!welfareData.teachers.length) {
+        if (!allActive.length) {
             const option = document.createElement('option');
             option.value = '';
             option.textContent = 'No members registered';
             select.appendChild(option);
             return;
         }
-        welfareData.teachers.forEach(teacher => {
+        allActive.forEach(teacher => {
             const option = document.createElement('option');
             option.value = teacher.id;
             option.textContent = `${teacher.name} (${teacher.id})`;
             select.appendChild(option);
         });
-        if (currentValue && welfareData.teachers.some(t => String(t.id) === String(currentValue))) {
+        if (currentValue && allActive.some(t => String(t.id) === String(currentValue))) {
             select.value = currentValue;
-        } else if (selectedTeacherId && welfareData.teachers.some(t => String(t.id) === String(selectedTeacherId))) {
+        } else if (selectedTeacherId && allActive.some(t => String(t.id) === String(selectedTeacherId))) {
             select.value = selectedTeacherId;
         }
     });
@@ -2896,7 +2920,7 @@ function renderUniversalWithdrawalTable() {
     if (!body) return;
     
     const allPayouts = [];
-    welfareData.teachers.forEach(teacher => {
+    getAllTeachers().forEach(teacher => {
         teacher.payouts.forEach(payout => {
             allPayouts.push({ teacher, payout });
         });
@@ -2958,7 +2982,7 @@ function renderPaymentsSection() {
 
     const body = document.getElementById('allPaymentsBody');
     const records = [];
-    welfareData.teachers.forEach(teacher => {
+    getAllTeachers().forEach(teacher => {
         teacher.payments.forEach(payment => {
             records.push({ teacher, payment });
         });
@@ -2993,7 +3017,7 @@ function renderWelfareSection() {
 
     const body = document.getElementById('allWithdrawalsBody');
     const records = [];
-    welfareData.teachers.forEach(teacher => {
+    getAllTeachers().forEach(teacher => {
         teacher.payouts.forEach(payout => {
             records.push({ teacher, payout });
         });
@@ -3316,7 +3340,7 @@ function handlePortalLogin(event) {
         return;
     }
 
-    const matched = welfareData.teachers.find(t => {
+    const matched = getAllTeachers().find(t => {
         const idMatches = String(t.id).toLowerCase() === staffId.toLowerCase();
         if (!idMatches) return false;
         if (t.customPassword) {
@@ -3387,7 +3411,7 @@ function handlePasswordReset(event) {
         return;
     }
 
-    const teacher = welfareData.teachers.find(t => String(t.id).toLowerCase() === staffId.toLowerCase() && String(t.phone).trim() === phone);
+    const teacher = getAllTeachers().find(t => String(t.id).toLowerCase() === staffId.toLowerCase() && String(t.phone).trim() === phone);
 
     if (!teacher) {
         logAdminAction('AUTH', 'PASSWORD_RESET_FAIL', `Failed password reset for Staff ID: ${staffId}`, '-', staffId, 'FAILURE');
@@ -3502,7 +3526,7 @@ function handleAddNewStaff(event) {
         return;
     }
 
-    const duplicate = welfareData.teachers.some(teacher => teacher.id.toLowerCase() === id.toLowerCase());
+    const duplicate = getAllTeachers().some(teacher => teacher.id.toLowerCase() === id.toLowerCase());
     if (duplicate) {
         showToast('A member with this Staff ID already exists.', 'error');
         return;
@@ -3635,7 +3659,7 @@ function saveEditedMember(event) {
     const oldClass = teacher.className;
 
     const newId = document.getElementById('editStaffId').value.trim();
-    const duplicate = welfareData.teachers.some(member => String(member.id).toLowerCase() === newId.toLowerCase() && String(member.id) !== String(editingMemberId));
+    const duplicate = getAllTeachers().some(member => String(member.id).toLowerCase() === newId.toLowerCase() && String(member.id) !== String(editingMemberId));
 
     if (duplicate) {
         showToast('Another member already uses this Staff ID.', 'error');
@@ -3667,16 +3691,11 @@ function handleRemoveStaff(id) {
     if (!confirmed) return;
 
     const removedName = teacher.name;
-    const adminName = currentAdminUser ? currentAdminUser.name : 'Administrator';
-
-    // 1. Mark as inactive/removed instead of permanently destroying record references
-    teacher.status = 'Removed';
-    teacher.removedDate = todayISO();
-    teacher.removedBy = adminName;
-
-    // 2. Transfer from active teachers list to removed/archived members list safely
+    
+    // Remove from active teachers list
     welfareData.teachers = welfareData.teachers.filter(member => String(member.id) !== String(id));
     
+    // Add to removed members list so records remain accessible for history/statements
     if (!removedMembers.some(m => String(m.id) === String(id))) {
         removedMembers.push(teacher);
         saveRemovedMembers();
@@ -3691,27 +3710,8 @@ function handleRemoveStaff(id) {
     saveSessionState();
     renderAll();
     
-    // 3. Log membership removal in the audit trail without touching financial balances or reversing disbursements
-    logAdminAction(
-        'MEMBER', 
-        'REMOVE_MEMBER', 
-        `Archived/Removed staff member: ${removedName} (Staff ID: ${id}). Historical financial records and past welfare disbursements preserved intact.`, 
-        'Active Status', 
-        'Removed / Archived', 
-        'SUCCESS', 
-        id
-    );
-
-    showToast('Staff member removed successfully. Historical payments, payouts, and net fund balances remain fully preserved and accurate.', 'success');
-}
-
-
-    saveData();
-    saveSessionState();
-    renderAll();
-    
-    logAdminAction('MEMBER', 'DELETE_MEMBER', `Removed staff member: ${removedName}`, removedName, 'Deleted', 'SUCCESS', id);
-    showToast('Member removed successfully (contributions preserved in Total Fund Balance).', 'success');
+    logAdminAction('MEMBER', 'DELETE_MEMBER', `Removed staff member: ${removedName}`, removedName, 'Archived / Removed', 'SUCCESS', id);
+    showToast('Staff member removed. Historical payment and payout records are fully maintained.', 'success');
 }
 
 function saveMonthlyDues() {
@@ -4009,6 +4009,8 @@ function confirmResetAllData() {
     logAdminAction('CONFIG', 'RESET_ALL_DATA', 'Reset all welfare records (audit trail preserved)', 'Active Records', 'Cleared', 'SUCCESS');
     
     welfareData = { teachers: [] };
+    removedMembers = [];
+    localStorage.removeItem(REMOVED_MEMBERS_KEY);
     historicalTotalContributions = 0;
     saveHistoricalContributions();
     selectedTeacherId = null;
@@ -4028,16 +4030,23 @@ function confirmResetAllData() {
 }
 
 function getTotalContributions() {
-    const currentTeachersTotal = welfareData.teachers.reduce((total, teacher) => {
+    const activeContrib = welfareData.teachers.reduce((total, teacher) => {
         return total + teacher.payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
     }, 0);
-    return currentTeachersTotal + historicalTotalContributions;
+    const removedContrib = removedMembers.reduce((total, teacher) => {
+        return total + teacher.payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
+    }, 0);
+    return activeContrib + removedContrib + historicalTotalContributions;
 }
 
 function getTotalPayouts() {
-    return welfareData.teachers.reduce((total, teacher) => {
+    const activePayouts = welfareData.teachers.reduce((total, teacher) => {
         return total + teacher.payouts.reduce((sum, payout) => sum + Number(payout.amount || 0), 0);
     }, 0);
+    const removedPayouts = removedMembers.reduce((total, teacher) => {
+        return total + teacher.payouts.reduce((sum, payout) => sum + Number(payout.amount || 0), 0);
+    }, 0);
+    return activePayouts + removedPayouts;
 }
 
 async function downloadPDF() {
@@ -4184,7 +4193,7 @@ async function downloadMonthlySummaryPDF() {
     }
 
     const monthlyPayments = [];
-    welfareData.teachers.forEach(teacher => {
+    getAllTeachers().forEach(teacher => {
         teacher.payments.forEach(payment => {
             if (payment.date && payment.date.startsWith(targetMonthInput)) {
                 monthlyPayments.push({ teacher, payment });
@@ -4193,7 +4202,7 @@ async function downloadMonthlySummaryPDF() {
     });
 
     const monthlyPayouts = [];
-    welfareData.teachers.forEach(teacher => {
+    getAllTeachers().forEach(teacher => {
         teacher.payouts.forEach(payout => {
             if (payout.date && payout.date.startsWith(targetMonthInput)) {
                 monthlyPayouts.push({ teacher, payout });
@@ -4300,7 +4309,7 @@ async function downloadFundSummaryPDF() {
 
     const membersBody = document.getElementById('summaryMembersBody');
     if (!welfareData.teachers.length) {
-        membersBody.innerHTML = `<tr><td colspan="6" class="border px-2 py-3 text-center text-slate-500">No members registered.</td></tr>`;
+        membersBody.innerHTML = `<tr><td colspan="6" class="border px-2 py-3 text-center text-slate-500">No active members registered.</td></tr>`;
     } else {
         membersBody.innerHTML = welfareData.teachers.map((teacher, index) => {
             const contribution = teacher.payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
@@ -4319,7 +4328,7 @@ async function downloadFundSummaryPDF() {
 
     const payoutBody = document.getElementById('summaryPayoutsBody');
     const allPayouts = [];
-    welfareData.teachers.forEach(teacher => {
+    getAllTeachers().forEach(teacher => {
         teacher.payouts.forEach(payout => {
             allPayouts.push({ teacher, payout });
         });
@@ -4613,3 +4622,5 @@ setTimeout(() => {
 
 </body>
 </html>
+
+
