@@ -3663,18 +3663,48 @@ function handleRemoveStaff(id) {
     const teacher = getTeacherById(id);
     if (!teacher) return;
 
-    const confirmed = confirm(`Remove ${teacher.name} and all of this member's contribution/payout records?`);
+    const confirmed = confirm(`Remove ${teacher.name} from active staff? Note: Their historical contribution and payout records will be retained, and any payouts already disbursed to them remain part of lifetime fund calculations.`);
     if (!confirmed) return;
 
-    const memberTotalContrib = teacher.payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
-    historicalTotalContributions += memberTotalContrib;
-    saveHistoricalContributions();
-
     const removedName = teacher.name;
+    const adminName = currentAdminUser ? currentAdminUser.name : 'Administrator';
+
+    // 1. Mark as inactive/removed instead of permanently destroying record references
+    teacher.status = 'Removed';
+    teacher.removedDate = todayISO();
+    teacher.removedBy = adminName;
+
+    // 2. Transfer from active teachers list to removed/archived members list safely
     welfareData.teachers = welfareData.teachers.filter(member => String(member.id) !== String(id));
-    if (String(selectedTeacherId) === String(id)) {
-        selectedTeacherId = welfareData.teachers.length ? welfareData.teachers[0].id : null;
+    
+    if (!removedMembers.some(m => String(m.id) === String(id))) {
+        removedMembers.push(teacher);
+        saveRemovedMembers();
     }
+
+    if (String(selectedTeacherId) === String(id)) {
+        const remaining = getAllTeachers();
+        selectedTeacherId = remaining.length ? remaining[0].id : null;
+    }
+
+    saveData();
+    saveSessionState();
+    renderAll();
+    
+    // 3. Log membership removal in the audit trail without touching financial balances or reversing disbursements
+    logAdminAction(
+        'MEMBER', 
+        'REMOVE_MEMBER', 
+        `Archived/Removed staff member: ${removedName} (Staff ID: ${id}). Historical financial records and past welfare disbursements preserved intact.`, 
+        'Active Status', 
+        'Removed / Archived', 
+        'SUCCESS', 
+        id
+    );
+
+    showToast('Staff member removed successfully. Historical payments, payouts, and net fund balances remain fully preserved and accurate.', 'success');
+}
+
 
     saveData();
     saveSessionState();
