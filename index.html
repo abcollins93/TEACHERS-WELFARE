@@ -565,6 +565,12 @@ body {
                     <span class="sidebar-text">Dashboard</span>
                 </button>
 
+                <button onclick="showSection('profile',this)"
+                        class="nav-button w-full flex items-center rounded-xl px-3.5 py-3 text-sm font-semibold">
+                    <i class="fa-solid fa-circle-user w-6 text-center mr-3 text-emerald-400"></i>
+                    <span class="sidebar-text">Teacher Profile</span>
+                </button>
+
                 <button onclick="showSection('teachers',this)"
                         class="nav-button w-full flex items-center rounded-xl px-3.5 py-3 text-sm font-semibold">
                     <i class="fa-solid fa-users w-6 text-center mr-3 text-blue-400"></i>
@@ -953,6 +959,135 @@ body {
                 <tbody id="withdrawalTableBody" class="divide-y divide-slate-200 dark:divide-slate-800/80 font-medium">
                 </tbody>
             </table>
+        </div>
+    </div>
+</section>
+
+<!-- =========================================================
+     PROFILE SECTION (NEW)
+========================================================= -->
+<section id="section-profile" class="page-section">
+    <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h2 class="text-2xl font-black text-slate-900 dark:text-white">Teacher Profile</h2>
+            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">Comprehensive personal, professional, and membership overview.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="downloadPDF()" class="px-4 py-2.5 bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white text-xs font-extrabold rounded-xl shadow-md transition-all flex items-center gap-2">
+                <i class="fa-solid fa-file-pdf text-amber-400"></i> Print / Download Profile Statement
+            </button>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Profile Summary Card -->
+        <div class="glass-card rounded-2xl p-6 shadow-sm flex flex-col items-center text-center relative overflow-hidden border-t-4 border-t-emerald-500">
+            <div class="absolute top-0 right-0 p-4">
+                <span id="profileStatusBadge" class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] font-extrabold border border-emerald-200">Active</span>
+            </div>
+
+            <div class="w-24 h-24 rounded-2xl bg-gradient-to-tr from-sdaNavy-900 to-sdaNavy-700 text-amber-400 font-black text-3xl flex items-center justify-center shadow-lg shadow-sdaNavy-900/20 overflow-hidden relative my-4">
+                <span id="profileAvatarInitials">--</span>
+                <img id="profileAvatarImg" class="w-full h-full object-cover hidden" alt="Avatar">
+            </div>
+
+            <h3 id="profileFullName" class="text-xl font-extrabold text-slate-900 dark:text-white">--</h3>
+            <p id="profileDesignation" class="text-xs font-bold text-amber-600 dark:text-amber-400 mt-1">--</p>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Staff ID: <strong id="profileStaffIdDisplay" class="text-slate-700 dark:text-slate-200">--</strong></p>
+
+            <div class="w-full grid grid-cols-2 gap-3 mt-6 pt-6 border-t border-slate-200 dark:border-slate-800 text-left">
+                <div>
+                    <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Registration Date</p>
+                    <p id="profileRegDate" class="text-xs font-bold text-slate-700 dark:text-slate-300 mt-0.5">September 2026</p>
+                </div>
+                <div>
+                    <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Membership Type</p>
+                    <p class="text-xs font-bold text-slate-700 dark:text-slate-300 mt-0.5">Permanent Staff</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personal & Contact Details -->
+        <div class="glass-card rounded-2xl p-6 shadow-sm border-t-4 border-t-blue-500 lg:col-span-2">
+            <h3 class="font-extrabold text-base mb-4 text-slate-900 dark:text-white flex items-center gap-2">
+                <i class="fa-solid fa-address-card text-blue-500"></i> Personal & Contact Information
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div class="bg-slate-50 dark:bg-slate-800/50 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Full Name</p>
+                    <p id="profileDetailName" class="font-bold text-slate-800 dark:text-slate-200 mt-1">--</p>
+                </div>
+                <div class="bg-slate-50 dark:bg-slate-800/50 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Phone Number</p>
+                    <p id="profileDetailPhone" class="font-bold text-slate-800 dark:text-slate-200 mt-1">--</p>
+                </div>
+                <div class="bg-slate-50 dark:bg-slate-800/50 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">School / Institution</p>
+                    <p class="font-bold text-slate-800 dark:text-slate-200 mt-1">Ntonso SDA Primary 'A' School</p>
+                </div>
+                <div class="bg-slate-50 dark:bg-slate-800/50 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">District & Region</p>
+                    <p class="font-bold text-slate-800 dark:text-slate-200 mt-1">Kwabre East District, Ashanti Region</p>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4">
+                <p class="text-[11px] text-slate-500 font-medium">To update your official personal or contact information, contact the Executive Administrator.</p>
+                <button onclick="openProfileEditModal()" class="px-4 py-2 rounded-xl bg-blue-100 hover:bg-blue-200 dark:bg-blue-950 dark:hover:bg-blue-900 text-blue-700 dark:text-blue-300 font-bold text-xs transition-all shadow-sm">
+                    <i class="fa-solid fa-pen-to-square mr-1"></i> Edit Contact Info
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Professional & Welfare Financial Overview -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="glass-card rounded-2xl p-6 shadow-sm border-t-4 border-t-amber-500">
+            <h3 class="font-extrabold text-base mb-4 text-slate-900 dark:text-white flex items-center gap-2">
+                <i class="fa-solid fa-briefcase text-amber-500"></i> Professional & Employment Details
+            </h3>
+            <div class="space-y-3 text-xs">
+                <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span class="text-slate-500 font-bold">Staff ID</span>
+                    <span id="profileProfStaffId" class="font-mono font-bold text-slate-800 dark:text-slate-200">--</span>
+                </div>
+                <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span class="text-slate-500 font-bold">Professional Rank</span>
+                    <span id="profileProfRank" class="font-bold text-blue-600 dark:text-blue-400">--</span>
+                </div>
+                <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span class="text-slate-500 font-bold">Class / Subject Assigned</span>
+                    <span id="profileProfClass" class="font-bold text-amber-600 dark:text-amber-400">--</span>
+                </div>
+                <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span class="text-slate-500 font-bold">Employer</span>
+                    <span class="font-bold text-slate-800 dark:text-slate-200">Ghana Education Service (GES)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card rounded-2xl p-6 shadow-sm border-t-4 border-t-purple-500">
+            <h3 class="font-extrabold text-base mb-4 text-slate-900 dark:text-white flex items-center gap-2">
+                <i class="fa-solid fa-vault text-purple-500"></i> Welfare Membership & Financial Summary
+            </h3>
+            <div class="space-y-3 text-xs">
+                <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span class="text-slate-500 font-bold">Total Dues Contributed</span>
+                    <span id="profileFinTotalPaid" class="font-black text-emerald-600 dark:text-emerald-400 text-sm">GHS 0.00</span>
+                </div>
+                <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span class="text-slate-500 font-bold">Total Welfare Payouts Received</span>
+                    <span id="profileFinTotalPayouts" class="font-black text-rose-600 dark:text-rose-400 text-sm">GHS 0.00</span>
+                </div>
+                <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span class="text-slate-500 font-bold">Total Payments Recorded</span>
+                    <span id="profileFinCount" class="font-bold text-slate-800 dark:text-slate-200">0 Payments</span>
+                </div>
+                <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span class="text-slate-500 font-bold">Most Recent Contribution</span>
+                    <span id="profileFinLastDate" class="font-bold text-slate-800 dark:text-slate-200">-</span>
+                </div>
+            </div>
         </div>
     </div>
 </section>
@@ -1454,7 +1589,7 @@ body {
 </section>
 
 <!-- =========================================================
-     AUDIT TRAIL DASHBOARD (NEW)
+     AUDIT TRAIL DASHBOARD
 ========================================================= -->
 <section id="section-audit" class="page-section">
     <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -2450,6 +2585,7 @@ function renderAll() {
     populateTeacherSelects();
     populateAdminSelects();
     renderDashboard();
+    renderProfileSection();
     renderTeachersSection();
     renderPaymentsSection();
     renderWelfareSection();
@@ -2560,6 +2696,7 @@ function handleHeaderPassportUpload(event) {
         saveData();
         renderHeaderPassport();
         renderDashboard();
+        renderProfileSection();
         showToast('Passport picture uploaded successfully!', 'success');
         logAdminAction('MEMBER', 'UPLOAD_PASSPORT', `Uploaded passport photo for member ${teacher.name}`, 'No Photo', 'Updated Photo', 'SUCCESS', teacher.id);
     };
@@ -2634,6 +2771,75 @@ function renderDashboard() {
     renderMemberPaymentTable(teacher);
     renderUniversalWithdrawalTable();
     renderMemberLiveTicker();
+}
+
+function renderProfileSection() {
+    const teacher = getSelectedTeacher();
+    const fullNameEl = document.getElementById('profileFullName');
+    const designationEl = document.getElementById('profileDesignation');
+    const staffIdEl = document.getElementById('profileStaffIdDisplay');
+    const avatarImg = document.getElementById('profileAvatarImg');
+    const avatarInitials = document.getElementById('profileAvatarInitials');
+    const detailName = document.getElementById('profileDetailName');
+    const detailPhone = document.getElementById('profileDetailPhone');
+    const profStaffId = document.getElementById('profileProfStaffId');
+    const profRank = document.getElementById('profileProfRank');
+    const profClass = document.getElementById('profileProfClass');
+    const finTotalPaid = document.getElementById('profileFinTotalPaid');
+    const finTotalPayouts = document.getElementById('profileFinTotalPayouts');
+    const finCount = document.getElementById('profileFinCount');
+    const finLastDate = document.getElementById('profileFinLastDate');
+
+    if (!teacher) {
+        if (fullNameEl) fullNameEl.textContent = 'No Member Selected';
+        if (designationEl) designationEl.textContent = '--';
+        if (staffIdEl) staffIdEl.textContent = '--';
+        return;
+    }
+
+    if (fullNameEl) fullNameEl.textContent = teacher.name;
+    if (designationEl) designationEl.textContent = teacher.rank || '--';
+    if (staffIdEl) staffIdEl.textContent = teacher.id;
+    if (detailName) detailName.textContent = teacher.name;
+    if (detailPhone) detailPhone.textContent = teacher.phone;
+    if (profStaffId) profStaffId.textContent = teacher.id;
+    if (profRank) profRank.textContent = teacher.rank || '--';
+    if (profClass) profClass.textContent = teacher.className || 'General';
+
+    if (teacher.passport) {
+        if (avatarImg) {
+            avatarImg.src = teacher.passport;
+            avatarImg.classList.remove('hidden');
+        }
+        if (avatarInitials) avatarInitials.classList.add('hidden');
+    } else {
+        if (avatarImg) {
+            avatarImg.src = '';
+            avatarImg.classList.add('hidden');
+        }
+        if (avatarInitials) {
+            avatarInitials.textContent = initials(teacher.name);
+            avatarInitials.classList.remove('hidden');
+        }
+    }
+
+    const totalPaid = teacher.payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+    const totalPayouts = teacher.payouts.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+    const sortedPayments = [...teacher.payments].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+
+    if (finTotalPaid) finTotalPaid.textContent = money(totalPaid);
+    if (finTotalPayouts) finTotalPayouts.textContent = money(totalPayouts);
+    if (finCount) finCount.textContent = `${teacher.payments.length} Payment${teacher.payments.length === 1 ? '' : 's'}`;
+    if (finLastDate) finLastDate.textContent = sortedPayments.length ? formatDate(sortedPayments[0].date) : 'No contributions yet';
+}
+
+function openProfileEditModal() {
+    const teacher = getSelectedTeacher();
+    if (!teacher) {
+        showToast('No teacher profile selected.', 'error');
+        return;
+    }
+    openEditMemberModal(teacher.id);
 }
 
 function renderMemberPaymentTable(teacher) {
@@ -4156,6 +4362,7 @@ function showSection(section, button = null, bypassAdmin = false) {
 
     const titles = {
         dashboard: 'Dashboard',
+        profile: 'Teacher Profile',
         teachers: 'Teachers & Members',
         payments: 'Contributions',
         welfare: 'Welfare & Payouts',
