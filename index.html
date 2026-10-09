@@ -2019,17 +2019,20 @@ const DEFAULT_ADMINS = [
 ];
 
 const RANK_OPTIONS = [
-    'PS',
-    'ADII',
-    'ADI',
-    'DD',
+    'Member',
+    'Pupil Teacher',
+    'Superintendent II',
+    'Superintendent I',
+    'Senior Superintendent II',
+    'Senior Superintendent I',
+    'Principal Superintendent',
     'Assistant Director II',
     'Assistant Director I',
     'Deputy Director',
-    '14. Headmaster',
-    '15. Assistant Headmaster',
-    '16. Headmistress',
-    '16. Assistant Headmistress'
+    'Director II',
+    'Director I',
+    'Deputy Director General',
+    'Director General'
 ];
 
 let adminLoggedIn = false;
@@ -2185,8 +2188,8 @@ function loadData() {
             return {
                 teachers: [
                     { id: 'STF001', name: 'Collins Adarkwa Baiden', phone: '0240000001', rank: 'Assistant Director II', className: 'BS6 / ICT', passport: '', payments: [{ date: '2026-09-01', amount: 100, reference: 'PAY-001' }], payouts: [] },
-                    { id: 'STF002', name: 'Edwardina Appiah Mensah', phone: '0240000002', rank: 'ADII', className: 'BS5 / Mathematics', passport: '', payments: [{ date: '2026-09-01', amount: 100, reference: 'PAY-002' }], payouts: [] },
-                    { id: 'STF003', name: 'Madam Cassandra Yeboah', phone: '0240000003', rank: 'ADI', className: 'BS4 / English', passport: '', payments: [{ date: '2026-09-01', amount: 100, reference: 'PAY-003' }], payouts: [] }
+                    { id: 'STF002', name: 'Edwardina Appiah Mensah', phone: '0240000002', rank: 'Assistant Director II', className: 'BS5 / Mathematics', passport: '', payments: [{ date: '2026-09-01', amount: 100, reference: 'PAY-002' }], payouts: [] },
+                    { id: 'STF003', name: 'Madam Cassandra Yeboah', phone: '0240000003', rank: 'Assistant Director I', className: 'BS4 / English', passport: '', payments: [{ date: '2026-09-01', amount: 100, reference: 'PAY-003' }], payouts: [] }
                 ]
             };
         }
