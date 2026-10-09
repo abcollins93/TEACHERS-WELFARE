@@ -395,7 +395,6 @@ body {
         <div class="absolute -bottom-24 -left-24 w-56 h-56 bg-gradient-to-tr from-amber-500/15 to-amber-400/0 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-700"></div>
         <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-400"></div>
 
-        <!-- Refined Gateway Emblem with Subtle Light Sweep (Shield icon enlarged ~25%) -->
         <div class="relative text-center mb-7 animate-fade-up-1">
             <div class="w-20 h-20 mx-auto bg-gradient-to-tr from-emerald-700 via-emerald-600 to-teal-500 text-white rounded-[1.5rem] flex items-center justify-center mb-5 shadow-xl shadow-emerald-600/30 animate-float border border-white/20 relative overflow-hidden group/emblem">
                 <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/emblem:translate-x-full transition-transform duration-1000"></div>
@@ -602,6 +601,12 @@ body {
                         class="nav-button w-full flex items-center rounded-xl px-3.5 py-3 text-sm font-semibold">
                     <i class="fa-solid fa-user-shield w-6 text-center mr-3 text-amber-500"></i>
                     <span class="sidebar-text">Admin Panel</span>
+                </button>
+
+                <button onclick="requestAuditSection()"
+                        class="nav-button w-full flex items-center rounded-xl px-3.5 py-3 text-sm font-semibold">
+                    <i class="fa-solid fa-clipboard-list w-6 text-center mr-3 text-purple-400"></i>
+                    <span class="sidebar-text">Audit Trail Dashboard</span>
                 </button>
 
                 <button onclick="toggleDarkMode()"
@@ -889,7 +894,7 @@ body {
                     <span>•</span>
                     <span>Phone: <strong id="currentTeacherPhone" class="text-slate-800 dark:text-slate-200">--</strong></span>
                     <span>•</span>
-                    <span>Class: <strong id="currentTeacherClass" class="text-slate-800 dark:text-slate-200">--</strong></span>
+                    <span>Class/Subject Assigned: <strong id="currentTeacherClass" class="text-slate-800 dark:text-slate-200">--</strong></span>
                 </p>
             </div>
         </div>
@@ -975,7 +980,7 @@ body {
                         <th class="px-6 py-4 text-left">Name</th>
                         <th class="px-6 py-4 text-left">Phone</th>
                         <th class="px-6 py-4 text-left">Rank / Grade</th>
-                        <th class="px-6 py-4 text-left">Class</th>
+                        <th class="px-6 py-4 text-left">Class/Subject Assigned</th>
                         <th class="px-6 py-4 text-left">Total Paid</th>
                         <th class="px-6 py-4 text-left">Action</th>
                     </tr>
@@ -1331,8 +1336,8 @@ body {
                     <select id="newStaffGrade" class="form-input" required></select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">Class Assigned</label>
-                    <input id="newStaffClass" class="form-input" placeholder="e.g. BS3" required>
+                    <label class="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">Class/Subject Assigned</label>
+                    <input id="newStaffClass" class="form-input" placeholder="e.g. BS3 / ICT" required>
                 </div>
                 <div class="flex items-end">
                     <button type="submit" class="w-full bg-sdaNavy-500 hover:bg-sdaNavy-700 text-white text-xs font-extrabold py-3.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5">
@@ -1417,7 +1422,7 @@ body {
                             <th class="px-5 py-4 text-left">Name</th>
                             <th class="px-5 py-4 text-left">Phone</th>
                             <th class="px-5 py-4 text-left">Rank / Grade</th>
-                            <th class="px-5 py-4 text-left">Class</th>
+                            <th class="px-5 py-4 text-left">Class/Subject Assigned</th>
                             <th class="px-5 py-4 text-left">Total Paid</th>
                             <th class="px-5 py-4 text-left">Actions</th>
                         </tr>
@@ -1436,7 +1441,7 @@ body {
                         Reset Welfare Fund Data
                     </h3>
                     <p class="text-xs text-rose-600 dark:text-rose-300 mt-1 max-w-2xl font-medium leading-relaxed">
-                        This will permanently clear all registered members, contribution records, welfare payouts and transaction history from local storage.
+                        This will permanently clear all registered members, contribution records, and welfare payouts. Your audit trail history will be preserved.
                     </p>
                 </div>
                 <button onclick="confirmResetAllData()"
@@ -1444,6 +1449,103 @@ body {
                     <i class="fa-solid fa-trash-can"></i> Reset All Data
                 </button>
             </div>
+        </div>
+    </div>
+</section>
+
+<!-- =========================================================
+     AUDIT TRAIL DASHBOARD (NEW)
+========================================================= -->
+<section id="section-audit" class="page-section">
+    <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h2 class="text-2xl font-black text-slate-900 dark:text-white">Audit Trail Dashboard</h2>
+            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">Comprehensive chronological security and administrative event records.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="downloadAuditTrailReport()" class="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-extrabold shadow-lg shadow-purple-600/20 transition-all flex items-center gap-2">
+                <i class="fa-solid fa-download"></i> Export Audit Log (CSV)
+            </button>
+        </div>
+    </div>
+
+    <!-- Audit Stat Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+        <div class="stat-card glass-card rounded-2xl p-6 shadow-sm flex items-center border-l-4 border-l-purple-500">
+            <div class="p-4 rounded-2xl bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 mr-4 shadow-inner">
+                <i class="fa-solid fa-clipboard-list text-2xl"></i>
+            </div>
+            <div>
+                <p class="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Audit Events</p>
+                <h3 id="statTotalAuditEvents" class="text-2xl font-black mt-1 text-slate-900 dark:text-white">0</h3>
+            </div>
+        </div>
+        <div class="stat-card glass-card rounded-2xl p-6 shadow-sm flex items-center border-l-4 border-l-emerald-500">
+            <div class="p-4 rounded-2xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 mr-4 shadow-inner">
+                <i class="fa-solid fa-circle-check text-2xl"></i>
+            </div>
+            <div>
+                <p class="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Successful Actions</p>
+                <h3 id="statSuccessfulAudits" class="text-2xl font-black mt-1 text-slate-900 dark:text-white">0</h3>
+            </div>
+        </div>
+        <div class="stat-card glass-card rounded-2xl p-6 shadow-sm flex items-center border-l-4 border-l-blue-500">
+            <div class="p-4 rounded-2xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 mr-4 shadow-inner">
+                <i class="fa-solid fa-money-bill-transfer text-2xl"></i>
+            </div>
+            <div>
+                <p class="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Financial Operations</p>
+                <h3 id="statFinancialAudits" class="text-2xl font-black mt-1 text-slate-900 dark:text-white">0</h3>
+            </div>
+        </div>
+        <div class="stat-card glass-card rounded-2xl p-6 shadow-sm flex items-center border-l-4 border-l-amber-500">
+            <div class="p-4 rounded-2xl bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 mr-4 shadow-inner">
+                <i class="fa-solid fa-shield-halved text-2xl"></i>
+            </div>
+            <div>
+                <p class="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Security & Auth Events</p>
+                <h3 id="statSecurityAudits" class="text-2xl font-black mt-1 text-slate-900 dark:text-white">0</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Bar -->
+    <div class="glass-card rounded-2xl p-5 shadow-sm mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="w-full md:w-1/3">
+            <input type="text" id="auditSearchInput" oninput="renderAuditTable()" class="form-input text-xs" placeholder="Search actor, action, or reference...">
+        </div>
+        <div class="w-full md:w-auto flex flex-wrap items-center gap-3">
+            <select id="auditFilterCategory" onchange="renderAuditTable()" class="form-input text-xs font-semibold !w-auto">
+                <option value="ALL">All Categories</option>
+                <option value="AUTH">Authentication & Security</option>
+                <option value="MEMBER">Member Management</option>
+                <option value="FINANCE">Financial Transactions</option>
+                <option value="CONFIG">System & Config</option>
+            </select>
+            <button onclick="clearAuditLogs()" class="px-4 py-2.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl transition-all">
+                Clear Logs
+            </button>
+        </div>
+    </div>
+
+    <!-- Audit Table -->
+    <div class="glass-card rounded-2xl shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-xs">
+                <thead class="bg-slate-100/80 dark:bg-slate-800/80 uppercase text-slate-600 dark:text-slate-300 font-extrabold tracking-wider">
+                    <tr>
+                        <th class="px-5 py-4 text-left">Timestamp</th>
+                        <th class="px-5 py-4 text-left">Actor / User</th>
+                        <th class="px-5 py-4 text-left">Category</th>
+                        <th class="px-5 py-4 text-left">Action Performed</th>
+                        <th class="px-5 py-4 text-left">Previous Value</th>
+                        <th class="px-5 py-4 text-left">New Value</th>
+                        <th class="px-5 py-4 text-left">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="auditTableBody" class="divide-y divide-slate-200 dark:divide-slate-800/80 font-medium">
+                </tbody>
+            </table>
         </div>
     </div>
 </section>
@@ -1578,7 +1680,7 @@ body {
                     <select id="editStaffGrade" class="form-input font-semibold" required></select>
                 </div>
                 <div class="sm:col-span-2">
-                    <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Class Assigned</label>
+                    <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Class/Subject Assigned</label>
                     <input id="editStaffClass" class="form-input font-semibold" required>
                 </div>
             </div>
@@ -1609,7 +1711,6 @@ body {
 <div id="pdfRenderArea" class="pdf-render-area">
     <div id="statementPdfTemplate" class="pdf-page" style="font-size: 13px;">
         <div class="relative border-b-2 border-slate-800 pb-4 mb-5 pdf-avoid-break">
-            <!-- Updated Rectangular Passport Frame with Camera Icon & Label -->
             <div id="pdfPassportContainer" class="absolute right-0 top-0 w-24 h-32 border border-slate-300 rounded-lg bg-slate-50/80 flex flex-col items-center justify-center overflow-hidden shadow-sm">
                 <div id="pdfPassportPlaceholderContent" class="flex flex-col items-center justify-center w-full h-full text-slate-400">
                     <i class="fa-solid fa-camera text-base mb-1 text-slate-400"></i>
@@ -1643,7 +1744,7 @@ body {
                 <p><strong>Staff ID:</strong> <span id="pdfStaffId"></span></p>
                 <p><strong>Phone:</strong> <span id="pdfPhone"></span></p>
                 <p><strong>Rank / Grade:</strong> <span id="pdfGrade"></span></p>
-                <p><strong>Class:</strong> <span id="pdfClass"></span></p>
+                <p><strong>Class/Subject Assigned:</strong> <span id="pdfClass"></span></p>
             </div>
         </div>
 
@@ -1687,7 +1788,6 @@ body {
             <tbody id="pdfWithdrawalTableBody"></tbody>
         </table>
 
-        <!-- Signatures and QR Code section -->
         <div class="grid grid-cols-3 gap-6 items-center mt-10 pdf-avoid-break">
             <div class="text-center">
                 <div class="border-b border-dashed border-slate-500 h-8"></div>
@@ -1695,7 +1795,6 @@ body {
                 <p class="text-[10px] text-slate-500">Signature & Date</p>
             </div>
             
-            <!-- QR Code container placed centrally -->
             <div class="flex flex-col items-center justify-center">
                 <div id="pdfQrCodeContainer" class="p-1.5 bg-white border border-slate-300 rounded shadow-sm inline-block"></div>
                 <p class="text-[9px] font-bold text-slate-500 mt-1 uppercase tracking-wider">Scan to Verify</p>
@@ -1982,11 +2081,11 @@ function performInactivityLogout() {
     const warningModal = document.getElementById('inactivityWarningModal');
     if (warningModal) warningModal.classList.add('hidden');
 
+    logAdminAction('AUTH', 'SESSION_TIMEOUT', 'Automatic session logout after 10 minutes of inactivity', 'Active', 'Logged Out', 'FAILURE');
     logoutAdmin();
     showToast('Your session has expired due to inactivity. Please sign in again.', 'error');
 }
 
-// Attach activity listeners to reset timer for both users and admins
 ['click', 'mousemove', 'keydown', 'scroll', 'touchstart'].forEach(evt => {
     document.addEventListener(evt, () => {
         if (adminLoggedIn || loggedInTeacherId) {
@@ -2033,7 +2132,6 @@ function loadHistoricalContributions() {
     if (saved !== null) {
         return Number(saved) || 0;
     }
-    // Default initial historical baseline from initial teachers
     return 300;
 }
 
@@ -2041,22 +2139,30 @@ function saveHistoricalContributions() {
     localStorage.setItem(HISTORICAL_CONTRIB_KEY, String(historicalTotalContributions));
 }
 
-function logAdminAction(actionDescription, targetTeacherId = null) {
-    const adminName = currentAdminUser ? currentAdminUser.name : 'Administrator';
+function logAdminAction(category, actionDescription, details = '', prevVal = '-', newVal = '-', status = 'SUCCESS', targetTeacherId = null) {
+    const adminName = currentAdminUser ? currentAdminUser.name : (loggedInTeacherId ? 'Teacher Member' : 'System / Guest');
     const now = new Date();
-    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' - ' + now.toLocaleDateString();
+    
     const logEntry = {
+        id: 'AUD-' + Math.floor(100000 + Math.random() * 900000),
         name: adminName,
+        category: category, // AUTH, MEMBER, FINANCE, CONFIG
         action: actionDescription,
+        details: details,
+        previousValue: prevVal,
+        newValue: newVal,
+        status: status, // SUCCESS, FAILURE
         time: timeStr,
         timestamp: Date.now(),
         targetTeacherId: targetTeacherId ? String(targetTeacherId) : null
     };
     adminLogs.unshift(logEntry);
-    if (adminLogs.length > 30) adminLogs.pop();
+    if (adminLogs.length > 200) adminLogs.pop();
     saveAdminLogsList();
     renderLiveTicker();
     renderMemberLiveTicker();
+    renderAuditDashboardStats();
 }
 
 function getCurrentAcademicYear() {
@@ -2078,9 +2184,9 @@ function loadData() {
         if (!saved) {
             return {
                 teachers: [
-                    { id: 'STF001', name: 'Collins Adarkwa Baiden', phone: '0240000001', rank: 'Assistant Director II', className: 'BS6', passport: '', payments: [{ date: '2026-09-01', amount: 100, reference: 'PAY-001' }], payouts: [] },
-                    { id: 'STF002', name: 'Edwardina Appiah Mensah', phone: '0240000002', rank: 'ADII', className: 'BS5', passport: '', payments: [{ date: '2026-09-01', amount: 100, reference: 'PAY-002' }], payouts: [] },
-                    { id: 'STF003', name: 'Madam Cassandra Yeboah', phone: '0240000003', rank: 'ADI', className: 'BS4', passport: '', payments: [{ date: '2026-09-01', amount: 100, reference: 'PAY-003' }], payouts: [] }
+                    { id: 'STF001', name: 'Collins Adarkwa Baiden', phone: '0240000001', rank: 'Assistant Director II', className: 'BS6 / ICT', passport: '', payments: [{ date: '2026-09-01', amount: 100, reference: 'PAY-001' }], payouts: [] },
+                    { id: 'STF002', name: 'Edwardina Appiah Mensah', phone: '0240000002', rank: 'ADII', className: 'BS5 / Mathematics', passport: '', payments: [{ date: '2026-09-01', amount: 100, reference: 'PAY-002' }], payouts: [] },
+                    { id: 'STF003', name: 'Madam Cassandra Yeboah', phone: '0240000003', rank: 'ADI', className: 'BS4 / English', passport: '', payments: [{ date: '2026-09-01', amount: 100, reference: 'PAY-003' }], payouts: [] }
                 ]
             };
         }
@@ -2092,6 +2198,7 @@ function loadData() {
             if (!Array.isArray(teacher.payments)) teacher.payments = [];
             if (!Array.isArray(teacher.payouts)) teacher.payouts = [];
             if (teacher.passport === undefined) teacher.passport = '';
+            if (teacher.className === undefined) teacher.className = 'General';
         });
         return parsed;
     } catch (error) {
@@ -2309,6 +2416,8 @@ function renderAll() {
     renderHeaderPassport();
     renderHeaderGreeting();
     renderBroadcastInput();
+    renderAuditDashboardStats();
+    renderAuditTable();
 }
 
 function renderBroadcastInput() {
@@ -2324,24 +2433,26 @@ function handleSaveBroadcastMessage(event) {
 
     const input = document.getElementById('adminBroadcastInput');
     const message = input.value.trim();
+    const oldMsg = currentBroadcastMessage;
 
     currentBroadcastMessage = message;
     localStorage.setItem(BROADCAST_KEY, currentBroadcastMessage);
 
     renderMemberLiveTicker();
-    logAdminAction(`Published broadcast announcement`);
+    logAdminAction('CONFIG', 'PUBLISH_BROADCAST', 'Published bulletin ticker message', oldMsg || 'None', message);
     showToast('Broadcast message published successfully!', 'success');
 }
 
 function handleClearBroadcast() {
     if (!requireAdmin()) return;
+    const oldMsg = currentBroadcastMessage;
     currentBroadcastMessage = '';
     localStorage.removeItem(BROADCAST_KEY);
     const input = document.getElementById('adminBroadcastInput');
     if (input) input.value = '';
 
     renderMemberLiveTicker();
-    logAdminAction(`Cleared broadcast announcement`);
+    logAdminAction('CONFIG', 'CLEAR_BROADCAST', 'Cleared bulletin ticker message', oldMsg || 'Active', 'None');
     showToast('Broadcast message cleared.', 'success');
 }
 
@@ -2405,7 +2516,7 @@ function handleHeaderPassportUpload(event) {
         renderHeaderPassport();
         renderDashboard();
         showToast('Passport picture uploaded successfully!', 'success');
-        logAdminAction(`Updated passport picture for ${teacher.name}`, teacher.id);
+        logAdminAction('MEMBER', 'UPLOAD_PASSPORT', `Uploaded passport photo for member ${teacher.name}`, 'No Photo', 'Updated Photo', 'SUCCESS', teacher.id);
     };
     reader.readAsDataURL(file);
 }
@@ -2446,7 +2557,7 @@ function renderDashboard() {
     document.getElementById('currentTeacherGrade').textContent = teacher.rank || '--';
     document.getElementById('currentTeacherStaffId').textContent = teacher.id || '--';
     document.getElementById('currentTeacherPhone').textContent = teacher.phone || '--';
-    document.getElementById('currentTeacherClass').textContent = teacher.className || '--';
+    document.getElementById('currentTeacherClass').textContent = teacher.className || 'General';
 
     const avatarImg = document.getElementById('teacherAvatarImg');
     const avatarInitials = document.getElementById('teacherAvatarInitials');
@@ -2546,7 +2657,7 @@ function renderTeachersSection() {
                 <td class="px-6 py-4 font-black text-slate-900 dark:text-white">${escapeHtml(teacher.name)}</td>
                 <td class="px-6 py-4">${escapeHtml(teacher.phone)}</td>
                 <td class="px-6 py-4"><span class="bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 px-2.5 py-1 rounded-lg text-xs font-bold border border-blue-200 dark:border-blue-900">${escapeHtml(teacher.rank)}</span></td>
-                <td class="px-6 py-4 font-bold text-amber-600 dark:text-amber-400">${escapeHtml(teacher.className)}</td>
+                <td class="px-6 py-4 font-bold text-amber-600 dark:text-amber-400">${escapeHtml(teacher.className || 'General')}</td>
                 <td class="px-6 py-4 font-black text-emerald-600 dark:text-emerald-400">${money(total)}</td>
                 <td class="px-6 py-4">
                     <button onclick="openEditMemberModal('${escapeAttr(teacher.id)}')" class="px-3.5 py-2 rounded-xl bg-blue-100 hover:bg-blue-200 dark:bg-blue-950 dark:hover:bg-blue-900 text-blue-700 dark:text-blue-300 font-extrabold text-xs transition-all flex items-center gap-1.5 shadow-sm">
@@ -2648,7 +2759,7 @@ function renderAdminRoster() {
                 <td class="px-5 py-4 font-black text-slate-900 dark:text-white">${escapeHtml(teacher.name)}</td>
                 <td class="px-5 py-4">${escapeHtml(teacher.phone)}</td>
                 <td class="px-5 py-4"><span class="bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-lg text-[11px] font-bold border border-blue-200 dark:border-blue-900">${escapeHtml(teacher.rank)}</span></td>
-                <td class="px-5 py-4 font-bold text-amber-600 dark:text-amber-400">${escapeHtml(teacher.className)}</td>
+                <td class="px-5 py-4 font-bold text-amber-600 dark:text-amber-400">${escapeHtml(teacher.className || 'General')}</td>
                 <td class="px-5 py-4 font-black text-emerald-600 dark:text-emerald-400">${money(total)}</td>
                 <td class="px-5 py-4">
                     <div class="flex flex-wrap gap-2">
@@ -2710,7 +2821,7 @@ function renderLiveTicker() {
         singleSetHtml += `
             <span class="inline-flex items-center gap-2 px-6">
                 <i class="fa-solid fa-shield-halved text-amber-400"></i>
-                <span><strong>${escapeHtml(log.name)}</strong> performed action: <span class="text-amber-300 font-bold">${escapeHtml(log.action)}</span> at ${escapeHtml(log.time)}.</span>
+                <span><strong>${escapeHtml(log.name)}</strong> performed: <span class="text-amber-300 font-bold">${escapeHtml(log.action)}</span> at ${escapeHtml(log.time)}.</span>
             </span>
             <span class="text-amber-500">•</span>
         `;
@@ -2771,6 +2882,118 @@ function renderMemberLiveTicker() {
     content.innerHTML = singleSetHtml + singleSetHtml;
 }
 
+function renderAuditDashboardStats() {
+    const totalEvents = adminLogs.length;
+    const successful = adminLogs.filter(l => l.status === 'SUCCESS').length;
+    const financial = adminLogs.filter(l => l.category === 'FINANCE').length;
+    const security = adminLogs.filter(l => l.category === 'AUTH').length;
+
+    const statTotal = document.getElementById('statTotalAuditEvents');
+    const statSucc = document.getElementById('statSuccessfulAudits');
+    const statFin = document.getElementById('statFinancialAudits');
+    const statSec = document.getElementById('statSecurityAudits');
+
+    if (statTotal) statTotal.textContent = totalEvents;
+    if (statSucc) statSucc.textContent = successful;
+    if (statFin) statFin.textContent = financial;
+    if (statSec) statSec.textContent = security;
+}
+
+function renderAuditTable() {
+    const body = document.getElementById('auditTableBody');
+    if (!body) return;
+
+    const query = (document.getElementById('auditSearchInput')?.value || '').toLowerCase();
+    const categoryFilter = document.getElementById('auditFilterCategory')?.value || 'ALL';
+
+    const filtered = adminLogs.filter(log => {
+        const matchesCategory = categoryFilter === 'ALL' || log.category === categoryFilter;
+        const matchesQuery = !query || 
+            String(log.name).toLowerCase().includes(query) ||
+            String(log.action).toLowerCase().includes(query) ||
+            String(log.details).toLowerCase().includes(query) ||
+            String(log.id).toLowerCase().includes(query);
+        return matchesCategory && matchesQuery;
+    });
+
+    if (!filtered.length) {
+        body.innerHTML = emptyRow(7, 'No audit records match your search.');
+        return;
+    }
+
+    body.innerHTML = filtered.map(log => {
+        const badgeColor = log.status === 'SUCCESS' 
+            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-200' 
+            : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border-rose-200';
+        
+        const catBadge = log.category === 'AUTH' ? 'bg-amber-100 text-amber-800' :
+                         log.category === 'FINANCE' ? 'bg-blue-100 text-blue-800' :
+                         log.category === 'MEMBER' ? 'bg-purple-100 text-purple-800' : 'bg-slate-100 text-slate-800';
+
+        return `
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
+                <td class="px-5 py-4 font-mono text-[11px] text-slate-500">${escapeHtml(log.time)}</td>
+                <td class="px-5 py-4 font-bold text-slate-900 dark:text-white">${escapeHtml(log.name)}</td>
+                <td class="px-5 py-4"><span class="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold ${catBadge}">${escapeHtml(log.category)}</span></td>
+                <td class="px-5 py-4 font-semibold text-slate-700 dark:text-slate-300">
+                    <div>${escapeHtml(log.action)}</div>
+                    <div class="text-[10px] text-slate-400 font-normal">${escapeHtml(log.details || '')}</div>
+                </td>
+                <td class="px-5 py-4 font-mono text-slate-500 text-[11px]">${escapeHtml(log.previousValue || '-')}</td>
+                <td class="px-5 py-4 font-mono text-slate-700 dark:text-slate-200 text-[11px] font-bold">${escapeHtml(log.newValue || '-')}</td>
+                <td class="px-5 py-4">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${badgeColor}">${escapeHtml(log.status)}</span>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function clearAuditLogs() {
+    if (!requireAdmin()) return;
+    const confirmed = confirm('Are you sure you want to clear all audit trail records?');
+    if (!confirmed) return;
+
+    adminLogs = [];
+    saveAdminLogsList();
+    renderAll();
+    showToast('Audit trail logs cleared successfully.', 'success');
+}
+
+function downloadAuditTrailReport() {
+    if (!requireAdmin()) return;
+
+    if (!adminLogs || adminLogs.length === 0) {
+        showToast('No audit logs recorded yet.', 'error');
+        return;
+    }
+
+    let csvContent = 'data:text/csv;charset=utf-8,Event ID,Timestamp,Actor,Category,Action,Details,Previous Value,New Value,Status\n';
+    adminLogs.forEach(log => {
+        const id = `"${log.id || ''}"`;
+        const time = `"${log.time || ''}"`;
+        const actor = `"${(log.name || '').replace(/"/g, '""')}"`;
+        const cat = `"${log.category || ''}"`;
+        const act = `"${(log.action || '').replace(/"/g, '""')}"`;
+        const details = `"${(log.details || '').replace(/"/g, '""')}"`;
+        const prev = `"${(log.previousValue || '').replace(/"/g, '""')}"`;
+        const next = `"${(log.newValue || '').replace(/"/g, '""')}"`;
+        const status = `"${log.status || ''}"`;
+        csvContent += `${id},${time},${actor},${cat},${act},${details},${prev},${next},${status}\n`;
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `Ntonso_SDA_Audit_Trail_Report_${todayISO()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    logAdminAction('CONFIG', 'EXPORT_AUDIT_CSV', 'Downloaded complete system audit trail CSV report', '-', 'Exported CSV');
+    showToast('Audit trail CSV report downloaded successfully.', 'success');
+}
+
 function toggleGatewayPasswordVisibility() {
     const passInput = document.getElementById('gatewayPassword');
     const passIcon = document.getElementById('gatewayPassIcon');
@@ -2802,7 +3025,6 @@ function handlePortalLogin(event) {
     const matched = welfareData.teachers.find(t => {
         const idMatches = String(t.id).toLowerCase() === staffId.toLowerCase();
         if (!idMatches) return false;
-
         if (t.customPassword) {
             return password === t.customPassword;
         } else {
@@ -2829,9 +3051,11 @@ function handlePortalLogin(event) {
             updateAdminInterface();
             renderAll();
             showSection('dashboard', null, true);
+            logAdminAction('AUTH', 'TEACHER_LOGIN', `Teacher portal login for ${matched.name}`, 'Guest', matched.name, 'SUCCESS', matched.id);
             showToast(`Welcome back, ${matched.name}!`, 'success');
         }, 600);
     } else {
+        logAdminAction('AUTH', 'TEACHER_LOGIN_FAIL', `Failed login attempt for Staff ID: ${staffId}`, '-', staffId, 'FAILURE');
         errorEl.textContent = 'Invalid Staff ID or password.';
         errorEl.classList.remove('hidden');
     }
@@ -2864,6 +3088,7 @@ function handlePasswordReset(event) {
     const teacher = welfareData.teachers.find(t => String(t.id).toLowerCase() === staffId.toLowerCase() && String(t.phone).trim() === phone);
 
     if (!teacher) {
+        logAdminAction('AUTH', 'PASSWORD_RESET_FAIL', `Failed password reset for Staff ID: ${staffId}`, '-', staffId, 'FAILURE');
         errorEl.textContent = 'Verification failed: Staff ID or Phone number does not match.';
         errorEl.classList.remove('hidden');
         return;
@@ -2871,6 +3096,7 @@ function handlePasswordReset(event) {
 
     teacher.customPassword = newPassword;
     saveData();
+    logAdminAction('AUTH', 'PASSWORD_RESET', `Password reset successfully for ${teacher.name}`, 'Old Password', 'New Password', 'SUCCESS', teacher.id);
 
     showToast('Password updated successfully! Please sign in.', 'success');
     showLoginView();
@@ -2908,7 +3134,7 @@ function handleRegisterAdmin(event) {
     document.getElementById('newAdminSecQuestion').value = '';
     document.getElementById('newAdminSecAnswer').value = '';
     
-    logAdminAction(`Registered new administrator account: ${name} (${username})`);
+    logAdminAction('CONFIG', 'REGISTER_ADMIN', `Registered new administrator account: ${name} (${username})`, 'None', username, 'SUCCESS');
     showToast(`Administrator ${name} registered successfully.`, 'success');
 }
 
@@ -2936,7 +3162,7 @@ function handleChangeAdminPasscode(event) {
     document.getElementById('currentAdminPasscode').value = '';
     document.getElementById('newAdminPasscode').value = '';
     
-    logAdminAction(`Updated password for admin account: ${adminAcc.name}`);
+    logAdminAction('AUTH', 'CHANGE_ADMIN_PASSWORD', `Updated password for admin account: ${adminAcc.name}`, 'Old Pass', 'New Pass', 'SUCCESS');
     showToast(`Password for ${adminAcc.name} updated successfully.`, 'success');
 }
 
@@ -2953,7 +3179,7 @@ function handleRemoveAdmin(username) {
     adminUsers = adminUsers.filter(a => a.username !== username);
     saveAdminUsersList();
     renderAll();
-    logAdminAction(`Removed admin account: ${username}`);
+    logAdminAction('CONFIG', 'REMOVE_ADMIN', `Removed admin account: ${username}`, username, 'Deleted', 'SUCCESS');
     showToast('Admin account removed successfully.', 'success');
 }
 
@@ -2987,7 +3213,7 @@ function handleAddNewStaff(event) {
     initializeDates();
     renderAll();
     
-    logAdminAction(`Registered new staff member: ${name} (${id})`, id);
+    logAdminAction('MEMBER', 'REGISTER_MEMBER', `Registered new staff member: ${name} (${id}) with Class/Subject: ${className}`, 'None', `${name} (${className})`, 'SUCCESS', id);
     showToast('New staff member registered successfully.', 'success');
 }
 
@@ -3025,7 +3251,7 @@ function handleRecordPayment(event) {
     document.getElementById('adminPaymentDate').value = todayISO();
     renderAll();
     
-    logAdminAction(`Recorded contribution of ${money(amount)}`, teacher.id);
+    logAdminAction('FINANCE', 'RECORD_CONTRIBUTION', `Recorded dues contribution of ${money(amount)} for ${teacher.name}`, 'GHS 0.00', money(amount), 'SUCCESS', teacher.id);
     showToast('Contribution recorded successfully.', 'success');
 }
 
@@ -3064,7 +3290,7 @@ function handleRecordWithdrawal(event) {
     document.getElementById('adminWithdrawalDate').value = todayISO();
     renderAll();
     
-    logAdminAction(`Processed welfare payout of ${money(amount)} (${reason})`, teacher.id);
+    logAdminAction('FINANCE', 'WELFARE_PAYOUT', `Processed welfare payout of ${money(amount)} for ${teacher.name} (${reason})`, 'GHS 0.00', money(amount), 'SUCCESS', teacher.id);
     showToast('Welfare payout recorded successfully.', 'success');
 }
 
@@ -3079,7 +3305,7 @@ function openEditMemberModal(id) {
     document.getElementById('editStaffName').value = teacher.name;
     document.getElementById('editStaffPhone').value = teacher.phone;
     document.getElementById('editStaffGrade').value = teacher.rank;
-    document.getElementById('editStaffClass').value = teacher.className;
+    document.getElementById('editStaffClass').value = teacher.className || '';
 
     const modal = document.getElementById('editMemberModal');
     modal.classList.remove('hidden');
@@ -3101,6 +3327,9 @@ function saveEditedMember(event) {
     const teacher = getTeacherById(editingMemberId);
     if (!teacher) return;
 
+    const oldName = teacher.name;
+    const oldClass = teacher.className;
+
     const newId = document.getElementById('editStaffId').value.trim();
     const duplicate = welfareData.teachers.some(member => String(member.id).toLowerCase() === newId.toLowerCase() && String(member.id) !== String(editingMemberId));
 
@@ -3121,7 +3350,7 @@ function saveEditedMember(event) {
     closeEditMemberModal();
     renderAll();
     
-    logAdminAction(`Updated profile details for member`, teacher.id);
+    logAdminAction('MEMBER', 'UPDATE_MEMBER', `Updated profile for ${teacher.name}`, `Name: ${oldName}, Class: ${oldClass}`, `Name: ${teacher.name}, Class: ${teacher.className}`, 'SUCCESS', teacher.id);
     showToast('Member details updated successfully.', 'success');
 }
 
@@ -3133,7 +3362,6 @@ function handleRemoveStaff(id) {
     const confirmed = confirm(`Remove ${teacher.name} and all of this member's contribution/payout records?`);
     if (!confirmed) return;
 
-    // Preserve past contributions into historical total so Net Fund balance doesn't drop
     const memberTotalContrib = teacher.payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
     historicalTotalContributions += memberTotalContrib;
     saveHistoricalContributions();
@@ -3148,7 +3376,7 @@ function handleRemoveStaff(id) {
     saveSessionState();
     renderAll();
     
-    logAdminAction(`Removed staff member: ${removedName}`, id);
+    logAdminAction('MEMBER', 'DELETE_MEMBER', `Removed staff member: ${removedName}`, removedName, 'Deleted', 'SUCCESS', id);
     showToast('Member removed successfully (contributions preserved in Total Fund Balance).', 'success');
 }
 
@@ -3163,6 +3391,7 @@ function saveMonthlyDues() {
         return;
     }
 
+    const oldDues = standardMonthlyDues;
     standardMonthlyDues = value;
     localStorage.setItem(DUES_KEY, standardMonthlyDues);
 
@@ -3171,7 +3400,7 @@ function saveMonthlyDues() {
 
     renderAll();
     
-    logAdminAction(`Updated standard monthly dues to ${money(standardMonthlyDues)}`);
+    logAdminAction('CONFIG', 'UPDATE_DUES', 'Updated standard monthly dues amount', money(oldDues), money(standardMonthlyDues), 'SUCCESS');
     showToast('Standard monthly dues updated successfully.', 'success');
 }
 
@@ -3246,11 +3475,13 @@ function handleAdminPasswordRecovery(event) {
     if (!adminAcc || !adminAcc.secAnswer || adminAcc.secAnswer !== answer) {
         err.textContent = 'Incorrect security answer or username.';
         err.classList.remove('hidden');
+        logAdminAction('AUTH', 'ADMIN_RECOVERY_FAIL', `Failed password recovery for admin: ${uname}`, '-', uname, 'FAILURE');
         return;
     }
 
     adminAcc.password = newPass;
     saveAdminUsersList();
+    logAdminAction('AUTH', 'ADMIN_RECOVERY', `Recovered and reset password for admin: ${adminAcc.name}`, 'Old Pass', 'New Pass', 'SUCCESS');
     showToast('Admin password reset successfully! Please log in.', 'success');
     showAdminLoginView();
     document.getElementById('adminUsernameInput').value = adminAcc.username;
@@ -3273,9 +3504,10 @@ function handleAdminLogin(event) {
         renderAll();
         showSection('admin', null, true);
         
-        logAdminAction(`Logged in to admin panel`);
+        logAdminAction('AUTH', 'ADMIN_LOGIN', `Logged in to admin panel as ${matched.name}`, 'Guest', matched.name, 'SUCCESS');
         showToast(`Admin access granted (${matched.name}).`, 'success');
     } else {
+        logAdminAction('AUTH', 'ADMIN_LOGIN_FAIL', `Failed admin login attempt for username: ${usernameInput}`, '-', usernameInput, 'FAILURE');
         document.getElementById('adminAuthError').classList.remove('hidden');
     }
 }
@@ -3392,9 +3624,20 @@ function requestAdminSection() {
     showSection('admin', null, true);
 }
 
+function requestAuditSection() {
+    if (!adminLoggedIn) {
+        openAdminModal();
+        showToast('Administrator login required to access Audit Trail Dashboard.', 'error');
+        return;
+    }
+    showSection('audit', null, true);
+}
+
 function logoutAdmin() {
     if (adminLoggedIn) {
-        logAdminAction(`Logged out of admin session`);
+        logAdminAction('AUTH', 'ADMIN_LOGOUT', 'Logged out of administrator session', 'Admin', 'Logged Out', 'SUCCESS');
+    } else if (loggedInTeacherId) {
+        logAdminAction('AUTH', 'TEACHER_LOGOUT', 'Logged out of teacher session', 'Teacher', 'Logged Out', 'SUCCESS');
     }
     adminLoggedIn = false;
     currentAdminUser = null;
@@ -3419,16 +3662,17 @@ function logoutAdmin() {
 function confirmResetAllData() {
     if (!requireAdmin()) return;
 
-    const first = confirm('WARNING: This will remove ALL registered members, contributions and welfare payout history from this browser. Continue?');
+    const first = confirm('WARNING: This will remove ALL registered members, contributions and welfare payout history from this browser. Your audit trail will be completely preserved. Continue?');
     if (!first) return;
 
-    const second = prompt('Type RESET ALL to confirm permanent deletion of all welfare fund records.');
+    const second = prompt('Type RESET ALL to confirm permanent deletion of welfare fund records.');
     if (second !== 'RESET ALL') {
         showToast('Reset cancelled. The confirmation text did not match.', 'error');
         return;
     }
 
-    logAdminAction(`Reset all welfare fund data and records`);
+    logAdminAction('CONFIG', 'RESET_ALL_DATA', 'Reset all welfare records (audit trail preserved)', 'Active Records', 'Cleared', 'SUCCESS');
+    
     welfareData = { teachers: [] };
     historicalTotalContributions = 0;
     saveHistoricalContributions();
@@ -3445,7 +3689,7 @@ function confirmResetAllData() {
     const paymentAmount = document.getElementById('adminPaymentAmount');
     if (paymentAmount) paymentAmount.value = standardMonthlyDues;
 
-    showToast('All members and welfare fund history have been cleared.', 'success');
+    showToast('All members and fund history cleared. Audit trail preserved.', 'success');
 }
 
 function getTotalContributions() {
@@ -3481,7 +3725,7 @@ async function downloadPDF() {
     document.getElementById('pdfStaffId').textContent = teacher.id;
     document.getElementById('pdfPhone').textContent = teacher.phone;
     document.getElementById('pdfGrade').textContent = teacher.rank;
-    document.getElementById('pdfClass').textContent = teacher.className;
+    document.getElementById('pdfClass').textContent = teacher.className || 'General';
 
     const pdfImg = document.getElementById('pdfPassportImg');
     const pdfPlaceholderContent = document.getElementById('pdfPassportPlaceholderContent');
@@ -3495,7 +3739,6 @@ async function downloadPDF() {
         pdfPlaceholderContent.classList.remove('hidden');
     }
 
-    // Generate QR Code dynamically for statement verification
     const qrContainer = document.getElementById('pdfQrCodeContainer');
     qrContainer.innerHTML = '';
     if (typeof QRCode !== 'undefined') {
@@ -3559,6 +3802,7 @@ async function downloadPDF() {
         orientation: 'portrait'
     });
 
+    logAdminAction('CONFIG', 'EXPORT_PDF_STATEMENT', `Exported A4 statement PDF for ${teacher.name}`, '-', 'PDF Generated', 'SUCCESS', teacher.id);
     showToast('Member statement downloaded successfully.', 'success');
 }
 
@@ -3591,7 +3835,6 @@ async function downloadMonthlySummaryPDF() {
     document.getElementById('monthlyReportMonthLabel').textContent = monthFormattedName;
     document.getElementById('monthlyReportDate').textContent = formatDate(todayISO());
 
-    // Generate QR Code dynamically for monthly summary report
     const monthlyQrContainer = document.getElementById('monthlySummaryQrCodeContainer');
     monthlyQrContainer.innerHTML = '';
     if (typeof QRCode !== 'undefined') {
@@ -3672,7 +3915,7 @@ async function downloadMonthlySummaryPDF() {
         orientation: 'landscape'
     });
 
-    logAdminAction(`Downloaded monthly summary report for ${monthFormattedName}`);
+    logAdminAction('CONFIG', 'EXPORT_MONTHLY_PDF', `Downloaded monthly summary report for ${monthFormattedName}`, '-', 'PDF Generated', 'SUCCESS');
     showToast(`Monthly summary for ${monthFormattedName} downloaded successfully.`, 'success');
 }
 
@@ -3707,7 +3950,6 @@ async function downloadFundSummaryPDF() {
     document.getElementById('summaryDetailMonthlyDues').textContent = money(standardMonthlyDues);
     document.getElementById('summaryDetailNet').textContent = money(netFund);
 
-    // Generate QR Code dynamically for complete fund summary report
     const summaryQrContainer = document.getElementById('completeSummaryQrCodeContainer');
     summaryQrContainer.innerHTML = '';
     if (typeof QRCode !== 'undefined') {
@@ -3771,7 +4013,7 @@ async function downloadFundSummaryPDF() {
         orientation: 'landscape'
     });
 
-    logAdminAction(`Downloaded complete executive fund summary report`);
+    logAdminAction('CONFIG', 'EXPORT_COMPLETE_SUMMARY', 'Downloaded complete fund summary PDF report', '-', 'PDF Generated', 'SUCCESS');
     showToast('Complete fund summary downloaded successfully.', 'success');
 }
 
@@ -3835,9 +4077,9 @@ async function renderPDFElement(element, options = {}) {
 }
 
 function showSection(section, button = null, bypassAdmin = false) {
-    if ((section === 'admin' || section === 'teachers') && !adminLoggedIn && !bypassAdmin) {
+    if ((section === 'admin' || section === 'teachers' || section === 'audit') && !adminLoggedIn && !bypassAdmin) {
         openAdminModal();
-        showToast('Administrator login required to access Teachers & Members roster.', 'error');
+        showToast('Administrator login required to access restricted sections.', 'error');
         return;
     }
 
@@ -3872,7 +4114,8 @@ function showSection(section, button = null, bypassAdmin = false) {
         payments: 'Contributions',
         welfare: 'Welfare & Payouts',
         statements: 'Statements & Reports',
-        admin: 'Administration'
+        admin: 'Administration',
+        audit: 'Audit Trail Dashboard'
     };
 
     document.getElementById('pageTitle').textContent = titles[section] || 'Dashboard';
