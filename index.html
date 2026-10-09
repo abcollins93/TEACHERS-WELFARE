@@ -2019,6 +2019,10 @@ const DEFAULT_ADMINS = [
 ];
 
 const RANK_OPTIONS = [
+    'Headmaster',
+    'Assistant Headmaster',
+    'Headmistress',
+    'Assistant Headmistress',
     'Member',
     'Pupil Teacher',
     'Superintendent II',
@@ -2048,15 +2052,17 @@ let adminLogs = loadAdminLogs();
 let standardMonthlyDues = Number(localStorage.getItem(DUES_KEY) || 100);
 let currentBroadcastMessage = localStorage.getItem(BROADCAST_KEY) || '';
 
-// Inactivity Timeout Variables (10 minutes total, warning at 9 minutes)
+// Inactivity Timeout Variables (7 minutes total, warning at 6 minutes)
 let inactivityTimer = null;
 let warningTimer = null;
-const INACTIVITY_LIMIT_MS = 10 * 60 * 1000;
-const WARNING_LIMIT_MS = 9 * 60 * 1000;
+const INACTIVITY_LIMIT_MS = 7 * 60 * 1000;
+const WARNING_LIMIT_MS = 6 * 60 * 1000;
+let countdownInterval = null;
 
 function setupInactivityTimers() {
     clearTimeout(inactivityTimer);
     clearTimeout(warningTimer);
+    clearInterval(countdownInterval);
 
     if (!adminLoggedIn && !loggedInTeacherId) return;
 
@@ -2072,21 +2078,36 @@ function setupInactivityTimers() {
 function resetInactivityTimer() {
     const warningModal = document.getElementById('inactivityWarningModal');
     if (warningModal) warningModal.classList.add('hidden');
+    clearInterval(countdownInterval);
     setupInactivityTimers();
 }
 
 function showInactivityWarningModal() {
     const warningModal = document.getElementById('inactivityWarningModal');
     if (warningModal) warningModal.classList.remove('hidden');
+
+    let secondsLeft = 60;
+    const countdownEl = document.getElementById('inactivityCountdown');
+    if (countdownEl) countdownEl.textContent = `${secondsLeft} seconds`;
+
+    clearInterval(countdownInterval);
+    countdownInterval = setInterval(() => {
+        secondsLeft--;
+        if (countdownEl) countdownEl.textContent = `${secondsLeft} seconds`;
+        if (secondsLeft <= 0) {
+            clearInterval(countdownInterval);
+        }
+    }, 1000);
 }
 
 function performInactivityLogout() {
     const warningModal = document.getElementById('inactivityWarningModal');
     if (warningModal) warningModal.classList.add('hidden');
+    clearInterval(countdownInterval);
 
-    logAdminAction('AUTH', 'SESSION_TIMEOUT', 'Automatic session logout after 10 minutes of inactivity', 'Active', 'Logged Out', 'FAILURE');
+    logAdminAction('AUTH', 'SESSION_TIMEOUT', 'Automatic session logout after 7 minutes of inactivity', 'Active', 'Logged Out', 'FAILURE');
     logoutAdmin();
-    showToast('Your session has expired due to inactivity. Please sign in again.', 'error');
+    showToast('Your session has expired due to inactivity. Please log in again.', 'error');
 }
 
 ['click', 'mousemove', 'keydown', 'scroll', 'touchstart'].forEach(evt => {
@@ -2098,6 +2119,27 @@ function performInactivityLogout() {
             }
         }
     }, true);
+});
+
+window.addEventListener('storage', (event) => {
+    if (event.key === SESSION_KEY) {
+        if (!event.newValue) {
+            // Logged out in another tab
+            adminLoggedIn = false;
+            currentAdminUser = null;
+            loggedInTeacherId = null;
+            selectedTeacherId = null;
+            clearTimeout(inactivityTimer);
+            clearTimeout(warningTimer);
+            clearInterval(countdownInterval);
+            const warningModal = document.getElementById('inactivityWarningModal');
+            if (warningModal) warningModal.classList.add('hidden');
+            updateAdminInterface();
+            document.getElementById('loginGatewayModal').classList.remove('hidden');
+            renderAll();
+            showToast('Your session was ended in another tab. Please sign in again.', 'error');
+        }
+    }
 });
 
 function loadAdminUsers() {
@@ -3649,6 +3691,7 @@ function logoutAdmin() {
     localStorage.removeItem(SESSION_KEY);
     clearTimeout(inactivityTimer);
     clearTimeout(warningTimer);
+    clearInterval(countdownInterval);
     
     const warningModal = document.getElementById('inactivityWarningModal');
     if (warningModal) warningModal.classList.add('hidden');
