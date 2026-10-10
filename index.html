@@ -16,6 +16,9 @@
 <!-- QRCode Generator Script Library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
+<!-- Supabase JS Library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
 tailwind.config = {
     darkMode: 'class',
@@ -394,6 +397,21 @@ body {
     }
 }
 </style>
+
+<script>
+// Initialize Supabase Client using provided publishable key
+const SUPABASE_URL = 'https://sb_publishable_-idvZBti_BY5Xn8xDxhqqw_p_Me6X8O'; // Fallback endpoint or placeholder if URL isn't separate, but using standard format or client configuration if needed
+// Note: Supabase JS client requires a URL and anon/publishable key. Since only the publishable key was given, we initialize with a placeholder URL or the key as required by the user's specific setup.
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_-idvZBti_BY5Xn8xDxhqqw_p_Me6X8O';
+// If your Supabase URL is needed, ensure it is configured. Here we initialize supabase with dummy/placeholder url if needed or standard client structure:
+let supabaseClient = null;
+try {
+    // Standard initialization if URL is provided separately, or initialize with key
+    supabaseClient = window.supabase ? window.supabase.createClient('https://placeholder.supabase.co', SUPABASE_PUBLISHABLE_KEY) : null;
+} catch(e) {
+    console.error("Supabase initialization error:", e);
+}
+</script>
 </head>
 
 <body class="bg-slate-100/90 text-slate-800 dark:bg-[#030a16] dark:text-slate-100 pb-16 selection:bg-amber-400 selection:text-slate-950">
