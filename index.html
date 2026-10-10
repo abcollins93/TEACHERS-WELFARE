@@ -399,15 +399,13 @@ body {
 </style>
 
 <script>
-// Initialize Supabase Client using provided publishable key
-const SUPABASE_URL = 'https://sb_publishable_-idvZBti_BY5Xn8xDxhqqw_p_Me6X8O'; // Fallback endpoint or placeholder if URL isn't separate, but using standard format or client configuration if needed
-// Note: Supabase JS client requires a URL and anon/publishable key. Since only the publishable key was given, we initialize with a placeholder URL or the key as required by the user's specific setup.
+// Live Supabase Cloud Configuration (Project ID: jlwdtlhlztbgpogqdabu)
+const SUPABASE_URL = 'https://jlwdtlhlztbgpogqdabu.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_-idvZBti_BY5Xn8xDxhqqw_p_Me6X8O';
-// If your Supabase URL is needed, ensure it is configured. Here we initialize supabase with dummy/placeholder url if needed or standard client structure:
+
 let supabaseClient = null;
 try {
-    // Standard initialization if URL is provided separately, or initialize with key
-    supabaseClient = window.supabase ? window.supabase.createClient('https://placeholder.supabase.co', SUPABASE_PUBLISHABLE_KEY) : null;
+    supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY) : null;
 } catch(e) {
     console.error("Supabase initialization error:", e);
 }
@@ -1012,7 +1010,7 @@ try {
 </section>
 
 <!-- =========================================================
-     PROFILE SECTION (NEW)
+     PROFILE SECTION
 ========================================================= -->
 <section id="section-profile" class="page-section">
     <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -2189,40 +2187,24 @@ try {
 </div>
 
 <script>
-const STORAGE_KEY = 'ntonso_sda_welfare_data_v5';
 const HISTORICAL_CONTRIB_KEY = 'ntonso_sda_historical_contrib_v5';
 const REMOVED_MEMBERS_KEY = 'ntonso_sda_removed_members_v5';
 const DUES_KEY = 'ntonso_sda_standard_dues_v5';
 const THEME_KEY = 'ntonso_sda_theme_v5';
-const ADMIN_USERS_KEY = 'ntonso_sda_admin_users_v5';
-const ADMIN_LOGS_KEY = 'ntonso_sda_admin_logs_v5';
 const BROADCAST_KEY = 'ntonso_sda_broadcast_message_v5';
 const SESSION_KEY = 'ntonso_sda_session_v5';
 
-const DEFAULT_ADMINS = [
+const DEFAULT_ADMINсах = [
     { username: 'admin', name: 'Default Executive Admin', password: '1234', secQuestion: 'What was the name of your first primary school?', secAnswer: 'Prempeh' },
     { username: 'sda2026', name: 'Executive Committee', password: 'sda2026', secQuestion: 'In what town or city was your first posting?', secAnswer: 'Ntonso' }
 ];
 
 const RANK_OPTIONS = [
-    'Headmaster',
-    'Assistant Headmaster',
-    'Headmistress',
-    'Assistant Headmistress',
-    'Member',
-    'Pupil Teacher',
-    'Superintendent II',
-    'Superintendent I',
-    'Senior Superintendent II',
-    'Senior Superintendent I',
-    'Principal Superintendent',
-    'Assistant Director II',
-    'Assistant Director I',
-    'Deputy Director',
-    'Director II',
-    'Director I',
-    'Deputy Director General',
-    'Director General'
+    'Headmaster', 'Assistant Headmaster', 'Headmistress', 'Assistant Headmistress',
+    'Member', 'Pupil Teacher', 'Superintendent II', 'Superintendent I',
+    'Senior Superintendent II', 'Senior Superintendent I', 'Principal Superintendent',
+    'Assistant Director II', 'Assistant Director I', 'Deputy Director',
+    'Director II', 'Director I', 'Deputy Director General', 'Director General'
 ];
 
 let adminLoggedIn = false;
@@ -2231,13 +2213,81 @@ let loggedInTeacherId = null;
 let selectedTeacherId = null;
 let editingMemberId = null;
 
-let welfareData = loadData();
-let historicalTotalContributions = loadHistoricalContributions();
-let removedMembers = loadRemovedMembers();
-let adminUsers = loadAdminUsers();
-let adminLogs = loadAdminLogs();
-let standardMonthlyDues = Number(localStorage.getItem(DUES_KEY) || 100);
-let currentBroadcastMessage = localStorage.getItem(BROADCAST_KEY) || '';
+let welfareData = { teachers: [] };
+let removedMembers = [];
+let adminUsers = [...DEFAULT_ADMINсах];
+let adminLogs = [];
+let standardMonthlyDues = 100;
+let currentBroadcastMessage = '';
+
+// Cloud Data Loader replacing local storage persistence with Supabase
+async function loadCloudData() {
+    if (!supabaseClient) {
+        console.warn("Supabase client not active. Falling back to default states.");
+        return;
+    }
+
+    try {
+        // 1. Fetch Teachers & nested contributions/payouts
+        const { data: teachersData, error: tError } = await supabaseClient
+            .from('teachers')
+            .select(`*, contributions(*), payouts(*)`);
+        
+        if (tError) throw tError;
+
+        welfareData.teachers = (teachersData || []).map(t => ({
+            id: t.id,
+            name: t.name,
+            phone: t.phone,
+            rank: t.rank,
+            className: t.class_name,
+            passport: t.passport || '',
+            customPassword: t.custom_password || '',
+            payments: (t.contributions || []).map(c => ({ date: c.date, amount: Number(c.amount), reference: c.reference })),
+            payouts: (t.payouts || []).map(p => ({ date: p.date, amount: Number(p.amount), reason: p.reason, reference: p.reference }))
+        }));
+
+        // 2. Fetch Admin Users
+        const { data: adminsData } = await supabaseClient.from('admin_users').select('*');
+        if (adminsData && adminsData.length) {
+            adminUsers = adminsData.map(a => ({
+                username: a.username,
+                name: a.name,
+                password: a.password,
+                secQuestion: a.sec_question,
+                secAnswer: a.sec_answer
+            }));
+        }
+
+        // 3. Fetch Settings
+        const { data: settingsData } = await supabaseClient.from('system_settings').select('*');
+        if (settingsData) {
+            settingsData.forEach(s => {
+                if (s.key === 'standard_dues') standardMonthlyDues = Number(s.value);
+                if (s.key === 'broadcast_message') currentBroadcastMessage = s.value;
+            });
+        }
+
+        // 4. Fetch Audit Logs
+        const { data: logsData } = await supabaseClient.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(200);
+        if (logsData) {
+            adminLogs = logsData.map(l => ({
+                id: l.id,
+                name: l.actor_name,
+                category: l.category,
+                action: l.action,
+                details: l.details,
+                previousValue: l.previous_value,
+                newValue: l.new_value,
+                status: l.status,
+                time: l.time_string,
+                targetTeacherId: l.target_teacher_id
+            }));
+        }
+    } catch (err) {
+        console.error("Error loading cloud data from Supabase:", err);
+    }
+}
 
 // Inactivity Timeout Variables (7 minutes total, warning at 6 minutes)
 let inactivityTimer = null;
@@ -2292,7 +2342,7 @@ function performInactivityLogout() {
     if (warningModal) warningModal.classList.add('hidden');
     clearInterval(countdownInterval);
 
-    logAdminAction('AUTH', 'SESSION_TIMEOUT', 'Automatic session logout after 7 minutes of inactivity', 'Active', 'Logged Out', 'FAILURE');
+    logAdminActionAsync('AUTH', 'SESSION_TIMEOUT', 'Automatic session logout after 7 minutes of inactivity', 'Active', 'Logged Out', 'FAILURE');
     logoutAdmin();
     showToast('Your session has expired due to inactivity. Please log in again.', 'error');
 }
@@ -2308,107 +2358,49 @@ function performInactivityLogout() {
     }, true);
 });
 
-window.addEventListener('storage', (event) => {
-    if (event.key === SESSION_KEY) {
-        if (!event.newValue) {
-            adminLoggedIn = false;
-            currentAdminUser = null;
-            loggedInTeacherId = null;
-            selectedTeacherId = null;
-            clearTimeout(inactivityTimer);
-            clearTimeout(warningTimer);
-            clearInterval(countdownInterval);
-            const warningModal = document.getElementById('inactivityWarningModal');
-            if (warningModal) warningModal.classList.add('hidden');
-            updateAdminInterface();
-            document.getElementById('loginGatewayModal').classList.remove('hidden');
-            renderAll();
-            showToast('Your session was ended in another tab. Please sign in again.', 'error');
-        }
-    }
-});
-
-function loadAdminUsers() {
-    try {
-        const saved = localStorage.getItem(ADMIN_USERS_KEY);
-        if (!saved) return [...DEFAULT_ADMINS];
-        const parsed = JSON.parse(saved);
-        return Array.isArray(parsed) && parsed.length ? parsed : [...DEFAULT_ADMINS];
-    } catch {
-        return [...DEFAULT_ADMINS];
-    }
-}
-
-function saveAdminUsersList() {
-    localStorage.setItem(ADMIN_USERS_KEY, JSON.stringify(adminUsers));
-}
-
-function loadAdminLogs() {
-    try {
-        const saved = localStorage.getItem(ADMIN_LOGS_KEY);
-        if (!saved) return [];
-        const parsed = JSON.parse(saved);
-        return Array.isArray(parsed) ? parsed : [];
-    } catch {
-        return [];
-    }
-}
-
-function saveAdminLogsList() {
-    localStorage.setItem(ADMIN_LOGS_KEY, JSON.stringify(adminLogs));
-}
-
-function loadHistoricalContributions() {
-    const saved = localStorage.getItem(HISTORICAL_CONTRIB_KEY);
-    if (saved !== null) {
-        return Number(saved) || 0;
-    }
-    return 300;
-}
-
-function saveHistoricalContributions() {
-    localStorage.setItem(HISTORICAL_CONTRIB_KEY, String(historicalTotalContributions));
-}
-
-function loadRemovedMembers() {
-    try {
-        const saved = localStorage.getItem(REMOVED_MEMBERS_KEY);
-        if (!saved) return [];
-        const parsed = JSON.parse(saved);
-        return Array.isArray(parsed) ? parsed : [];
-    } catch {
-        return [];
-    }
-}
-
-function saveRemovedMembers() {
-    localStorage.setItem(REMOVED_MEMBERS_KEY, JSON.stringify(removedMembers));
-}
-
-function logAdminAction(category, actionDescription, details = '', prevVal = '-', newVal = '-', status = 'SUCCESS', targetTeacherId = null) {
+async function logAdminActionAsync(category, actionDescription, details = '', prevVal = '-', newVal = '-', status = 'SUCCESS', targetTeacherId = null) {
     const adminName = currentAdminUser ? currentAdminUser.name : (loggedInTeacherId ? 'Teacher Member' : 'System / Guest');
     const now = new Date();
     const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' - ' + now.toLocaleDateString();
     
     const logEntry = {
         id: 'AUD-' + Math.floor(100000 + Math.random() * 900000),
-        name: adminName,
+        actor_name: adminName,
         category: category,
         action: actionDescription,
         details: details,
-        previousValue: prevVal,
-        newValue: newVal,
+        previous_value: prevVal,
+        new_value: newVal,
         status: status,
-        time: timeStr,
-        timestamp: Date.now(),
-        targetTeacherId: targetTeacherId ? String(targetTeacherId) : null
+        time_string: timeStr,
+        target_teacher_id: targetTeacherId ? String(targetTeacherId) : null
     };
-    adminLogs.unshift(logEntry);
-    if (adminLogs.length > 200) adminLogs.pop();
-    saveAdminLogsList();
+
+    adminLogs.unshift({
+        id: logEntry.id,
+        name: logEntry.actor_name,
+        category: logEntry.category,
+        action: logEntry.action,
+        details: logEntry.details,
+        previousValue: logEntry.previous_value,
+        newValue: logEntry.new_value,
+        status: logEntry.status,
+        time: logEntry.time_string,
+        targetTeacherId: logEntry.target_teacher_id
+    });
+
+    if (supabaseClient) {
+        await supabaseClient.from('audit_logs').insert(logEntry);
+    }
+
     renderLiveTicker();
     renderMemberLiveTicker();
     renderAuditDashboardStats();
+    renderAuditTable();
+}
+
+function logAdminAction(category, actionDescription, details = '', prevVal = '-', newVal = '-', status = 'SUCCESS', targetTeacherId = null) {
+    logAdminActionAsync(category, actionDescription, details, prevVal, newVal, status, targetTeacherId);
 }
 
 function getCurrentAcademicYear() {
@@ -2424,39 +2416,6 @@ function getCurrentAcademicYear() {
     return `${startYear}/${startYear + 1}`;
 }
 
-function loadData() {
-    try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (!saved) {
-            return {
-                teachers: [
-                    { id: 'STF001', name: 'Collins Adarkwa Baiden', phone: '0240000001', rank: 'Assistant Director II', className: 'BS6 / ICT', passport: '', payments: [{ date: '2026-09-01', amount: 100, reference: 'PAY-001' }], payouts: [] },
-                    { id: 'STF002', name: 'Edwardina Appiah Mensah', phone: '0240000002', rank: 'Assistant Director II', className: 'BS5 / Mathematics', passport: '', payments: [{ date: '2026-09-01', amount: 100, reference: 'PAY-002' }], payouts: [] },
-                    { id: 'STF003', name: 'Madam Cassandra Yeboah', phone: '0240000003', rank: 'Assistant Director I', className: 'BS4 / English', passport: '', payments: [{ date: '2026-09-01', amount: 100, reference: 'PAY-003' }], payouts: [] }
-                ]
-            };
-        }
-        const parsed = JSON.parse(saved);
-        if (!parsed || !Array.isArray(parsed.teachers)) {
-            return { teachers: [] };
-        }
-        parsed.teachers.forEach(teacher => {
-            if (!Array.isArray(teacher.payments)) teacher.payments = [];
-            if (!Array.isArray(teacher.payouts)) teacher.payouts = [];
-            if (teacher.passport === undefined) teacher.passport = '';
-            if (teacher.className === undefined) teacher.className = 'General';
-        });
-        return parsed;
-    } catch (error) {
-        console.error(error);
-        return { teachers: [] };
-    }
-}
-
-function saveData() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(welfareData));
-}
-
 function saveSessionState() {
     const session = {
         adminLoggedIn,
@@ -2467,7 +2426,8 @@ function saveSessionState() {
     localStorage.setItem(SESSION_KEY, JSON.stringify(session));
 }
 
-function restoreSessionState() {
+async function restoreSessionState() {
+    await loadCloudData();
     try {
         const saved = localStorage.getItem(SESSION_KEY);
         if (!saved) {
@@ -2491,11 +2451,11 @@ function restoreSessionState() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     populateRankSelects();
     initializeDates();
     applySavedTheme();
-    restoreSessionState();
+    await restoreSessionState();
     renderAll();
     updateAdminInterface();
 });
@@ -2681,7 +2641,7 @@ function renderBroadcastInput() {
     }
 }
 
-function handleSaveBroadcastMessage(event) {
+async function handleSaveBroadcastMessage(event) {
     event.preventDefault();
     if (!requireAdmin()) return;
 
@@ -2690,18 +2650,22 @@ function handleSaveBroadcastMessage(event) {
     const oldMsg = currentBroadcastMessage;
 
     currentBroadcastMessage = message;
-    localStorage.setItem(BROADCAST_KEY, currentBroadcastMessage);
+    if (supabaseClient) {
+        await supabaseClient.from('system_settings').upsert({ key: 'broadcast_message', value: message });
+    }
 
     renderMemberLiveTicker();
     logAdminAction('CONFIG', 'PUBLISH_BROADCAST', 'Published bulletin ticker message', oldMsg || 'None', message);
     showToast('Broadcast message published successfully!', 'success');
 }
 
-function handleClearBroadcast() {
+async function handleClearBroadcast() {
     if (!requireAdmin()) return;
     const oldMsg = currentBroadcastMessage;
     currentBroadcastMessage = '';
-    localStorage.removeItem(BROADCAST_KEY);
+    if (supabaseClient) {
+        await supabaseClient.from('system_settings').upsert({ key: 'broadcast_message', value: '' });
+    }
     const input = document.getElementById('adminBroadcastInput');
     if (input) input.value = '';
 
@@ -2752,7 +2716,7 @@ function renderHeaderPassport() {
     }
 }
 
-function handleHeaderPassportUpload(event) {
+async function handleHeaderPassportUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
 
@@ -2764,9 +2728,11 @@ function handleHeaderPassportUpload(event) {
     }
 
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = async function(e) {
         teacher.passport = e.target.result;
-        saveData();
+        if (supabaseClient) {
+            await supabaseClient.from('teachers').update({ passport: teacher.passport }).eq('id', teacher.id);
+        }
         renderHeaderPassport();
         renderDashboard();
         renderProfileSection();
@@ -2923,7 +2889,6 @@ function renderMemberPaymentTable(teacher) {
         return;
     }
     body.innerHTML = payments.map((payment, index) => {
-        // Find the original index in teacher.payments for reversal referencing
         const origIndex = teacher.payments.indexOf(payment);
         const reverseBtn = adminLoggedIn ? `
             <button onclick="handleReverseContribution('${escapeAttr(teacher.id)}', ${origIndex})" class="px-2.5 py-1.5 rounded-xl bg-rose-100 hover:bg-rose-200 dark:bg-rose-950 dark:hover:bg-rose-900 text-rose-700 dark:text-rose-300 font-bold text-[11px] transition-all shadow-sm" title="Reverse Contribution Transaction">
@@ -2983,8 +2948,7 @@ function renderUniversalWithdrawalTable() {
     }).join('');
 }
 
-// STRICT TRANSACTION REVERSAL FUNCTIONS
-function handleReverseContribution(teacherId, paymentIndex) {
+async function handleReverseContribution(teacherId, paymentIndex) {
     if (!requireAdmin()) return;
     const teacher = getTeacherById(teacherId);
     if (!teacher || !teacher.payments[paymentIndex]) {
@@ -2994,7 +2958,6 @@ function handleReverseContribution(teacherId, paymentIndex) {
 
     const payment = teacher.payments[paymentIndex];
     
-    // Two-step confirmation and mandatory remark prompt
     const firstConfirm = confirm(`REVERSAL WARNING: You are about to reverse a contribution of ${money(payment.amount)} for member ${teacher.name} (Ref: ${payment.reference || 'N/A'}). Do you wish to proceed?`);
     if (!firstConfirm) return;
 
@@ -3007,16 +2970,19 @@ function handleReverseContribution(teacherId, paymentIndex) {
     const secondConfirm = confirm(`FINAL CONFIRMATION: This will permanently subtract ${money(payment.amount)} from ${teacher.name}'s total and recalculate the fund balance. Proceed?`);
     if (!secondConfirm) return;
 
-    // Perform reversal
     teacher.payments.splice(paymentIndex, 1);
-    saveData();
+    
+    if (supabaseClient) {
+        await supabaseClient.from('contributions').delete().match({ teacher_id: teacher.id, amount: payment.amount, date: payment.date });
+    }
+
     renderAll();
 
     logAdminAction('FINANCE', 'REVERSE_CONTRIBUTION', `Reversed contribution of ${money(payment.amount)} for ${teacher.name}. Reason: ${remark.trim()}`, money(payment.amount), 'GHS 0.00 (Reversed)', 'SUCCESS', teacher.id);
     showToast(`Contribution of ${money(payment.amount)} successfully reversed. Fund balances recalculated.`, 'success');
 }
 
-function handleReversePayout(teacherId, payoutIndex) {
+async function handleReversePayout(teacherId, payoutIndex) {
     if (!requireAdmin()) return;
     const teacher = getTeacherById(teacherId);
     if (!teacher || !teacher.payouts[payoutIndex]) {
@@ -3026,7 +2992,6 @@ function handleReversePayout(teacherId, payoutIndex) {
 
     const payout = teacher.payouts[payoutIndex];
 
-    // Two-step confirmation and mandatory remark prompt
     const firstConfirm = confirm(`REVERSAL WARNING: You are about to reverse a welfare payout of ${money(payout.amount)} for ${teacher.name} (${payout.reason}, Ref: ${payout.reference || 'N/A'}). Do you wish to proceed?`);
     if (!firstConfirm) return;
 
@@ -3039,9 +3004,12 @@ function handleReversePayout(teacherId, payoutIndex) {
     const secondConfirm = confirm(`FINAL CONFIRMATION: This will permanently cancel the payout of ${money(payout.amount)} and restore it to the welfare fund balance. Proceed?`);
     if (!secondConfirm) return;
 
-    // Perform reversal
     teacher.payouts.splice(payoutIndex, 1);
-    saveData();
+    
+    if (supabaseClient) {
+        await supabaseClient.from('payouts').delete().match({ teacher_id: teacher.id, amount: payout.amount, date: payout.date });
+    }
+
     renderAll();
 
     logAdminAction('FINANCE', 'REVERSE_PAYOUT', `Reversed welfare payout of ${money(payout.amount)} for ${teacher.name} (${payout.reason}). Reason: ${remark.trim()}`, money(payout.amount), 'GHS 0.00 (Reversed)', 'SUCCESS', teacher.id);
@@ -3377,7 +3345,6 @@ function clearAuditLogs() {
     if (!confirmed) return;
 
     adminLogs = [];
-    saveAdminLogsList();
     renderAll();
     showToast('Audit trail logs cleared successfully.', 'success');
 }
@@ -3514,7 +3481,7 @@ function showLoginView() {
     document.getElementById('gatewayError').classList.add('hidden');
 }
 
-function handlePasswordReset(event) {
+async function handlePasswordReset(event) {
     event.preventDefault();
     const staffId = document.getElementById('resetStaffId').value.trim();
     const phone = document.getElementById('resetPhone').value.trim();
@@ -3538,18 +3505,19 @@ function handlePasswordReset(event) {
     }
 
     teacher.customPassword = newPassword;
-    saveData();
+    if (supabaseClient) {
+        await supabaseClient.from('teachers').update({ custom_password: newPassword }).eq('id', teacher.id);
+    }
+    
     logAdminAction('AUTH', 'PASSWORD_RESET', `Password reset successfully for ${teacher.name}`, 'Old Password', 'New Password', 'SUCCESS', teacher.id);
 
-    console.log(`[SMS Gateway Simulated] Sending SMS to ${teacher.phone}: "Dear Teacher, your Teachers Welfare Portal password has been changed successfully. If you did not authorize this change, please contact the Welfare Administrator immediately. Thank you."`);
-
-    showToast('Password updated successfully! Confirmation SMS dispatched. Please sign in.', 'success');
+    showToast('Password updated successfully! Please sign in.', 'success');
     showLoginView();
     document.getElementById('gatewayStaffId').value = teacher.id;
     document.getElementById('gatewayPassword').value = newPassword;
 }
 
-function handleRegisterAdmin(event) {
+async function handleRegisterAdmin(event) {
     event.preventDefault();
     if (!requireAdmin()) return;
 
@@ -3570,8 +3538,19 @@ function handleRegisterAdmin(event) {
         return;
     }
 
-    adminUsers.push({ username, name, password, secQuestion, secAnswer });
-    saveAdminUsersList();
+    const newAdmin = { username, name, password, secQuestion, secAnswer };
+    adminUsers.push(newAdmin);
+
+    if (supabaseClient) {
+        await supabaseClient.from('admin_users').insert({
+            username: newAdmin.username,
+            name: newAdmin.name,
+            password: newAdmin.password,
+            sec_question: newAdmin.secQuestion,
+            sec_answer: newAdmin.secAnswer
+        });
+    }
+
     renderAll();
     document.getElementById('newAdminUsername').value = '';
     document.getElementById('newAdminName').value = '';
@@ -3583,7 +3562,7 @@ function handleRegisterAdmin(event) {
     showToast(`Administrator ${name} registered successfully.`, 'success');
 }
 
-function handleChangeAdminPasscode(event) {
+async function handleChangeAdminPasscode(event) {
     event.preventDefault();
     if (!requireAdmin()) return;
 
@@ -3603,7 +3582,10 @@ function handleChangeAdminPasscode(event) {
     }
 
     adminAcc.password = newPass;
-    saveAdminUsersList();
+    if (supabaseClient) {
+        await supabaseClient.from('admin_users').update({ password: newPass }).eq('username', username);
+    }
+
     document.getElementById('currentAdminPasscode').value = '';
     document.getElementById('newAdminPasscode').value = '';
     
@@ -3611,7 +3593,7 @@ function handleChangeAdminPasscode(event) {
     showToast(`Password for ${adminAcc.name} updated successfully.`, 'success');
 }
 
-function handleRemoveAdmin(username) {
+async function handleRemoveAdmin(username) {
     if (!requireAdmin()) return;
     if (adminUsers.length <= 1) {
         showToast('You must keep at least one active admin account.', 'error');
@@ -3622,13 +3604,16 @@ function handleRemoveAdmin(username) {
     if (!confirmed) return;
 
     adminUsers = adminUsers.filter(a => a.username !== username);
-    saveAdminUsersList();
+    if (supabaseClient) {
+        await supabaseClient.from('admin_users').delete().eq('username', username);
+    }
+
     renderAll();
     logAdminAction('CONFIG', 'REMOVE_ADMIN', `Removed admin account: ${username}`, username, 'Deleted', 'SUCCESS');
     showToast('Admin account removed successfully.', 'success');
 }
 
-function handleAddNewStaff(event) {
+async function handleAddNewStaff(event) {
     event.preventDefault();
     if (!requireAdmin()) return;
 
@@ -3651,7 +3636,19 @@ function handleAddNewStaff(event) {
 
     const teacher = { id, name, phone, rank, className, passport: '', payments: [], payouts: [] };
     welfareData.teachers.push(teacher);
-    saveData();
+
+    if (supabaseClient) {
+        await supabaseClient.from('teachers').insert({
+            id: teacher.id,
+            name: teacher.name,
+            phone: teacher.phone,
+            rank: teacher.rank,
+            class_name: teacher.className,
+            passport: teacher.passport,
+            custom_password: ''
+        });
+    }
+
     selectedTeacherId = id;
     saveSessionState();
     document.getElementById('addStaffForm').reset();
@@ -3662,7 +3659,7 @@ function handleAddNewStaff(event) {
     showToast('New staff member registered successfully.', 'success');
 }
 
-function handleRecordPayment(event) {
+async function handleRecordPayment(event) {
     event.preventDefault();
     if (!requireAdmin()) return;
 
@@ -3689,7 +3686,16 @@ function handleRecordPayment(event) {
 
     const payment = { date, amount, reference: generateReference('PAY') };
     teacher.payments.push(payment);
-    saveData();
+
+    if (supabaseClient) {
+        await supabaseClient.from('contributions').insert({
+            teacher_id: teacher.id,
+            amount: payment.amount,
+            date: payment.date,
+            reference: payment.reference
+        });
+    }
+
     selectedTeacherId = teacher.id;
     saveSessionState();
     document.getElementById('adminPaymentAmount').value = standardMonthlyDues;
@@ -3700,7 +3706,7 @@ function handleRecordPayment(event) {
     showToast('Contribution recorded successfully.', 'success');
 }
 
-function handleRecordWithdrawal(event) {
+async function handleRecordWithdrawal(event) {
     event.preventDefault();
     if (!requireAdmin()) return;
 
@@ -3730,7 +3736,17 @@ function handleRecordWithdrawal(event) {
 
     const payout = { date, amount, reason, reference: generateReference('WEL') };
     teacher.payouts.push(payout);
-    saveData();
+
+    if (supabaseClient) {
+        await supabaseClient.from('payouts').insert({
+            teacher_id: teacher.id,
+            amount: payout.amount,
+            date: payout.date,
+            reason: payout.reason,
+            reference: payout.reference
+        });
+    }
+
     document.getElementById('adminWithdrawalAmount').value = '';
     document.getElementById('adminWithdrawalDate').value = todayISO();
     renderAll();
@@ -3764,7 +3780,7 @@ function closeEditMemberModal() {
     editingMemberId = null;
 }
 
-function saveEditedMember(event) {
+async function saveEditedMember(event) {
     event.preventDefault();
     if (!requireAdmin()) return;
     if (!editingMemberId) return;
@@ -3789,9 +3805,18 @@ function saveEditedMember(event) {
     teacher.rank = document.getElementById('editStaffGrade').value;
     teacher.className = document.getElementById('editStaffClass').value.trim();
 
+    if (supabaseClient) {
+        await supabaseClient.from('teachers').update({
+            id: teacher.id,
+            name: teacher.name,
+            phone: teacher.phone,
+            rank: teacher.rank,
+            class_name: teacher.className
+        }).eq('id', editingMemberId);
+    }
+
     selectedTeacherId = teacher.id;
     saveSessionState();
-    saveData();
     closeEditMemberModal();
     renderAll();
     
@@ -3799,21 +3824,23 @@ function saveEditedMember(event) {
     showToast('Member details updated successfully.', 'success');
 }
 
-function handleRemoveStaff(id) {
+async function handleRemoveStaff(id) {
     if (!requireAdmin()) return;
     const teacher = getTeacherById(id);
     if (!teacher) return;
 
-    const confirmed = confirm(`Remove ${teacher.name} from active staff? Note: Their historical contribution and payout records will be retained, and any payouts already disbursed to them remain part of lifetime fund calculations.`);
+    const confirmed = confirm(`Remove ${teacher.name} from active staff? Note: Their historical contribution and payout records will be retained.`);
     if (!confirmed) return;
 
     const removedName = teacher.name;
-    
     welfareData.teachers = welfareData.teachers.filter(member => String(member.id) !== String(id));
     
     if (!removedMembers.some(m => String(m.id) === String(id))) {
         removedMembers.push(teacher);
-        saveRemovedMembers();
+    }
+
+    if (supabaseClient) {
+        await supabaseClient.from('teachers').delete().eq('id', id);
     }
 
     if (String(selectedTeacherId) === String(id)) {
@@ -3821,15 +3848,14 @@ function handleRemoveStaff(id) {
         selectedTeacherId = remaining.length ? remaining[0].id : null;
     }
 
-    saveData();
     saveSessionState();
     renderAll();
     
     logAdminAction('MEMBER', 'DELETE_MEMBER', `Removed staff member: ${removedName}`, removedName, 'Archived / Removed', 'SUCCESS', id);
-    showToast('Staff member removed. Historical payment and payout records are fully maintained.', 'success');
+    showToast('Staff member removed successfully.', 'success');
 }
 
-function saveMonthlyDues() {
+async function saveMonthlyDues() {
     if (!requireAdmin()) return;
 
     const input = document.getElementById('standardMonthlyDuesInput');
@@ -3842,7 +3868,10 @@ function saveMonthlyDues() {
 
     const oldDues = standardMonthlyDues;
     standardMonthlyDues = value;
-    localStorage.setItem(DUES_KEY, standardMonthlyDues);
+
+    if (supabaseClient) {
+        await supabaseClient.from('system_settings').upsert({ key: 'standard_dues', value: String(standardMonthlyDues) });
+    }
 
     const paymentAmount = document.getElementById('adminPaymentAmount');
     if (paymentAmount) paymentAmount.value = standardMonthlyDues;
@@ -3913,7 +3942,7 @@ document.addEventListener('input', event => {
     }
 });
 
-function handleAdminPasswordRecovery(event) {
+async function handleAdminPasswordRecovery(event) {
     event.preventDefault();
     const uname = document.getElementById('recoveryAdminUsername').value.trim();
     const answer = document.getElementById('recoveryAdminAnswer').value.trim().toLowerCase();
@@ -3929,7 +3958,10 @@ function handleAdminPasswordRecovery(event) {
     }
 
     adminAcc.password = newPass;
-    saveAdminUsersList();
+    if (supabaseClient) {
+        await supabaseClient.from('admin_users').update({ password: newPass }).eq('username', adminAcc.username);
+    }
+
     logAdminAction('AUTH', 'ADMIN_RECOVERY', `Recovered and reset password for admin: ${adminAcc.name}`, 'Old Pass', 'New Pass', 'SUCCESS');
     showToast('Admin password reset successfully! Please log in.', 'success');
     showAdminLoginView();
@@ -4109,10 +4141,10 @@ function logoutAdmin() {
     showToast('Session ended successfully. Please sign in.', 'success');
 }
 
-function confirmResetAllData() {
+async function confirmResetAllData() {
     if (!requireAdmin()) return;
 
-    const first = confirm('WARNING: This will remove ALL registered members, contributions and welfare payout history from this browser. Your audit trail will be completely preserved. Continue?');
+    const first = confirm('WARNING: This will remove ALL registered members, contributions and welfare payout history from the database. Your audit trail will be completely preserved. Continue?');
     if (!first) return;
 
     const second = prompt('Type RESET ALL to confirm permanent deletion of welfare fund records.');
@@ -4123,17 +4155,16 @@ function confirmResetAllData() {
 
     logAdminAction('CONFIG', 'RESET_ALL_DATA', 'Reset all welfare records (audit trail preserved)', 'Active Records', 'Cleared', 'SUCCESS');
     
+    if (supabaseClient) {
+        await supabaseClient.from('teachers').delete().neq('id', '');
+    }
+
     welfareData = { teachers: [] };
     removedMembers = [];
-    localStorage.removeItem(REMOVED_MEMBERS_KEY);
-    historicalTotalContributions = 0;
-    saveHistoricalContributions();
     selectedTeacherId = null;
     loggedInTeacherId = null;
     currentBroadcastMessage = '';
-    localStorage.removeItem(BROADCAST_KEY);
     localStorage.removeItem(SESSION_KEY);
-    saveData();
     renderAll();
     initializeDates();
     document.getElementById('addStaffForm')?.reset();
@@ -4151,7 +4182,7 @@ function getTotalContributions() {
     const removedContrib = removedMembers.reduce((total, teacher) => {
         return total + teacher.payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
     }, 0);
-    return activeContrib + removedContrib + historicalTotalContributions;
+    return activeContrib + removedContrib;
 }
 
 function getTotalPayouts() {
