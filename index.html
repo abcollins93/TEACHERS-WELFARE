@@ -4766,6 +4766,199 @@ setTimeout(() => {
 }, 100);
 </script>
 
+
+<!-- SECRET MASTER SUPER ADMIN (mobile-friendly; hidden from ordinary navigation) -->
+<div id="masterAdminModal" class="hidden fixed inset-0 z-[600] bg-slate-950/90 backdrop-blur-xl p-3 sm:p-6 overflow-y-auto">
+  <div class="max-w-5xl mx-auto my-3 sm:my-8 bg-white dark:bg-[#071328] text-slate-800 dark:text-slate-100 rounded-3xl border border-amber-500/30 shadow-2xl overflow-hidden">
+    <div class="p-5 sm:p-7 bg-gradient-to-r from-sdaNavy-900 to-sapphire-600 text-white flex items-start justify-between gap-4">
+      <div><div class="text-amber-300 text-xs uppercase tracking-[.2em] font-extrabold">Private Platform Control</div>
+        <h2 class="text-2xl font-black mt-1">Master Super Admin</h2>
+        <p class="text-xs text-slate-200 mt-1">Platform-wide school onboarding and account status.</p></div>
+      <button type="button" onclick="closeMasterAdmin()" class="w-11 h-11 shrink-0 rounded-xl bg-white/10 hover:bg-white/20" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="masterLoginPanel" class="p-5 sm:p-8 max-w-lg mx-auto">
+      <div class="rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-4 text-sm mb-5">
+        <i class="fa-solid fa-shield-halved text-amber-600 mr-2"></i>Use your existing Supabase Auth account. Your account must also be explicitly authorized in <code>platform_super_admins</code>.
+      </div>
+      <form id="masterLoginForm" class="space-y-4" onsubmit="masterAdminLogin(event)">
+        <label class="block text-sm font-bold">Admin email<input id="masterEmail" type="email" autocomplete="username" required class="form-input mt-1" placeholder="Your authorized email"></label>
+        <label class="block text-sm font-bold">Password<input id="masterPassword" type="password" autocomplete="current-password" required class="form-input mt-1" placeholder="Supabase Auth password"></label>
+        <p id="masterLoginError" class="hidden text-sm text-rose-600 bg-rose-50 rounded-xl p-3"></p>
+        <button id="masterLoginButton" class="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold p-4"><i class="fa-solid fa-lock mr-2"></i>Authenticate Securely</button>
+      </form>
+    </div>
+    <div id="masterDashboardPanel" class="hidden p-4 sm:p-7">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+        <div><h3 class="text-xl font-black">Platform Overview</h3><p id="masterSignedInAs" class="text-xs text-slate-500 mt-1"></p></div>
+        <button onclick="masterAdminLogout()" class="rounded-xl border border-rose-300 text-rose-600 px-4 py-3 text-sm font-bold"><i class="fa-solid fa-right-from-bracket mr-2"></i>Sign out</button>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+        <div class="rounded-2xl p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900"><div class="text-xs text-slate-500">Registered schools</div><div id="masterSchoolCount" class="text-3xl font-black mt-1">—</div></div>
+        <div class="rounded-2xl p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900"><div class="text-xs text-slate-500">Active schools</div><div id="masterActiveCount" class="text-3xl font-black mt-1">—</div></div>
+        <div class="rounded-2xl p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900"><div class="text-xs text-slate-500">Suspended schools</div><div id="masterSuspendedCount" class="text-3xl font-black mt-1">—</div></div>
+      </div>
+      <div class="glass-card rounded-2xl p-4 sm:p-6 mb-6">
+        <h4 class="font-extrabold mb-4"><i class="fa-solid fa-school text-amber-500 mr-2"></i>Onboard a School</h4>
+        <form id="masterSchoolForm" onsubmit="masterCreateSchool(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <label class="text-xs font-bold">School name<input id="masterSchoolName" class="form-input mt-1" required maxlength="160" placeholder="e.g. Example Basic School"></label>
+          <label class="text-xs font-bold">Unique school code<input id="masterSchoolCode" class="form-input mt-1 uppercase" required maxlength="40" pattern="[A-Za-z0-9_-]+" placeholder="e.g. EXAMPLE001"></label>
+          <label class="text-xs font-bold sm:col-span-2">School administrator email (optional)<input id="masterSchoolEmail" type="email" class="form-input mt-1" placeholder="Administrator email"></label>
+          <div class="sm:col-span-2"><button id="masterCreateSchoolButton" class="w-full sm:w-auto rounded-xl bg-sdaNavy-900 text-white px-5 py-3 font-bold"><i class="fa-solid fa-plus mr-2"></i>Register School</button></div>
+        </form>
+        <p class="text-xs text-slate-500 mt-3">Registering a school creates its platform record. It does not automatically create an Auth user or isolate the school’s welfare data; those require the backend setup and tenant-level RLS policies.</p>
+      </div>
+      <div class="glass-card rounded-2xl overflow-hidden">
+        <div class="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between"><h4 class="font-extrabold">School Directory</h4><button onclick="masterLoadSchools()" class="rounded-xl bg-slate-100 dark:bg-slate-800 px-4 py-2 text-xs font-bold"><i class="fa-solid fa-rotate mr-1"></i>Refresh</button></div>
+        <div id="masterSchoolNotice" class="hidden m-4 p-3 rounded-xl text-sm"></div>
+        <div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-slate-100 dark:bg-slate-800 text-left"><tr><th class="p-3">School</th><th class="p-3">Code</th><th class="p-3">Admin email</th><th class="p-3">Status</th><th class="p-3">Action</th></tr></thead><tbody id="masterSchoolRows"><tr><td colspan="5" class="p-5 text-slate-500">Authenticate to load schools.</td></tr></tbody></table></div>
+      </div>
+      <p class="text-[11px] text-slate-500 mt-5 leading-relaxed"><i class="fa-solid fa-circle-info mr-1"></i>Security note: this hidden entry point is for convenience only. Authorization must be enforced by Supabase RLS/database policies. Never place a service-role key in this HTML file.</p>
+    </div>
+  </div>
+</div>
+<script>
+/* Secret entry methods: mobile-friendly repeated tap on the school emblem/name,
+   or append ?master=1 to the page URL. Both still require Supabase authorization. */
+let masterTapCount = 0, masterTapReset = null, masterAuthorizedUser = null;
+function openMasterAdmin() {
+  const modal = document.getElementById('masterAdminModal');
+  if (!modal) return;
+  modal.classList.remove('hidden');
+  document.getElementById('masterLoginPanel').classList.remove('hidden');
+  document.getElementById('masterDashboardPanel').classList.add('hidden');
+  setTimeout(() => document.getElementById('masterEmail')?.focus(), 120);
+}
+function closeMasterAdmin() {
+  document.getElementById('masterAdminModal')?.classList.add('hidden');
+}
+async function masterAdminLogin(event) {
+  event.preventDefault();
+  const errorBox = document.getElementById('masterLoginError');
+  const button = document.getElementById('masterLoginButton');
+  errorBox.classList.add('hidden');
+  if (!supabaseClient) { errorBox.textContent = 'Supabase is not available. Please check the connection.'; errorBox.classList.remove('hidden'); return; }
+  button.disabled = true; button.textContent = 'Verifying account…';
+  try {
+    const email = document.getElementById('masterEmail').value.trim();
+    const password = document.getElementById('masterPassword').value;
+    const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (authError || !authData?.user) throw new Error('Sign-in failed. Check your credentials.');
+    const { data: grant, error: grantError } = await supabaseClient.from('platform_super_admins')
+      .select('user_id, active').eq('user_id', authData.user.id).eq('active', true).maybeSingle();
+    if (grantError || !grant) {
+      await supabaseClient.auth.signOut();
+      throw new Error('This account is not authorized as a Master Super Admin. Ask the database owner to verify its grant.');
+    }
+    masterAuthorizedUser = authData.user;
+    document.getElementById('masterSignedInAs').textContent = 'Authenticated: ' + (authData.user.email || 'authorized account');
+    document.getElementById('masterLoginPanel').classList.add('hidden');
+    document.getElementById('masterDashboardPanel').classList.remove('hidden');
+    await masterLoadSchools();
+  } catch (err) {
+    errorBox.textContent = err?.message || 'Authentication failed.';
+    errorBox.classList.remove('hidden');
+  } finally {
+    button.disabled = false; button.innerHTML = '<i class="fa-solid fa-lock mr-2"></i>Authenticate Securely';
+  }
+}
+async function masterVerifySession() {
+  if (!supabaseClient || !masterAuthorizedUser) throw new Error('Please authenticate again.');
+  const { data: { user }, error } = await supabaseClient.auth.getUser();
+  if (error || !user || user.id !== masterAuthorizedUser.id) throw new Error('Your session is no longer valid. Sign in again.');
+  const { data: grant, error: grantError } = await supabaseClient.from('platform_super_admins').select('user_id').eq('user_id', user.id).eq('active', true).maybeSingle();
+  if (grantError || !grant) throw new Error('Master Super Admin authorization could not be verified.');
+}
+function masterNotice(message, isError=false) {
+  const box = document.getElementById('masterSchoolNotice');
+  box.textContent = message;
+  box.className = 'm-4 p-3 rounded-xl text-sm ' + (isError ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300' : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300');
+}
+async function masterLoadSchools() {
+  const rows = document.getElementById('masterSchoolRows');
+  rows.innerHTML = '<tr><td colspan="5" class="p-5">Loading school directory…</td></tr>';
+  try {
+    await masterVerifySession();
+    const { data, error } = await supabaseClient.from('platform_schools').select('id, name, school_code, admin_email, status, created_at').order('created_at', { ascending: false });
+    if (error) throw error;
+    const schools = data || [];
+    document.getElementById('masterSchoolCount').textContent = schools.length;
+    document.getElementById('masterActiveCount').textContent = schools.filter(x => x.status === 'active').length;
+    document.getElementById('masterSuspendedCount').textContent = schools.filter(x => x.status === 'suspended').length;
+    if (!schools.length) { rows.innerHTML = '<tr><td colspan="5" class="p-5 text-slate-500">No schools registered yet.</td></tr>'; return; }
+    rows.innerHTML = schools.map(s => `<tr class="border-t border-slate-100 dark:border-slate-800">
+      <td class="p-3 font-bold">${masterEscape(s.name)}</td><td class="p-3 font-mono">${masterEscape(s.school_code)}</td>
+      <td class="p-3">${masterEscape(s.admin_email || '—')}</td><td class="p-3"><span class="px-2 py-1 rounded-lg text-xs font-bold ${s.status==='active'?'bg-emerald-100 text-emerald-700':'bg-rose-100 text-rose-700'}">${masterEscape(s.status)}</span></td>
+      <td class="p-3"><button onclick="masterToggleSchool('${masterEscape(String(s.id))}','${s.status==='active'?'suspended':'active'}')" class="rounded-lg px-3 py-2 text-xs font-bold ${s.status==='active'?'bg-rose-100 text-rose-700':'bg-emerald-100 text-emerald-700'}">${s.status==='active'?'Suspend':'Activate'}</button></td></tr>`).join('');
+  } catch (err) {
+    rows.innerHTML = '<tr><td colspan="5" class="p-5 text-rose-600">Could not load directory. Check the platform tables and RLS policies.</td></tr>';
+    masterNotice(err?.message || 'Unable to load school directory.', true);
+  }
+}
+async function masterCreateSchool(event) {
+  event.preventDefault();
+  const button = document.getElementById('masterCreateSchoolButton');
+  button.disabled = true;
+  try {
+    await masterVerifySession();
+    const name = document.getElementById('masterSchoolName').value.trim();
+    const code = document.getElementById('masterSchoolCode').value.trim().toUpperCase();
+    const email = document.getElementById('masterSchoolEmail').value.trim() || null;
+    const { error } = await supabaseClient.from('platform_schools').insert({ name, school_code: code, admin_email: email, status: 'active' });
+    if (error) throw error;
+    document.getElementById('masterSchoolForm').reset();
+    masterNotice('School registered successfully.');
+    await masterLoadSchools();
+  } catch (err) { masterNotice(err?.message || 'Could not register school.', true); }
+  finally { button.disabled = false; }
+}
+async function masterToggleSchool(id, status) {
+  if (!confirm(`Are you sure you want to ${status} this school?`)) return;
+  try {
+    await masterVerifySession();
+    const { error } = await supabaseClient.from('platform_schools').update({ status }).eq('id', id);
+    if (error) throw error;
+    masterNotice(`School status changed to ${status}.`);
+    await masterLoadSchools();
+  } catch (err) { masterNotice(err?.message || 'Could not update school.', true); }
+}
+async function masterAdminLogout() {
+  try { if (supabaseClient) await supabaseClient.auth.signOut(); } catch (_) {}
+  masterAuthorizedUser = null;
+  document.getElementById('masterPassword').value = '';
+  document.getElementById('masterLoginForm').reset();
+  document.getElementById('masterLoginPanel').classList.remove('hidden');
+  document.getElementById('masterDashboardPanel').classList.add('hidden');
+  closeMasterAdmin();
+}
+function masterEscape(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+document.addEventListener('DOMContentLoaded', () => {
+  // Secret URL route is handy on mobile bookmarks. It never bypasses authentication.
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('master') === '1') openMasterAdmin();
+  // Five rapid taps on the existing school title/emblem open the private sign-in.
+  const targets = [document.querySelector('#sidebar .sidebar-brand-text h1'), document.querySelector('#loginGatewayModal h2')].filter(Boolean);
+  targets.forEach(target => {
+    target.style.cursor = 'default';
+    target.addEventListener('click', () => {
+      masterTapCount++;
+      clearTimeout(masterTapReset);
+      masterTapReset = setTimeout(() => masterTapCount = 0, 1800);
+      if (masterTapCount >= 5) { masterTapCount = 0; openMasterAdmin(); }
+    });
+  });
+  document.addEventListener('keydown', event => {
+    // Desktop shortcut: Ctrl+Shift+M. Disabled while typing in form fields.
+    const tag = (event.target?.tagName || '').toLowerCase();
+    if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'm' && !['input','textarea','select'].includes(tag)) {
+      event.preventDefault(); openMasterAdmin();
+    }
+    if (event.key === 'Escape') closeMasterAdmin();
+  });
+});
+</script>
+
 </body>
 </html>
 
