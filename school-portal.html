@@ -48,7 +48,8 @@ async function showDashboard(){
  const c=contributions.reduce((sum,r)=>sum+Number(r.amount||0),0),p=payouts.reduce((sum,r)=>sum+Number(r.amount||0),0);
  $('teacherCount').textContent=teachers.length;$('contributionTotal').textContent=money(c);$('payoutTotal').textContent=money(p);$('netTotal').textContent=money(c-p);
  $('teacherRows').innerHTML=teachers.length?teachers.map(t=>'<tr><td>'+escapeHtml(t.name)+'</td><td>'+escapeHtml(t.rank||'—')+'</td><td>'+escapeHtml(t.class_name||'—')+'</td></tr>').join(''):'<tr><td colspan="3">No teachers are assigned to this school yet.</td></tr>';
- $('loadNote').textContent='School identity verified. Records shown are those permitted by database row-level security.';$('loadNote').className='muted';\n if(window.initSchoolWorkflows) await window.initSchoolWorkflows(client,school,showDashboard);
+ $('loadNote').textContent='School identity verified. Records shown are those permitted by database row-level security.';$('loadNote').className='muted';
+ if(window.initSchoolWorkflows) await window.initSchoolWorkflows(client,school,showDashboard);
 }
 $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='';$('loginBtn').disabled=true;$('loginBtn').textContent='Signing in…';try{const {error}=await client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;await showDashboard();}catch(err){$('loginError').textContent='Sign-in failed. Check your email and password, or use the password setup link from your invitation.';await client.auth.signOut();}finally{$('loginBtn').disabled=!/^[A-Z0-9-]{3,32}$/.test(code);$('loginBtn').textContent='Sign in securely';}});
 $('logout').addEventListener('click',async()=>{await client.auth.signOut();$('dashboard').classList.add('hidden');$('login').classList.remove('hidden');$('password').value='';});
