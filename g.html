@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Opening School Gateway…</title>
+  <style>
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f4f6fa;color:#182235;font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+    main{max-width:440px;margin:20px;padding:28px;background:#fff;border:1px solid #e3e8ef;border-radius:16px;text-align:center}
+    a{color:#0b1d3a;font-weight:700}
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Opening your school gateway</h1>
+    <p id="message">Please wait…</p>
+    <p><a id="continue" href="#">Continue to school sign in</a></p>
+  </main>
+  <script>
+    (function(){
+      var params = new URLSearchParams(window.location.search);
+      var code = (params.get('c') || '').trim().toUpperCase();
+      var message = document.getElementById('message');
+      var link = document.getElementById('continue');
+      if (!/^[A-Z0-9-]{2,32}$/.test(code)) {
+        message.textContent = 'This gateway link is missing a valid school code. Please request a new link from your platform administrator.';
+        link.style.display = 'none';
+        return;
+      }
+      var target = new URL('school-portal.html', window.location.href);
+      target.searchParams.set('school', code);
+      link.href = target.href;
+      window.location.replace(target.href);
+    })();
+  </script>
+</body>
+</html>
