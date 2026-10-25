@@ -52,6 +52,28 @@ async function showDashboard(){
 }
 $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='';$('loginBtn').disabled=true;$('loginBtn').textContent='Signing in…';try{const {error}=await client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;await showDashboard();}catch(err){$('loginError').textContent='Sign-in failed. Check your email and password, or use the password setup link from your invitation.';await client.auth.signOut();}finally{$('loginBtn').disabled=!/^[A-Z0-9-]{3,32}$/.test(code);$('loginBtn').textContent='Sign in securely';}});
 $('logout').addEventListener('click',async()=>{await client.auth.signOut();$('dashboard').classList.add('hidden');$('login').classList.remove('hidden');$('password').value='';});
+// Automatically end an unattended administrator session after seven minutes.
+let inactivityTimer;
+const INACTIVITY_LIMIT_MS = 7 * 60 * 1000;
+function resetInactivityTimer(){
+  if(inactivityTimer) clearTimeout(inactivityTimer);
+  inactivityTimer=setTimeout(async()=>{
+    await client.auth.signOut();
+    $('dashboard').classList.add('hidden');
+    $('login').classList.remove('hidden');
+    $('password').value='';
+    $('loginError').textContent='You have been signed out after seven minutes of inactivity. Please sign in again.';
+  },INACTIVITY_LIMIT_MS);
+}
+['pointerdown','pointermove','keydown','scroll','touchstart'].forEach(eventName=>{
+  document.addEventListener(eventName,()=>{
+    if(!$('dashboard').classList.contains('hidden')) resetInactivityTimer();
+  },{passive:true});
+});
+client.auth.onAuthStateChange((event,session)=>{
+  if(session) resetInactivityTimer();
+  else if(inactivityTimer){clearTimeout(inactivityTimer);inactivityTimer=null;}
+});
 client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
 })();
 </script></body></html>
