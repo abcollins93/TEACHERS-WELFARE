@@ -7,7 +7,7 @@ const money=n=>Number(n||0).toLocaleString('en-GH',{minimumFractionDigits:2,maxi
 const today=()=>new Date().toISOString().slice(0,10);
 function addUI(){
  const d=document.createElement('section');d.id='workflows';d.innerHTML=`
- <div class="panel" id="wfTeacherPanel"><h3>Teacher register</h3><p class="muted">Register and update staff details. Historical finance records are not deleted when a staff profile is changed.</p><form id="wfTeacher" class="grid">
+ <div class="panel" id="wfTeacherPanel"><h3>Teacher register</h3><label for="wfTeacherSearch">Search teachers</label><input id="wfTeacherSearch" type="search" placeholder="Search name, staff ID, phone, rank or class"><p class="muted">Register and update staff details. Historical finance records are not deleted when a staff profile is changed.</p><form id="wfTeacher" class="grid">
  <div><label>Staff ID</label><input id="wfTid" required maxlength="80"></div><div><label>Full name</label><input id="wfName" required maxlength="160"></div>
  <div><label>Phone</label><input id="wfPhone" maxlength="40"></div><div><label>Rank</label><input id="wfRank" maxlength="100"></div>
  <div><label>Class / responsibility</label><input id="wfClass" maxlength="100"></div><div style="align-self:end;display:flex;gap:8px;flex-wrap:wrap"><button id="wfTeacherSave">Register teacher</button><button id="wfTeacherCancel" class="secondary" type="button">Cancel edit</button></div></form><p id="wfTeacherMsg" class="muted"></p><div style="overflow:auto"><table><thead><tr><th>Staff ID</th><th>Name</th><th>Phone</th><th>Rank</th><th>Class</th><th>Profile actions</th></tr></thead><tbody id="wfManageTeacherRows"></tbody></table></div></div>
@@ -37,13 +37,18 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  ]);
  if(tr.error||cr.error||pr.error){msg('wfTeacherMsg','Records could not be loaded. Check school-admin database permissions.',true);return;}
  const teachers=tr.data||[], cons=cr.data||[], pays=pr.data||[];
- $('teacherRows').innerHTML=teachers.length?teachers.map(t=>'<tr><td>'+esc(t.id)+'</td><td>'+esc(t.name)+'</td><td>'+esc(t.phone||'—')+'</td><td>'+esc(t.rank||'—')+'</td><td>'+esc(t.class_name||'—')+'</td></tr>').join(''):'<tr><td colspan="5">No teachers yet.</td></tr>';
- $('wfManageTeacherRows').innerHTML=teachers.length?teachers.map(t=>'<tr><td>'+esc(t.id)+'</td><td>'+esc(t.name)+'</td><td>'+esc(t.phone||'—')+'</td><td>'+esc(t.rank||'—')+'</td><td>'+esc(t.class_name||'—')+'</td><td><button type="button" class="secondary" data-wf-edit="'+esc(t.id)+'">Edit</button> <button type="button" data-wf-remove="'+esc(t.id)+'">Remove</button></td></tr>').join(''):'<tr><td colspan="6">No teachers registered.</td></tr>';
+ const teacherById=new Map(teachers.map(t=>[String(t.id),t]));
+ const teacherLabel=id=>{const t=teacherById.get(String(id));return t?esc(t.name)+' ('+esc(t.id)+')':esc(id||'—')};
+ const renderTeacherTables=()=>{const q=String($('wfTeacherSearch')?.value||'').trim().toLowerCase();const visible=teachers.filter(t=>[t.id,t.name,t.phone,t.rank,t.class_name].some(v=>String(v||'').toLowerCase().includes(q)));
+ $('teacherRows').innerHTML=visible.length?visible.map(t=>'<tr><td>'+esc(t.id)+'</td><td>'+esc(t.name)+'</td><td>'+esc(t.phone||'—')+'</td><td>'+esc(t.rank||'—')+'</td><td>'+esc(t.class_name||'—')+'</td></tr>').join(''):'<tr><td colspan="5">No matching teachers.</td></tr>';
+ $('wfManageTeacherRows').innerHTML=visible.length?visible.map(t=>'<tr><td>'+esc(t.id)+'</td><td>'+esc(t.name)+'</td><td>'+esc(t.phone||'—')+'</td><td>'+esc(t.rank||'—')+'</td><td>'+esc(t.class_name||'—')+'</td><td><button type="button" class="secondary" data-wf-edit="'+esc(t.id)+'">Edit</button> <button type="button" data-wf-remove="'+esc(t.id)+'">Remove</button></td></tr>').join(''):'<tr><td colspan="6">No matching teachers.</td></tr>';};
+ renderTeacherTables();
+ $('wfTeacherSearch').addEventListener('input',renderTeacherTables);
 
  const options='<option value="">Choose teacher</option>'+teachers.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name)+' ('+esc(t.id)+')</option>').join('');
  $('wfConTeacher').innerHTML=options;$('wfPayTeacher').innerHTML=options;$('wfStatementTeacher').innerHTML=options;
- $('wfConRows').innerHTML=cons.length?cons.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.teacher_id)+'</td><td>'+money(x.amount)+'</td><td>'+esc(x.reference||'—')+'</td><td><span class="muted" title="Non-destructive reversal support requires a ledger status/adjustment schema">Requires safe reversal setup</span></td></tr>').join(''):'<tr><td colspan="5">No contributions recorded.</td></tr>';
- $('wfPayRows').innerHTML=pays.length?pays.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.teacher_id)+'</td><td>'+money(x.amount)+'</td><td>'+esc(x.reason||x.reference||'—')+'</td><td><span class="muted" title="Non-destructive reversal support requires a ledger status/adjustment schema">Requires safe reversal setup</span></td></tr>').join(''):'<tr><td colspan="5">No payouts recorded.</td></tr>';
+ $('wfConRows').innerHTML=cons.length?cons.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+teacherLabel(x.teacher_id)+'</td><td>'+money(x.amount)+'</td><td>'+esc(x.reference||'—')+'</td><td><span class="muted" title="Non-destructive reversal support requires a ledger status/adjustment schema">Requires safe reversal setup</span></td></tr>').join(''):'<tr><td colspan="5">No contributions recorded.</td></tr>';
+ $('wfPayRows').innerHTML=pays.length?pays.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+teacherLabel(x.teacher_id)+'</td><td>'+money(x.amount)+'</td><td>'+esc(x.reason||x.reference||'—')+'</td><td><span class="muted" title="Non-destructive reversal support requires a ledger status/adjustment schema">Requires safe reversal setup</span></td></tr>').join(''):'<tr><td colspan="5">No payouts recorded.</td></tr>';
  $('teacherCount').textContent=teachers.length;
  $('contributionTotal').textContent=money(cons.reduce((a,x)=>a+Number(x.amount||0),0));
  $('payoutTotal').textContent=money(pays.reduce((a,x)=>a+Number(x.amount||0),0));
