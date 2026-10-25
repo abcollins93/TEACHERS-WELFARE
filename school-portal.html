@@ -11,7 +11,7 @@
 </section>
 <section id="dashboard" class="hidden"><div class="panel"><div style="display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap"><div><h2 id="schoolName" style="margin:0"></h2><div id="schoolMeta" class="muted"></div></div><button id="logout" class="secondary">Sign out</button></div><p id="loadNote" class="muted">Loading school records…</p></div>
 <div class="grid"><div class="metric">Registered teachers<strong id="teacherCount">—</strong></div><div class="metric">Contributions recorded<strong id="contributionTotal">—</strong><span class="muted">GHS</span></div><div class="metric">Welfare payouts<strong id="payoutTotal">—</strong><span class="muted">GHS</span></div><div class="metric">Net recorded funds<strong id="netTotal">—</strong><span class="muted">GHS</span></div></div>
-<div class="panel" style="margin-top:18px"><h3>Teachers in this school</h3><p class="muted">This first secure gateway provides a read-only overview. Editing and financial-entry tools will be enabled after the remaining tenant workflows are verified.</p><div style="overflow:auto"><table><thead><tr><th>Teacher</th><th>Rank</th><th>Class</th></tr></thead><tbody id="teacherRows"><tr><td colspan="3">Loading…</td></tr></tbody></table></div></div>
+<div class="panel" style="margin-top:18px"><h3>School records</h3><p class="muted">Manage only the teachers and welfare records assigned to this school.</p><div style="overflow:auto"><table><thead><tr><th>Staff ID</th><th>Teacher</th><th>Phone</th><th>Rank</th><th>Class</th></tr></thead><tbody id="teacherRows"><tr><td colspan="5">Loading…</td></tr></tbody></table></div></div>
 </section>
 </main><footer>School records are restricted by your authenticated school-admin account.</footer>
 <script>
@@ -48,7 +48,7 @@ async function showDashboard(){
  const c=contributions.reduce((sum,r)=>sum+Number(r.amount||0),0),p=payouts.reduce((sum,r)=>sum+Number(r.amount||0),0);
  $('teacherCount').textContent=teachers.length;$('contributionTotal').textContent=money(c);$('payoutTotal').textContent=money(p);$('netTotal').textContent=money(c-p);
  $('teacherRows').innerHTML=teachers.length?teachers.map(t=>'<tr><td>'+escapeHtml(t.name)+'</td><td>'+escapeHtml(t.rank||'—')+'</td><td>'+escapeHtml(t.class_name||'—')+'</td></tr>').join(''):'<tr><td colspan="3">No teachers are assigned to this school yet.</td></tr>';
- $('loadNote').textContent='School identity verified. Records shown are those permitted by database row-level security.';$('loadNote').className='muted';
+ $('loadNote').textContent='School identity verified. Records shown are those permitted by database row-level security.';$('loadNote').className='muted';\n if(window.initSchoolWorkflows) await window.initSchoolWorkflows(client,school,showDashboard);
 }
 $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='';$('loginBtn').disabled=true;$('loginBtn').textContent='Signing in…';try{const {error}=await client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;await showDashboard();}catch(err){$('loginError').textContent='Sign-in failed. Check your email and password, or use the password setup link from your invitation.';await client.auth.signOut();}finally{$('loginBtn').disabled=!/^[A-Z0-9-]{3,32}$/.test(code);$('loginBtn').textContent='Sign in securely';}});
 $('logout').addEventListener('click',async()=>{await client.auth.signOut();$('dashboard').classList.add('hidden');$('login').classList.remove('hidden');$('password').value='';});
@@ -76,4 +76,4 @@ client.auth.onAuthStateChange((event,session)=>{
 });
 client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
 })();
-</script></body></html>
+</script><script src="school-portal-workflows.js"></script></body></html>
