@@ -10,7 +10,7 @@ const today=()=>new Date().toISOString().slice(0,10);
 const schoolDatabase = {
   "WELFARETEST26": { name: "Welfare Onboarding Test School 2026", district: "Kwabre East District", region: "Ashanti Region", type: "Basic" },
   "NTONSO-A-01": { name: "Ntonso SDA Primary 'A'", district: "Kwabre East District", region: "Ashanti Region", type: "Basic" },
-  "COLLINS001": { name: "Ntonso SDA Primary 'A'", district: "Kwabre East District", region: "Ashanti Region", type: "Basic" }
+  "COLLINS001": { name: "Collins Test Basic School", district: "", region: "", type: "Basic" }
 };
 
 function addUI(){
