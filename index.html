@@ -4903,7 +4903,7 @@ async function masterLoadSchools() {
     rows.innerHTML = schools.map(s => `<tr class="border-t border-slate-100 dark:border-slate-800">
       <td class="p-3 font-bold">${masterEscape(s.name)}</td><td class="p-3 font-mono">${masterEscape(s.school_code)}</td>
       <td class="p-3">${masterEscape(s.admin_email || '—')}</td><td class="p-3"><span class="px-2 py-1 rounded-lg text-xs font-bold ${s.status==='active'?'bg-emerald-100 text-emerald-700':'bg-rose-100 text-rose-700'}">${masterEscape(s.status)}</span></td>
-      <td class="p-3">${String(s.school_code || '').trim().toUpperCase() === 'NTONSO-A-01' ? '<a href="' + window.location.origin + window.location.pathname + '" class="inline-flex whitespace-nowrap rounded-lg bg-sdaNavy-900 text-white px-3 py-2 text-xs font-bold hover:opacity-90" target="_blank" rel="noopener">Open School</a>' : '<a href="school-portal.html?school=' + encodeURIComponent(String(s.school_code || '').trim().toUpperCase()) + '" class="inline-flex whitespace-nowrap rounded-lg bg-sdaNavy-900 text-white px-3 py-2 text-xs font-bold hover:opacity-90" target="_blank" rel="noopener">Open Secure Gateway</a>'}</td>
+       <td class="p-3"><div class="flex flex-wrap gap-2">${String(s.school_code || '').trim().toUpperCase() === 'NTONSO-A-01' ? '<a href="' + window.location.origin + window.location.pathname + '" class="inline-flex whitespace-nowrap rounded-lg bg-sdaNavy-900 text-white px-3 py-2 text-xs font-bold hover:opacity-90" target="_blank" rel="noopener">Open School</a>' : '<a href="g.html?c=' + encodeURIComponent(String(s.school_code || '').trim().toUpperCase()) + '" class="inline-flex whitespace-nowrap rounded-lg bg-sdaNavy-900 text-white px-3 py-2 text-xs font-bold hover:opacity-90" target="_blank" rel="noopener">Open Gateway</a>'}<button type="button" onclick="masterCopyGateway('${masterEscape(String(s.school_code || '').trim().toUpperCase())}',this)" class="inline-flex whitespace-nowrap rounded-lg bg-amber-500 text-slate-950 px-3 py-2 text-xs font-bold hover:bg-amber-400">Copy Gateway Link</button></div></td>
       <td class="p-3"><button onclick="masterToggleSchool('${masterEscape(String(s.id))}','${s.status==='active'?'suspended':'active'}')" class="rounded-lg px-3 py-2 text-xs font-bold ${s.status==='active'?'bg-rose-100 text-rose-700':'bg-emerald-100 text-emerald-700'}">${s.status==='active'?'Suspend':'Activate'}</button></td></tr>`).join('');
   } catch (err) {
     rows.innerHTML = '<tr><td colspan="6" class="p-5 text-rose-600">Could not load directory. Check the platform tables and RLS policies.</td></tr>';
@@ -4951,6 +4951,24 @@ async function masterCreateSchool(event) {
   } catch (err) { masterNotice(err?.message || 'Could not register school.', true); }
   finally { button.disabled = false; }
 }
+async function masterCopyGateway(code, button) {
+  const cleanCode = String(code || '').trim().toUpperCase();
+  if (!/^[A-Z0-9-]{2,32}$/.test(cleanCode)) { masterNotice('This school does not have a valid gateway code.', true); return; }
+  const gatewayUrl = new URL('g.html?c=' + encodeURIComponent(cleanCode), window.location.href).href;
+  try {
+    if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(gatewayUrl); }
+    else {
+      const field = document.createElement('textarea'); field.value = gatewayUrl; field.setAttribute('readonly', '');
+      field.style.position = 'fixed'; field.style.opacity = '0'; document.body.appendChild(field); field.select();
+      const copied = document.execCommand('copy'); field.remove();
+      if (!copied) throw new Error('Clipboard permission was denied. Open the gateway and copy the address from your browser.');
+    }
+    const original = button.textContent; button.textContent = 'Copied!';
+    masterNotice('Gateway link copied for ' + cleanCode + ': ' + gatewayUrl);
+    setTimeout(() => { if (button.isConnected) button.textContent = original; }, 1800);
+  } catch (err) { masterNotice(err?.message || 'Could not copy the gateway link.', true); }
+}
+
 async function masterToggleSchool(id, status) {
   if (!confirm(`Are you sure you want to ${status} this school?`)) return;
   try {
