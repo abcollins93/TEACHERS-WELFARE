@@ -63,7 +63,26 @@ footer{font-size:.8rem;line-height:1.8}
 @media(max-width:560px){.top{padding:15px 13px;gap:10px}.top .eyebrow{font-size:.63rem;letter-spacing:.11em}.top .eyebrow:before{width:25px;height:25px}.top h1{font-size:1.12rem}.top>div:last-child{gap:7px!important}#themeToggle{font-size:.75rem;padding:8px 9px;min-height:38px}.narrow{margin:22px auto;padding:21px 17px}.panel{border-radius:17px}.grid{gap:9px}.metric{border-radius:16px;padding:14px 12px}.metric span{font-size:.7rem}.metric strong{font-size:clamp(1rem,4.5vw,1.25rem);letter-spacing:-.035em}.sidebar{border-radius:16px;padding:10px}.school-chip{min-width:100%;padding:12px}.navbtn{flex:1 1 27%;min-width:0;min-height:54px;display:flex;flex-direction:column;justify-content:center;gap:4px;font-size:.7rem;padding:7px 3px}.navbtn i{font-size:.9rem;margin:0}.navbtn span{font-size:.64rem;line-height:1.2}.dashhead h2{font-size:1.45rem}#schoolTeachers button{font-size:.76rem;padding:9px 10px}th,td{padding:10px 9px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 
-/* Responsive collapsible navigation inspired by the original portal */\n.sidebar-collapse{border-top:1px solid rgba(255,255,255,.12);border-radius:8px;margin-bottom:8px;color:#e7c76d}.sidebar-collapse i{color:#e7c76d}.sidebar.is-collapsed{width:82px;overflow:hidden}.sidebar.is-collapsed .school-chip strong,.sidebar.is-collapsed .school-chip small,.sidebar.is-collapsed .navbtn span{display:none}.sidebar.is-collapsed .school-chip{min-width:0;padding:10px 4px;text-align:center}.sidebar.is-collapsed .navbtn{justify-content:center;padding:12px 5px}.sidebar.is-collapsed .navbtn i{margin:0}\n</style></head><body>
+/* Responsive collapsible navigation inspired by the original portal */\n.sidebar-collapse{border-top:1px solid rgba(255,255,255,.12);border-radius:8px;margin-bottom:8px;color:#e7c76d}.sidebar-collapse i{color:#e7c76d}.sidebar.is-collapsed{width:82px;overflow:hidden}.sidebar.is-collapsed .school-chip strong,.sidebar.is-collapsed .school-chip small,.sidebar.is-collapsed .navbtn span{display:none}.sidebar.is-collapsed .school-chip{min-width:0;padding:10px 4px;text-align:center}.sidebar.is-collapsed .navbtn{justify-content:center;padding:12px 5px}.sidebar.is-collapsed .navbtn i{margin:0}\n
+/* Premium portal refinement: consistent surfaces, focus states and responsive touch targets */
+:root{--radius-lg:18px;--radius-md:12px;--focus-ring:0 0 0 3px rgba(214,166,55,.25)}
+body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.012em}
+.panel,.stat-card,.metric-card,.card{border-radius:var(--radius-lg);border:1px solid var(--line);transition:box-shadow .18s ease,border-color .18s ease,transform .18s ease}
+.panel:hover,.stat-card:hover,.metric-card:hover{box-shadow:0 16px 36px rgba(11,29,58,.09)}
+button,input,select,textarea{font:inherit}
+button{transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:0;box-shadow:var(--focus-ring)}
+input,select,textarea{min-height:42px;border-radius:10px}
+button{min-height:40px;border-radius:10px}
+.top{backdrop-filter:saturate(140%) blur(10px)}
+.sidebar{border-radius:18px}
+.navbtn{border-radius:11px;transition:background .16s ease,color .16s ease,transform .16s ease}
+table{border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:12px}
+thead th{font-size:.76rem;letter-spacing:.045em;text-transform:uppercase}
+tbody tr{transition:background-color .14s ease}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+@media(max-width:560px){button,input,select,textarea{min-height:44px}.panel,.stat-card,.metric-card,.card{border-radius:14px}}
+</style></head><body>
 <header class="top"><div><div class="eyebrow">Teachers Welfare Fund</div><h1 id="brand">School Portal</h1></div><div style="display:flex;align-items:center;gap:12px"><button id="themeToggle" class="secondary" type="button" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i> Theme</button><div class="shield"><i class="fa-solid fa-shield-halved"></i>Secure school administrator access</div></div></header>
 <main>
 <section id="login" class="panel narrow"><div class="eyebrow">Protected gateway</div><h2 id="loginSchoolName">Administrator sign in</h2><p class="muted">School code: <strong id="codeLabel"></strong></p><p class="muted">Use the email invitation and password created for your school administrator account.</p>
