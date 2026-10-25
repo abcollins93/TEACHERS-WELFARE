@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>School Welfare Portal</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--navy:#0b1d3a;--gold:#d6a637;--bg:#f4f6fa;--ink:#182235;--muted:#667085}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}.top{background:var(--navy);color:white;padding:24px max(20px,calc((100% - 1080px)/2));border-bottom:4px solid var(--gold)}main{max-width:1080px;margin:28px auto;padding:0 16px}.panel{background:white;border:1px solid #e3e8ef;border-radius:16px;padding:24px;box-shadow:0 8px 30px #1020400c;margin-bottom:18px}.narrow{max-width:460px;margin:36px auto}label{display:block;font-weight:650;margin:14px 0 6px}input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:9px;font:inherit}button{border:0;border-radius:9px;padding:12px 16px;background:var(--navy);color:white;font-weight:700;font:inherit;cursor:pointer}button.secondary{background:#e8edf4;color:var(--navy)}button:disabled{opacity:.6} .muted{color:var(--muted)}.error{color:#b42318}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}.metric{background:#fff;border:1px solid #e3e8ef;border-radius:14px;padding:20px}.metric strong{display:block;font-size:1.7rem;margin-top:5px}.hidden{display:none}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:11px 8px;border-bottom:1px solid #e6eaf0}footer{text-align:center;color:var(--muted);padding:24px;font-size:.9rem}
+</style></head><body>
+<header class="top"><div><div style="font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:#f1d48b">Teachers Welfare Fund</div><h1 id="brand" style="margin:5px 0 0;font-size:1.6rem">School Portal</h1><div style="opacity:.8">Secure school administrator access</div></div></header>
+<main>
+<section id="login" class="panel narrow"><h2>Administrator sign in</h2><p class="muted">School code: <strong id="codeLabel"></strong></p><p class="muted">Use the email invitation and password created for your school administrator account.</p>
+<form id="loginForm"><label for="email">Administrator email</label><input id="email" type="email" autocomplete="username" required><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required><p id="loginError" class="error" role="alert"></p><button id="loginBtn" type="submit" style="width:100%">Sign in securely</button></form>
+</section>
+<section id="dashboard" class="hidden"><div class="panel"><div style="display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap"><div><h2 id="schoolName" style="margin:0"></h2><div id="schoolMeta" class="muted"></div></div><button id="logout" class="secondary">Sign out</button></div><p id="loadNote" class="muted">Loading school records…</p></div>
+<div class="grid"><div class="metric">Registered teachers<strong id="teacherCount">—</strong></div><div class="metric">Contributions recorded<strong id="contributionTotal">—</strong><span class="muted">GHS</span></div><div class="metric">Welfare payouts<strong id="payoutTotal">—</strong><span class="muted">GHS</span></div><div class="metric">Net recorded funds<strong id="netTotal">—</strong><span class="muted">GHS</span></div></div>
+<div class="panel" style="margin-top:18px"><h3>Teachers in this school</h3><p class="muted">This first secure gateway provides a read-only overview. Editing and financial-entry tools will be enabled after the remaining tenant workflows are verified.</p><div style="overflow:auto"><table><thead><tr><th>Teacher</th><th>Rank</th><th>Class</th></tr></thead><tbody id="teacherRows"><tr><td colspan="3">Loading…</td></tr></tbody></table></div></div>
+</section>
+</main><footer>School records are restricted by your authenticated school-admin account.</footer>
+<script>
+(function(){
+const SUPABASE_URL='https://jlwdtlhlztbgpogqdabu.supabase.co';
+const SUPABASE_KEY='sb_publishable_-idvZBti_BY5Xn8xDxhqqw_p_Me6X8O';
+const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const params=new URLSearchParams(location.search);
+const code=(params.get('school')||'').trim().toUpperCase();
+const $=id=>document.getElementById(id);
+const money=n=>Number(n||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
+$('codeLabel').textContent=code||'Missing school code';
+if(!/^[A-Z0-9-]{3,32}$/.test(code)){ $('loginError').textContent='This gateway link is missing a valid school code. Please use the link provided by your school platform administrator.';$('loginBtn').disabled=true; }
+function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+async function showDashboard(){
+ const {data:{user},error:userErr}=await client.auth.getUser();
+ if(userErr||!user){$('login').classList.remove('hidden');$('dashboard').classList.add('hidden');return;}
+ // RLS must return only the school assigned to this authenticated administrator.
+ const {data:school,error}=await client.from('schools').select('id,name,school_code,school_type,region,district,status').eq('school_code',code).maybeSingle();
+ if(error||!school||school.status!=='active'){
+   await client.auth.signOut();$('loginError').textContent='Access denied: this account is not assigned to an active school matching this gateway code.';$('login').classList.remove('hidden');$('dashboard').classList.add('hidden');return;
+ }
+ $('login').classList.add('hidden');$('dashboard').classList.remove('hidden');
+ $('schoolName').textContent=school.name;$('brand').textContent=school.name;
+ $('schoolMeta').textContent=[school.school_code,school.school_type,school.district,school.region].filter(Boolean).join(' · ');
+ const [teachersRes,contribRes,payoutsRes]=await Promise.all([
+  client.from('teachers').select('id,name,rank,class_name').eq('school_id',school.id).order('name'),
+  client.from('contributions').select('amount').eq('school_id',school.id),
+  client.from('payouts').select('amount').eq('school_id',school.id)
+ ]);
+ const err=[teachersRes.error,contribRes.error,payoutsRes.error].find(Boolean);
+ if(err){$('loadNote').textContent='Your school login is verified, but some records could not be loaded. Check the school assignment and database access policies.';$('loadNote').className='error';return;}
+ const teachers=teachersRes.data||[], contributions=contribRes.data||[], payouts=payoutsRes.data||[];
+ const c=contributions.reduce((sum,r)=>sum+Number(r.amount||0),0),p=payouts.reduce((sum,r)=>sum+Number(r.amount||0),0);
+ $('teacherCount').textContent=teachers.length;$('contributionTotal').textContent=money(c);$('payoutTotal').textContent=money(p);$('netTotal').textContent=money(c-p);
+ $('teacherRows').innerHTML=teachers.length?teachers.map(t=>'<tr><td>'+escapeHtml(t.name)+'</td><td>'+escapeHtml(t.rank||'—')+'</td><td>'+escapeHtml(t.class_name||'—')+'</td></tr>').join(''):'<tr><td colspan="3">No teachers are assigned to this school yet.</td></tr>';
+ $('loadNote').textContent='School identity verified. Records shown are those permitted by database row-level security.';$('loadNote').className='muted';
+}
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='';$('loginBtn').disabled=true;$('loginBtn').textContent='Signing in…';try{const {error}=await client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;await showDashboard();}catch(err){$('loginError').textContent='Sign-in failed. Check your email and password, or use the password setup link from your invitation.';await client.auth.signOut();}finally{$('loginBtn').disabled=!/^[A-Z0-9-]{3,32}$/.test(code);$('loginBtn').textContent='Sign in securely';}});
+$('logout').addEventListener('click',async()=>{await client.auth.signOut();$('dashboard').classList.add('hidden');$('login').classList.remove('hidden');$('password').value='';});
+client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
+})();
+</script></body></html>
