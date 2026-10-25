@@ -31,7 +31,9 @@ const SUPABASE_URL='https://jlwdtlhlztbgpogqdabu.supabase.co';
 const SUPABASE_KEY='sb_publishable_-idvZBti_BY5Xn8xDxhqqw_p_Me6X8O';
 const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const params=new URLSearchParams(location.search);
-const code=(params.get('school')||'').trim().toUpperCase();
+const requestedCode=(params.get('school')||'').trim().toUpperCase();
+// Keep the previously issued Ntonso gateway URL working while the registered school code remains NTONSO-A-0.
+const code=requestedCode==='NTONSO-A-01'?'NTONSO-A-0':requestedCode;
 const $=id=>document.getElementById(id);
 const applyTheme=dark=>{document.documentElement.classList.toggle('dark',dark);const b=$('themeToggle');if(b)b.innerHTML=dark?'<i class="fa-solid fa-sun"></i> Light mode':'<i class="fa-solid fa-moon"></i> Dark mode';};
 applyTheme(false);
