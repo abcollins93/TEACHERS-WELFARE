@@ -38,7 +38,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  if(tr.error||cr.error||pr.error){msg('wfTeacherMsg','Records could not be loaded. Check school-admin database permissions.',true);return;}
  const teachers=tr.data||[], cons=cr.data||[], pays=pr.data||[];
  $('teacherRows').innerHTML=teachers.length?teachers.map(t=>'<tr><td>'+esc(t.id)+'</td><td>'+esc(t.name)+'</td><td>'+esc(t.phone||'—')+'</td><td>'+esc(t.rank||'—')+'</td><td>'+esc(t.class_name||'—')+'</td></tr>').join(''):'<tr><td colspan="5">No teachers yet.</td></tr>';
- $('wfManageTeacherRows').innerHTML=teachers.length?teachers.map(t=>'<tr><td>'+esc(t.id)+'</td><td>'+esc(t.name)+'</td><td>'+esc(t.phone||'—')+'</td><td>'+esc(t.rank||'—')+'</td><td>'+esc(t.class_name||'—')+'</td><td><button type="button" class="secondary" data-wf-edit="'+esc(t.id)+'">Edit</button></td></tr>').join(''):'<tr><td colspan="6">No teachers registered.</td></tr>';
+ $('wfManageTeacherRows').innerHTML=teachers.length?teachers.map(t=>'<tr><td>'+esc(t.id)+'</td><td>'+esc(t.name)+'</td><td>'+esc(t.phone||'—')+'</td><td>'+esc(t.rank||'—')+'</td><td>'+esc(t.class_name||'—')+'</td><td><button type="button" class="secondary" data-wf-edit="'+esc(t.id)+'">Edit</button> <button type="button" data-wf-remove="'+esc(t.id)+'">Remove</button></td></tr>').join(''):'<tr><td colspan="6">No teachers registered.</td></tr>';
 
  const options='<option value="">Choose teacher</option>'+teachers.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name)+' ('+esc(t.id)+')</option>').join('');
  $('wfConTeacher').innerHTML=options;$('wfPayTeacher').innerHTML=options;$('wfStatementTeacher').innerHTML=options;
@@ -113,7 +113,19 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  let editingTeacherId=null;
  function resetTeacherForm(){editingTeacherId=null;$('wfTeacher').reset();$('wfTid').disabled=false;$('wfTeacherSave').textContent='Register teacher';msg('wfTeacherMsg','');}
  $('wfTeacherCancel').onclick=resetTeacherForm;
- $('wfManageTeacherRows').addEventListener('click',e=>{const b=e.target.closest('[data-wf-edit]');if(!b)return;const t=teachers.find(x=>String(x.id)===b.dataset.wfEdit);if(!t)return;editingTeacherId=t.id;$('wfTid').value=t.id;$('wfTid').disabled=true;$('wfName').value=t.name||'';$('wfPhone').value=t.phone||'';$('wfRank').value=t.rank||'';$('wfClass').value=t.class_name||'';$('wfTeacherSave').textContent='Save changes';msg('wfTeacherMsg','Editing '+t.name+'.');$('wfTid').scrollIntoView({behavior:'smooth',block:'center'});});
+ $('wfManageTeacherRows').addEventListener('click',async e=>{
+   const remove=e.target.closest('[data-wf-remove]');
+   if(remove){
+     const t=teachers.find(x=>String(x.id)===remove.dataset.wfRemove);if(!t)return;
+     if(!confirm('Remove '+t.name+' from the active teacher register? Historical contributions and payouts will be retained and will continue to count in fund totals.'))return;
+     const reason=prompt('Enter a reason for removing this teacher (audit record required):');if(!reason||!reason.trim())return alert('Removal cancelled. A reason is required.');
+     const {error}=await client.from('teachers').delete().eq('id',t.id).eq('school_id',ctx.id);
+     if(error)return alert('Teacher was not removed. Check school permissions.');
+     const auditOk=await audit(client,ctx,'Remove teacher from active register',t.name+'; reason: '+reason.trim(),t.id);
+     await refresh();if(!auditOk)alert('Teacher removed and finance history retained, but audit logging failed. Contact the platform administrator.');return;
+   }
+   const b=e.target.closest('[data-wf-edit]');if(!b)return;const t=teachers.find(x=>String(x.id)===b.dataset.wfEdit);if(!t)return;editingTeacherId=t.id;$('wfTid').value=t.id;$('wfTid').disabled=true;$('wfName').value=t.name||'';$('wfPhone').value=t.phone||'';$('wfRank').value=t.rank||'';$('wfClass').value=t.class_name||'';$('wfTeacherSave').textContent='Save changes';msg('wfTeacherMsg','Editing '+t.name+'.');$('wfTid').scrollIntoView({behavior:'smooth',block:'center'});
+ });
  $('wfTeacher').onsubmit=async e=>{e.preventDefault();const row={id:$('wfTid').value.trim(),name:$('wfName').value.trim(),phone:$('wfPhone').value.trim()||null,rank:$('wfRank').value.trim()||null,class_name:$('wfClass').value.trim()||null,school_id:ctx.id};msg('wfTeacherMsg','Saving…');
    const result=editingTeacherId?await client.from('teachers').update({name:row.name,phone:row.phone,rank:row.rank,class_name:row.class_name}).eq('id',editingTeacherId).eq('school_id',ctx.id):await client.from('teachers').insert(row);
    if(result.error){msg('wfTeacherMsg',editingTeacherId?'Changes were not saved. Check school permissions.':'Not saved. Check the staff ID and school permissions.',true);return;}
