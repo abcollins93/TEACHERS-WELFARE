@@ -14,7 +14,9 @@ function addUI(){
  <div class="grid"><div class="panel"><h3>Record contribution</h3><form id="wfContribution"><label>Teacher</label><select id="wfConTeacher" required style="width:100%;padding:12px"></select><label>Amount (GHS)</label><input id="wfConAmount" type="number" min=".01" step=".01" required><label>Date</label><input id="wfConDate" type="date" required><label>Reference</label><input id="wfConRef" maxlength="180"><p id="wfConMsg" class="muted"></p><button>Save contribution</button></form></div>
  <div class="panel"><h3>Record welfare payout</h3><form id="wfPayout"><label>Teacher</label><select id="wfPayTeacher" required style="width:100%;padding:12px"></select><label>Amount (GHS)</label><input id="wfPayAmount" type="number" min=".01" step=".01" required><label>Date</label><input id="wfPayDate" type="date" required><label>Reason</label><input id="wfPayReason" maxlength="180" required><label>Reference</label><input id="wfPayRef" maxlength="180"><p id="wfPayMsg" class="muted"></p><button>Save payout</button></form></div></div>
  <div class="grid"><div class="panel"><h3>Member PDF statement</h3><p class="muted">Download an individual teacher statement showing contributions, welfare payouts and net position.</p><label for="wfStatementTeacher">Teacher</label><select id="wfStatementTeacher" style="width:100%;padding:12px"></select><button id="wfStatementPdf" type="button" style="margin-top:10px"><i class="fa-solid fa-file-pdf"></i> Download member statement</button><p id="wfStatementMsg" class="muted"></p></div><div class="panel"><h3>Contribution ledger</h3><div style="overflow:auto"><table><thead><tr><th>Date</th><th>Teacher</th><th>Amount (GHS)</th><th>Reference</th></tr></thead><tbody id="wfConRows"></tbody></table></div></div>
- <div class="panel"><h3>Welfare payouts</h3><div style="overflow:auto"><table><thead><tr><th>Date</th><th>Teacher</th><th>Amount (GHS)</th><th>Reason</th></tr></thead><tbody id="wfPayRows"></tbody></table></div></div></div>`;
+ <div class="panel"><h3>Welfare payouts</h3><div style="overflow:auto"><table><thead><tr><th>Date</th><th>Teacher</th><th>Amount (GHS)</th><th>Reason</th></tr></thead><tbody id="wfPayRows"></tbody></table></div></div></div>
+ <div class="panel"><h3>Reports and exports</h3><div class="grid"><div><label for="wfMonth">Reporting month</label><input id="wfMonth" type="month"></div><div style="align-self:end;display:flex;gap:8px;flex-wrap:wrap"><button id="wfMonthlyPdf" type="button">Monthly PDF summary</button><button id="wfExportCsv" type="button" class="secondary">Export ledgers CSV</button></div></div><p id="wfReportMsg" class="muted">Reports include records visible to this school account only.</p></div>
+ <div class="panel"><h3>Audit history</h3><div class="grid"><div><label for="wfAuditSearch">Search audit records</label><input id="wfAuditSearch" placeholder="Search action, actor, details…"></div><div><label for="wfAuditCategory">Category</label><select id="wfAuditCategory"><option value="">All categories</option><option>Welfare portal</option><option>Contribution</option><option>Payout</option><option>Teacher</option></select></div></div><p id="wfAuditMsg" class="muted">Loading audit history…</p><div style="overflow:auto"><table><thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Details</th><th>Status</th></tr></thead><tbody id="wfAuditRows"><tr><td colspan="5">Loading…</td></tr></tbody></table></div></div>`;
  const dash=$('dashboard');if(dash)dash.appendChild(d);
  ['wfConDate','wfPayDate'].forEach(id=>$(id).value=today());
 }
@@ -44,6 +46,36 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  $('payoutTotal').textContent=money(pays.reduce((a,x)=>a+Number(x.amount||0),0));
  $('netTotal').textContent=money(cons.reduce((a,x)=>a+Number(x.amount||0),0)-pays.reduce((a,x)=>a+Number(x.amount||0),0));
  const ctx=school;
+ $('wfMonth').value=new Date().toISOString().slice(0,7);
+ let auditRows=[];
+ async function loadAudit(){
+   const {data,error}=await client.from('audit_logs').select('time_string,actor_name,action,details,status,category').eq('school_id',ctx.id).order('created_at',{ascending:false}).limit(300);
+   if(error){msg('wfAuditMsg','Audit history is unavailable under the current school permissions.',true);$('wfAuditRows').innerHTML='<tr><td colspan="5">No audit records could be loaded.</td></tr>';return;}
+   auditRows=data||[];renderAudit();
+ }
+ function renderAudit(){
+   const q=($('wfAuditSearch').value||'').toLowerCase(),cat=$('wfAuditCategory').value;
+   const rows=auditRows.filter(x=>(!cat||x.category===cat)&&[x.time_string,x.actor_name,x.action,x.details,x.status,x.category].some(v=>String(v||'').toLowerCase().includes(q)));
+   $('wfAuditRows').innerHTML=rows.length?rows.map(x=>'<tr><td>'+esc(x.time_string||'—')+'</td><td>'+esc(x.actor_name||'—')+'</td><td>'+esc(x.action||'—')+'</td><td>'+esc(x.details||'—')+'</td><td>'+esc(x.status||'—')+'</td></tr>').join(''):'<tr><td colspan="5">No matching audit entries.</td></tr>';
+   msg('wfAuditMsg',rows.length+' audit entr'+(rows.length===1?'y':'ies')+' shown.');
+ }
+ $('wfAuditSearch').addEventListener('input',renderAudit);$('wfAuditCategory').addEventListener('change',renderAudit);
+ $('wfExportCsv').onclick=()=>{
+   const rows=[['Record type','Date','Staff ID','Amount GHS','Reference / reason'],...cons.map(x=>['Contribution',x.date,x.teacher_id,x.amount,x.reference||'']),...pays.map(x=>['Welfare payout',x.date,x.teacher_id,x.amount,x.reason||x.reference||''])];
+   const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\\r\\n');
+   const blob=new Blob(['\\ufeff'+csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+   a.href=url;a.download=(ctx.school_code||'school')+'-welfare-ledgers.csv';a.click();URL.revokeObjectURL(url);msg('wfReportMsg','CSV export prepared for download.');
+ };
+ $('wfMonthlyPdf').onclick=()=>{
+   const month=$('wfMonth').value;if(!month)return msg('wfReportMsg','Choose a reporting month first.',true);
+   if(!window.html2pdf)return msg('wfReportMsg','PDF service is unavailable.',true);
+   const mc=cons.filter(x=>String(x.date||'').startsWith(month)),mp=pays.filter(x=>String(x.date||'').startsWith(month));
+   const sumC=mc.reduce((a,x)=>a+Number(x.amount||0),0),sumP=mp.reduce((a,x)=>a+Number(x.amount||0),0);
+   const report=document.createElement('div');report.style.cssText='padding:24px;background:white;color:#182235;font-family:Arial,sans-serif';
+   report.innerHTML='<h1>'+esc(ctx.name)+'</h1><h2>Monthly Welfare Fund Summary</h2><p>School code: '+esc(ctx.school_code)+' | Period: '+esc(month)+'</p><hr><p>Teachers registered: '+teachers.length+'</p><p>Contributions: GHS '+money(sumC)+' ('+mc.length+' entries)</p><p>Welfare payouts: GHS '+money(sumP)+' ('+mp.length+' entries)</p><h3>Contributions</h3><table style="width:100%;border-collapse:collapse"><tr><th>Date</th><th>Staff ID</th><th>Amount</th><th>Reference</th></tr>'+mc.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.teacher_id)+'</td><td>'+money(x.amount)+'</td><td>'+esc(x.reference||'—')+'</td></tr>').join('')+'</table><h3>Payouts</h3><table style="width:100%;border-collapse:collapse"><tr><th>Date</th><th>Staff ID</th><th>Amount</th><th>Reason</th></tr>'+mp.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.teacher_id)+'</td><td>'+money(x.amount)+'</td><td>'+esc(x.reason||x.reference||'—')+'</td></tr>').join('')+'</table>';
+   window.html2pdf().set({margin:10,filename:(ctx.school_code||'school')+'-'+month+'-monthly-welfare.pdf',html2canvas:{scale:2},jsPDF:{unit:'mm',format:'a4',orientation:'landscape'}}).from(report).save();msg('wfReportMsg','Monthly PDF report is being prepared.');
+ };
+ loadAudit();
  $('wfStatementPdf').onclick=()=>{
    const tid=$('wfStatementTeacher').value;
    const teacher=teachers.find(t=>String(t.id)===String(tid));
