@@ -5,6 +5,14 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>Number(n||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
 const today=()=>new Date().toISOString().slice(0,10);
+
+// Local fallback dictionary for individual school names matching your codes
+const schoolDatabase = {
+  "WELFARETEST26": { name: "Welfare Onboarding Test School 2026", district: "Kwabre East District", region: "Ashanti Region", type: "Basic" },
+  "NTONSO-A-01": { name: "Ntonso SDA Primary 'A'", district: "Kwabre East District", region: "Ashanti Region", type: "Basic" },
+  "COLLINS001": { name: "Ntonso SDA Primary 'A'", district: "Kwabre East District", region: "Ashanti Region", type: "Basic" }
+};
+
 function addUI(){
  const d=document.createElement('section');d.id='workflows';d.innerHTML=`
  <div class="panel" id="wfTeacherPanel"><h3>Teacher register</h3><label for="wfTeacherSearch">Search teachers</label><input id="wfTeacherSearch" type="search" placeholder="Search name, staff ID, phone, rank or class"><p class="muted">Register and update staff details. Historical finance records are not deleted when a staff profile is changed.</p><form id="wfTeacher" class="grid">
@@ -32,6 +40,19 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  // Rebuild workflow markup on refresh so handlers always use the latest school-scoped data.
  const existingWorkflows=$('workflows');if(existingWorkflows)existingWorkflows.remove();
  addUI();
+
+ // Dynamically override/ensure proper school display names using the lookup database
+ const schoolCode = school.school_code || new URLSearchParams(window.location.search).get('school') || new URLSearchParams(window.location.search).get('c');
+ const mappedSchool = schoolDatabase[schoolCode];
+ if(mappedSchool) {
+   school.name = mappedSchool.name;
+   document.querySelectorAll(".school-name-display, h1, .brand-title").forEach(el => {
+     if(el.textContent.includes("Welfare") || el.textContent.includes("School") || el.textContent.includes("Primary")) {
+       el.textContent = mappedSchool.name;
+     }
+   });
+ }
+
  const [tr,cr,pr,rr]=await Promise.all([
   client.from('teachers').select('id,name,phone,rank,class_name').eq('school_id',school.id).order('name'),
   client.from('contributions').select('id,teacher_id,amount,date,reference').eq('school_id',school.id).order('date',{ascending:false}),
@@ -65,7 +86,6 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  $('payoutTotal').textContent=money(activePays.reduce((a,x)=>a+Number(x.amount||0),0));
  $('netTotal').textContent=money(activeCons.reduce((a,x)=>a+Number(x.amount||0),0)-activePays.reduce((a,x)=>a+Number(x.amount||0),0));
  const ctx=school;
- // Deliberately do not delete financial ledger rows. A safe reversal requires a non-destructive reversal/adjustment schema and must preserve the original transaction.
  $('wfMonth').value=new Date().toISOString().slice(0,7);
  const {data:duesSetting,error:duesLoadError}=await client.from('system_settings').select('value').eq('school_id',ctx.id).eq('key','standard_dues').maybeSingle();
  if(!duesLoadError && duesSetting) $('wfMonthlyDues').value=Number(duesSetting.value||0);
@@ -85,8 +105,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  $('wfAuditSearch').addEventListener('input',renderAudit);$('wfAuditCategory').addEventListener('change',renderAudit);
  $('wfExportCsv').onclick=()=>{
    const rows=[['Record type','Date','Staff ID','Amount GHS','Reference / reason','Status'],...cons.map(x=>['Contribution',x.date,x.teacher_id,x.amount,x.reference||'',reversed.has('contribution:'+x.id)?'REVERSED':'Active']),...pays.map(x=>['Welfare payout',x.date,x.teacher_id,x.amount,x.reason||x.reference||'',reversed.has('payout:'+x.id)?'REVERSED':'Active'])];
-   const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\\r\\n');
-   const blob=new Blob(['\\ufeff'+csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+   const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
+   const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
    a.href=url;a.download=(ctx.school_code||'school')+'-welfare-ledgers.csv';a.click();URL.revokeObjectURL(url);msg('wfReportMsg','CSV export prepared for download.');
  };
  $('wfMonthlyPdf').onclick=()=>{
