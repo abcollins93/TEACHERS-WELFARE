@@ -29,7 +29,9 @@ async function audit(client,ctx,action,details,teacherId){
  return true;
 }
 window.initSchoolWorkflows=async function(client,school,refresh){
- if(!$('workflows'))addUI();
+ // Rebuild workflow markup on refresh so handlers always use the latest school-scoped data.
+ const existingWorkflows=$('workflows');if(existingWorkflows)existingWorkflows.remove();
+ addUI();
  const [tr,cr,pr,rr]=await Promise.all([
   client.from('teachers').select('id,name,phone,rank,class_name').eq('school_id',school.id).order('name'),
   client.from('contributions').select('id,teacher_id,amount,date,reference').eq('school_id',school.id).order('date',{ascending:false}),
