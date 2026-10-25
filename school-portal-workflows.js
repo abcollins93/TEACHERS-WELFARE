@@ -30,13 +30,16 @@ async function audit(client,ctx,action,details,teacherId){
 }
 window.initSchoolWorkflows=async function(client,school,refresh){
  if(!$('workflows'))addUI();
- const [tr,cr,pr]=await Promise.all([
+ const [tr,cr,pr,rr]=await Promise.all([
   client.from('teachers').select('id,name,phone,rank,class_name').eq('school_id',school.id).order('name'),
   client.from('contributions').select('id,teacher_id,amount,date,reference').eq('school_id',school.id).order('date',{ascending:false}),
-  client.from('payouts').select('id,teacher_id,amount,date,reason,reference').eq('school_id',school.id).order('date',{ascending:false})
+  client.from('payouts').select('id,teacher_id,amount,date,reason,reference').eq('school_id',school.id).order('date',{ascending:false}),
+  client.from('transaction_reversals').select('transaction_type,transaction_id,reason,created_at').eq('school_id',school.id)
  ]);
- if(tr.error||cr.error||pr.error){msg('wfTeacherMsg','Records could not be loaded. Check school-admin database permissions.',true);return;}
- const teachers=tr.data||[], cons=cr.data||[], pays=pr.data||[];
+ if(tr.error||cr.error||pr.error||rr.error){msg('wfTeacherMsg','Records could not be loaded. Check school-admin database permissions.',true);return;}
+ const teachers=tr.data||[], cons=cr.data||[], pays=pr.data||[], reversals=rr.data||[];
+ const reversed=new Set(reversals.map(r=>r.transaction_type+':'+r.transaction_id));
+ const activeCons=cons.filter(x=>!reversed.has('contribution:'+x.id)), activePays=pays.filter(x=>!reversed.has('payout:'+x.id));
  const teacherById=new Map(teachers.map(t=>[String(t.id),t]));
  const teacherLabel=id=>{const t=teacherById.get(String(id));return t?esc(t.name)+' ('+esc(t.id)+')':esc(id||'—')};
  const renderTeacherTables=()=>{const q=String($('wfTeacherSearch')?.value||'').trim().toLowerCase();const visible=teachers.filter(t=>[t.id,t.name,t.phone,t.rank,t.class_name].some(v=>String(v||'').toLowerCase().includes(q)));
@@ -47,12 +50,13 @@ window.initSchoolWorkflows=async function(client,school,refresh){
 
  const options='<option value="">Choose teacher</option>'+teachers.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name)+' ('+esc(t.id)+')</option>').join('');
  $('wfConTeacher').innerHTML=options;$('wfPayTeacher').innerHTML=options;$('wfStatementTeacher').innerHTML=options;
- $('wfConRows').innerHTML=cons.length?cons.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+teacherLabel(x.teacher_id)+'</td><td>'+money(x.amount)+'</td><td>'+esc(x.reference||'—')+'</td><td><span class="muted" title="Non-destructive reversal support requires a ledger status/adjustment schema">Requires safe reversal setup</span></td></tr>').join(''):'<tr><td colspan="5">No contributions recorded.</td></tr>';
- $('wfPayRows').innerHTML=pays.length?pays.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+teacherLabel(x.teacher_id)+'</td><td>'+money(x.amount)+'</td><td>'+esc(x.reason||x.reference||'—')+'</td><td><span class="muted" title="Non-destructive reversal support requires a ledger status/adjustment schema">Requires safe reversal setup</span></td></tr>').join(''):'<tr><td colspan="5">No payouts recorded.</td></tr>';
+ const reversalCell=(type,x)=>reversed.has(type+':'+x.id)?'<strong>REVERSED</strong> <span class="muted">· '+esc(reversals.find(r=>r.transaction_type===type&&String(r.transaction_id)===String(x.id))?.reason||'Reason recorded')+'</span>':'<button type="button" class="secondary" data-wf-reverse="'+type+'" data-wf-id="'+esc(x.id)+'">Reverse</button>';
+ $('wfConRows').innerHTML=cons.length?cons.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+teacherLabel(x.teacher_id)+'</td><td>'+money(x.amount)+'</td><td>'+esc(x.reference||'—')+'</td><td>'+reversalCell('contribution',x)+'</td></tr>').join(''):'<tr><td colspan="5">No contributions recorded.</td></tr>';
+ $('wfPayRows').innerHTML=pays.length?pays.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+teacherLabel(x.teacher_id)+'</td><td>'+money(x.amount)+'</td><td>'+esc(x.reason||x.reference||'—')+'</td><td>'+reversalCell('payout',x)+'</td></tr>').join(''):'<tr><td colspan="5">No payouts recorded.</td></tr>';
  $('teacherCount').textContent=teachers.length;
- $('contributionTotal').textContent=money(cons.reduce((a,x)=>a+Number(x.amount||0),0));
- $('payoutTotal').textContent=money(pays.reduce((a,x)=>a+Number(x.amount||0),0));
- $('netTotal').textContent=money(cons.reduce((a,x)=>a+Number(x.amount||0),0)-pays.reduce((a,x)=>a+Number(x.amount||0),0));
+ $('contributionTotal').textContent=money(activeCons.reduce((a,x)=>a+Number(x.amount||0),0));
+ $('payoutTotal').textContent=money(activePays.reduce((a,x)=>a+Number(x.amount||0),0));
+ $('netTotal').textContent=money(activeCons.reduce((a,x)=>a+Number(x.amount||0),0)-activePays.reduce((a,x)=>a+Number(x.amount||0),0));
  const ctx=school;
  // Deliberately do not delete financial ledger rows. A safe reversal requires a non-destructive reversal/adjustment schema and must preserve the original transaction.
  $('wfMonth').value=new Date().toISOString().slice(0,7);
@@ -73,7 +77,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  }
  $('wfAuditSearch').addEventListener('input',renderAudit);$('wfAuditCategory').addEventListener('change',renderAudit);
  $('wfExportCsv').onclick=()=>{
-   const rows=[['Record type','Date','Staff ID','Amount GHS','Reference / reason'],...cons.map(x=>['Contribution',x.date,x.teacher_id,x.amount,x.reference||'']),...pays.map(x=>['Welfare payout',x.date,x.teacher_id,x.amount,x.reason||x.reference||''])];
+   const rows=[['Record type','Date','Staff ID','Amount GHS','Reference / reason','Status'],...cons.map(x=>['Contribution',x.date,x.teacher_id,x.amount,x.reference||'',reversed.has('contribution:'+x.id)?'REVERSED':'Active']),...pays.map(x=>['Welfare payout',x.date,x.teacher_id,x.amount,x.reason||x.reference||'',reversed.has('payout:'+x.id)?'REVERSED':'Active'])];
    const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\\r\\n');
    const blob=new Blob(['\\ufeff'+csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
    a.href=url;a.download=(ctx.school_code||'school')+'-welfare-ledgers.csv';a.click();URL.revokeObjectURL(url);msg('wfReportMsg','CSV export prepared for download.');
@@ -81,7 +85,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  $('wfMonthlyPdf').onclick=()=>{
    const month=$('wfMonth').value;if(!month)return msg('wfReportMsg','Choose a reporting month first.',true);
    if(!window.html2pdf)return msg('wfReportMsg','PDF service is unavailable.',true);
-   const mc=cons.filter(x=>String(x.date||'').startsWith(month)),mp=pays.filter(x=>String(x.date||'').startsWith(month));
+   const mc=activeCons.filter(x=>String(x.date||'').startsWith(month)),mp=activePays.filter(x=>String(x.date||'').startsWith(month));
    const sumC=mc.reduce((a,x)=>a+Number(x.amount||0),0),sumP=mp.reduce((a,x)=>a+Number(x.amount||0),0);
    const report=document.createElement('div');report.style.cssText='padding:24px;background:white;color:#182235;font-family:Arial,sans-serif';
    report.innerHTML='<h1>'+esc(ctx.name)+'</h1><h2>Monthly Welfare Fund Summary</h2><p>School code: '+esc(ctx.school_code)+' | Period: '+esc(month)+'</p><hr><p>Teachers registered: '+teachers.length+'</p><p>Contributions: GHS '+money(sumC)+' ('+mc.length+' entries)</p><p>Welfare payouts: GHS '+money(sumP)+' ('+mp.length+' entries)</p><h3>Contributions</h3><table style="width:100%;border-collapse:collapse"><tr><th>Date</th><th>Staff ID</th><th>Amount</th><th>Reference</th></tr>'+mc.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.teacher_id)+'</td><td>'+money(x.amount)+'</td><td>'+esc(x.reference||'—')+'</td></tr>').join('')+'</table><h3>Payouts</h3><table style="width:100%;border-collapse:collapse"><tr><th>Date</th><th>Staff ID</th><th>Amount</th><th>Reason</th></tr>'+mp.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.teacher_id)+'</td><td>'+money(x.amount)+'</td><td>'+esc(x.reason||x.reference||'—')+'</td></tr>').join('')+'</table>';
@@ -93,7 +97,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    const teacher=teachers.find(t=>String(t.id)===String(tid));
    if(!teacher){msg('wfStatementMsg','Choose a teacher first.',true);return;}
    if(!window.html2pdf){msg('wfStatementMsg','PDF service is unavailable. Check your internet connection.',true);return;}
-   const tc=cons.filter(x=>String(x.teacher_id)===String(tid)),tp=pays.filter(x=>String(x.teacher_id)===String(tid));
+   const tc=activeCons.filter(x=>String(x.teacher_id)===String(tid)),tp=activePays.filter(x=>String(x.teacher_id)===String(tid));
    const totalC=tc.reduce((a,x)=>a+Number(x.amount||0),0),totalP=tp.reduce((a,x)=>a+Number(x.amount||0),0);
    const safe=s=>esc(s);
    const report=document.createElement('div');report.style.cssText='padding:24px;color:#182235;background:white;font-family:Arial,sans-serif';
@@ -123,6 +127,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    const auditOk=await audit(client,ctx,editingTeacherId?'Update teacher profile':'Register teacher',row.name,row.id);resetTeacherForm();await refresh();msg('wfTeacherMsg',auditOk?(editingTeacherId?'Teacher profile updated.':'Teacher registered.'):'Saved, but the audit entry failed. Notify the platform administrator.',!auditOk);
  };
  $('wfContribution').onsubmit=async e=>{e.preventDefault();const teacher_id=$('wfConTeacher').value,amount=Number($('wfConAmount').value);if(!teacher_id||amount<=0)return msg('wfConMsg','Choose a teacher and a positive amount.',true);const row={teacher_id,amount,date:$('wfConDate').value,reference:$('wfConRef').value.trim()||null,school_id:ctx.id};msg('wfConMsg','Saving…');const {error}=await client.from('contributions').insert(row);if(error)return msg('wfConMsg','Not saved. Check school permissions.',true);const auditOk=await audit(client,ctx,'Record contribution','GHS '+amount.toFixed(2),teacher_id);$('wfContribution').reset();$('wfConDate').value=today();await refresh();msg('wfConMsg',auditOk?'Contribution recorded.':'Contribution saved, but the audit entry failed. Notify the platform administrator.',!auditOk);};
+ $('wfConRows').addEventListener('click',async e=>{const b=e.target.closest('[data-wf-reverse]');if(!b)return;const type=b.dataset.wfReverse,id=b.dataset.wfId;const rows=type==='contribution'?cons:pays;const tx=rows.find(x=>String(x.id)===String(id));if(!tx||reversed.has(type+':'+id))return;const reason=prompt('Enter the reason for reversing this '+type+'. The original record will be retained:');if(!reason||!reason.trim())return; if(!confirm('Confirm reversal of GHS '+money(tx.amount)+'? The original transaction will remain visible and be excluded from active totals.'))return;const {data:{user}}=await client.auth.getUser();const {error}=await client.from('transaction_reversals').insert({school_id:ctx.id,transaction_type:type,transaction_id:id,teacher_id:tx.teacher_id,amount:tx.amount,transaction_date:tx.date,reason:reason.trim(),reversed_by:user?.email||'School administrator'});if(error){alert(error.code==='23505'?'This transaction has already been reversed.':'Reversal was not saved. Check school permissions and reversal-table policies.');return;}const ok=await audit(client,ctx,'Reverse '+type,'Original transaction '+id+'; GHS '+Number(tx.amount).toFixed(2)+'; reason: '+reason.trim(),tx.teacher_id);await refresh();if(!ok)alert('Reversal saved, but the audit entry failed.');});
+ $('wfPayRows').addEventListener('click',async e=>{const b=e.target.closest('[data-wf-reverse]');if(!b)return;const type=b.dataset.wfReverse,id=b.dataset.wfId;const rows=type==='contribution'?cons:pays;const tx=rows.find(x=>String(x.id)===String(id));if(!tx||reversed.has(type+':'+id))return;const reason=prompt('Enter the reason for reversing this '+type+'. The original record will be retained:');if(!reason||!reason.trim())return;if(!confirm('Confirm reversal of GHS '+money(tx.amount)+'? The original transaction will remain visible and be excluded from active totals.'))return;const {data:{user}}=await client.auth.getUser();const {error}=await client.from('transaction_reversals').insert({school_id:ctx.id,transaction_type:type,transaction_id:id,teacher_id:tx.teacher_id,amount:tx.amount,transaction_date:tx.date,reason:reason.trim(),reversed_by:user?.email||'School administrator'});if(error){alert(error.code==='23505'?'This transaction has already been reversed.':'Reversal was not saved. Check school permissions and reversal-table policies.');return;}const ok=await audit(client,ctx,'Reverse '+type,'Original transaction '+id+'; GHS '+Number(tx.amount).toFixed(2)+'; reason: '+reason.trim(),tx.teacher_id);await refresh();if(!ok)alert('Reversal saved, but the audit entry failed.');});
  $('wfPayout').onsubmit=async e=>{e.preventDefault();const teacher_id=$('wfPayTeacher').value,amount=Number($('wfPayAmount').value);if(!teacher_id||amount<=0)return msg('wfPayMsg','Choose a teacher and a positive amount.',true);if(!confirm('Confirm welfare payout of GHS '+amount.toFixed(2)+'?'))return;const row={teacher_id,amount,date:$('wfPayDate').value,reason:$('wfPayReason').value.trim(),reference:$('wfPayRef').value.trim()||null,school_id:ctx.id};msg('wfPayMsg','Saving…');const {error}=await client.from('payouts').insert(row);if(error)return msg('wfPayMsg','Not saved. Check school permissions.',true);const auditOk=await audit(client,ctx,'Record payout','GHS '+amount.toFixed(2)+' — '+row.reason,teacher_id);$('wfPayout').reset();$('wfPayDate').value=today();await refresh();msg('wfPayMsg',auditOk?'Payout recorded.':'Payout saved, but the audit entry failed. Notify the platform administrator.',!auditOk);};
 };
 })();
