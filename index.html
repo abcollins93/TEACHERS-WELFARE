@@ -4904,7 +4904,6 @@ async function masterCreateSchool(event) {
   event.preventDefault();
   const button = document.getElementById('masterCreateSchoolButton');
   button.disabled = true;
-  button.disabled = true;
   try {
     await masterVerifySession();
     const schoolName = document.getElementById('masterSchoolName').value.trim();
