@@ -123,17 +123,21 @@ async function showDashboard(){
  $('login').classList.add('hidden');$('dashboard').classList.remove('hidden');
  $('schoolName').textContent=school.name;$('brand').textContent=school.name;$('sideSchoolName').textContent=school.name;$('sideSchoolCode').textContent=school.school_code;
  $('schoolMeta').textContent=[school.school_code,school.school_type,school.district,school.region].filter(Boolean).join(' · ');
- const [teachersRes,contribRes,payoutsRes]=await Promise.all([
-  client.from('teachers').select('id,name,rank,class_name').eq('school_id',school.id).order('name'),
-  client.from('contributions').select('amount').eq('school_id',school.id),
-  client.from('payouts').select('amount').eq('school_id',school.id)
+ const [teachersRes,contribRes,payoutsRes,reversalsRes]=await Promise.all([
+  client.from('teachers').select('id,name,phone,rank,class_name').eq('school_id',school.id).order('name'),
+  client.from('contributions').select('id,amount').eq('school_id',school.id),
+  client.from('payouts').select('id,amount').eq('school_id',school.id),
+  client.from('transaction_reversals').select('transaction_type,transaction_id').eq('school_id',school.id)
  ]);
- const err=[teachersRes.error,contribRes.error,payoutsRes.error].find(Boolean);
+ const err=[teachersRes.error,contribRes.error,payoutsRes.error,reversalsRes.error].find(Boolean);
  if(err){$('loadNote').textContent='Your school login is verified, but some records could not be loaded. Check the school assignment and database access policies.';$('loadNote').className='error';return;}
- const teachers=teachersRes.data||[], contributions=contribRes.data||[], payouts=payoutsRes.data||[];
- const c=contributions.reduce((sum,r)=>sum+Number(r.amount||0),0),p=payouts.reduce((sum,r)=>sum+Number(r.amount||0),0);
+ const teachers=teachersRes.data||[], contributions=contribRes.data||[], payouts=payoutsRes.data||[], reversals=reversalsRes.data||[];
+ const reversedContributions=new Set(reversals.filter(r=>r.transaction_type==='contribution').map(r=>String(r.transaction_id)));
+ const reversedPayouts=new Set(reversals.filter(r=>r.transaction_type==='payout').map(r=>String(r.transaction_id)));
+ const c=contributions.filter(r=>!reversedContributions.has(String(r.id))).reduce((sum,r)=>sum+Number(r.amount||0),0);
+ const p=payouts.filter(r=>!reversedPayouts.has(String(r.id))).reduce((sum,r)=>sum+Number(r.amount||0),0);
  $('teacherCount').textContent=teachers.length;$('contributionTotal').textContent=money(c);$('payoutTotal').textContent=money(p);$('netTotal').textContent=money(c-p);
- $('teacherRows').innerHTML=teachers.length?teachers.map(t=>'<tr><td>'+escapeHtml(t.id)+'</td><td>'+escapeHtml(t.name)+'</td><td>—</td><td>'+escapeHtml(t.rank||'—')+'</td><td>'+escapeHtml(t.class_name||'—')+'</td></tr>').join(''):'<tr><td colspan="5">No teachers are assigned to this school yet.</td></tr>';
+ $('teacherRows').innerHTML=teachers.length?teachers.map(t=>'<tr><td>'+escapeHtml(t.id)+'</td><td>'+escapeHtml(t.name)+'</td><td>'+escapeHtml(t.phone||'—')+'</td><td>'+escapeHtml(t.rank||'—')+'</td><td>'+escapeHtml(t.class_name||'—')+'</td></tr>').join(''):'<tr><td colspan="5">No teachers are assigned to this school yet.</td></tr>';
  $('loadNote').textContent='School identity verified. Records shown are those permitted by database row-level security.';$('loadNote').className='muted';
  if(window.initSchoolWorkflows) await window.initSchoolWorkflows(client,school,showDashboard);
  $('downloadSchoolPdf').onclick=()=>{if(!window.html2pdf){alert('PDF library is unavailable. Please check your internet connection.');return;}const report=document.createElement('div');report.style.cssText='padding:24px;color:#182235;font-family:Arial,sans-serif;background:white';report.innerHTML='<h1 style="color:#0b1d3a">'+escapeHtml(school.name)+'</h1><p>School Welfare Fund — Summary Statement</p><p>School code: '+escapeHtml(school.school_code)+' | Generated: '+new Date().toLocaleString()+'</p><hr><h2>Fund summary</h2><p>Registered teachers: '+escapeHtml($('teacherCount').textContent)+'</p><p>Total contributions: GHS '+escapeHtml($('contributionTotal').textContent)+'</p><p>Total welfare payouts: GHS '+escapeHtml($('payoutTotal').textContent)+'</p><p><strong>Net fund balance: GHS '+escapeHtml($('netTotal').textContent)+'</strong></p><h2>Teacher register</h2>'+document.querySelector('#schoolTeachers table').outerHTML;window.html2pdf().set({margin:10,filename:(school.school_code||'school')+'-welfare-summary.pdf',image:{type:'jpeg',quality:.96},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:'landscape'}}).from(report).save();};
