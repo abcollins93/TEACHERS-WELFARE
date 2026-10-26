@@ -517,7 +517,7 @@ $('forgotPassword').addEventListener('click',async()=>{
  }catch(err){$('loginError').className='error';$('loginError').textContent='Could not request password recovery. Check the email and try again, or contact your platform administrator.';}
  finally{btn.disabled=false;btn.textContent='Forgot password?';}
 });
-document.querySelectorAll('.navbtn').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.navbtn').forEach(x=>x.classList.remove('active'));btn.classList.add('active');const target=document.getElementById(btn.dataset.target);if(target)target.scrollIntoView({behavior:'smooth',block:'start'});if(window.matchMedia('(max-width: 950px)').matches)closeMobileNav();}));
+// Sidebar navigation is handled by the standalone delegated listener after this script.
 $('sidebarLogout')?.addEventListener('click',async()=>{await client.auth.signOut();$('dashboard').classList.add('hidden');$('login').classList.remove('hidden');$('password').value='';});
 $('logout').addEventListener('click',async()=>{await client.auth.signOut();$('dashboard').classList.add('hidden');$('login').classList.remove('hidden');$('password').value='';});
 // End unattended sessions after seven minutes, with a warning at minute six.
@@ -562,4 +562,46 @@ client.auth.onAuthStateChange((event,session)=>{
 });
 client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
 })();
-</script><script src="school-portal-workflows.js"></script></body></html>
+</script><script src="school-portal-workflows.js"></script>
+<script>
+/* Resilient sidebar navigation: works even when the main portal script has an unrelated runtime error. */
+(function(){
+  'use strict';
+  document.addEventListener('click', function(event){
+    const button = event.target.closest('.navbtn[data-target]');
+    if (!button) return;
+    event.preventDefault();
+    document.querySelectorAll('.navbtn').forEach(function(item){
+      item.classList.toggle('active', item === button);
+      item.setAttribute('aria-current', item === button ? 'location' : 'false');
+    });
+    const target = document.getElementById(button.dataset.target);
+    let notice = document.getElementById('sidebarNavigationNotice');
+    if (!target) {
+      if (!notice) {
+        notice = document.createElement('div');
+        notice.id = 'sidebarNavigationNotice';
+        notice.setAttribute('role', 'status');
+        notice.style.cssText = 'margin:12px 0;padding:12px 14px;border:1px solid #e5b94c;border-radius:10px;background:#fff8e6;color:#604600;font-weight:600;';
+        const dashboard = document.getElementById('dashboard');
+        if (dashboard) dashboard.insertBefore(notice, dashboard.firstChild);
+      }
+      notice.textContent = 'This section has not loaded yet. Refresh the portal once; if it still does not appear, contact the platform administrator.';
+      if (notice) notice.scrollIntoView({behavior:'smooth',block:'start'});
+      return;
+    }
+    if (notice) notice.remove();
+    target.style.scrollMarginTop = '18px';
+    target.scrollIntoView({behavior:'smooth',block:'start'});
+    if (typeof target.focus === 'function') {
+      if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex','-1');
+      target.focus({preventScroll:true});
+    }
+    if (window.matchMedia('(max-width: 950px)').matches) {
+      const sidebar = document.getElementById('schoolSidebar');
+      if (sidebar) sidebar.classList.remove('mobile-open');
+      document.body.classList.remove('sidebar-open');
+    }
+  });
+})();
+</script></body></html>
