@@ -41,17 +41,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const existingWorkflows=$('workflows');if(existingWorkflows)existingWorkflows.remove();
  addUI();
 
- // Dynamically override/ensure proper school display names using the lookup database
- const schoolCode = school.school_code || new URLSearchParams(window.location.search).get('school') || new URLSearchParams(window.location.search).get('c');
- const mappedSchool = schoolDatabase[schoolCode];
- if(mappedSchool) {
-   school.name = mappedSchool.name;
-   document.querySelectorAll(".school-name-display, h1, .brand-title").forEach(el => {
-     if(el.textContent.includes("Welfare") || el.textContent.includes("School") || el.textContent.includes("Primary")) {
-       el.textContent = mappedSchool.name;
-     }
-   });
- }
+ // Tenant branding comes from the authenticated school record supplied by the portal.
 
  const [tr,cr,pr,rr]=await Promise.all([
   client.from('teachers').select('id,name,phone,rank,class_name').eq('school_id',school.id).order('name'),
