@@ -107,9 +107,9 @@ Deno.serve(async (req: Request) => {
       if ((count || 0) >= 10) return respond({ error: "This school has reached the limit of 10 active administrators." }, 409);
 
       const { data: duplicate, error: duplicateError } = await adminClient.from("platform_admins")
-        .select("id").eq("school_id", schoolId).eq("username", username).maybeSingle();
+        .select("id").eq("username", username).maybeSingle();
       if (duplicateError) return respond({ error: "Could not validate the username." }, 500);
-      if (duplicate) return respond({ error: "That username is already used in this school." }, 409);
+      if (duplicate) return respond({ error: "That username is already registered. Choose a different username." }, 409);
 
       const { data: invited, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
         data: { full_name: fullName, account_type: "school_admin" },
@@ -127,9 +127,10 @@ Deno.serve(async (req: Request) => {
         active: true,
       });
       if (insertError) {
-        await adminClient.auth.admin.deleteUser(invited.user.id);
+        // Never delete the Auth identity here: inviteUserByEmail may return an
+        // existing identity, and deleting it could disrupt another school account.
         console.error("Administrator row insert failed:", insertError.message);
-        return respond({ error: "The administrator could not be attached to this school. No account was retained." }, 500);
+        return respond({ error: "The invitation may have been sent, but the school access record could not be saved. Do not retry this email yet; ask the platform administrator to reconcile the invitation." }, 500);
       }
       await writeAudit("Invite school administrator", `Invitation sent to ${email}; username ${username}.`);
       return respond({ success: true, message: "Invitation sent. The administrator must use the email invitation to set a password.", email, username });
