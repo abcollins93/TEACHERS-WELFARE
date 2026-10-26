@@ -443,12 +443,30 @@ $('forgotPassword').addEventListener('click',async()=>{
 document.querySelectorAll('.navbtn').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.navbtn').forEach(x=>x.classList.remove('active'));btn.classList.add('active');const target=document.getElementById(btn.dataset.target);if(target)target.scrollIntoView({behavior:'smooth',block:'start'});if(window.matchMedia('(max-width: 950px)').matches)closeMobileNav();}));
 $('sidebarLogout')?.addEventListener('click',async()=>{await client.auth.signOut();$('dashboard').classList.add('hidden');$('login').classList.remove('hidden');$('password').value='';});
 $('logout').addEventListener('click',async()=>{await client.auth.signOut();$('dashboard').classList.add('hidden');$('login').classList.remove('hidden');$('password').value='';});
-// Automatically end an unattended administrator session after seven minutes.
-let inactivityTimer;
+// End unattended sessions after seven minutes, with a warning at minute six.
+let inactivityTimer, inactivityWarningTimer, inactivityWarning;
 const INACTIVITY_LIMIT_MS = 7 * 60 * 1000;
+function hideInactivityWarning(){
+  if(inactivityWarning) inactivityWarning.remove();
+  inactivityWarning=null;
+}
+function showInactivityWarning(){
+  hideInactivityWarning();
+  inactivityWarning=document.createElement('div');
+  inactivityWarning.setAttribute('role','status');
+  inactivityWarning.setAttribute('aria-live','polite');
+  inactivityWarning.style.cssText='position:fixed;z-index:10001;right:18px;bottom:18px;max-width:340px;padding:16px 18px;background:#102a43;color:#fff;border:1px solid #d6ad52;border-radius:14px;box-shadow:0 12px 35px #0004;font:500 14px/1.5 system-ui,sans-serif';
+  inactivityWarning.innerHTML='<strong style="display:block;color:#f2c967;margin-bottom:4px">Still there?</strong>Your session will end in about 1 minute due to inactivity. Interact with the page to remain signed in.';
+  document.body.appendChild(inactivityWarning);
+}
 function resetInactivityTimer(){
   if(inactivityTimer) clearTimeout(inactivityTimer);
+  if(inactivityWarningTimer) clearTimeout(inactivityWarningTimer);
+  hideInactivityWarning();
+  if($('dashboard').classList.contains('hidden')) return;
+  inactivityWarningTimer=setTimeout(showInactivityWarning,6*60*1000);
   inactivityTimer=setTimeout(async()=>{
+    hideInactivityWarning();
     await client.auth.signOut();
     $('dashboard').classList.add('hidden');
     $('login').classList.remove('hidden');
