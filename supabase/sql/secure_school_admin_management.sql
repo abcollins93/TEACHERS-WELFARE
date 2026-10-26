@@ -53,10 +53,10 @@ begin
   delete from public.transaction_reversals r where r.school_id = p_school_id;
   get diagnostics v_reversal_count = row_count;
 
-  delete from public.payouts p where p.school_id = p_school_id;
+  delete from public.payouts p where p.school_id = p_school_id or p.teacher_id in (select t.id from public.teachers t where t.school_id = p_school_id);
   get diagnostics v_payout_count = row_count;
 
-  delete from public.contributions c where c.school_id = p_school_id;
+  delete from public.contributions c where c.school_id = p_school_id or c.teacher_id in (select t.id from public.teachers t where t.school_id = p_school_id);
   get diagnostics v_contribution_count = row_count;
 
   delete from public.teachers t where t.school_id = p_school_id;
