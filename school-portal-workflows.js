@@ -5,6 +5,7 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>Number(n||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
 const today=()=>new Date().toISOString().slice(0,10);
+const csvCell=v=>{let s=String(v??'');if(/^[\s]*[=+@\-\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';};
 
 // Local fallback dictionary for individual school names matching your codes
 const schoolDatabase = {
@@ -97,14 +98,14 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    const q=($('wfAuditSearch').value||'').toLowerCase(),cat=$('wfAuditCategory').value;
    const filtered=auditRows.filter(x=>(!cat||x.category===cat)&&[x.time_string,x.actor_name,x.action,x.details,x.status,x.category].some(v=>String(v||'').toLowerCase().includes(q)));
    const rows=[['Time','Actor','Category','Action','Details','Status'],...filtered.map(x=>[x.time_string||'',x.actor_name||'',x.category||'',x.action||'',x.details||'',x.status||''])];
-    const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
+    const csv=rows.map(row=>row.map(csvCell).join(',')).join('\r\n');
     const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
    a.href=url;a.download=(ctx.school_code||'school')+'-audit-history.csv';a.click();URL.revokeObjectURL(url);
    msg('wfAuditMsg','Audit CSV prepared with '+filtered.length+' entries.');
  };
  $('wfExportCsv').onclick=()=>{
    const rows=[['Record type','Date','Staff ID','Amount GHS','Reference / reason','Status'],...cons.map(x=>['Contribution',x.date,x.teacher_id,x.amount,x.reference||'',reversed.has('contribution:'+x.id)?'REVERSED':'Active']),...pays.map(x=>['Welfare payout',x.date,x.teacher_id,x.amount,x.reason||x.reference||'',reversed.has('payout:'+x.id)?'REVERSED':'Active'])];
-   const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
+   const csv=rows.map(row=>row.map(csvCell).join(',')).join('\r\n');
    const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
    a.href=url;a.download=(ctx.school_code||'school')+'-welfare-ledgers.csv';a.click();URL.revokeObjectURL(url);msg('wfReportMsg','CSV export prepared for download.');
  };
