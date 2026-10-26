@@ -207,6 +207,29 @@ body:has(#login:not(.hidden)) main{max-width:760px;margin:0 auto;padding:clamp(1
 }
 @media(prefers-reduced-motion:reduce){#mobile-nav-overlay,#dashboard .sidebar{transition:none!important}}
 
+
+/* Design system v2: glass surfaces, precise navy/amber palette, and requested sidebar widths */
+:root{
+ --navy:#071328;--navy-deep:#030a16;--navy2:#0b1d3a;
+ --gold:#f59e0b;--gold-soft:#fcd34d;--emerald:#059669;--sapphire:#1d4ed8;
+ --glass-light:rgba(255,255,255,.78);--glass-border:rgba(148,163,184,.22);
+ --shadow:0 18px 45px rgba(3,10,22,.09);
+}
+body{font-family:'Plus Jakarta Sans',Inter,system-ui,sans-serif;font-variant-numeric:tabular-nums}
+.panel,.metric,.support{background:var(--glass-light);border-color:var(--glass-border);backdrop-filter:blur(18px) saturate(145%);-webkit-backdrop-filter:blur(18px) saturate(145%);box-shadow:var(--shadow)}
+.metric strong,td,.currency,.money{font-variant-numeric:tabular-nums lining-nums}
+.top{background:linear-gradient(120deg,#030a16 0%,#071328 48%,#0b1d3a 100%);border-bottom-color:var(--gold);backdrop-filter:blur(16px)}
+.top .eyebrow:before{background:linear-gradient(135deg,var(--gold-soft),var(--gold));}
+.navbtn i{color:var(--gold-soft)}
+.navbtn.active,.navbtn:hover{border-color:rgba(245,158,11,.32);background:linear-gradient(100deg,rgba(245,158,11,.2),rgba(255,255,255,.055))}
+.sidebar{width:280px;min-width:280px;transition:width .22s ease,min-width .22s ease,padding .22s ease;background:linear-gradient(180deg,#0b1d3a,#030a16);border-color:rgba(252,211,77,.12)}
+.sidebar.is-collapsed{width:82px;min-width:82px}
+.dark .panel,.dark .metric,.dark .support{background:rgba(11,29,58,.78);border-color:rgba(148,163,184,.17);backdrop-filter:blur(18px) saturate(135%)}
+.dark .metric strong{color:var(--gold-soft)}
+@media(min-width:951px){#dashboard .dash-layout{grid-template-columns:280px minmax(0,1fr)}#dashboard .dash-layout:has(.sidebar.is-collapsed){grid-template-columns:82px minmax(0,1fr)}#dashboard .sidebar.is-collapsed{width:82px;min-width:82px}}
+@media(max-width:950px){.sidebar,.sidebar.is-collapsed{width:100%;min-width:0}}
+@media(prefers-reduced-motion:reduce){.sidebar{transition:none!important}}
+
 </style></head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading page">
