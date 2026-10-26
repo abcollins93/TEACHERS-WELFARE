@@ -83,10 +83,39 @@ thead th{font-size:.76rem;letter-spacing:.045em;text-transform:uppercase}
 tbody tr{transition:background-color .14s ease}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 @media(max-width:560px){button,input,select,textarea{min-height:44px}.panel,.stat-card,.metric-card,.card{border-radius:14px}}
+
+/* Modern tenant gateway refresh — navy, restrained gold, mobile-first */
+body:has(#login:not(.hidden)){background:radial-gradient(ellipse at 50% -10%,#17366a 0%,#071326 42%,#030812 100%);color:#edf3ff;min-height:100vh}
+body:has(#login:not(.hidden)) .top{display:none}
+body:has(#login:not(.hidden)) main{max-width:760px;margin:0 auto;padding:clamp(18px,5vw,44px) 16px 36px;min-height:100vh;display:flex;align-items:center;justify-content:center}
+#login.panel{width:100%;max-width:630px;margin:0 auto;padding:clamp(25px,6vw,54px);border:1px solid #263852;border-radius:38px;background:linear-gradient(145deg,rgba(7,19,39,.98),rgba(12,27,53,.98));box-shadow:0 28px 80px #0008;position:relative;overflow:hidden;color:#edf3ff}
+#login.panel:before{content:"";position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,#f5a000,#f5cf60,#234eb7)}
+#login .eyebrow{color:#f3c54f;letter-spacing:.13em}
+#loginSchoolName{font-size:clamp(1.55rem,5vw,2.35rem);line-height:1.18;letter-spacing:-.045em;color:#fff;margin:15px 0 13px;text-align:center;font-weight:900}
+#login .gateway-brand{text-align:center;margin:0 auto 28px}
+#login .gateway-icon{height:112px;width:112px;border-radius:30px;display:grid;place-items:center;margin:0 auto 23px;background:linear-gradient(145deg,#142f70,#030a18);border:1px solid #263e68;box-shadow:inset 0 1px 0 #ffffff18,0 14px 35px #0005;color:#ffc629;font-size:43px}
+#login .gateway-school-badge{display:inline-block;border:1px solid #554521;border-radius:999px;padding:9px 18px;background:#b68a1917;color:#efc64e;font-size:.78rem;letter-spacing:.1em;font-weight:850;text-transform:uppercase}
+#login .muted{color:#aab8ce}
+#login #codeLabel{color:#e5bd51}
+#login label{font-size:.91rem;color:#d7e0ef;margin:20px 0 8px}
+#login input{background:#0d1e3a;border:1px solid #354761;border-radius:17px;min-height:62px;padding:16px 18px;color:#fff;font-size:1rem}
+#login input::placeholder{color:#8f9db2}
+#login input:focus{border-color:#e6b93f;box-shadow:0 0 0 3px #d6a63724}
+#login #loginBtn{min-height:66px;margin-top:12px;border-radius:17px;background:linear-gradient(105deg,#f5a000,#d96a00);color:#111827;font-size:1rem;font-weight:900;box-shadow:0 12px 26px #e28b0028}
+#login #forgotPassword{background:transparent;color:#f1c64d;border:0;text-align:right;padding:10px 0}
+#login .teacher-login-divider{display:flex;align-items:center;gap:14px;margin:24px 0;color:#7f8da4;font-size:.75rem;font-weight:800;letter-spacing:.13em}
+#login .teacher-login-divider:before,#login .teacher-login-divider:after{content:"";height:1px;flex:1;background:#26364e}
+#teacherLoginMockup{border:1px solid #293b59;background:#071326;border-radius:20px;padding:20px}
+#teacherLoginMockup .eyebrow{font-size:.68rem}
+#teacherLoginTitle{color:#fff;font-size:1.2rem}
+#teacherLoginMockup button.secondary{background:linear-gradient(105deg,#061022,#1c3e9c);border:1px solid #2b4b9b;color:#fff;min-height:50px}
+#teacherLoginMockup #teacherPreviewMessage{font-size:.78rem;color:#f2ca58}
+#login .gateway-admin-link{display:block;text-align:center;margin-top:20px;padding:14px;border:1px solid #2c4a93;border-radius:14px;background:linear-gradient(100deg,#030a16,#193b99);color:#fff;font-weight:800}
+@media(max-width:480px){#login.panel{border-radius:30px;padding:29px 22px}#login .gateway-icon{width:94px;height:94px;font-size:36px}#login input{min-height:58px}#login #loginBtn{min-height:60px}}
 </style></head><body>
 <header class="top"><div><div class="eyebrow">Teachers Welfare Fund</div><h1 id="brand">School Portal</h1></div><div style="display:flex;align-items:center;gap:12px"><button id="themeToggle" class="secondary" type="button" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i> Theme</button><div class="shield"><i class="fa-solid fa-shield-halved"></i>Secure school administrator access</div></div></header>
 <main>
-<section id="login" class="panel narrow"><div class="eyebrow">Protected gateway</div><h2 id="loginSchoolName">Administrator sign in</h2><p class="muted">School code: <strong id="codeLabel"></strong></p><p class="muted">Use the email invitation and password created for your school administrator account.</p>
+<section id="login" class="panel narrow"><div class="gateway-brand"><div class="gateway-icon"><i class="fa-solid fa-graduation-cap"></i></div><div class="eyebrow">Protected school gateway</div><h2 id="loginSchoolName">School sign in</h2><div class="gateway-school-badge">Welfare Fund Portal Gateway</div></div><p class="muted" style="text-align:center;margin:0 0 24px">School gateway code: <strong id="codeLabel"></strong><br>Sign in with your registered school account.</p><p class="eyebrow" style="margin-top:0">School administrator access</p><p class="muted">Use the email invitation and password created for your school administrator account.</p>
 <form id="loginForm"><label for="email">Administrator email</label><input id="email" type="email" autocomplete="username" required><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required><p id="loginError" class="error" role="alert"></p><button id="loginBtn" type="submit"><i class="fa-solid fa-right-to-bracket"></i> &nbsp;Sign in securely</button><button id="forgotPassword" type="button" class="secondary" style="width:100%;margin-top:8px">Forgot password?</button></form>
 <div class="teacher-login-divider" aria-hidden="true"><span>OR</span></div>
 <section id="teacherLoginMockup" class="teacher-login-card" aria-labelledby="teacherLoginTitle">
