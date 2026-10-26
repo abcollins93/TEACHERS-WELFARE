@@ -7,14 +7,7 @@ const money=n=>Number(n||0).toLocaleString('en-GH',{minimumFractionDigits:2,maxi
 const today=()=>new Date().toISOString().slice(0,10);
 const csvCell=v=>{let s=String(v??'');if(/^[\s]*[=+@\-\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';};
 
-// Local fallback dictionary for individual school names matching your codes
-const schoolDatabase = {
-  "WELFARETEST26": { name: "Welfare Onboarding Test School 2026", district: "Kwabre East District", region: "Ashanti Region", type: "Basic" },
-  "NTONSO-A-01": { name: "Ntonso SDA Primary 'A'", district: "Kwabre East District", region: "Ashanti Region", type: "Basic" },
-  "COLLINS001": { name: "Collins Test Basic School", district: "", region: "", type: "Basic" }
-};
-
-function addUI(){
+// Tenant names and details are supplied by the authenticated school record.\n\nfunction addUI(){
  const d=document.createElement('section');d.id='workflows';d.innerHTML=`
  <div class="panel" id="wfTeacherPanel"><h3>Teacher register</h3><label for="wfTeacherSearch">Search teachers</label><input id="wfTeacherSearch" type="search" placeholder="Search name, staff ID, phone, rank or class"><p class="muted">Register and update staff details. Historical finance records are not deleted when a staff profile is changed.</p><form id="wfTeacher" class="grid">
  <div><label>Staff ID</label><input id="wfTid" required maxlength="80"></div><div><label>Full name</label><input id="wfName" required maxlength="160"></div>
