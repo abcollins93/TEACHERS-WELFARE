@@ -362,6 +362,7 @@ async function showDashboard(){
    $('login').classList.remove('hidden');$('dashboard').classList.add('hidden');return;
  }
  $('login').classList.add('hidden');$('dashboard').classList.remove('hidden');
+ resetInactivityTimer();
  $('schoolName').textContent=school.name;$('brand').textContent=school.name;$('sideSchoolName').textContent=school.name;$('sideSchoolCode').textContent=school.school_code;
  $('schoolMeta').textContent=[school.school_code,school.school_type,school.district,school.region].filter(Boolean).join(' · ');
  const [teachersRes,contribRes,payoutsRes,reversalsRes]=await Promise.all([
