@@ -206,8 +206,8 @@ const SUPABASE_KEY='sb_publishable_-idvZBti_BY5Xn8xDxhqqw_p_Me6X8O';
 const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const params=new URLSearchParams(location.search);
 const requestedCode=(params.get('school')||params.get('code')||params.get('school_code')||'').trim().toUpperCase();
-// Keep the previously issued Ntonso gateway URL working while the registered school code remains NTONSO-A-0.
-const code=requestedCode==='NTONSO-A-01'?'NTONSO-A-0':requestedCode;
+// Normalize the legacy Ntonso code to the code actually registered in Supabase.
+const code=requestedCode==='NTONSO-A-0'?'NTONSO-A-01':requestedCode;
 const $=id=>document.getElementById(id);
 const applyTheme=dark=>{document.documentElement.classList.toggle('dark',dark);const b=$('themeToggle');if(b)b.innerHTML=dark?'<i class="fa-solid fa-sun"></i> Light mode':'<i class="fa-solid fa-moon"></i> Dark mode';};
 applyTheme(false);
@@ -334,7 +334,7 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
  finally{button.disabled=false;}
 });
 $('teacherForgotPreview').addEventListener('click',()=>{ $('teacherLoginMessage').className='muted';$('teacherLoginMessage').textContent='For secure recovery, contact your school administrator to verify your identity and reset your account.';});
-$('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='';$('loginError').className='error';$('loginBtn').disabled=true;$('loginBtn').textContent='Signing in…';let authenticated=false;try{const {data,error}=await client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;authenticated=!!data.user;await showDashboard();}catch(err){$('loginError').textContent=authenticated?'Your credentials were accepted, but the dashboard could not finish loading. Please try again or contact the platform administrator.':'Sign-in failed. Check your email and password, or use the password setup link from your invitation.';}finally{$('loginBtn').disabled=!/^[A-Z0-9-]{3,32}$/.test(code);$('loginBtn').textContent='Sign in securely';}});
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='';$('loginError').className='error';$('loginBtn').disabled=true;$('loginBtn').textContent='Signing in…';let authenticated=false;try{const {data,error}=await client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error||!data.user)throw new Error('credentials');authenticated=true;await showDashboard();}catch(err){if(!authenticated){$('loginError').textContent='Sign-in failed. Check your administrator email and password, or use the password setup link from your invitation.';await client.auth.signOut();}else{$('login').classList.remove('hidden');$('dashboard').classList.add('hidden');$('loginError').textContent='Your credentials were accepted, but school verification or dashboard loading failed. Check that this URL uses your registered school code and that your administrator account is assigned to that school. Your session has been preserved.';}}finally{$('loginBtn').disabled=!/^[A-Z0-9-]{3,32}$/.test(code);$('loginBtn').textContent='Sign in securely';}});
 $('forgotPassword').addEventListener('click',async()=>{
  const email=$('email').value.trim();
  $('loginError').textContent='';
