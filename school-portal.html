@@ -112,10 +112,23 @@ body:has(#login:not(.hidden)) main{max-width:760px;margin:0 auto;padding:clamp(1
 #teacherLoginMockup #teacherPreviewMessage{font-size:.78rem;color:#f2ca58}
 #login .gateway-admin-link{display:block;text-align:center;margin-top:20px;padding:14px;border:1px solid #2c4a93;border-radius:14px;background:linear-gradient(100deg,#030a16,#193b99);color:#fff;font-weight:800}
 @media(max-width:480px){#login.panel{border-radius:30px;padding:29px 22px}#login .gateway-icon{width:94px;height:94px;font-size:36px}#login input{min-height:58px}#login #loginBtn{min-height:60px}}
+
+/* Live gateway motion: subtle, accessible and mobile-friendly */
+#login.panel:before{background:linear-gradient(90deg,#f5a000 0%,#ffe18a 24%,#f5b51b 45%,#ffffff 50%,#f5b51b 56%,#234eb7 100%);background-size:220% 100%;animation:gatewayGoldSweep 4.2s linear infinite}
+@keyframes gatewayGoldSweep{0%{background-position:100% 0}100%{background-position:-120% 0}}
+#login .gateway-icon{animation:gatewayLogoFloat 3.4s ease-in-out infinite;transform-origin:50% 55%}
+#login .gateway-icon i{display:inline-block;animation:gatewayCapTilt 3.4s ease-in-out infinite;filter:drop-shadow(0 0 0 rgba(255,198,41,0))}
+@keyframes gatewayLogoFloat{0%,100%{transform:translateY(0) rotate(0);box-shadow:inset 0 1px 0 #ffffff18,0 14px 35px #0005}50%{transform:translateY(-7px) rotate(-1.5deg);box-shadow:inset 0 1px 0 #ffffff25,0 22px 42px #0007}}
+@keyframes gatewayCapTilt{0%,100%{transform:rotate(0) scale(1)}50%{transform:rotate(-5deg) scale(1.06)}}
+#login .gateway-brand>.eyebrow{display:flex;align-items:center;justify-content:center;gap:9px}
+#login .gateway-live-dot{display:inline-block;width:9px;height:9px;flex:0 0 9px;border-radius:50%;background:#36d68b;box-shadow:0 0 0 0 rgba(54,214,139,.55);animation:gatewayLivePulse 1.65s ease-out infinite;vertical-align:middle}
+@keyframes gatewayLivePulse{0%{box-shadow:0 0 0 0 rgba(54,214,139,.55);opacity:1}70%{box-shadow:0 0 0 8px rgba(54,214,139,0);opacity:.95}100%{box-shadow:0 0 0 0 rgba(54,214,139,0);opacity:1}}
+@media(prefers-reduced-motion:reduce){#login.panel:before,#login .gateway-icon,#login .gateway-icon i,#login .gateway-live-dot{animation:none!important}}
+
 </style></head><body>
 <header class="top"><div><div class="eyebrow">Teachers Welfare Fund</div><h1 id="brand">School Portal</h1></div><div style="display:flex;align-items:center;gap:12px"><button id="themeToggle" class="secondary" type="button" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i> Theme</button><div class="shield"><i class="fa-solid fa-shield-halved"></i>Secure school administrator access</div></div></header>
 <main>
-<section id="login" class="panel narrow"><div class="gateway-brand"><div class="gateway-icon"><i class="fa-solid fa-graduation-cap"></i></div><div class="eyebrow">Protected school gateway</div><h2 id="loginSchoolName">School sign in</h2><div class="gateway-school-badge">Welfare Fund Portal Gateway</div></div><p class="muted" style="text-align:center;margin:0 0 24px">School gateway code: <strong id="codeLabel"></strong><br>Sign in with your registered school account.</p><p class="eyebrow" style="margin-top:0">School administrator access</p><p class="muted">Use the email invitation and password created for your school administrator account.</p>
+<section id="login" class="panel narrow"><div class="gateway-brand"><div class="gateway-icon"><i class="fa-solid fa-graduation-cap"></i></div><div class="eyebrow"><span class="gateway-live-dot" aria-hidden="true"></span>Protected school gateway · Live</div><h2 id="loginSchoolName">School name</h2><div class="gateway-school-badge">Welfare Fund Portal Gateway</div></div><p class="muted" style="text-align:center;margin:0 0 24px">School gateway code: <strong id="codeLabel"></strong><br>Sign in with your registered school account.</p><p class="eyebrow" style="margin-top:0">School administrator access</p><p class="muted">Use the email invitation and password created for your school administrator account.</p>
 <form id="loginForm"><label for="email">Administrator email</label><input id="email" type="email" autocomplete="username" required><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required><p id="loginError" class="error" role="alert"></p><button id="loginBtn" type="submit"><i class="fa-solid fa-right-to-bracket"></i> &nbsp;Sign in securely</button><button id="forgotPassword" type="button" class="secondary" style="width:100%;margin-top:8px">Forgot password?</button></form>
 <div class="teacher-login-divider" aria-hidden="true"><span>OR</span></div>
 <section id="teacherLoginMockup" class="teacher-login-card" aria-labelledby="teacherLoginTitle">
@@ -194,7 +207,7 @@ async function loadGatewayIdentity(){
  const {data,error}=await client.from('schools').select('name,school_code,status').eq('school_code',code).maybeSingle();
  if(error||!data||data.status!=='active')return;
  const name=String(data.name||'').trim();if(!name)return;
- $('brand').textContent=name;$('loginSchoolName').textContent=name+' — Administrator sign in';$('documentTitle').textContent=name+' | Teachers Welfare Fund';
+ $('brand').textContent=name;$('loginSchoolName').textContent=name;$('documentTitle').textContent=name+' | Teachers Welfare Fund';
 }
 loadGatewayIdentity().catch(()=>{});
 if(!/^[A-Z0-9-]{3,32}$/.test(code)){ $('loginError').textContent='This gateway link is missing a valid school code. Please use the link provided by your school platform administrator.';$('loginBtn').disabled=true; }
