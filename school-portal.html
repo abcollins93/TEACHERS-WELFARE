@@ -463,7 +463,22 @@ async function showDashboard(){
 ]);
 const activityDates=latestActivity.flatMap(x=>x.data||[]).map(x=>x.date).filter(Boolean).sort().reverse();
 $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'No records';
-if(window.initSchoolWorkflows) await window.initSchoolWorkflows(client,school,showDashboard);
+try {
+    if (typeof window.initSchoolWorkflows !== 'function') throw new Error('The school workflow script did not load.');
+    await window.initSchoolWorkflows(client,school,showDashboard);
+  } catch (workflowError) {
+    console.error('School workflow initialization failed:', workflowError);
+    let warning = document.getElementById('workflowLoadNotice');
+    if (!warning) {
+      warning = document.createElement('div');
+      warning.id = 'workflowLoadNotice';
+      warning.setAttribute('role', 'alert');
+      warning.style.cssText = 'margin:12px 0;padding:14px 16px;border:1px solid #e5b94c;border-radius:12px;background:#fff8e6;color:#604600;font-weight:600;';
+      const dashboard = document.getElementById('dashboard');
+      if (dashboard) dashboard.insertBefore(warning, dashboard.firstChild);
+    }
+    warning.textContent = 'Some school portal sections could not finish loading. Refresh this page once. If the problem continues, contact the platform administrator; your records have not been reset by this message.';
+  }
   const duesMetric=$('standardDuesMetric'),duesInput=$('wfMonthlyDues');if(duesMetric&&duesInput){const updateDues=()=>{duesMetric.textContent='GHS '+money(duesInput.value||0);};updateDues();duesInput.addEventListener('input',updateDues);}
  $('downloadSchoolPdf').onclick=()=>{if(!window.html2pdf){alert('PDF library is unavailable. Please check your internet connection.');return;}const report=document.createElement('div');report.style.cssText='padding:24px;color:#182235;font-family:Arial,sans-serif;background:white';report.innerHTML='<h1 style="color:#0b1d3a">'+escapeHtml(school.name)+'</h1><p>School Welfare Fund — Summary Statement</p><p>School code: '+escapeHtml(school.school_code)+' | Generated: '+new Date().toLocaleString()+'</p><hr><h2>Fund summary</h2><p>Registered teachers: '+escapeHtml($('teacherCount').textContent)+'</p><p>Total contributions: GHS '+escapeHtml($('contributionTotal').textContent)+'</p><p>Total welfare payouts: GHS '+escapeHtml($('payoutTotal').textContent)+'</p><p><strong>Net fund balance: GHS '+escapeHtml($('netTotal').textContent)+'</strong></p><h2>Teacher register</h2>'+document.querySelector('#schoolTeachers table').outerHTML;window.html2pdf().set({margin:10,filename:(school.school_code||'school')+'-welfare-summary.pdf',image:{type:'jpeg',quality:.96},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:'landscape'}}).from(report).save();};
 }
@@ -562,7 +577,7 @@ client.auth.onAuthStateChange((event,session)=>{
 });
 client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
 })();
-</script><script src="school-portal-workflows.js"></script>
+</script><script src="school-portal-workflows.js?v=dad1792d"></script>
 <script>
 /* Resilient sidebar navigation: works even when the main portal script has an unrelated runtime error. */
 (function(){
