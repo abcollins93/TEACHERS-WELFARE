@@ -199,7 +199,25 @@ async function loadGatewayIdentity(){
 loadGatewayIdentity().catch(()=>{});
 if(!/^[A-Z0-9-]{3,32}$/.test(code)){ $('loginError').textContent='This gateway link is missing a valid school code. Please use the link provided by your school platform administrator.';$('loginBtn').disabled=true; }
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-async function showDashboard(){
+async function escapeTeacherText(v){return String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+async function renderTeacherDashboard(profile,school){
+ const dash=document.getElementById('teacherDashboard');
+ dash.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><div class="eyebrow">Teacher portal</div><h2 style="margin:8px 0">My Welfare Account</h2><p class="muted">'+escapeTeacherText(school.name)+' · Staff ID: '+escapeTeacherText(profile.teacher_id)+'</p></div><button id="teacherSignOut" class="secondary">Sign out</button></div><hr><h3>My contributions</h3><p id="teacherContributionsState" class="muted">Loading your contributions…</p><div id="teacherContributions"></div><h3 style="margin-top:24px">My welfare payouts</h3><p id="teacherPayoutsState" class="muted">Loading your payouts…</p><div id="teacherPayouts"></div>';
+ dash.classList.remove('hidden');
+ document.getElementById('teacherSignOut').addEventListener('click',async()=>{await client.auth.signOut();dash.classList.add('hidden');$('login').classList.remove('hidden');});
+ const [{data:cs,error:ce},{data:ps,error:pe}]=await Promise.all([client.rpc('get_my_teacher_contributions'),client.rpc('get_my_teacher_payouts')]);
+ const fmtDate=v=>v?new Date(v+'T00:00:00').toLocaleDateString():'—';
+ const fmtMoney=v=>'GHS '+Number(v||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+ if(ce){document.getElementById('teacherContributionsState').textContent='Could not load contributions securely. Please contact your administrator.';}else{
+ document.getElementById('teacherContributionsState').textContent=cs?.length?cs.length+' record(s)':'No contribution records are available for this account yet.';
+ document.getElementById('teacherContributions').innerHTML=cs?.length?'<div style="overflow:auto"><table><thead><tr><th>Date</th><th>Amount</th><th>Reference</th></tr></thead><tbody>'+cs.map(x=>'<tr><td>'+escapeTeacherText(fmtDate(x.date))+'</td><td>'+escapeTeacherText(fmtMoney(x.amount))+'</td><td>'+escapeTeacherText(x.reference||'—')+'</td></tr>').join('')+'</tbody></table></div>':'';
+ }
+ if(pe){document.getElementById('teacherPayoutsState').textContent='Could not load payouts securely. Please contact your administrator.';}else{
+ document.getElementById('teacherPayoutsState').textContent=ps?.length?ps.length+' record(s)':'No payout records are available for this account yet.';
+ document.getElementById('teacherPayouts').innerHTML=ps?.length?'<div style="overflow:auto"><table><thead><tr><th>Date</th><th>Amount</th><th>Reason</th><th>Reference</th></tr></thead><tbody>'+ps.map(x=>'<tr><td>'+escapeTeacherText(fmtDate(x.date))+'</td><td>'+escapeTeacherText(fmtMoney(x.amount))+'</td><td>'+escapeTeacherText(x.reason||'—')+'</td><td>'+escapeTeacherText(x.reference||'—')+'</td></tr>').join('')+'</tbody></table></div>':'';
+ }
+}
+\nfunction showDashboard(){
  const {data:{user},error:userErr}=await client.auth.getUser();
  if(userErr||!user){$('login').classList.remove('hidden');$('dashboard').classList.add('hidden');return;}
  // RLS must return only the school assigned to this authenticated administrator.
@@ -247,7 +265,26 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
   const {data,error}=await client.auth.signInWithPassword({email:alias,password});if(error||!data.user)throw new Error('invalid');
   const {data:a,error:ae}=await client.from('teacher_accounts').select('teacher_id,school_id,active').eq('auth_user_id',data.user.id).maybeSingle();
   if(ae||!a||!a.active||a.school_id!==school.id||a.teacher_id.toUpperCase()!==staffId.toUpperCase()){await client.auth.signOut();throw new Error('not-active');}
-  await client.auth.signOut();throw new Error('dashboard-pending');
+  const {data:profile,error:profileError}=await client.rpc('get_my_teacher_profile');
+  if(profileError||!profile||!profile.length||profile[0].school_id!==school.id){await client.auth.signOut();throw new Error('not-active');}
+  const p=profile[0];
+  $('login').classList.add('hidden');
+  let teacherDash=document.getElementById('teacherDashboard');
+  if(!teacherDash){teacherDash=document.createElement('section');teacherDash.id='teacherDashboard';teacherDash.className='panel';teacherDash.style.maxWidth='900px';teacherDash.style.margin='24px auto';document.querySelector('main').appendChild(teacherDash);}
+  if(p.must_change_password){
+    teacherDash.innerHTML='<h2>Set a new password</h2><p class="muted">For your security, change your temporary password before opening your records.</p><form id="teacherChangePasswordForm"><label for="teacherNewPassword">New password</label><input id="teacherNewPassword" type="password" minlength="10" maxlength="128" autocomplete="new-password" required><label for="teacherConfirmPassword">Confirm new password</label><input id="teacherConfirmPassword" type="password" minlength="10" maxlength="128" autocomplete="new-password" required><p id="teacherChangeMessage" role="status"></p><button class="primary" type="submit">Save new password</button></form><button id="teacherSignOut" class="secondary" style="margin-top:12px">Sign out</button>';
+    teacherDash.classList.remove('hidden');
+    document.getElementById('teacherChangePasswordForm').addEventListener('submit',async ev=>{
+      ev.preventDefault();const np=document.getElementById('teacherNewPassword').value,cp=document.getElementById('teacherConfirmPassword').value,msg=document.getElementById('teacherChangeMessage');
+      if(np!==cp){msg.textContent='Passwords do not match.';return;}
+      msg.textContent='Updating password…';
+      const {data:result,error}=await client.functions.invoke('teacher-account-security',{body:{action:'change_password',password:np}});
+      if(error||!result?.ok){msg.textContent=result?.error||'Password change failed. Please try again.';return;}
+      p.must_change_password=false;renderTeacherDashboard(p,school);
+    });
+    document.getElementById('teacherSignOut').addEventListener('click',async()=>{await client.auth.signOut();teacherDash.classList.add('hidden');$('login').classList.remove('hidden');});
+  }else renderTeacherDashboard(p,school);
+  return;
  }catch(err){message.className='error';message.textContent=err.message==='not-active'?'This Staff ID has not been activated for this school. Contact your school administrator.':err.message==='dashboard-pending'?'Your credentials were accepted, but the private teacher dashboard is not yet enabled. Please contact the platform administrator.':'Unable to sign in. Check your Staff ID and password, or contact your school administrator.';}
  finally{button.disabled=false;}
 });
