@@ -19,6 +19,7 @@ declare
   v_contribution_count integer := 0;
   v_payout_count integer := 0;
   v_reversal_count integer := 0;
+  v_teacher_accounts_disabled integer := 0;
 begin
   select s.school_code, s.name
     into v_school_code, v_school_name
@@ -44,6 +45,11 @@ begin
     raise exception 'Active administrator authorization required';
   end if;
 
+  update public.teacher_accounts ta
+     set active = false, updated_at = clock_timestamp()
+   where ta.school_id = p_school_id and ta.active = true;
+  get diagnostics v_teacher_accounts_disabled = row_count;
+
   delete from public.transaction_reversals r where r.school_id = p_school_id;
   get diagnostics v_reversal_count = row_count;
 
@@ -65,9 +71,9 @@ begin
     'Welfare portal',
     'RESET_SCHOOL_WELFARE_DATA',
     format(
-      'School-scoped reset completed for %s (%s). Removed %s members, %s contributions, %s payouts and %s reversal records. Audit history preserved.',
+      'School-scoped reset completed for %s (%s). Removed %s members, %s contributions, %s payouts and %s reversal records; disabled %s teacher accounts. Audit history preserved.',
       v_school_name, v_school_code, v_teacher_count, v_contribution_count,
-      v_payout_count, v_reversal_count
+      v_payout_count, v_reversal_count, v_teacher_accounts_disabled
     ),
     'success',
     to_char(clock_timestamp(), 'YYYY-MM-DD HH12:MI:SS PM'),
@@ -85,6 +91,7 @@ begin
     'contributions_removed', v_contribution_count,
     'payouts_removed', v_payout_count,
     'reversals_removed', v_reversal_count,
+    'teacher_accounts_disabled', v_teacher_accounts_disabled,
     'audit_history_preserved', true
   );
 end;
