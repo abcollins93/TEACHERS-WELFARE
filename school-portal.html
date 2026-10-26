@@ -188,7 +188,27 @@ body:has(#login:not(.hidden)) main{max-width:760px;margin:0 auto;padding:clamp(1
 @keyframes portal-pulse{0%,80%,100%{opacity:.3;transform:scale(.75)}40%{opacity:1;transform:scale(1.15)}}
 @media(prefers-reduced-motion:reduce){#page-loader,.page-loader-mark,.page-loader-mark:after,.page-loader-dots span{animation:none!important;transition:none!important}}
 
+
+/* Shared responsive tenant navigation drawer */
+#mobile-nav-overlay{position:fixed;inset:0;background:rgba(1,8,20,.62);backdrop-filter:blur(3px);z-index:9990;opacity:0;visibility:hidden;transition:opacity .22s ease,visibility .22s ease}
+#mobile-nav-overlay.is-open{opacity:1;visibility:visible}
+@media(max-width:950px){
+ #dashboard .dash-layout{display:block}
+ #dashboard .sidebar{position:fixed;z-index:9991;left:0;top:0;bottom:0;width:min(290px,84vw);height:100dvh;overflow-y:auto;display:block;border-radius:0 20px 20px 0;padding:16px;transform:translateX(-105%);transition:transform .25s ease;box-shadow:18px 0 55px #0005}
+ #dashboard .sidebar.is-mobile-open{transform:translateX(0)}
+ #dashboard .sidebar .school-chip{min-width:0;margin-bottom:12px}
+ #dashboard .sidebar .navbtn{width:100%;display:flex;flex-direction:row;justify-content:flex-start;min-height:46px;text-align:left;gap:10px;padding:12px;margin:4px 0}
+ #dashboard .sidebar .navbtn span{display:inline;font-size:.82rem}
+ #dashboard .sidebar .navbtn i{width:22px;flex:0 0 22px;margin:0}
+ #dashboard .sidebar .sidebar-brand{position:sticky;top:-16px;z-index:2;background:#0b1d3a;padding:8px 0 14px}
+ #dashboard .sidebar.is-collapsed{width:min(290px,84vw)}
+ #dashboard .sidebar.is-collapsed .school-chip strong,#dashboard .sidebar.is-collapsed .school-chip small,#dashboard .sidebar.is-collapsed .navbtn span{display:block}
+ #dashboard .sidebar.is-collapsed .navbtn{justify-content:flex-start}
+}
+@media(prefers-reduced-motion:reduce){#mobile-nav-overlay,#dashboard .sidebar{transition:none!important}}
+
 </style></head><body>
+<div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading page">
  <div class="page-loader-card">
   <div class="page-loader-mark" aria-hidden="true"></div>
@@ -277,13 +297,21 @@ applyTheme(false);
 try{applyTheme(localStorage.getItem('welfare-theme')==='dark');}catch(_){}
 $('themeToggle').addEventListener('click',()=>{const dark=!document.documentElement.classList.contains('dark');applyTheme(dark);try{localStorage.setItem('welfare-theme',dark?'dark':'light');}catch(_){} });
 const sidebar=$('sidebarCollapse')?.closest('.sidebar');
+const mobileNavOverlay=$('mobile-nav-overlay');
+function closeMobileNav(){sidebar?.classList.remove('is-mobile-open');mobileNavOverlay?.classList.remove('is-open');mobileNavOverlay?.setAttribute('aria-hidden','true');}
 $('sidebarCollapse')?.addEventListener('click',()=>{
  if(!sidebar)return;
+ if(window.matchMedia('(max-width: 950px)').matches){
+  closeMobileNav();
+  return;
+ }
  const collapsed=sidebar.classList.toggle('is-collapsed');
  $('sidebarCollapse').setAttribute('aria-expanded',String(!collapsed));
  $('sidebarCollapse').setAttribute('aria-label',collapsed?'Expand sidebar':'Collapse sidebar');
- $('sidebarCollapse').innerHTML=collapsed?'<i class="fa-solid fa-angles-right"></i>':'<i class="fa-solid fa-xmark"></i>'; 
+ $('sidebarCollapse').innerHTML=collapsed?'<i class="fa-solid fa-angles-right"></i>':'<i class="fa-solid fa-xmark"></i>';
 });
+mobileNavOverlay?.addEventListener('click',closeMobileNav);
+
 
 const money=n=>Number(n||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
 $('codeLabel').textContent=code||'Missing school code';
@@ -412,7 +440,7 @@ $('forgotPassword').addEventListener('click',async()=>{
  }catch(err){$('loginError').className='error';$('loginError').textContent='Could not request password recovery. Check the email and try again, or contact your platform administrator.';}
  finally{btn.disabled=false;btn.textContent='Forgot password?';}
 });
-document.querySelectorAll('.navbtn').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.navbtn').forEach(x=>x.classList.remove('active'));btn.classList.add('active');const target=document.getElementById(btn.dataset.target);if(target)target.scrollIntoView({behavior:'smooth',block:'start'});}));
+document.querySelectorAll('.navbtn').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.navbtn').forEach(x=>x.classList.remove('active'));btn.classList.add('active');const target=document.getElementById(btn.dataset.target);if(target)target.scrollIntoView({behavior:'smooth',block:'start'});if(window.matchMedia('(max-width: 950px)').matches)closeMobileNav();}));
 $('sidebarLogout')?.addEventListener('click',async()=>{await client.auth.signOut();$('dashboard').classList.add('hidden');$('login').classList.remove('hidden');$('password').value='';});
 $('logout').addEventListener('click',async()=>{await client.auth.signOut();$('dashboard').classList.add('hidden');$('login').classList.remove('hidden');$('password').value='';});
 // Automatically end an unattended administrator session after seven minutes.
