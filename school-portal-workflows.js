@@ -158,13 +158,15 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    const remove=e.target.closest('[data-wf-remove]');
    if(remove){
      const t=teachers.find(x=>String(x.id)===remove.dataset.wfRemove);if(!t)return;
-     if(!confirm('Remove '+t.name+' from the active teacher register? Historical contributions and payouts will be retained and will continue to count in fund totals.'))return;
-     const reason=prompt('Enter a reason for removing this teacher (audit record required):');if(!reason||!reason.trim())return alert('Removal cancelled. A reason is required.');
-     const {error}=await client.from('teachers').delete().eq('id',t.id).eq('school_id',ctx.id);
-     if(error)return alert('Teacher was not removed. Check school permissions.');
-     const auditOk=await audit(client,ctx,'Remove teacher from active register',t.name+'; reason: '+reason.trim(),t.id);
-     await refresh();if(!auditOk)alert('Teacher removed and finance history retained, but audit logging failed. Contact the platform administrator.');return;
+     if(!confirm('Deactivate '+t.name+'? The profile and all historical finance records will be retained.'))return;
+     const reason=prompt('Enter a reason for deactivation (required for the audit trail):');if(!reason||!reason.trim())return alert('Deactivation cancelled. A reason is required.');
+     const {error}=await client.from('teachers').update({is_active:false}).eq('id',t.id).eq('school_id',ctx.id);
+     if(error)return alert('Teacher was not deactivated. Check school permissions and the teacher status migration.');
+     const auditOk=await audit(client,ctx,'Deactivate teacher profile',t.name+'; reason: '+reason.trim(),t.id);
+     await refresh();if(!auditOk)alert('Profile deactivated, but audit logging failed. Contact the platform administrator.');return;
    }
+   const restore=e.target.closest('[data-wf-restore]');
+   if(restore){const t=teachers.find(x=>String(x.id)===restore.dataset.wfRestore);if(!t)return;if(!confirm('Restore '+t.name+' to the active register?'))return;const {error}=await client.from('teachers').update({is_active:true}).eq('id',t.id).eq('school_id',ctx.id);if(error)return alert('Teacher could not be restored. Check school permissions.');const ok=await audit(client,ctx,'Restore teacher profile',t.name,t.id);await refresh();if(!ok)alert('Teacher restored, but audit logging failed.');return;}
    const b=e.target.closest('[data-wf-edit]');if(!b)return;const t=teachers.find(x=>String(x.id)===b.dataset.wfEdit);if(!t)return;editingTeacherId=t.id;$('wfTid').value=t.id;$('wfTid').disabled=true;$('wfName').value=t.name||'';$('wfPhone').value=t.phone||'';$('wfRank').value=t.rank||'';$('wfClass').value=t.class_name||'';selectedPassportData=null;$('wfPassport').value='';$('wfPassportPreview').textContent=t.passport?'Existing passport photo saved. Choose a new image to replace it.':'';$('wfTeacherSave').textContent='Save changes';msg('wfTeacherMsg','Editing '+t.name+'.');$('wfTid').scrollIntoView({behavior:'smooth',block:'center'});
  });
  $('wfTeacher').onsubmit=async e=>{e.preventDefault();if($('wfPassport').files?.length&&!selectedPassportData)return msg('wfTeacherMsg','Wait for the photo to finish loading, or remove it and save again.',true);const row={id:$('wfTid').value.trim(),name:$('wfName').value.trim(),phone:$('wfPhone').value.trim()||null,rank:$('wfRank').value.trim()||null,class_name:$('wfClass').value.trim()||null,school_id:ctx.id};if(selectedPassportData)row.passport=selectedPassportData;msg('wfTeacherMsg','Saving…');
