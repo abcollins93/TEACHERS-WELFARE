@@ -39,7 +39,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  // Tenant branding comes from the authenticated school record supplied by the portal.
 
  const [tr,cr,pr,rr]=await Promise.all([
-  client.from('teachers').select('id,name,phone,rank,class_name').eq('school_id',school.id).order('name'),
+  client.from('teachers').select('id,name,phone,rank,class_name,is_active').eq('school_id',school.id).order('name'),
   client.from('contributions').select('id,teacher_id,amount,date,reference').eq('school_id',school.id).order('date',{ascending:false}),
   client.from('payouts').select('id,teacher_id,amount,date,reason,reference').eq('school_id',school.id).order('date',{ascending:false}),
   client.from('transaction_reversals').select('transaction_type,transaction_id,reason,created_at').eq('school_id',school.id)
@@ -56,17 +56,17 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const teacherLabel=id=>{const t=teacherById.get(String(id));return t?esc(t.name)+' ('+esc(t.id)+')':esc(id||'—')};
  const renderTeacherTables=()=>{const q=String($('wfTeacherSearch')?.value||'').trim().toLowerCase();const visible=teachers.filter(t=>[t.id,t.name,t.phone,t.rank,t.class_name].some(v=>String(v||'').toLowerCase().includes(q)));
  $('teacherRows').innerHTML=visible.length?visible.map(t=>'<tr><td>'+esc(t.id)+'</td><td>'+esc(t.name)+'</td><td>'+esc(t.phone||'—')+'</td><td>'+esc(t.rank||'—')+'</td><td>'+esc(t.class_name||'—')+'</td></tr>').join(''):'<tr><td colspan="5">No matching teachers.</td></tr>';
- $('wfManageTeacherRows').innerHTML=visible.length?visible.map(t=>'<tr><td>'+esc(t.id)+'</td><td>'+esc(t.name)+'</td><td>'+esc(t.phone||'—')+'</td><td>'+esc(t.rank||'—')+'</td><td>'+esc(t.class_name||'—')+'</td><td><button type="button" class="secondary" data-wf-edit="'+esc(t.id)+'">Edit</button></td></tr>').join(''):'<tr><td colspan="6">No matching teachers.</td></tr>';};
+ $('wfManageTeacherRows').innerHTML=visible.length?visible.map(t=>'<tr><td>'+esc(t.id)+'</td><td>'+esc(t.name)+'</td><td>'+esc(t.phone||'—')+'</td><td>'+esc(t.rank||'—')+'</td><td>'+esc(t.class_name||'—')+'</td><td><span>'+ (t.is_active===false?'Inactive':'Active') +'</span> <button type="button" class="secondary" data-wf-edit="'+esc(t.id)+'">Edit</button> '+(t.is_active===false?'<button type="button" data-wf-restore="'+esc(t.id)+'">Restore</button>':'<button type="button" class="secondary" data-wf-remove="'+esc(t.id)+'">Deactivate</button>')+'</td></tr>').join(''):'<tr><td colspan="6">No matching teachers.</td></tr>';};
  renderTeacherTables();
  $('wfTeacherSearch').addEventListener('input',renderTeacherTables);
 
- const options='<option value="">Choose teacher</option>'+teachers.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name)+' ('+esc(t.id)+')</option>').join('');
+ const options='<option value="">Choose teacher</option>'+teachers.filter(t=>t.is_active!==false).map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name)+' ('+esc(t.id)+')</option>').join('');
  $('wfConTeacher').innerHTML=options;$('wfPayTeacher').innerHTML=options;$('wfStatementTeacher').innerHTML=options;
  const reversalCell=(type,x)=>reversed.has(type+':'+x.id)?'<strong>REVERSED</strong> <span class="muted">· '+esc(reversals.find(r=>r.transaction_type===type&&String(r.transaction_id)===String(x.id))?.reason||'Reason recorded')+'</span>':'<button type="button" class="secondary" data-wf-reverse="'+type+'" data-wf-id="'+esc(x.id)+'">Reverse</button>';
  const renderContributionLedger=()=>{const q=String($('wfLedgerSearch')?.value||'').trim().toLowerCase(),month=$('wfLedgerMonth')?.value||'';const rows=cons.filter(x=>(!month||String(x.date||'').startsWith(month))&&[x.teacher_id,x.reference,teacherById.get(String(x.teacher_id))?.name].some(v=>String(v||'').toLowerCase().includes(q)));$('wfConRows').innerHTML=rows.length?rows.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+teacherLabel(x.teacher_id)+'</td><td>'+money(x.amount)+'</td><td>'+esc(x.reference||'—')+'</td><td>'+reversalCell('contribution',x)+'</td></tr>').join(''):'<tr><td colspan="5">No matching contributions.</td></tr>';};
  renderContributionLedger();$('wfLedgerSearch').addEventListener('input',renderContributionLedger);$('wfLedgerMonth').addEventListener('change',renderContributionLedger);
  const renderPayoutLedger=()=>{const q=String($('wfPayoutSearch')?.value||'').trim().toLowerCase();const rows=pays.filter(x=>[x.teacher_id,x.reason,x.reference,teacherById.get(String(x.teacher_id))?.name].some(v=>String(v||'').toLowerCase().includes(q)));$('wfPayRows').innerHTML=rows.length?rows.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+teacherLabel(x.teacher_id)+'</td><td>'+money(x.amount)+'</td><td>'+esc(x.reason||x.reference||'—')+'</td><td>'+reversalCell('payout',x)+'</td></tr>').join(''):'<tr><td colspan="5">No matching payouts.</td></tr>';};renderPayoutLedger();$('wfPayoutSearch').addEventListener('input',renderPayoutLedger);
- $('teacherCount').textContent=teachers.length;
+ $('teacherCount').textContent=teachers.filter(t=>t.is_active!==false).length;
  $('contributionTotal').textContent=money(activeCons.reduce((a,x)=>a+Number(x.amount||0),0));
  $('payoutTotal').textContent=money(activePays.reduce((a,x)=>a+Number(x.amount||0),0));
  $('netTotal').textContent=money(activeCons.reduce((a,x)=>a+Number(x.amount||0),0)-activePays.reduce((a,x)=>a+Number(x.amount||0),0));
