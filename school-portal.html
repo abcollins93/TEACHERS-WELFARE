@@ -264,7 +264,11 @@ function showDashboard(){
  // RLS must return only the school assigned to this authenticated administrator.
  const {data:school,error}=await client.from('schools').select('id,name,school_code,school_type,region,district,status').eq('school_code',code).maybeSingle();
  if(error||!school||school.status!=='active'){
-   await client.auth.signOut();$('loginError').textContent='Access denied: this account is not assigned to an active school matching this gateway code.';$('login').classList.remove('hidden');$('dashboard').classList.add('hidden');return;
+   // Keep the authenticated session intact so a school-mapping/RLS problem is not mistaken for a failed password or page refresh.
+   $('loginError').textContent=error
+    ? 'Your credentials were accepted, but the school access check failed. The administrator account may not be linked to this school, or its database access policy needs correction. Please contact the platform administrator. ('+String(error.code||'access-check')+')'
+    : 'Your credentials were accepted, but this administrator account cannot access an active school matching gateway code '+code+'. Check the school assignment and gateway link.';
+   $('login').classList.remove('hidden');$('dashboard').classList.add('hidden');return;
  }
  $('login').classList.add('hidden');$('dashboard').classList.remove('hidden');
  $('schoolName').textContent=school.name;$('brand').textContent=school.name;$('sideSchoolName').textContent=school.name;$('sideSchoolCode').textContent=school.school_code;
@@ -330,7 +334,7 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
  finally{button.disabled=false;}
 });
 $('teacherForgotPreview').addEventListener('click',()=>{ $('teacherLoginMessage').className='muted';$('teacherLoginMessage').textContent='For secure recovery, contact your school administrator to verify your identity and reset your account.';});
-$('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='';$('loginBtn').disabled=true;$('loginBtn').textContent='Signing in…';try{const {error}=await client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;await showDashboard();}catch(err){$('loginError').textContent='Sign-in failed. Check your email and password, or use the password setup link from your invitation.';await client.auth.signOut();}finally{$('loginBtn').disabled=!/^[A-Z0-9-]{3,32}$/.test(code);$('loginBtn').textContent='Sign in securely';}});
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='';$('loginError').className='error';$('loginBtn').disabled=true;$('loginBtn').textContent='Signing in…';let authenticated=false;try{const {data,error}=await client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;authenticated=!!data.user;await showDashboard();}catch(err){$('loginError').textContent=authenticated?'Your credentials were accepted, but the dashboard could not finish loading. Please try again or contact the platform administrator.':'Sign-in failed. Check your email and password, or use the password setup link from your invitation.';}finally{$('loginBtn').disabled=!/^[A-Z0-9-]{3,32}$/.test(code);$('loginBtn').textContent='Sign in securely';}});
 $('forgotPassword').addEventListener('click',async()=>{
  const email=$('email').value.trim();
  $('loginError').textContent='';
