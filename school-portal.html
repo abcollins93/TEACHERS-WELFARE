@@ -217,7 +217,8 @@ async function renderTeacherDashboard(profile,school){
  document.getElementById('teacherPayouts').innerHTML=ps?.length?'<div style="overflow:auto"><table><thead><tr><th>Date</th><th>Amount</th><th>Reason</th><th>Reference</th></tr></thead><tbody>'+ps.map(x=>'<tr><td>'+escapeTeacherText(fmtDate(x.date))+'</td><td>'+escapeTeacherText(fmtMoney(x.amount))+'</td><td>'+escapeTeacherText(x.reason||'—')+'</td><td>'+escapeTeacherText(x.reference||'—')+'</td></tr>').join('')+'</tbody></table></div>':'';
  }
 }
-\nfunction showDashboard(){
+
+function showDashboard(){
  const {data:{user},error:userErr}=await client.auth.getUser();
  if(userErr||!user){$('login').classList.remove('hidden');$('dashboard').classList.add('hidden');return;}
  // RLS must return only the school assigned to this authenticated administrator.
