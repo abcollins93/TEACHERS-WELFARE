@@ -118,7 +118,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    if(!confirm('FINAL CONFIRMATION: Permanently delete all member, contribution, payout and reversal records belonging only to '+ctx.name+' ('+ctx.school_code+')? Audit history and school settings will remain. This cannot be undone.'))return;
    msg('wfResetDataMsg','Verifying administrator and processing the school-scoped reset…');
    try{const result=await callAdminManagement({action:'reset',current_password,confirmation});$('wfResetDataForm').reset();$('wfResetExpected').textContent='Required phrase: RESET:'+ctx.school_code;$('wfResetConfirmation').placeholder='RESET:'+ctx.school_code;msg('wfResetDataMsg','Reset completed. Removed '+(result.result?.members_removed??0)+' members, '+(result.result?.contributions_removed??0)+' contributions, '+(result.result?.payouts_removed??0)+' payouts. Audit history preserved.');await refresh();}
-   catch(error){msg('wfResetDataMsg,error.message||'Reset failed. No success was assumed.',true);}
+   catch(error){msg('wfResetDataMsg',error.message||'Reset failed. No success was assumed.',true);}
  };
  loadSchoolAdmins();
  $('wfMonth').value=new Date().toISOString().slice(0,7);
