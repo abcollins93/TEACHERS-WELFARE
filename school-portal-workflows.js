@@ -7,10 +7,14 @@ const money=n=>Number(n||0).toLocaleString('en-GH',{minimumFractionDigits:2,maxi
 const today=()=>new Date().toISOString().slice(0,10);
 const csvCell=v=>{let s=String(v??'');if(/^[\s]*[=+@\-\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';};
 
-// Tenant names and details are supplied by the authenticated school record.\n\nfunction addUI(){
+// Tenant names and details are supplied by the authenticated school record.
+
+function addUI(){
  const d=document.createElement('section');d.id='workflows';d.innerHTML=`
  <section class="wf-admin-hub" id="wfAdminPanel"><div class="panel wf-admin-intro"><div class="wf-admin-intro-top"><div><div class="wf-admin-eyebrow"><i class="fa-solid fa-shield-halved"></i> Secure administration</div><h2>Administration Panel</h2><p>Manage this school’s members, contributions, monthly dues, welfare payouts, announcements and reports from one organised workspace.</p></div><span class="wf-admin-status"><i class="fa-solid fa-circle-check"></i> Admin mode active</span></div><div class="wf-admin-shortcuts"><span><i class="fa-solid fa-users"></i> Members</span><span><i class="fa-solid fa-coins"></i> Contributions</span><span><i class="fa-solid fa-hand-holding-heart"></i> Welfare</span><span><i class="fa-solid fa-file-lines"></i> Reports</span></div></div>
- <div class="panel" id="wfAdminAccessPanel"><h3>Administrator access &amp; recovery</h3><p class="muted">Change the password for the administrator currently signed in. New administrator invitations remain managed through the secure platform onboarding process; use <strong>Forgot password?</strong> on the school sign-in page for account recovery.</p><form id="wfChangePasswordForm" class="grid"><div><label for="wfCurrentAdminPassword">Current password</label><input id="wfCurrentAdminPassword" type="password" autocomplete="current-password" required></div><div><label for="wfNewAdminPassword">New password</label><input id="wfNewAdminPassword" type="password" autocomplete="new-password" minlength="10" maxlength="128" required><small class="muted">Use at least 10 characters.</small></div><div><label for="wfConfirmAdminPassword">Confirm new password</label><input id="wfConfirmAdminPassword" type="password" autocomplete="new-password" minlength="10" maxlength="128" required></div><div style="align-self:end"><button type="submit"><i class="fa-solid fa-key"></i> Update my password</button></div></form><p id="wfPasswordMsg" class="muted" role="status" aria-live="polite"></p><div class="wf-data-protection"><strong><i class="fa-solid fa-lock"></i> Data protection</strong><p class="muted">A one-click “Reset All Data” action is intentionally not enabled here. Permanent deletion of member and finance records needs a separately approved, audited server-side reset process to protect this school’s records.</p></div></div>
+ <div class="panel" id="wfAdminAccessPanel"><h3>Administrator access &amp; recovery</h3><p class="muted">Change the password for the administrator currently signed in. New administrator invitations remain managed through the secure platform onboarding process; use <strong>Forgot password?</strong> on the school sign-in page for account recovery.</p><form id="wfChangePasswordForm" class="grid"><div><label for="wfCurrentAdminPassword">Current password</label><input id="wfCurrentAdminPassword" type="password" autocomplete="current-password" required></div><div><label for="wfNewAdminPassword">New password</label><input id="wfNewAdminPassword" type="password" autocomplete="new-password" minlength="10" maxlength="128" required><small class="muted">Use at least 10 characters.</small></div><div><label for="wfConfirmAdminPassword">Confirm new password</label><input id="wfConfirmAdminPassword" type="password" autocomplete="new-password" minlength="10" maxlength="128" required></div><div style="align-self:end"><button type="submit"><i class="fa-solid fa-key"></i> Update my password</button></div></form><p id="wfPasswordMsg" class="muted" role="status" aria-live="polite"></p><div class="wf-data-protection"><strong><i class="fa-solid fa-lock"></i> Account security</strong><p class="muted">Administrator access is linked to this school. Account invitations and deactivation are verified server-side.</p></div></div>
+ <div class="panel" id="wfAdminUsersPanel"><h3>Register &amp; manage administrators</h3><p class="muted">Invite a new administrator by email. They must accept the invitation and set their own password. A school can have up to 10 active administrators.</p><form id="wfInviteAdminForm" class="grid"><div><label for="wfInviteAdminName">Full name / title</label><input id="wfInviteAdminName" maxlength="120" required placeholder="e.g. Welfare Secretary"></div><div><label for="wfInviteAdminUsername">Admin username</label><input id="wfInviteAdminUsername" maxlength="40" minlength="3" pattern="[A-Za-z0-9._-]{3,40}" required placeholder="e.g. welfare.secretary"></div><div><label for="wfInviteAdminEmail">Email address</label><input id="wfInviteAdminEmail" type="email" maxlength="254" required placeholder="name@example.com"></div><div style="align-self:end"><button type="submit"><i class="fa-solid fa-user-plus"></i> Send administrator invitation</button></div></form><p id="wfAdminUsersMsg" class="muted" role="status" aria-live="polite"></p><div style="overflow:auto"><table><thead><tr><th>Username</th><th>Name / Title</th><th>Status</th><th>Action</th></tr></thead><tbody id="wfAdminUsersRows"><tr><td colspan="4">Loading administrators…</td></tr></tbody></table></div><p class="muted">Deactivation removes this school’s portal access but does not delete the person’s Supabase identity.</p></div>
+ <div class="panel" id="wfResetDataPanel"><h3>Reset this school’s welfare data</h3><div class="wf-data-protection"><strong><i class="fa-solid fa-triangle-exclamation"></i> Permanent action</strong><p class="muted">This deletes only this school’s registered members, contribution records, payout records and transaction-reversal records. The audit history and school settings are preserved. This cannot be undone.</p></div><form id="wfResetDataForm" class="grid"><div><label for="wfResetPassword">Current administrator password</label><input id="wfResetPassword" type="password" autocomplete="current-password" required></div><div><label for="wfResetConfirmation">Type the exact confirmation phrase</label><input id="wfResetConfirmation" required autocomplete="off" placeholder="RESET:SCHOOLCODE"><small id="wfResetExpected" class="muted">Confirmation phrase will appear after the school loads.</small></div><div><button type="submit" class="danger"><i class="fa-solid fa-trash-can"></i> Permanently reset this school’s welfare data</button></div></form><p id="wfResetDataMsg" class="muted" role="status" aria-live="polite"></p></div>
  <div class="panel" id="wfTeacherPanel"><h3>Teacher register</h3><label for="wfTeacherSearch">Search teachers</label><input id="wfTeacherSearch" type="search" placeholder="Search name, staff ID, phone, rank or class"><p class="muted">Register and update staff details. Historical finance records are not deleted when a staff profile is changed.</p><form id="wfTeacher" class="grid">
  <div><label>Staff ID</label><input id="wfTid" required maxlength="80"></div><div><label>Full name</label><input id="wfName" required maxlength="160"></div>
  <div><label>Phone</label><input id="wfPhone" maxlength="40"></div><div><label>Rank</label><input id="wfRank" maxlength="100"></div>
@@ -75,6 +79,50 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  $('payoutTotal').textContent=money(activePays.reduce((a,x)=>a+Number(x.amount||0),0));
  $('netTotal').textContent=money(activeCons.reduce((a,x)=>a+Number(x.amount||0),0)-activePays.reduce((a,x)=>a+Number(x.amount||0),0));
  const ctx=school;
+ $('wfResetExpected').textContent='Required phrase: RESET:'+ctx.school_code;
+ $('wfResetConfirmation').placeholder='RESET:'+ctx.school_code;
+ const callAdminManagement=async payload=>{
+   const {data,error}=await client.functions.invoke('school-admin-management',{body:{...payload,school_id:ctx.id}});
+   if(error)throw new Error(data?.error||error.message||'The request failed.');
+   if(data?.error)throw new Error(data.error);
+   return data||{};
+ };
+ const renderSchoolAdmins=admins=>{
+   const rows=$('wfAdminUsersRows');
+   rows.innerHTML=admins.length?admins.map(a=>'<tr><td>'+esc(a.username||'—')+'</td><td>'+esc(a.name||'—')+'</td><td>'+(a.active?'<span class="wf-admin-pill active">Active</span>':'<span class="wf-admin-pill">Inactive</span>')+'</td><td>'+(a.active&&a.user_id!==undefined?'<button type="button" class="secondary" data-wf-admin-deactivate="'+esc(a.id)+'" '+(String(a.user_id)===String((awaitUserId)||'')?'disabled title="You cannot deactivate your own account"':'')+'>Deactivate</button>':'—')+'</td></tr>').join(''):'<tr><td colspan="4">No administrator accounts are linked to this school.</td></tr>';
+ };
+ let awaitUserId='';
+ const loadSchoolAdmins=async()=>{
+   $('wfAdminUsersRows').innerHTML='<tr><td colspan="4">Loading administrators…</td></tr>';
+   try{
+     const {data:{user}}=await client.auth.getUser();awaitUserId=user?.id||'';
+     const data=await callAdminManagement({action:'list'});renderSchoolAdmins(data.administrators||[]);
+     msg('wfAdminUsersMsg','Showing administrators for '+ctx.name+'.');
+   }catch(error){$('wfAdminUsersRows').innerHTML='<tr><td colspan="4">Administrator list unavailable.</td></tr>';msg('wfAdminUsersMsg',error.message||'Administrator list unavailable.',true);}
+ };
+ $('wfInviteAdminForm').onsubmit=async e=>{
+   e.preventDefault();const full_name=$('wfInviteAdminName').value.trim(),username=$('wfInviteAdminUsername').value.trim(),email=$('wfInviteAdminEmail').value.trim();
+   if(!confirm('Send a secure administrator invitation to '+email+' for '+ctx.name+'?'))return;
+   msg('wfAdminUsersMsg','Sending invitation…');
+   try{const result=await callAdminManagement({action:'invite',full_name,username,email});$('wfInviteAdminForm').reset();msg('wfAdminUsersMsg',result.message||'Invitation sent.');await loadSchoolAdmins();}
+   catch(error){msg('wfAdminUsersMsg',error.message||'Invitation failed.',true);}
+ };
+ $('wfAdminUsersRows').addEventListener('click',async e=>{
+   const button=e.target.closest('[data-wf-admin-deactivate]');if(!button)return;
+   if(!confirm('Deactivate this administrator’s access to '+ctx.name+'? Their account identity and audit history will be retained.'))return;
+   button.disabled=true;msg('wfAdminUsersMsg','Updating administrator access…');
+   try{const result=await callAdminManagement({action:'deactivate',admin_id:button.dataset.wfAdminDeactivate});msg('wfAdminUsersMsg',result.message||'Administrator access updated.');await loadSchoolAdmins();}
+   catch(error){msg('wfAdminUsersMsg',error.message||'Administrator access could not be changed.',true);button.disabled=false;}
+ });
+ $('wfResetDataForm').onsubmit=async e=>{
+   e.preventDefault();const current_password=$('wfResetPassword').value,confirmation=$('wfResetConfirmation').value;
+   if(confirmation!=='RESET:'+ctx.school_code)return msg('wfResetDataMsg','The confirmation phrase does not match this school. No records were changed.',true);
+   if(!confirm('FINAL CONFIRMATION: Permanently delete all member, contribution, payout and reversal records belonging only to '+ctx.name+' ('+ctx.school_code+')? Audit history and school settings will remain. This cannot be undone.'))return;
+   msg('wfResetDataMsg','Verifying administrator and processing the school-scoped reset…');
+   try{const result=await callAdminManagement({action:'reset',current_password,confirmation});$('wfResetDataForm').reset();$('wfResetExpected').textContent='Required phrase: RESET:'+ctx.school_code;$('wfResetConfirmation').placeholder='RESET:'+ctx.school_code;msg('wfResetDataMsg','Reset completed. Removed '+(result.result?.members_removed??0)+' members, '+(result.result?.contributions_removed??0)+' contributions, '+(result.result?.payouts_removed??0)+' payouts. Audit history preserved.');await refresh();}
+   catch(error){msg('wfResetDataMsg',error.message||'Reset failed. No success was assumed.',true);}
+ };
+ loadSchoolAdmins();
  $('wfMonth').value=new Date().toISOString().slice(0,7);
  const {data:broadcastSetting,error:broadcastLoadError}=await client.from('system_settings').select('value').eq('school_id',ctx.id).eq('key','broadcast_message').maybeSingle();
  if(!broadcastLoadError&&broadcastSetting)$('wfBroadcastText').value=String(broadcastSetting.value||'');
