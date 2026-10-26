@@ -114,7 +114,7 @@ body:has(#login:not(.hidden)) main{max-width:760px;margin:0 auto;padding:clamp(1
 @media(max-width:480px){#login.panel{border-radius:30px;padding:29px 22px}#login .gateway-icon{width:94px;height:94px;font-size:36px}#login input{min-height:58px}#login #loginBtn{min-height:60px}}
 
 /* Live gateway motion: subtle, accessible and mobile-friendly */
-#login.panel:before{background:linear-gradient(90deg,#f5a000 0%,#ffe18a 24%,#f5b51b 45%,#ffffff 50%,#f5b51b 56%,#234eb7 100%);background-size:220% 100%;animation:gatewayGoldSweep 4.2s linear infinite}
+#login.panel:before{background:linear-gradient(90deg,#f5a000 0%,#ffe18a 24%,#f5b51b 45%,#ffffff 50%,#f5b51b 56%,#234eb7 100%);background-size:220% 100%;animation:gatewayGoldSweep 10s linear infinite}
 @keyframes gatewayGoldSweep{0%{background-position:100% 0}100%{background-position:-120% 0}}
 #login .gateway-icon{animation:gatewayLogoFloat 3.4s ease-in-out infinite;transform-origin:50% 55%}
 #login .gateway-icon i{display:inline-block;animation:gatewayCapTilt 3.4s ease-in-out infinite;filter:drop-shadow(0 0 0 rgba(255,198,41,0))}
@@ -182,7 +182,7 @@ const SUPABASE_URL='https://jlwdtlhlztbgpogqdabu.supabase.co';
 const SUPABASE_KEY='sb_publishable_-idvZBti_BY5Xn8xDxhqqw_p_Me6X8O';
 const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const params=new URLSearchParams(location.search);
-const requestedCode=(params.get('school')||'').trim().toUpperCase();
+const requestedCode=(params.get('school')||params.get('code')||params.get('school_code')||'').trim().toUpperCase();
 // Keep the previously issued Ntonso gateway URL working while the registered school code remains NTONSO-A-0.
 const code=requestedCode==='NTONSO-A-01'?'NTONSO-A-0':requestedCode;
 const $=id=>document.getElementById(id);
@@ -205,11 +205,15 @@ $('codeLabel').textContent=code||'Missing school code';
 async function loadGatewayIdentity(){
  if(!code)return;
  const {data,error}=await client.from('schools').select('name,school_code,status').eq('school_code',code).maybeSingle();
- if(error||!data||data.status!=='active')return;
- const name=String(data.name||'').trim();if(!name)return;
+ if(error||!data||data.status!=='active'){
+  $('loginSchoolName').textContent='School gateway unavailable';
+  $('loginError').textContent='The school name could not be verified for this gateway link. Please check the school code in the link or contact the platform administrator.';
+  return;
+ }
+ const name=String(data.name||'').trim();if(!name){$('loginSchoolName').textContent='School gateway unavailable';return;}
  $('brand').textContent=name;$('loginSchoolName').textContent=name;$('documentTitle').textContent=name+' | Teachers Welfare Fund';
 }
-loadGatewayIdentity().catch(()=>{});
+loadGatewayIdentity().catch(()=>{$('loginSchoolName').textContent='School gateway unavailable';});
 if(!/^[A-Z0-9-]{3,32}$/.test(code)){ $('loginError').textContent='This gateway link is missing a valid school code. Please use the link provided by your school platform administrator.';$('loginBtn').disabled=true; }
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 async function escapeTeacherText(v){return String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
