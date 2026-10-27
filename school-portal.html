@@ -439,6 +439,19 @@ body:not(:has(#login:not(.hidden))) main{padding-top:calc(var(--app-header-heigh
 
 <!-- Both header rows remain fixed; content is offset below the stacked bars. -->
 
+
+<style id="mobile-drawer-stacking-fix">
+/* Mobile navigation drawer must overlay both fixed header rows and page content. */
+@media(max-width:950px){
+  #mobile-nav-overlay{z-index:9998!important}
+  #dashboard .sidebar,
+  #dashboard .sidebar.is-mobile-open{z-index:9999!important}
+  #mobileNavToggle{z-index:9997!important}
+  header.top{z-index:1000!important}
+  #dashboard .overview-top{z-index:990!important}
+}
+</style>
+
 </head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading page">
