@@ -362,7 +362,7 @@ input, select, textarea, button { max-width: 100%; }
 <style id="dashboard-metric-card-refresh">#schoolOverview .dashboard-metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}#schoolOverview .metric-featured{display:flex;align-items:center;gap:14px;min-width:0;min-height:128px;padding:18px;background:#fff;color:#182235;border:1px solid #e8edf5;border-left:5px solid var(--metric-accent,#2563eb);border-radius:16px;box-shadow:0 8px 22px rgba(15,23,42,.065)}#schoolOverview .metric-featured:after{display:none}#schoolOverview .metric-icon{flex:0 0 50px;width:50px;height:50px;display:grid;place-items:center;border-radius:14px;background:var(--metric-icon-bg,#eff6ff);color:var(--metric-accent,#2563eb);font-size:1.3rem}#schoolOverview .metric-content{min-width:0;flex:1}#schoolOverview .metric-label{display:block;color:#778196;font-size:.67rem;font-weight:800;letter-spacing:.055em;line-height:1.4;text-transform:uppercase;overflow-wrap:anywhere}#schoolOverview .metric-content strong{display:block;margin-top:7px;color:#182235;font-size:clamp(1.05rem,1.7vw,1.45rem);font-weight:850;line-height:1.25;letter-spacing:-.035em;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}#schoolOverview .metric-note{display:block;margin-top:7px;color:#7b8799;font-size:.73rem;font-weight:600;line-height:1.35}#schoolOverview .metric-note-positive{color:#16804a}#schoolOverview .metric-note-positive i{margin-right:4px}#schoolOverview .metric-balance{--metric-accent:#2878d0;--metric-icon-bg:#e7f2ff}#schoolOverview .metric-standard{--metric-accent:#23945f;--metric-icon-bg:#e2f7eb}#schoolOverview .metric-activity{--metric-accent:#8055c7;--metric-icon-bg:#f0e8ff}#schoolOverview .metric-compact{border-left:5px solid #bd8a0b;border-radius:16px;background:#fff;box-shadow:0 8px 22px rgba(15,23,42,.065)}#schoolOverview .metric-compact:nth-child(1){border-left-color:#2878d0}#schoolOverview .metric-compact:nth-child(3){border-left-color:#23945f}#schoolOverview .metric-compact:nth-child(4){border-left-color:#8055c7}#schoolOverview .metric-compact:after{display:none}#schoolOverview .metric-compact span{font-size:.72rem;font-weight:750;line-height:1.4}#schoolOverview .metric-compact span i{color:#bd8a0b}#schoolOverview .metric-compact strong{font-size:clamp(1.1rem,1.8vw,1.55rem)}.dark #schoolOverview .metric-featured,.dark #schoolOverview .metric-compact{background:#0b1d3a;color:#e6edf7;border-color:#26364d;border-left-color:var(--metric-accent,#bd8a0b)}.dark #schoolOverview .metric-content strong,.dark #schoolOverview .metric-compact strong{color:#f1f5fb}.dark #schoolOverview .metric-label,.dark #schoolOverview .metric-note,.dark #schoolOverview .metric-compact span{color:#a8b5c8}.dark #schoolOverview .metric-note-positive{color:#6ee7a3}@media(max-width:950px){#schoolOverview .dashboard-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){#schoolOverview .dashboard-metrics{gap:9px}#schoolOverview .metric-featured{gap:9px;min-height:110px;padding:12px 9px;border-radius:14px}#schoolOverview .metric-icon{flex-basis:40px;width:40px;height:40px;border-radius:11px;font-size:1.05rem}#schoolOverview .metric-label{font-size:.57rem;letter-spacing:.025em}#schoolOverview .metric-content strong{font-size:clamp(.95rem,3.8vw,1.15rem)}#schoolOverview .metric-note{font-size:.64rem}#schoolOverview .metric-compact{padding:13px 10px;border-radius:14px}#schoolOverview .metric-compact span{font-size:.65rem}#schoolOverview .metric-compact strong{font-size:1.08rem}} 
 /* Signed-in profile avatar in the top navigation */
 .header-profile{display:flex;align-items:center;gap:10px;min-width:0;padding:4px 8px 4px 4px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.075);color:#fff}
-.header-avatar{width:40px;height:40px;min-width:40px;border-radius:50%;overflow:hidden;display:grid;place-items:center;border:2px solid #dfb15b;background:linear-gradient(145deg,#213c62,#071326);color:#f5cf70;font-size:16px;font-weight:850;box-shadow:0 0 0 3px rgba(223,177,91,.12)}
+.header-avatar{position:relative;width:40px;height:40px;min-width:40px;padding:0;border-radius:50%;overflow:hidden;display:grid;place-items:center;border:2px solid #dfb15b;background:linear-gradient(145deg,#213c62,#071326);color:#f5cf70;font-size:16px;font-weight:850;box-shadow:0 0 0 3px rgba(223,177,91,.12);cursor:pointer}.header-avatar:disabled{opacity:.72;cursor:progress}.header-avatar-edit{position:absolute;inset:0;display:grid;place-items:center;background:rgba(3,10,22,.68);color:#fff;opacity:0;transition:opacity .18s}.header-avatar:hover .header-avatar-edit,.header-avatar:focus-visible .header-avatar-edit{opacity:1}.header-avatar-status{position:absolute;top:100%;right:8px;margin-top:4px;max-width:240px;padding:4px 8px;border-radius:7px;background:#10233d;color:#fff;font-size:.7rem;box-shadow:0 4px 12px #0002;z-index:5}.header-avatar-status:empty{display:none}
 .header-avatar img{display:block;width:100%;height:100%;object-fit:cover;border-radius:50%}
 .header-avatar-initials{font-size:12px;letter-spacing:.02em}
 .header-profile-copy{min-width:0;max-width:150px;line-height:1.25}
@@ -382,7 +382,7 @@ input, select, textarea, button { max-width: 100%; }
   <div class="page-loader-dots" aria-hidden="true"><span></span><span></span><span></span></div>
  </div>
 </div>
-<header class="top"><div><div class="eyebrow">Teachers Welfare Fund</div><h1 id="brand">School Portal</h1></div><div class="top-account-actions" style="display:flex;align-items:center;gap:12px"><button id="themeToggle" class="secondary" type="button" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i> Theme</button><div class="shield"><i class="fa-solid fa-shield-halved"></i>Secure school administrator access</div><div id="headerProfile" class="header-profile hidden" aria-label="Signed-in profile"><div class="header-avatar" id="headerAvatar" aria-hidden="true"><i class="fa-solid fa-user"></i></div><div class="header-profile-copy"><strong id="headerProfileName">Signed-in user</strong><small id="headerProfileRole">Portal account</small></div></div></div></header>
+<header class="top"><div><div class="eyebrow">Teachers Welfare Fund</div><h1 id="brand">School Portal</h1></div><div class="top-account-actions" style="display:flex;align-items:center;gap:12px"><button id="themeToggle" class="secondary" type="button" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i> Theme</button><div class="shield"><i class="fa-solid fa-shield-halved"></i>Secure school administrator access</div><div id="headerProfile" class="header-profile hidden" aria-label="Signed-in profile"><button type="button" class="header-avatar" id="headerAvatar" aria-label="Change profile picture" title="Change profile picture"><i class="fa-solid fa-user" aria-hidden="true"></i><span class="header-avatar-edit" aria-hidden="true"><i class="fa-solid fa-camera"></i></span></button><input id="headerAvatarFile" type="file" accept="image/*" hidden><span id="headerAvatarStatus" class="header-avatar-status" role="status" aria-live="polite"></span><div class="header-profile-copy"><strong id="headerProfileName">Signed-in user</strong><small id="headerProfileRole">Portal account</small></div></div></div></header>
 <main>
 <section id="login" class="panel narrow"><div class="gateway-brand"><div class="gateway-icon"><i class="fa-solid fa-graduation-cap"></i></div><div class="eyebrow"><span class="gateway-live-dot" aria-hidden="true"></span>Protected school gateway · Live</div><h2 id="loginSchoolName">School name</h2><div class="gateway-school-badge">Welfare Fund Portal Gateway</div></div><p class="muted" style="text-align:center;margin:0 0 24px">School gateway code: <strong id="codeLabel"></strong><br>Sign in with your registered school account.</p><p class="eyebrow" style="margin-top:0">School administrator access</p><p class="muted">Use the email invitation and password created for your school administrator account.</p>
 <form id="loginForm"><label for="email">Administrator email</label><input id="email" type="email" autocomplete="username" required><label for="password">Password</label><div class="password-field"><input id="password" type="password" autocomplete="current-password" required><button type="button" class="password-toggle" data-password-target="password" aria-label="Show password" aria-pressed="false" title="Show password"><i class="fa-solid fa-eye" aria-hidden="true"></i></button></div><p id="loginError" class="error" role="alert"></p><button id="loginBtn" type="submit"><i class="fa-solid fa-right-to-bracket"></i> &nbsp;Sign in securely</button><button id="forgotPassword" type="button" class="secondary" style="width:100%;margin-top:8px">Forgot password?</button></form>
@@ -523,23 +523,77 @@ async function renderTeacherDashboard(profile,school){
  }
 }
 
-function setHeaderProfile(user, displayName, roleLabel, photoUrl) {
- const shell = document.getElementById('headerProfile');
- const avatar = document.getElementById('headerAvatar');
- const name = document.getElementById('headerProfileName');
- const role = document.getElementById('headerProfileRole');
- if (!shell || !avatar || !name || !role) return;
- const cleanName = String(displayName || user?.email || 'Portal User').trim();
- const initials = cleanName.split(/[\\s@._-]+/).filter(Boolean).slice(0,2).map(part=>part.charAt(0).toUpperCase()).join('') || 'U';
- name.textContent = cleanName;
- role.textContent = roleLabel || 'Portal account';
+const HEADER_AVATAR_MAX_BYTES = 1024 * 1024;
+function headerAvatarStorageKey(user) { return user?.id ? 'welfare-profile-photo:' + user.id : ''; }
+function headerAvatarStatus(message, isError=false) {
+ const status=document.getElementById('headerAvatarStatus');
+ if(status){status.textContent=message||'';status.style.background=isError?'#8f1d24':'#10233d';}
+}
+function renderHeaderAvatar(user, displayName, photoUrl) {
+ const avatar=document.getElementById('headerAvatar');
+ if(!avatar)return;
+ const cleanName=String(displayName||user?.email||'Portal User').trim();
+ const initials=cleanName.split(/[\\s@._-]+/).filter(Boolean).slice(0,2).map(part=>part.charAt(0).toUpperCase()).join('')||'U';
+ let savedPhoto='';
+ try { const key=headerAvatarStorageKey(user); if(key)savedPhoto=localStorage.getItem(key)||''; } catch(_){}
+ const selectedPhoto=savedPhoto||photoUrl;
  avatar.replaceChildren();
- if (photoUrl && typeof photoUrl === 'string') {
-   const image = document.createElement('img'); image.alt = ''; image.referrerPolicy = 'no-referrer'; image.src = photoUrl;
-   image.addEventListener('error', () => { if (!avatar.isConnected || avatar.contains(image)) { avatar.replaceChildren(); const fallback = document.createElement('span'); fallback.className = 'header-avatar-initials'; fallback.textContent = initials; avatar.appendChild(fallback); } }, {once:true});
+ if(selectedPhoto&&typeof selectedPhoto==='string'){
+   const image=document.createElement('img');image.alt='';image.referrerPolicy='no-referrer';image.src=selectedPhoto;
+   image.addEventListener('error',()=>{
+     if(avatar.contains(image)){
+       if(savedPhoto){try{localStorage.removeItem(headerAvatarStorageKey(user));}catch(_){}}
+       avatar.replaceChildren();const fallback=document.createElement('span');fallback.className='header-avatar-initials';fallback.textContent=initials;avatar.appendChild(fallback);
+       if(savedPhoto)headerAvatarStatus('Saved photo could not be loaded. Choose another image.',true);
+     }
+   },{once:true});
    avatar.appendChild(image);
- } else { const fallback = document.createElement('span'); fallback.className = 'header-avatar-initials'; fallback.textContent = initials; avatar.appendChild(fallback); }
- shell.classList.remove('hidden'); shell.setAttribute('aria-label', cleanName + ', ' + (roleLabel || 'Portal account'));
+ }else{const fallback=document.createElement('span');fallback.className='header-avatar-initials';fallback.textContent=initials;avatar.appendChild(fallback);}
+}
+function initHeaderAvatarUpload(){
+ const avatar=document.getElementById('headerAvatar'),picker=document.getElementById('headerAvatarFile');
+ if(!avatar||!picker||avatar.dataset.uploadReady==='true')return;
+ avatar.dataset.uploadReady='true';
+ avatar.addEventListener('click',()=>{headerAvatarStatus('');picker.click();});
+ picker.addEventListener('change',()=>{
+   const file=picker.files&&picker.files[0];if(!file)return;
+   const finish=()=>{picker.value='';avatar.disabled=false;avatar.removeAttribute('aria-busy');};
+   if(!file.type||!file.type.startsWith('image/')){headerAvatarStatus('Choose a supported image file.',true);finish();return;}
+   if(file.size>HEADER_AVATAR_MAX_BYTES){headerAvatarStatus('Image is too large. Maximum size is 1 MB.',true);finish();return;}
+   avatar.disabled=true;avatar.setAttribute('aria-busy','true');headerAvatarStatus('Loading photo…');
+   const reader=new FileReader();
+   reader.onerror=()=>{headerAvatarStatus('The image could not be read. Please try another file.',true);finish();};
+   reader.onload=()=>{
+     const dataUrl=typeof reader.result==='string'?reader.result:'';
+     if(!/^data:image\\/(png|jpeg|webp|gif|avif);base64,/i.test(dataUrl)){headerAvatarStatus('This image format is not supported. Use JPEG, PNG, WebP, GIF or AVIF.',true);finish();return;}
+     const probe=new Image();
+     probe.onerror=()=>{headerAvatarStatus('This image is invalid or unsupported. Please choose another image.',true);finish();};
+     probe.onload=()=>{
+       if(!probe.naturalWidth||!probe.naturalHeight){headerAvatarStatus('The selected image could not be verified.',true);finish();return;}
+       const {data:{user}}=client.auth.getUser ? {data:{user:null}} : {data:{user:null}};
+       // The active user id is supplied by the most recent profile render below.
+       const activeUser=window.__welfareHeaderAvatarUser;
+       const key=headerAvatarStorageKey(activeUser);
+       if(!key){headerAvatarStatus('Your account could not be verified. Sign in again before changing the photo.',true);finish();return;}
+       try{localStorage.setItem(key,dataUrl);}
+       catch(_){headerAvatarStatus('Could not save this photo on this device. Free some browser storage and try again.',true);finish();return;}
+       renderHeaderAvatar(activeUser,document.getElementById('headerProfileName')?.textContent||activeUser.email,dataUrl);
+       headerAvatarStatus('Profile picture saved on this device.');finish();
+     };
+     probe.src=dataUrl;
+   };
+   reader.readAsDataURL(file);
+ });
+}
+function setHeaderProfile(user, displayName, roleLabel, photoUrl) {
+ const shell=document.getElementById('headerProfile'),name=document.getElementById('headerProfileName'),role=document.getElementById('headerProfileRole');
+ if(!shell||!name||!role)return;
+ const cleanName=String(displayName||user?.email||'Portal User').trim();
+ name.textContent=cleanName;role.textContent=roleLabel||'Portal account';
+ window.__welfareHeaderAvatarUser=user||null;
+ renderHeaderAvatar(user,cleanName,photoUrl);
+ shell.classList.remove('hidden');shell.setAttribute('aria-label',cleanName+', '+(roleLabel||'Portal account'));
+ initHeaderAvatarUpload();
 }
 async function showDashboard(){
  const {data:{user},error:userErr}=await client.auth.getUser();
