@@ -533,7 +533,7 @@ function renderHeaderAvatar(user, displayName, photoUrl) {
  const avatar=document.getElementById('headerAvatar');
  if(!avatar)return;
  const cleanName=String(displayName||user?.email||'Portal User').trim();
- const initials=cleanName.split(/[\\s@._-]+/).filter(Boolean).slice(0,2).map(part=>part.charAt(0).toUpperCase()).join('')||'U';
+ const initials=cleanName.split(/[\s@._-]+/).filter(Boolean).slice(0,2).map(part=>part.charAt(0).toUpperCase()).join('')||'U';
  let savedPhoto='';
  try { const key=headerAvatarStorageKey(user); if(key)savedPhoto=localStorage.getItem(key)||''; } catch(_){}
  const selectedPhoto=savedPhoto||photoUrl;
@@ -565,7 +565,7 @@ function initHeaderAvatarUpload(){
    reader.onerror=()=>{headerAvatarStatus('The image could not be read. Please try another file.',true);finish();};
    reader.onload=()=>{
      const dataUrl=typeof reader.result==='string'?reader.result:'';
-     if(!/^data:image\\/(png|jpeg|webp|gif|avif);base64,/i.test(dataUrl)){headerAvatarStatus('This image format is not supported. Use JPEG, PNG, WebP, GIF or AVIF.',true);finish();return;}
+     if(!/^data:image\/(png|jpeg|webp|gif|avif);base64,/i.test(dataUrl)){headerAvatarStatus('This image format is not supported. Use JPEG, PNG, WebP, GIF or AVIF.',true);finish();return;}
      const probe=new Image();
      probe.onerror=()=>{headerAvatarStatus('This image is invalid or unsupported. Please choose another image.',true);finish();};
      probe.onload=()=>{
