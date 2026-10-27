@@ -814,3 +814,10 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
   });
 })();
 </script></body></html>
+<style>
+/* Live administrator status indicator */
+#schoolOverview .overview-top .eyebrow{display:flex;align-items:center;gap:9px}
+#schoolOverview .overview-top .eyebrow::before{content:"";display:inline-block;width:9px;height:9px;flex:0 0 9px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 0 rgba(34,197,94,.55);animation:adminLivePulse 1.6s ease-out infinite}
+@keyframes adminLivePulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.55);opacity:1}70%{box-shadow:0 0 0 7px rgba(34,197,94,0);opacity:.95}100%{box-shadow:0 0 0 0 rgba(34,197,94,0);opacity:1}}
+@media(prefers-reduced-motion:reduce){#schoolOverview .overview-top .eyebrow::before{animation:none}}
+</style>
