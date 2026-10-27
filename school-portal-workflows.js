@@ -10,7 +10,51 @@ const csvCell=v=>{let s=String(v??'');if(/^[\s]*[=+@\-\t\r]/.test(s))s="'"+s;ret
 // Tenant names and details are supplied by the authenticated school record.
 
 function addUI(){
- const d=document.createElement('section');d.id='workflows';d.innerHTML=`
+ const d=document.createElement('section');d.id='workflows';d.innerHTML=`<style>
+#wfAdminPanel{--wf-purple:#6d28d9;--wf-green:#059669;--wf-red:#e11d48;--wf-ink:#07122b;color:var(--wf-ink)}
+#wfAdminPanel .panel{background:#fff!important;color:#07122b!important;border:1px solid rgba(148,163,184,.18)!important;border-radius:16px!important;box-shadow:0 18px 42px rgba(7,18,43,.12)!important;margin-bottom:18px;padding:22px;min-width:0}
+#wfAdminPanel .wf-admin-intro{background:linear-gradient(145deg,#fff,#f8fafc)!important}
+#wfAdminPanel h2,#wfAdminPanel h3{display:flex;align-items:center;gap:11px;color:#07122b!important;font-weight:850!important;letter-spacing:-.025em;line-height:1.35;margin:0 0 9px}
+#wfAdminPanel h3:before{font-family:"Font Awesome 6 Free";font-weight:900;display:inline-grid;place-items:center;width:38px;height:38px;flex:0 0 38px;border-radius:11px;background:#eef2ff;color:#4338ca;font-size:16px}
+#wfAdminAccessPanel h3:before{content:"\\f084";background:#f1f5f9;color:#0f172a}
+#wfAdminUsersPanel h3:before{content:"\\f2bd";background:#ecfdf5;color:#059669}
+#wfResetDataPanel h3:before{content:"\\f071";background:#fff1f2;color:#e11d48}
+#wfTeacherPanel h3:before{content:"\\f234";background:#ecfdf5;color:#059669}
+#wfContributionPanel h3:before{content:"\\f4b9";background:#ecfdf5;color:#059669}
+#wfPayoutPanel h3:before,#wfPayoutLedgerPanel h3:before{content:"\\f4b9";background:#fff1f2;color:#e11d48}
+#wfStatementPanel h3:before{content:"\\f15c"}
+#wfLedgerPanel h3:before{content:"\\f03a"}
+#wfBroadcastPanel h3:before{content:"\\f0a1";background:#f3e8ff;color:#7e22ce}
+#wfSettingsPanel h3:before{content:"\\f1de";background:#eff6ff;color:#1d4ed8}
+#wfReportsPanel h3:before{content:"\\f1c1"}
+#wfAuditPanel h3:before{content:"\\f1da"}
+#wfMemberSummaryPanel h3:before{content:"\\f0c0"}
+#wfAdminPanel p.muted{color:#64748b!important;line-height:1.65}
+#wfAdminPanel label{color:#17233b;font-weight:750;margin:13px 0 7px}
+#wfAdminPanel input,#wfAdminPanel select,#wfAdminPanel textarea{width:100%;min-height:44px;padding:11px 13px!important;border:1px solid #dbe2ec!important;border-radius:11px!important;background:#fff!important;color:#0f172a!important;box-shadow:none;transition:border-color .18s,box-shadow .18s}
+#wfAdminPanel input::placeholder,#wfAdminPanel textarea::placeholder{color:#94a3b8}
+#wfAdminPanel input:focus,#wfAdminPanel select:focus,#wfAdminPanel textarea:focus{outline:0;border-color:#818cf8!important;box-shadow:0 0 0 3px rgba(99,102,241,.13)!important}
+#wfAdminPanel button{border:1px solid transparent;border-radius:10px;min-height:42px;padding:10px 15px;background:#07122b;color:#fff;font-weight:800;box-shadow:0 5px 12px rgba(7,18,43,.12);transition:transform .18s,filter .18s,box-shadow .18s}
+#wfAdminPanel button:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 8px 18px rgba(7,18,43,.15)}
+#wfAdminPanel button.secondary{background:#f1f5f9;color:#1e293b;border-color:#e2e8f0;box-shadow:none}
+#wfBroadcastPanel button[type=submit]{background:linear-gradient(120deg,#7c3aed,#4f46e5)}
+#wfAdminUsersPanel button[type=submit],#wfTeacherSave,#wfContribution button[type=submit],#wfDuesForm button[type=submit]{background:#059669}
+#wfPayout button[type=submit],#wfResetDataForm button[type=submit]{background:linear-gradient(120deg,#e11d48,#be123c)}
+#wfAdminAccessPanel button[type=submit],#wfSettingsPanel button[type=submit]{background:#07122b}
+#wfAdminPanel table{width:100%;border-collapse:separate;border-spacing:0;font-size:.86rem;overflow:hidden;border-radius:12px}
+#wfAdminPanel th{background:#f1f5f9;color:#334155;font-weight:850;letter-spacing:.04em}
+#wfAdminPanel th,#wfAdminPanel td{padding:12px;border-bottom:1px solid #e8edf4}
+#wfAdminPanel tbody tr:hover{background:#f8fafc}
+#wfAdminPanel .wf-data-protection{border:1px solid #fecdd3;border-radius:12px;background:#fff1f2;padding:14px 16px;margin:12px 0}
+#wfAdminPanel .wf-data-protection strong{color:#be123c}
+#wfAdminPanel .wf-admin-intro-top{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap}
+#wfAdminPanel .wf-admin-eyebrow{font-size:.76rem;letter-spacing:.12em;text-transform:uppercase;font-weight:900;color:#4338ca;margin-bottom:8px}
+#wfAdminPanel .wf-admin-shortcuts{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}
+#wfAdminPanel .wf-admin-shortcuts span{display:inline-flex;align-items:center;gap:7px;background:#f1f5f9;color:#334155;border-radius:999px;padding:8px 12px;font-size:.78rem;font-weight:800}
+#wfAdminPanel .wf-admin-status{display:inline-flex;align-items:center;gap:7px;padding:8px 11px;border-radius:999px;background:#ecfdf5;color:#047857;font-weight:850;font-size:.76rem}
+#wfAdminPanel .grid{gap:15px}
+@media(max-width:600px){#wfAdminPanel .panel{padding:16px!important}#wfAdminPanel h3{font-size:1rem}#wfAdminPanel h3:before{width:34px;height:34px;flex-basis:34px}#wfAdminPanel .wf-admin-status{width:max-content}#wfAdminPanel .grid{grid-template-columns:1fr}}
+</style>
  <section class="wf-admin-hub" id="wfAdminPanel"><div class="panel wf-admin-intro"><div class="wf-admin-intro-top"><div><div class="wf-admin-eyebrow"><i class="fa-solid fa-shield-halved"></i> Secure administration</div><h2>Administration Panel</h2><p>Manage this school’s members, contributions, monthly dues, welfare payouts, announcements and reports from one organised workspace.</p></div><span class="wf-admin-status"><i class="fa-solid fa-circle-check"></i> Admin mode active</span></div><div class="wf-admin-shortcuts"><span><i class="fa-solid fa-users"></i> Members</span><span><i class="fa-solid fa-coins"></i> Contributions</span><span><i class="fa-solid fa-hand-holding-heart"></i> Welfare</span><span><i class="fa-solid fa-file-lines"></i> Reports</span></div></div>
  <div class="panel" id="wfAdminAccessPanel"><h3>Administrator access &amp; recovery</h3><p class="muted">Change the password for the administrator currently signed in. New administrator invitations remain managed through the secure platform onboarding process; use <strong>Forgot password?</strong> on the school sign-in page for account recovery.</p><form id="wfChangePasswordForm" class="grid"><div><label for="wfCurrentAdminPassword">Current password</label><input id="wfCurrentAdminPassword" type="password" autocomplete="current-password" required></div><div><label for="wfNewAdminPassword">New password</label><input id="wfNewAdminPassword" type="password" autocomplete="new-password" minlength="10" maxlength="128" required><small class="muted">Use at least 10 characters.</small></div><div><label for="wfConfirmAdminPassword">Confirm new password</label><input id="wfConfirmAdminPassword" type="password" autocomplete="new-password" minlength="10" maxlength="128" required></div><div style="align-self:end"><button type="submit"><i class="fa-solid fa-key"></i> Update my password</button></div></form><p id="wfPasswordMsg" class="muted" role="status" aria-live="polite"></p><div class="wf-data-protection"><strong><i class="fa-solid fa-lock"></i> Account security</strong><p class="muted">Administrator access is linked to this school. Account invitations and deactivation are verified server-side.</p></div></div>
  <div class="panel" id="wfAdminUsersPanel"><h3>Register &amp; manage administrators</h3><p class="muted">Invite a new administrator by email. They must accept the invitation and set their own password. A school can have up to 10 active administrators.</p><form id="wfInviteAdminForm" class="grid"><div><label for="wfInviteAdminName">Full name / title</label><input id="wfInviteAdminName" maxlength="120" required placeholder="e.g. Welfare Secretary"></div><div><label for="wfInviteAdminUsername">Admin username</label><input id="wfInviteAdminUsername" maxlength="40" minlength="3" pattern="[A-Za-z0-9._-]{3,40}" required placeholder="e.g. welfare.secretary"></div><div><label for="wfInviteAdminEmail">Email address</label><input id="wfInviteAdminEmail" type="email" maxlength="254" required placeholder="name@example.com"></div><div style="align-self:end"><button type="submit"><i class="fa-solid fa-user-plus"></i> Send administrator invitation</button></div></form><p id="wfAdminUsersMsg" class="muted" role="status" aria-live="polite"></p><div style="overflow:auto"><table><thead><tr><th>Username</th><th>Name / Title</th><th>Status</th><th>Action</th></tr></thead><tbody id="wfAdminUsersRows"><tr><td colspan="4">Loading administrators…</td></tr></tbody></table></div><p class="muted">Deactivation removes this school’s portal access but does not delete the person’s Supabase identity.</p></div>
