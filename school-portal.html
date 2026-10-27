@@ -192,13 +192,13 @@ body:has(#login:not(.hidden)) main{max-width:760px;margin:0 auto;padding:clamp(1
 
 
 /* Shared responsive tenant navigation drawer */
-#mobile-nav-overlay{position:fixed;inset:0;background:rgba(1,8,20,.62);backdrop-filter:blur(3px);z-index:9990;opacity:0;visibility:hidden;transition:opacity .22s ease,visibility .22s ease}
+#mobile-nav-overlay{position:fixed;inset:0;background:rgba(1,8,20,.62);backdrop-filter:blur(3px);z-index:2000;opacity:0;visibility:hidden;transition:opacity .22s ease,visibility .22s ease}
 #mobile-nav-overlay.is-open{opacity:1;visibility:visible}
 #mobileNavToggle{display:none;align-items:center;gap:8px;white-space:nowrap}
 @media(max-width:950px){#mobileNavToggle{display:inline-flex;position:fixed;top:12px;left:12px;z-index:9989;box-shadow:0 5px 18px rgba(0,0,0,.2);border:1px solid var(--line);border-radius:12px}}
 @media(max-width:950px){
  #dashboard .dash-layout{display:block}
- #dashboard .sidebar{position:fixed;z-index:9991;left:0;top:0;bottom:0;width:min(290px,84vw);height:100dvh;overflow-y:auto;display:block;border-radius:0 20px 20px 0;padding:16px;transform:translateX(-105%);transition:transform .25s ease;box-shadow:18px 0 55px #0005}
+ #dashboard .sidebar{position:fixed;z-index:2001;left:0;top:0;bottom:0;width:min(290px,84vw);height:100dvh;overflow-y:auto;display:block;border-radius:0 20px 20px 0;padding:16px;transform:translateX(-105%);transition:transform .25s ease;box-shadow:18px 0 55px #0005}
  #dashboard .sidebar.is-mobile-open{transform:translateX(0)}
  #dashboard .sidebar .school-chip{min-width:0;margin-bottom:12px}
  #dashboard .sidebar .navbtn{width:100%;display:flex;flex-direction:row;justify-content:flex-start;min-height:46px;text-align:left;gap:10px;padding:12px;margin:4px 0}
@@ -363,10 +363,10 @@ input, select, textarea, button { max-width: 100%; }
 <style id="fixed-portal-header-stack">
 /* Keep the main banner and dashboard's dark school/menu bar pinned while scrolling. */
 :root{--portal-topbar-height:86px;--portal-menubar-height:84px}
-header.top{position:fixed;top:0;left:0;right:0;width:100%;z-index:10000;min-height:var(--portal-topbar-height);box-shadow:0 8px 24px rgba(3,10,22,.18)}
+header.top{position:fixed;top:0;left:0;right:0;width:100%;z-index:1000;min-height:var(--portal-topbar-height);box-shadow:0 8px 24px rgba(3,10,22,.18)}
 body>main{padding-top:calc(var(--portal-topbar-height) + 22px)}
 /* The dashboard overview row is the second (dark) school/menu header. */
-#schoolOverview .overview-top{position:fixed;top:var(--portal-topbar-height);left:0;right:0;width:100%;max-width:none;z-index:9998;min-height:var(--portal-menubar-height);padding:14px clamp(16px,3vw,40px);display:flex;align-items:center;gap:14px;background:linear-gradient(110deg,#030a16 0%,#0b1d3a 62%,#142d52 100%);color:#f4f7fc;border-bottom:1px solid rgba(214,166,55,.35);box-shadow:0 8px 22px rgba(3,10,22,.18)}
+#schoolOverview .overview-top{position:fixed;top:var(--portal-topbar-height);left:0;right:0;width:100%;max-width:none;z-index:999;min-height:var(--portal-menubar-height);padding:14px clamp(16px,3vw,40px);display:flex;align-items:center;gap:14px;background:linear-gradient(110deg,#030a16 0%,#0b1d3a 62%,#142d52 100%);color:#f4f7fc;border-bottom:1px solid rgba(214,166,55,.35);box-shadow:0 8px 22px rgba(3,10,22,.18)}
 #schoolOverview .overview-top .eyebrow{color:#f1d48b}
 #schoolOverview .overview-top .overview-title{color:#fff;margin:2px 0;font-size:clamp(1rem,2vw,1.35rem)}
 #schoolOverview .overview-top #schoolMeta{color:#c1cede!important;font-size:.78rem}
