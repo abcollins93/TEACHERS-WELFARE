@@ -802,7 +802,7 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
     });
     const dashboardRoot = document.getElementById('dashboard');
     const target = document.getElementById(button.dataset.target);
-    const isAdminWorkspaceTarget = !!(target && (target.id === 'wfAdminPanel' || target.closest('#wfAdminPanel')));
+    const isAdminWorkspaceTarget = !!(target && target.id === 'wfAdminPanel');
     // Administrative panels are hidden at login. Only an explicit sidebar selection opens them.
     // All data access remains enforced by Supabase Auth and row-level security.
     if (dashboardRoot) {
