@@ -815,7 +815,52 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
     closeSidebar();
   });
 })();
-</script></body></html>
+</script>
+<style>
+/* Password visibility controls: keep the eye inside the input at every viewport size. */
+.password-field{position:relative!important;display:flex!important;align-items:center!important;width:100%;min-width:0}
+.password-field>input{display:block;width:100%;min-width:0;padding-right:54px!important;box-sizing:border-box}
+.password-field>.password-toggle{position:absolute!important;right:7px!important;top:50%!important;bottom:auto!important;z-index:3;width:38px!important;min-width:38px!important;height:38px!important;min-height:38px!important;margin:0!important;padding:0!important;transform:translateY(-50%)!important;display:grid!important;place-items:center!important;border:0!important;border-radius:9px!important;background:transparent!important;color:#8b9bb2!important;box-shadow:none!important;line-height:1!important}
+.password-field>.password-toggle:hover,.password-field>.password-toggle:focus-visible{transform:translateY(-50%)!important;background:rgba(140,155,178,.13)!important;color:var(--gold,#e6b93f)!important}
+.password-field>.password-toggle i{display:block;line-height:1;pointer-events:none}
+#login .password-field>.password-toggle{color:#aab8ce!important}
+#login .password-field>.password-toggle:hover{background:#ffffff12!important;color:#f3c54f!important}
+</style>
+<script>
+/* Delegated listener supports both login forms and dynamically rendered password fields. */
+(function(){
+  document.addEventListener('click',function(event){
+    const toggle=event.target.closest('.password-toggle');
+    if(!toggle)return;
+    event.preventDefault();
+    event.stopPropagation();
+    const targetId=toggle.getAttribute('data-password-target');
+    const field=toggle.closest('.password-field');
+    const input=(targetId&&document.getElementById(targetId))||(field&&field.querySelector('input'));
+    if(!input)return;
+    const visible=input.type==='password';
+    input.type=visible?'text':'password';
+    toggle.setAttribute('aria-label',visible?'Hide password':'Show password');
+    toggle.setAttribute('title',visible?'Hide password':'Show password');
+    toggle.setAttribute('aria-pressed',String(visible));
+    const icon=toggle.querySelector('i');
+    if(icon){icon.classList.toggle('fa-eye',!visible);icon.classList.toggle('fa-eye-slash',visible);}
+    input.focus({preventScroll:true});
+  });
+  document.querySelectorAll('.password-toggle').forEach(function(toggle){
+    const id=toggle.getAttribute('data-password-target');
+    const input=id&&document.getElementById(id);
+    if(input){
+      const visible=input.type==='text';
+      toggle.setAttribute('aria-label',visible?'Hide password':'Show password');
+      toggle.setAttribute('title',visible?'Hide password':'Show password');
+      toggle.setAttribute('aria-pressed',String(visible));
+    }
+    if(toggle.tagName==='BUTTON'&&!toggle.hasAttribute('type'))toggle.type='button';
+  });
+})();
+</script>
+</body></html>
 <style>
 /* Live administrator status indicator */
 #schoolOverview .overview-top .eyebrow{display:flex;align-items:center;gap:9px}
