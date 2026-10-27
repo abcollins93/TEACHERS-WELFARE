@@ -794,6 +794,21 @@ body:has(#login:not(.hidden)) .app-header-group{display:none!important}
 #dashboard .portal-hero p{position:relative;z-index:1;color:#e5ebf7;line-height:1.7}
 @media(max-width:600px){#dashboard .portal-hero{border-radius:16px!important;padding:22px 18px!important}#dashboard .portal-hero::before{right:-205px;bottom:-270px}#dashboard .portal-hero::after{right:-185px;top:-200px}#dashboard .portal-hero-badge{padding:9px 14px;font-size:.72rem}}
 </style>
+<style id="solidarity-hero-banner">
+/* Solidarity hero banner — exact deep navy / royal-blue treatment */
+.portal-hero{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  border:1px solid rgba(148, 163, 184, 0.18);
+  border-radius:16px;
+  background:radial-gradient(ellipse at 100% 100%, rgba(53, 79, 205, 0.92) 0%, rgba(37, 61, 150, 0.52) 28%, transparent 58%),
+             radial-gradient(ellipse at 92% 8%, rgba(34, 67, 126, 0.48) 0%, transparent 48%),
+             linear-gradient(135deg, #06152d 0%, #101d38 48%, #17213f 72%, #203b91 100%);
+  color:#fff;
+  box-shadow:0 18px 42px rgba(7, 18, 43, 0.18);
+}
+</style>
 </head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading page">
@@ -1369,16 +1384,4 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
 </body></html>
 
 
-/* Solidarity hero banner — exact deep navy / royal-blue treatment */
-.portal-hero{
-  position:relative;
-  isolation:isolate;
-  overflow:hidden;
-  border:1px solid rgba(148, 163, 184, 0.18);
-  border-radius:16px;
-  background:radial-gradient(ellipse at 100% 100%, rgba(53, 79, 205, 0.92) 0%, rgba(37, 61, 150, 0.52) 28%, transparent 58%),
-             radial-gradient(ellipse at 92% 8%, rgba(34, 67, 126, 0.48) 0%, transparent 48%),
-             linear-gradient(135deg, #06152d 0%, #101d38 48%, #17213f 72%, #203b91 100%);
-  color:#fff;
-  box-shadow:0 18px 42px rgba(7, 18, 43, 0.18);
-}
+
