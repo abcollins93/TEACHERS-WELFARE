@@ -570,7 +570,6 @@ function initHeaderAvatarUpload(){
      probe.onerror=()=>{headerAvatarStatus('This image is invalid or unsupported. Please choose another image.',true);finish();};
      probe.onload=()=>{
        if(!probe.naturalWidth||!probe.naturalHeight){headerAvatarStatus('The selected image could not be verified.',true);finish();return;}
-       const {data:{user}}=client.auth.getUser ? {data:{user:null}} : {data:{user:null}};
        // The active user id is supplied by the most recent profile render below.
        const activeUser=window.__welfareHeaderAvatarUser;
        const key=headerAvatarStorageKey(activeUser);
