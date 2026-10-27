@@ -974,6 +974,53 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
   });
 })();
 </script>
+
+<style id="unified-fixed-header-group">
+/* One fixed parent owns both header bars; children flow naturally and determine total height. */
+.app-header-group{position:fixed!important;top:0!important;left:0!important;width:100%!important;right:auto!important;z-index:5000!important;display:flex!important;flex-direction:column!important;gap:0!important;margin:0!important;padding:0!important}
+.app-header-group>header.top{position:relative!important;inset:auto!important;width:100%!important;height:auto!important;min-height:0!important;flex:0 0 auto!important;margin:0!important}
+.app-header-group>.overview-top{position:relative!important;inset:auto!important;top:auto!important;left:auto!important;right:auto!important;width:100%!important;height:auto!important;min-height:60px!important;flex:0 0 auto!important;margin:0!important;box-sizing:border-box!important}
+body:not(:has(#login:not(.hidden))) main{padding-top:calc(var(--unified-header-height,0px) + 22px)!important}
+body:has(#login:not(.hidden)) main{padding-top:0!important}
+@media(max-width:650px){
+ .app-header-group>header.top{padding:8px 12px!important}
+ .app-header-group>.overview-top{padding:6px 12px!important;min-height:60px!important}
+ body:not(:has(#login:not(.hidden))) main{padding-top:calc(var(--unified-header-height,0px) + 16px)!important}
+}
+</style>
+<script id="unified-fixed-header-controller">
+(function(){
+ function setupUnifiedHeader(){
+  const top=document.querySelector('header.top');
+  const admin=document.querySelector('#dashboard .overview-top');
+  const main=document.querySelector('main');
+  if(!top||!admin||!main||top.closest('.app-header-group'))return;
+  const group=document.createElement('header');
+  group.className='app-header-group';
+  group.setAttribute('aria-label','School portal header');
+  top.parentNode.insertBefore(group,top);
+  group.appendChild(top);
+  group.appendChild(admin);
+  const dashboard=document.getElementById('dashboard');
+  function update(){
+   const login=document.getElementById('login');
+   const signedIn=!!(dashboard&&!dashboard.classList.contains('hidden'));
+   group.style.display=signedIn?'flex':'none';
+   if(login&&!login.classList.contains('hidden'))group.style.display='none';
+   const height=Math.ceil(group.getBoundingClientRect().height);
+   document.documentElement.style.setProperty('--unified-header-height',height+'px');
+  }
+  if('ResizeObserver' in window){new ResizeObserver(update).observe(group);}
+  if(dashboard&&'MutationObserver' in window)new MutationObserver(update).observe(dashboard,{attributes:true,attributeFilter:['class']});
+  const login=document.getElementById('login');
+  if(login&&'MutationObserver' in window)new MutationObserver(update).observe(login,{attributes:true,attributeFilter:['class']});
+  window.addEventListener('resize',update,{passive:true});
+  update();
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupUnifiedHeader,{once:true});else setupUnifiedHeader();
+})();
+</script>
+
 </body></html>
 <style>
 /* Live administrator status indicator */
