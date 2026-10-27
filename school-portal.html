@@ -309,6 +309,45 @@ body{font-family:'Plus Jakarta Sans',Inter,system-ui,sans-serif;font-variant-num
 @media(prefers-reduced-motion:reduce){#wfAdminPanel *{scroll-behavior:auto}}
  .wf-admin-pill{display:inline-flex;align-items:center;padding:5px 9px;border-radius:999px;background:rgba(120,130,145,.12);border:1px solid rgba(120,130,145,.25);font-size:.75rem;font-weight:800;color:var(--muted,#64748b)}.wf-admin-pill.active{background:rgba(22,167,121,.12);border-color:rgba(22,167,121,.35);color:#13865f}#wfAdminUsersPanel table,#wfResetDataPanel{font-size:.94rem}#wfResetDataPanel .danger{background:linear-gradient(135deg,#b42332,#d9485b);color:#fff;border:0}#wfResetDataPanel .danger:hover{filter:brightness(1.04)}#wfAdminUsersPanel button:disabled{opacity:.45;cursor:not-allowed} .wf-data-protection{margin-top:18px;padding:14px 16px;border:1px solid rgba(214,166,55,.35);border-radius:12px;background:rgba(214,166,55,.08)}.wf-data-protection>strong{display:flex;align-items:center;gap:8px;color:#a97810}.wf-data-protection p{margin:7px 0 0;font-size:.84rem;line-height:1.6}.dark .wf-data-protection{background:rgba(214,166,55,.07);border-color:rgba(214,166,55,.25)}
 </style>
+
+<style id="mobile-horizontal-overflow-guard">
+/* Prevent decorative elements and fixed navigation from widening the mobile viewport. */
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+*, *::before, *::after { box-sizing: border-box; }
+img, video, canvas, iframe, svg { max-width: 100%; }
+input, select, textarea, button { max-width: 100%; }
+#dashboard, #schoolOverview, .dash-layout, main, .panel, .grid,
+.portal-hero, .wf-admin-intro, .top {
+  min-width: 0;
+  max-width: 100%;
+}
+#schoolOverview .overview-top {
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-width: 100%;
+}
+#mobile-nav-overlay, #page-loader {
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-width: 100%;
+}
+@media (max-width: 600px) {
+  .dash-layout, .grid, .metric, .stat-card, .metric-card, .card,
+  .panel, .top, #dashboard, #schoolOverview {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .portal-hero, .wf-admin-intro, .panel {
+    overflow-wrap: anywhere;
+  }
+}
+</style>
 </head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading page">
