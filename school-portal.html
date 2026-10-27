@@ -426,6 +426,38 @@ header.top{
 }
 </style>
 
+<style id="fixed-dual-dashboard-headers">
+/* Keep the school identity banner and the Hi, Admin menu bar stacked and fixed. */
+:root{--app-header-height:88px;--dashboard-menu-height:76px}
+header.top{position:fixed;top:0;left:0;right:0;width:100%;z-index:3000;min-height:var(--app-header-height);display:flex;align-items:center}
+#dashboard .overview-top{position:fixed!important;top:var(--app-header-height)!important;left:0!important;right:0!important;width:100%!important;min-height:var(--dashboard-menu-height);z-index:2999;box-sizing:border-box}
+#dashboard{padding-top:calc(var(--app-header-height) + var(--dashboard-menu-height) + 18px)}
+#dashboard #schoolOverview{padding-top:0!important;scroll-margin-top:calc(var(--app-header-height) + var(--dashboard-menu-height) + 18px)}
+#dashboard #schoolTeachers,#dashboard #workflows .panel,#dashboard #wfAdminPanel{scroll-margin-top:calc(var(--app-header-height) + var(--dashboard-menu-height) + 18px)}
+body:has(#login:not(.hidden)) header.top{display:none}
+body:has(#login:not(.hidden)) main{padding-top:0}
+@media(max-width:650px){
+ :root{--app-header-height:72px;--dashboard-menu-height:68px}
+ header.top{min-height:var(--app-header-height);padding:8px 12px!important;gap:8px!important}
+ header.top h1{font-size:1rem!important;line-height:1.2}
+ header.top .eyebrow{font-size:.58rem!important}
+ header.top .eyebrow:before{width:22px;height:22px}
+ header.top .shield{display:none}
+ #dashboard .overview-top{min-height:var(--dashboard-menu-height);padding:8px 12px!important;gap:8px}
+ #dashboard .overview-top>div{min-width:0!important}
+ #dashboard .overview-top .overview-title{font-size:1rem;max-width:100%}
+ #dashboard .overview-top .muted{font-size:.7rem}
+ #dashboard{padding-top:calc(var(--app-header-height) + var(--dashboard-menu-height) + 14px)}
+}
+@media(max-width:400px){
+ :root{--app-header-height:68px;--dashboard-menu-height:64px}
+ header.top h1{font-size:.9rem!important}
+ header.top .top-account-actions{gap:5px!important}
+ header.top #themeToggle{font-size:.68rem;padding:7px 8px}
+ #dashboard .overview-top .overview-title{font-size:.9rem}
+}
+</style>
+
 <!-- Removed fixed header overrides: keep the site banner first and the admin/menu row in normal document flow. -->
 
 </head><body>
