@@ -667,9 +667,30 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
 })();
 </script><script src="school-portal-workflows.js?v=dad1792d"></script>
 <script>
-/* Resilient sidebar navigation: works even when the main portal script has an unrelated runtime error. */
+/* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
   'use strict';
+  function closeSidebar(){
+    const sidebar = document.getElementById('schoolSidebar');
+    const overlay = document.getElementById('mobile-nav-overlay');
+    if (sidebar) {
+      sidebar.classList.remove('is-mobile-open', 'mobile-open');
+      sidebar.setAttribute('aria-hidden', window.matchMedia('(max-width: 950px)').matches ? 'true' : 'false');
+    }
+    if (overlay) overlay.classList.remove('is-open');
+    document.body.classList.remove('sidebar-open');
+    const toggle = document.getElementById('mobileNavToggle');
+    if (toggle) toggle.setAttribute('aria-expanded', 'false');
+  }
+  // Close for every sidebar navigation item and action control, including sign-out.
+  document.addEventListener('click', function(event){
+    const sidebar = document.getElementById('schoolSidebar');
+    const control = event.target.closest('#schoolSidebar a, #schoolSidebar button, #schoolSidebar [role="link"]');
+    if (sidebar && control) {
+      const isNavigation = control.matches('.navbtn, a, [role="link"]') || control.matches('#sidebarLogout, .sidebar-account-out');
+      if (isNavigation) closeSidebar();
+    }
+  });
   document.addEventListener('click', function(event){
     const button = event.target.closest('.navbtn[data-target]');
     if (!button) return;
@@ -700,11 +721,7 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
       if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex','-1');
       target.focus({preventScroll:true});
     }
-    if (window.matchMedia('(max-width: 950px)').matches) {
-      const sidebar = document.getElementById('schoolSidebar');
-      if (sidebar) sidebar.classList.remove('mobile-open');
-      document.body.classList.remove('sidebar-open');
-    }
+    closeSidebar();
   });
 })();
 </script></body></html>
