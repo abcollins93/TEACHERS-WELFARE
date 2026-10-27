@@ -998,3 +998,29 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
 }
 @media(prefers-reduced-motion:reduce){#dashboard .overview-top{backdrop-filter:none}}
 </style>
+
+
+<style id="fixed-header-stack-alignment">
+/* Final alignment guard: the admin strip begins exactly at the header's bottom edge. */
+:root{--app-header-height:106px;--dashboard-menu-height:68px}
+header.top{
+ position:fixed!important;inset:0 0 auto 0!important;width:100%!important;
+ height:var(--app-header-height)!important;min-height:var(--app-header-height)!important;
+ box-sizing:border-box!important;z-index:1001!important;
+}
+#dashboard .overview-top{
+ position:fixed!important;top:var(--app-header-height)!important;
+ left:0!important;right:0!important;width:100%!important;
+ height:var(--dashboard-menu-height)!important;min-height:var(--dashboard-menu-height)!important;
+ margin:0!important;box-sizing:border-box!important;z-index:1000!important;
+}
+body:not(:has(#login:not(.hidden))) main{
+ padding-top:calc(var(--app-header-height) + var(--dashboard-menu-height) + 22px)!important;
+}
+@media(max-width:650px){
+ :root{--app-header-height:72px;--dashboard-menu-height:60px}
+ header.top{height:var(--app-header-height)!important;min-height:var(--app-header-height)!important}
+ #dashboard .overview-top{top:var(--app-header-height)!important;height:var(--dashboard-menu-height)!important;min-height:var(--dashboard-menu-height)!important}
+ body:not(:has(#login:not(.hidden))) main{padding-top:calc(var(--app-header-height) + var(--dashboard-menu-height) + 16px)!important}
+}
+</style>
