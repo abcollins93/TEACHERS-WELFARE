@@ -480,6 +480,302 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
 }
 </style>
 
+
+<style>
+/* Live administrator status indicator */
+#schoolOverview .overview-top .eyebrow{display:flex;align-items:center;gap:9px}
+#schoolOverview .overview-top .eyebrow::before{content:"";display:inline-block;width:9px;height:9px;flex:0 0 9px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 0 rgba(34,197,94,.55);animation:adminLivePulse 1.6s ease-out infinite}
+@keyframes adminLivePulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.55);opacity:1}70%{box-shadow:0 0 0 7px rgba(34,197,94,0);opacity:.95}100%{box-shadow:0 0 0 0 rgba(34,197,94,0);opacity:1}}
+@media(prefers-reduced-motion:reduce){#schoolOverview .overview-top .eyebrow::before{animation:none}}
+</style>
+
+
+<style id="fixed-stacked-portal-headers-final">
+/* Fixed header stack: admin banner touches the header's gold bottom border exactly. */
+:root{--app-header-height:106px;--dashboard-menu-height:68px}
+header.top{
+ position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;
+ height:var(--app-header-height)!important;min-height:var(--app-header-height)!important;
+ padding:18px clamp(14px,3vw,40px)!important;z-index:1001!important;
+ border-bottom:4px solid var(--gold,#d6a637)!important;box-sizing:border-box!important;
+}
+body:not(:has(#login:not(.hidden))) main{
+ padding-top:calc(var(--app-header-height) + var(--dashboard-menu-height) + 22px)!important;
+}
+body:has(#login:not(.hidden)) header.top{display:none!important}
+body:has(#login:not(.hidden)) main{padding-top:0!important}
+#dashboard .overview-top{
+ position:fixed!important;top:var(--app-header-height)!important;left:0!important;right:0!important;
+ width:100%!important;height:var(--dashboard-menu-height)!important;min-height:var(--dashboard-menu-height)!important;
+ margin:0!important;padding:8px clamp(14px,3vw,40px)!important;box-sizing:border-box!important;
+ z-index:1000!important;display:flex!important;align-items:center!important;
+ background:linear-gradient(105deg,#030a16 0%,#0b1d3a 65%,#142d52 100%)!important;
+ color:#fff!important;border-bottom:1px solid rgba(214,166,55,.38)!important;
+ box-shadow:0 10px 26px rgba(3,10,22,.24)!important;backdrop-filter:blur(14px);
+}
+#dashboard .dash-layout{padding-top:0!important;align-items:start}
+#dashboard #schoolOverview,#dashboard #schoolTeachers,#dashboard #workflows .panel,#dashboard #wfAdminPanel{
+ scroll-margin-top:calc(var(--app-header-height) + var(--dashboard-menu-height) + 18px)!important;
+}
+@media(max-width:650px){
+ :root{--app-header-height:72px;--dashboard-menu-height:60px}
+ header.top{height:var(--app-header-height)!important;min-height:var(--app-header-height)!important;padding:8px 12px!important;gap:8px!important}
+ header.top .eyebrow{font-size:.58rem!important;letter-spacing:.07em!important}
+ header.top .eyebrow:before{width:22px!important;height:22px!important;flex:0 0 22px}
+ header.top h1{font-size:.9rem!important;line-height:1.2!important;margin-top:2px!important}
+ header.top .top-account-actions{gap:5px!important}
+ header.top #themeToggle{font-size:.68rem;padding:6px 8px;min-height:34px}
+ #dashboard .overview-top{height:var(--dashboard-menu-height)!important;min-height:var(--dashboard-menu-height)!important;padding:6px 12px!important;gap:8px!important}
+ #dashboard .overview-top .overview-title{font-size:.96rem!important;line-height:1.2!important;max-width:100%}
+ #dashboard .overview-top .muted{display:none!important}
+ body:not(:has(#login:not(.hidden))) main{padding-top:calc(var(--app-header-height) + var(--dashboard-menu-height) + 16px)!important}
+}
+@media(prefers-reduced-motion:reduce){#dashboard .overview-top{backdrop-filter:none}}
+</style>
+
+
+<style id="fixed-header-stack-alignment">
+/* Final alignment guard: the admin strip begins exactly at the header's bottom edge. */
+:root{--app-header-height:106px;--dashboard-menu-height:68px}
+header.top{
+ position:fixed!important;inset:0 0 auto 0!important;width:100%!important;
+ height:var(--app-header-height)!important;min-height:var(--app-header-height)!important;
+ box-sizing:border-box!important;z-index:1001!important;
+}
+#dashboard .overview-top{
+ position:fixed!important;top:var(--app-header-height)!important;
+ left:0!important;right:0!important;width:100%!important;
+ height:var(--dashboard-menu-height)!important;min-height:var(--dashboard-menu-height)!important;
+ margin:0!important;box-sizing:border-box!important;z-index:1000!important;
+}
+body:not(:has(#login:not(.hidden))) main{
+ padding-top:calc(var(--app-header-height) + var(--dashboard-menu-height) + 22px)!important;
+}
+@media(max-width:650px){
+ :root{--app-header-height:72px;--dashboard-menu-height:60px}
+ header.top{height:var(--app-header-height)!important;min-height:var(--app-header-height)!important}
+ #dashboard .overview-top{top:var(--app-header-height)!important;height:var(--dashboard-menu-height)!important;min-height:var(--dashboard-menu-height)!important}
+ body:not(:has(#login:not(.hidden))) main{padding-top:calc(var(--app-header-height) + var(--dashboard-menu-height) + 16px)!important}
+}
+</style>
+
+
+<style id="admin-header-structure-repair">
+/* Final repair: both bars live inside the single fixed .app-header-group. */
+.app-header-group{
+ position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;
+ z-index:5000!important;display:flex!important;flex-direction:column!important;gap:0!important;
+ margin:0!important;padding:0!important;isolation:isolate;background:#030a16!important;
+ box-shadow:0 10px 28px rgba(3,10,22,.2);
+}
+.app-header-group>header.top{
+ position:relative!important;inset:auto!important;top:auto!important;left:auto!important;right:auto!important;
+ width:100%!important;height:auto!important;min-height:0!important;flex:0 0 auto!important;
+ margin:0!important;border-bottom:3px solid #d6a637!important;border-radius:0!important;
+}
+.app-header-group>.overview-top{
+ position:relative!important;inset:auto!important;top:auto!important;left:auto!important;right:auto!important;
+ width:100%!important;height:auto!important;min-height:68px!important;flex:0 0 auto!important;
+ display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:14px!important;
+ padding:10px clamp(14px,3vw,40px)!important;margin:0!important;
+ color:#f4f7fc!important;background:linear-gradient(110deg,#071328 0%,#0b1d3a 68%,#142d52 100%)!important;
+ border:0!important;border-bottom:1px solid rgba(214,166,55,.28)!important;
+ border-radius:0 0 16px 16px!important;box-shadow:0 8px 22px rgba(3,10,22,.16)!important;
+ box-sizing:border-box!important;overflow:visible!important;
+}
+.app-header-group .overview-top #mobileNavToggle{
+ order:0!important;position:relative!important;flex:0 0 42px!important;width:42px!important;min-width:42px!important;
+ height:42px!important;padding:0!important;display:grid!important;place-items:center!important;
+ background:rgba(255,255,255,.09)!important;color:#f2c84b!important;
+ border:1px solid rgba(255,255,255,.16)!important;border-radius:11px!important;box-shadow:none!important;
+}
+.app-header-group .overview-top>div{order:1!important;flex:1 1 auto!important;min-width:0!important}
+.app-header-group .overview-top .eyebrow{color:#e9c35b!important;font-size:.72rem!important;font-weight:850!important;letter-spacing:.11em!important}
+.app-header-group .overview-top .overview-title,
+.app-header-group .overview-top #schoolName{color:#fff!important;font-size:clamp(1rem,2vw,1.35rem)!important;line-height:1.3!important;margin:1px 0!important;overflow-wrap:anywhere!important}
+.app-header-group .overview-top #schoolMeta{color:#b9c7da!important;font-size:.76rem!important;margin-top:2px!important}
+body:not(:has(#login:not(.hidden))) main{
+ padding-top:calc(var(--unified-header-height, 160px) + 22px)!important;
+}
+body:has(#login:not(.hidden)) .app-header-group{display:none!important}
+#dashboard .portal-hero{position:relative;z-index:0}
+@media(max-width:650px){
+ .app-header-group>header.top{padding:8px 12px!important}
+ .app-header-group>header.top .eyebrow{font-size:.62rem!important}
+ .app-header-group>header.top h1{font-size:1rem!important}
+ .app-header-group>header.top .shield{display:none!important}
+ .app-header-group>.overview-top{min-height:62px!important;padding:8px 12px!important;gap:10px!important}
+ .app-header-group .overview-top #mobileNavToggle{flex-basis:38px!important;width:38px!important;min-width:38px!important;height:38px!important}
+ .app-header-group .overview-top .overview-title,
+ .app-header-group .overview-top #schoolName{font-size:.98rem!important}
+ body:not(:has(#login:not(.hidden))) main{padding-top:calc(var(--unified-header-height, 140px) + 16px)!important}
+}
+</style>
+<script id="admin-header-height-refresh">
+(function(){
+ function refreshHeaderHeight(){
+  const group=document.querySelector('.app-header-group');
+  if(!group)return;
+  const visible=group.offsetParent!==null && getComputedStyle(group).display!=='none';
+  if(visible)document.documentElement.style.setProperty('--unified-header-height',Math.ceil(group.getBoundingClientRect().height)+'px');
+ }
+ window.addEventListener('load',refreshHeaderHeight,{once:true});
+ window.addEventListener('resize',refreshHeaderHeight,{passive:true});
+ if('ResizeObserver' in window){
+  const start=()=>{const group=document.querySelector('.app-header-group');if(group)new ResizeObserver(refreshHeaderHeight).observe(group);refreshHeaderHeight();};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+ }
+})();
+</script>
+
+
+<style id="admin-subheader-flex-overlap-fix">
+/* Keep the fixed admin header readable: menu button left, school identity beside it. */
+.app-header-group>.overview-top,
+.app-header-group #dashboard .overview-top {
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:12px!important;
+  padding:10px 16px!important;
+  box-sizing:border-box!important;
+  min-width:0!important;
+  overflow:visible!important;
+}
+.app-header-group .overview-top #mobileNavToggle {
+  flex:0 0 42px!important;
+  width:42px!important;
+  min-width:42px!important;
+  margin:0!important;
+  align-self:center!important;
+}
+.app-header-group .overview-top>div:not(#mobileNavToggle) {
+  flex:1 1 auto!important;
+  min-width:0!important;
+  width:auto!important;
+  margin:0!important;
+  line-height:1.35!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+}
+.app-header-group .overview-top .eyebrow {
+  line-height:1.35!important;
+  margin:0 0 2px!important;
+}
+.app-header-group .overview-top .overview-title,
+.app-header-group .overview-top #schoolName {
+  display:block!important;
+  max-width:100%!important;
+  line-height:1.25!important;
+  margin:1px 0!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+}
+.app-header-group .overview-top #schoolMeta {
+  display:block!important;
+  max-width:100%!important;
+  line-height:1.35!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+}
+#dashboard .portal-hero { scroll-margin-top:calc(var(--unified-header-height, 160px) + 14px); }
+@media(max-width:650px) {
+  .app-header-group>.overview-top,
+  .app-header-group #dashboard .overview-top {
+    gap:12px!important;
+    padding:10px 16px!important;
+  }
+  .app-header-group .overview-top #mobileNavToggle {
+    flex-basis:38px!important;
+    width:38px!important;
+    min-width:38px!important;
+    height:38px!important;
+  }
+}
+</style>
+
+<style id="tenant-hero-banner-repaired">
+/* Tenant hero banner: match the deep navy/royal-blue reference treatment */
+#dashboard .portal-hero{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  border:1px solid rgba(148,163,184,.18);
+  border-radius:16px;
+  background:
+    radial-gradient(ellipse at 100% 100%,rgba(53,79,205,.92) 0%,rgba(37,61,150,.52) 28%,transparent 58%),
+    radial-gradient(ellipse at 92% 8%,rgba(34,67,126,.48) 0%,transparent 48%),
+    linear-gradient(135deg,#06152d 0%,#101d38 48%,#17213f 72%,#203b91 100%);
+  color:#fff;
+  box-shadow:0 18px 42px rgba(7,18,43,.18);
+}
+#dashboard .portal-hero:before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  width:390px;
+  height:390px;
+  right:-145px;
+  bottom:-250px;
+  border:1px solid rgba(115,139,255,.18);
+  border-radius:50%;
+  box-shadow:0 0 0 26px rgba(115,139,255,.035),0 0 0 54px rgba(115,139,255,.025);
+  pointer-events:none;
+}
+#dashboard .portal-hero:after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  width:290px;
+  height:290px;
+  right:-125px;
+  top:-175px;
+  border:1px solid rgba(157,174,255,.14);
+  border-radius:50%;
+  box-shadow:0 0 0 24px rgba(157,174,255,.025),0 0 0 48px rgba(157,174,255,.018);
+  pointer-events:none;
+}
+#dashboard .portal-hero-badge{
+  position:relative;
+  z-index:1;
+  display:inline-flex;
+  align-items:center;
+  gap:9px;
+  padding:10px 17px;
+  border:1px solid rgba(230,190,65,.55);
+  border-radius:999px;
+  background:rgba(194,151,29,.18);
+  color:#f5cf55;
+  font-size:.78rem;
+  font-weight:850;
+  letter-spacing:.085em;
+  line-height:1.25;
+  text-transform:uppercase;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+}
+#dashboard .portal-hero-badge i{color:#ffcc36;font-size:1rem}
+#dashboard .portal-hero h1{
+  position:relative;
+  z-index:1;
+  color:#fff;
+  font-weight:850;
+  letter-spacing:-.045em;
+  line-height:1.14;
+}
+#dashboard .portal-hero p{
+  position:relative;
+  z-index:1;
+  color:#e1e7f2;
+  line-height:1.72;
+}
+@media(max-width:600px){
+  #dashboard .portal-hero{border-radius:16px;padding:22px 18px}
+  #dashboard .portal-hero:before{right:-205px;bottom:-260px}
+  #dashboard .portal-hero:after{right:-180px;top:-190px}
+  #dashboard .portal-hero-badge{padding:9px 14px;font-size:.72rem}
+}
+</style>
 </head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading page">
@@ -1053,297 +1349,3 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
 </style>
 
 </body></html>
-<style>
-/* Live administrator status indicator */
-#schoolOverview .overview-top .eyebrow{display:flex;align-items:center;gap:9px}
-#schoolOverview .overview-top .eyebrow::before{content:"";display:inline-block;width:9px;height:9px;flex:0 0 9px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 0 rgba(34,197,94,.55);animation:adminLivePulse 1.6s ease-out infinite}
-@keyframes adminLivePulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.55);opacity:1}70%{box-shadow:0 0 0 7px rgba(34,197,94,0);opacity:.95}100%{box-shadow:0 0 0 0 rgba(34,197,94,0);opacity:1}}
-@media(prefers-reduced-motion:reduce){#schoolOverview .overview-top .eyebrow::before{animation:none}}
-</style>
-
-
-<style id="fixed-stacked-portal-headers-final">
-/* Fixed header stack: admin banner touches the header's gold bottom border exactly. */
-:root{--app-header-height:106px;--dashboard-menu-height:68px}
-header.top{
- position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;
- height:var(--app-header-height)!important;min-height:var(--app-header-height)!important;
- padding:18px clamp(14px,3vw,40px)!important;z-index:1001!important;
- border-bottom:4px solid var(--gold,#d6a637)!important;box-sizing:border-box!important;
-}
-body:not(:has(#login:not(.hidden))) main{
- padding-top:calc(var(--app-header-height) + var(--dashboard-menu-height) + 22px)!important;
-}
-body:has(#login:not(.hidden)) header.top{display:none!important}
-body:has(#login:not(.hidden)) main{padding-top:0!important}
-#dashboard .overview-top{
- position:fixed!important;top:var(--app-header-height)!important;left:0!important;right:0!important;
- width:100%!important;height:var(--dashboard-menu-height)!important;min-height:var(--dashboard-menu-height)!important;
- margin:0!important;padding:8px clamp(14px,3vw,40px)!important;box-sizing:border-box!important;
- z-index:1000!important;display:flex!important;align-items:center!important;
- background:linear-gradient(105deg,#030a16 0%,#0b1d3a 65%,#142d52 100%)!important;
- color:#fff!important;border-bottom:1px solid rgba(214,166,55,.38)!important;
- box-shadow:0 10px 26px rgba(3,10,22,.24)!important;backdrop-filter:blur(14px);
-}
-#dashboard .dash-layout{padding-top:0!important;align-items:start}
-#dashboard #schoolOverview,#dashboard #schoolTeachers,#dashboard #workflows .panel,#dashboard #wfAdminPanel{
- scroll-margin-top:calc(var(--app-header-height) + var(--dashboard-menu-height) + 18px)!important;
-}
-@media(max-width:650px){
- :root{--app-header-height:72px;--dashboard-menu-height:60px}
- header.top{height:var(--app-header-height)!important;min-height:var(--app-header-height)!important;padding:8px 12px!important;gap:8px!important}
- header.top .eyebrow{font-size:.58rem!important;letter-spacing:.07em!important}
- header.top .eyebrow:before{width:22px!important;height:22px!important;flex:0 0 22px}
- header.top h1{font-size:.9rem!important;line-height:1.2!important;margin-top:2px!important}
- header.top .top-account-actions{gap:5px!important}
- header.top #themeToggle{font-size:.68rem;padding:6px 8px;min-height:34px}
- #dashboard .overview-top{height:var(--dashboard-menu-height)!important;min-height:var(--dashboard-menu-height)!important;padding:6px 12px!important;gap:8px!important}
- #dashboard .overview-top .overview-title{font-size:.96rem!important;line-height:1.2!important;max-width:100%}
- #dashboard .overview-top .muted{display:none!important}
- body:not(:has(#login:not(.hidden))) main{padding-top:calc(var(--app-header-height) + var(--dashboard-menu-height) + 16px)!important}
-}
-@media(prefers-reduced-motion:reduce){#dashboard .overview-top{backdrop-filter:none}}
-</style>
-
-
-<style id="fixed-header-stack-alignment">
-/* Final alignment guard: the admin strip begins exactly at the header's bottom edge. */
-:root{--app-header-height:106px;--dashboard-menu-height:68px}
-header.top{
- position:fixed!important;inset:0 0 auto 0!important;width:100%!important;
- height:var(--app-header-height)!important;min-height:var(--app-header-height)!important;
- box-sizing:border-box!important;z-index:1001!important;
-}
-#dashboard .overview-top{
- position:fixed!important;top:var(--app-header-height)!important;
- left:0!important;right:0!important;width:100%!important;
- height:var(--dashboard-menu-height)!important;min-height:var(--dashboard-menu-height)!important;
- margin:0!important;box-sizing:border-box!important;z-index:1000!important;
-}
-body:not(:has(#login:not(.hidden))) main{
- padding-top:calc(var(--app-header-height) + var(--dashboard-menu-height) + 22px)!important;
-}
-@media(max-width:650px){
- :root{--app-header-height:72px;--dashboard-menu-height:60px}
- header.top{height:var(--app-header-height)!important;min-height:var(--app-header-height)!important}
- #dashboard .overview-top{top:var(--app-header-height)!important;height:var(--dashboard-menu-height)!important;min-height:var(--dashboard-menu-height)!important}
- body:not(:has(#login:not(.hidden))) main{padding-top:calc(var(--app-header-height) + var(--dashboard-menu-height) + 16px)!important}
-}
-</style>
-
-
-<style id="admin-header-structure-repair">
-/* Final repair: both bars live inside the single fixed .app-header-group. */
-.app-header-group{
- position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;
- z-index:5000!important;display:flex!important;flex-direction:column!important;gap:0!important;
- margin:0!important;padding:0!important;isolation:isolate;background:#030a16!important;
- box-shadow:0 10px 28px rgba(3,10,22,.2);
-}
-.app-header-group>header.top{
- position:relative!important;inset:auto!important;top:auto!important;left:auto!important;right:auto!important;
- width:100%!important;height:auto!important;min-height:0!important;flex:0 0 auto!important;
- margin:0!important;border-bottom:3px solid #d6a637!important;border-radius:0!important;
-}
-.app-header-group>.overview-top{
- position:relative!important;inset:auto!important;top:auto!important;left:auto!important;right:auto!important;
- width:100%!important;height:auto!important;min-height:68px!important;flex:0 0 auto!important;
- display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:14px!important;
- padding:10px clamp(14px,3vw,40px)!important;margin:0!important;
- color:#f4f7fc!important;background:linear-gradient(110deg,#071328 0%,#0b1d3a 68%,#142d52 100%)!important;
- border:0!important;border-bottom:1px solid rgba(214,166,55,.28)!important;
- border-radius:0 0 16px 16px!important;box-shadow:0 8px 22px rgba(3,10,22,.16)!important;
- box-sizing:border-box!important;overflow:visible!important;
-}
-.app-header-group .overview-top #mobileNavToggle{
- order:0!important;position:relative!important;flex:0 0 42px!important;width:42px!important;min-width:42px!important;
- height:42px!important;padding:0!important;display:grid!important;place-items:center!important;
- background:rgba(255,255,255,.09)!important;color:#f2c84b!important;
- border:1px solid rgba(255,255,255,.16)!important;border-radius:11px!important;box-shadow:none!important;
-}
-.app-header-group .overview-top>div{order:1!important;flex:1 1 auto!important;min-width:0!important}
-.app-header-group .overview-top .eyebrow{color:#e9c35b!important;font-size:.72rem!important;font-weight:850!important;letter-spacing:.11em!important}
-.app-header-group .overview-top .overview-title,
-.app-header-group .overview-top #schoolName{color:#fff!important;font-size:clamp(1rem,2vw,1.35rem)!important;line-height:1.3!important;margin:1px 0!important;overflow-wrap:anywhere!important}
-.app-header-group .overview-top #schoolMeta{color:#b9c7da!important;font-size:.76rem!important;margin-top:2px!important}
-body:not(:has(#login:not(.hidden))) main{
- padding-top:calc(var(--unified-header-height, 160px) + 22px)!important;
-}
-body:has(#login:not(.hidden)) .app-header-group{display:none!important}
-#dashboard .portal-hero{position:relative;z-index:0}
-@media(max-width:650px){
- .app-header-group>header.top{padding:8px 12px!important}
- .app-header-group>header.top .eyebrow{font-size:.62rem!important}
- .app-header-group>header.top h1{font-size:1rem!important}
- .app-header-group>header.top .shield{display:none!important}
- .app-header-group>.overview-top{min-height:62px!important;padding:8px 12px!important;gap:10px!important}
- .app-header-group .overview-top #mobileNavToggle{flex-basis:38px!important;width:38px!important;min-width:38px!important;height:38px!important}
- .app-header-group .overview-top .overview-title,
- .app-header-group .overview-top #schoolName{font-size:.98rem!important}
- body:not(:has(#login:not(.hidden))) main{padding-top:calc(var(--unified-header-height, 140px) + 16px)!important}
-}
-</style>
-<script id="admin-header-height-refresh">
-(function(){
- function refreshHeaderHeight(){
-  const group=document.querySelector('.app-header-group');
-  if(!group)return;
-  const visible=group.offsetParent!==null && getComputedStyle(group).display!=='none';
-  if(visible)document.documentElement.style.setProperty('--unified-header-height',Math.ceil(group.getBoundingClientRect().height)+'px');
- }
- window.addEventListener('load',refreshHeaderHeight,{once:true});
- window.addEventListener('resize',refreshHeaderHeight,{passive:true});
- if('ResizeObserver' in window){
-  const start=()=>{const group=document.querySelector('.app-header-group');if(group)new ResizeObserver(refreshHeaderHeight).observe(group);refreshHeaderHeight();};
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
- }
-})();
-</script>
-
-
-<style id="admin-subheader-flex-overlap-fix">
-/* Keep the fixed admin header readable: menu button left, school identity beside it. */
-.app-header-group>.overview-top,
-.app-header-group #dashboard .overview-top {
-  display:flex!important;
-  flex-direction:row!important;
-  align-items:center!important;
-  justify-content:flex-start!important;
-  gap:12px!important;
-  padding:10px 16px!important;
-  box-sizing:border-box!important;
-  min-width:0!important;
-  overflow:visible!important;
-}
-.app-header-group .overview-top #mobileNavToggle {
-  flex:0 0 42px!important;
-  width:42px!important;
-  min-width:42px!important;
-  margin:0!important;
-  align-self:center!important;
-}
-.app-header-group .overview-top>div:not(#mobileNavToggle) {
-  flex:1 1 auto!important;
-  min-width:0!important;
-  width:auto!important;
-  margin:0!important;
-  line-height:1.35!important;
-  overflow-wrap:anywhere!important;
-  word-break:normal!important;
-}
-.app-header-group .overview-top .eyebrow {
-  line-height:1.35!important;
-  margin:0 0 2px!important;
-}
-.app-header-group .overview-top .overview-title,
-.app-header-group .overview-top #schoolName {
-  display:block!important;
-  max-width:100%!important;
-  line-height:1.25!important;
-  margin:1px 0!important;
-  white-space:normal!important;
-  overflow-wrap:anywhere!important;
-}
-.app-header-group .overview-top #schoolMeta {
-  display:block!important;
-  max-width:100%!important;
-  line-height:1.35!important;
-  white-space:normal!important;
-  overflow-wrap:anywhere!important;
-}
-#dashboard .portal-hero { scroll-margin-top:calc(var(--unified-header-height, 160px) + 14px); }
-@media(max-width:650px) {
-  .app-header-group>.overview-top,
-  .app-header-group #dashboard .overview-top {
-    gap:12px!important;
-    padding:10px 16px!important;
-  }
-  .app-header-group .overview-top #mobileNavToggle {
-    flex-basis:38px!important;
-    width:38px!important;
-    min-width:38px!important;
-    height:38px!important;
-  }
-}
-</style>
-
-
-/* Tenant hero banner: match the deep navy/royal-blue reference treatment */
-#dashboard .portal-hero{
-  position:relative;
-  isolation:isolate;
-  overflow:hidden;
-  border:1px solid rgba(148,163,184,.18);
-  border-radius:16px;
-  background:
-    radial-gradient(ellipse at 100% 100%,rgba(53,79,205,.92) 0%,rgba(37,61,150,.52) 28%,transparent 58%),
-    radial-gradient(ellipse at 92% 8%,rgba(34,67,126,.48) 0%,transparent 48%),
-    linear-gradient(135deg,#06152d 0%,#101d38 48%,#17213f 72%,#203b91 100%);
-  color:#fff;
-  box-shadow:0 18px 42px rgba(7,18,43,.18);
-}
-#dashboard .portal-hero:before{
-  content:"";
-  position:absolute;
-  z-index:-1;
-  width:390px;
-  height:390px;
-  right:-145px;
-  bottom:-250px;
-  border:1px solid rgba(115,139,255,.18);
-  border-radius:50%;
-  box-shadow:0 0 0 26px rgba(115,139,255,.035),0 0 0 54px rgba(115,139,255,.025);
-  pointer-events:none;
-}
-#dashboard .portal-hero:after{
-  content:"";
-  position:absolute;
-  z-index:-1;
-  width:290px;
-  height:290px;
-  right:-125px;
-  top:-175px;
-  border:1px solid rgba(157,174,255,.14);
-  border-radius:50%;
-  box-shadow:0 0 0 24px rgba(157,174,255,.025),0 0 0 48px rgba(157,174,255,.018);
-  pointer-events:none;
-}
-#dashboard .portal-hero-badge{
-  position:relative;
-  z-index:1;
-  display:inline-flex;
-  align-items:center;
-  gap:9px;
-  padding:10px 17px;
-  border:1px solid rgba(230,190,65,.55);
-  border-radius:999px;
-  background:rgba(194,151,29,.18);
-  color:#f5cf55;
-  font-size:.78rem;
-  font-weight:850;
-  letter-spacing:.085em;
-  line-height:1.25;
-  text-transform:uppercase;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
-}
-#dashboard .portal-hero-badge i{color:#ffcc36;font-size:1rem}
-#dashboard .portal-hero h1{
-  position:relative;
-  z-index:1;
-  color:#fff;
-  font-weight:850;
-  letter-spacing:-.045em;
-  line-height:1.14;
-}
-#dashboard .portal-hero p{
-  position:relative;
-  z-index:1;
-  color:#e1e7f2;
-  line-height:1.72;
-}
-@media(max-width:600px){
-  #dashboard .portal-hero{border-radius:16px;padding:22px 18px}
-  #dashboard .portal-hero:before{right:-205px;bottom:-260px}
-  #dashboard .portal-hero:after{right:-180px;top:-190px}
-  #dashboard .portal-hero-badge{padding:9px 14px;font-size:.72rem}
-}
