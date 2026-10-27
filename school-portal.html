@@ -1021,6 +1021,37 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
 })();
 </script>
 
+
+<style id="hamburger-subheader-alignment-final">
+/* Keep the mobile hamburger in normal flex flow beside the sub-header text. */
+.app-header-group .overview-top,
+.app-header-group #dashboard .overview-top{
+  display:flex!important; flex-direction:row!important; align-items:center!important;
+  justify-content:flex-start!important; gap:14px!important; padding:12px 16px!important;
+  box-sizing:border-box!important; min-width:0!important;
+}
+.app-header-group .overview-top #mobileNavToggle,
+.app-header-group #dashboard .overview-top #mobileNavToggle{
+  position:relative!important; inset:auto!important; top:auto!important; right:auto!important;
+  bottom:auto!important; left:auto!important; margin:0!important; transform:none!important;
+  align-self:center!important; flex:0 0 42px!important; width:42px!important;
+  min-width:42px!important; height:42px!important; padding:0!important;
+}
+.app-header-group .overview-top>div:not(#mobileNavToggle){
+  position:relative!important; inset:auto!important; margin:0!important;
+  flex:1 1 auto!important; min-width:0!important;
+}
+@media(max-width:650px){
+  .app-header-group>.overview-top,
+  .app-header-group #dashboard .overview-top{gap:14px!important;padding:12px 16px!important}
+  .app-header-group .overview-top #mobileNavToggle,
+  .app-header-group #dashboard .overview-top #mobileNavToggle{
+    position:relative!important;margin:0!important;top:auto!important;left:auto!important;right:auto!important;
+    flex-basis:38px!important;width:38px!important;min-width:38px!important;height:38px!important;
+  }
+}
+</style>
+
 </body></html>
 <style>
 /* Live administrator status indicator */
