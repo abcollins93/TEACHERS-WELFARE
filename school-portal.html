@@ -295,6 +295,16 @@ body{font-family:'Plus Jakarta Sans',Inter,system-ui,sans-serif;font-variant-num
 </style>
 
 
+
+<style id="admin-workspace-visibility">
+/* The administrative workspace is closed on initial load and opened only by explicit sidebar navigation. */
+#dashboard #wfAdminPanel{display:none!important}
+#dashboard.admin-workspace-open #wfAdminPanel{display:block!important}
+#dashboard.admin-workspace-open #schoolOverview{display:none!important}
+#dashboard.admin-workspace-open #schoolTeachers{display:block}
+#dashboard.admin-workspace-open #wfAdminPanel:focus{outline:none}
+#dashboard.admin-workspace-open #wfAdminPanel .wf-admin-intro{scroll-margin-top:18px}
+</style>
 <style id="school-admin-panel-hub">
 .wf-admin-hub{margin-top:18px;display:flex;flex-direction:column;gap:16px;scroll-margin-top:20px}
 .wf-admin-intro{position:relative;overflow:hidden;border:1px solid rgba(214,166,55,.3);background:linear-gradient(125deg,#071328 0%,#102b4f 58%,#17415e 100%)!important;color:#fff}
@@ -790,7 +800,14 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
       item.classList.toggle('active', item === button);
       item.setAttribute('aria-current', item === button ? 'location' : 'false');
     });
+    const dashboardRoot = document.getElementById('dashboard');
     const target = document.getElementById(button.dataset.target);
+    const isAdminWorkspaceTarget = !!(target && (target.id === 'wfAdminPanel' || target.closest('#wfAdminPanel')));
+    // Administrative panels are hidden at login. Only an explicit sidebar selection opens them.
+    // All data access remains enforced by Supabase Auth and row-level security.
+    if (dashboardRoot) {
+      dashboardRoot.classList.toggle('admin-workspace-open', isAdminWorkspaceTarget);
+    }
     let notice = document.getElementById('sidebarNavigationNotice');
     if (!target) {
       if (!notice) {
