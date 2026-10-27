@@ -957,12 +957,12 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
 
 
 <style id="fixed-stacked-portal-headers-final">
-/* Final alignment: the gold divider and admin menu form one continuous fixed stack. */
+/* Fixed header stack: admin banner touches the header's gold bottom border exactly. */
 :root{--app-header-height:106px;--dashboard-menu-height:68px}
 header.top{
  position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;
  height:var(--app-header-height)!important;min-height:var(--app-header-height)!important;
- padding:18px clamp(14px,3vw,40px)!important;z-index:6000!important;
+ padding:18px clamp(14px,3vw,40px)!important;z-index:1001!important;
  border-bottom:4px solid var(--gold,#d6a637)!important;box-sizing:border-box!important;
 }
 body:not(:has(#login:not(.hidden))) main{
@@ -974,7 +974,7 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
  position:fixed!important;top:var(--app-header-height)!important;left:0!important;right:0!important;
  width:100%!important;height:var(--dashboard-menu-height)!important;min-height:var(--dashboard-menu-height)!important;
  margin:0!important;padding:8px clamp(14px,3vw,40px)!important;box-sizing:border-box!important;
- z-index:5900!important;display:flex!important;align-items:center!important;
+ z-index:1000!important;display:flex!important;align-items:center!important;
  background:linear-gradient(105deg,#030a16 0%,#0b1d3a 65%,#142d52 100%)!important;
  color:#fff!important;border-bottom:1px solid rgba(214,166,55,.38)!important;
  box-shadow:0 10px 26px rgba(3,10,22,.24)!important;backdrop-filter:blur(14px);
