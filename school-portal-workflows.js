@@ -14,6 +14,15 @@ function addUI(){
 #wfAdminPanel{--wf-purple:#6d28d9;--wf-green:#059669;--wf-red:#e11d48;--wf-ink:#07122b;color:var(--wf-ink)}
 #wfAdminPanel .panel{background:#fff!important;color:#07122b!important;border:1px solid rgba(148,163,184,.18)!important;border-radius:16px!important;box-shadow:0 18px 42px rgba(7,18,43,.12)!important;margin-bottom:18px;padding:22px;min-width:0}
 #wfAdminPanel .wf-admin-intro{background:linear-gradient(145deg,#fff,#f8fafc)!important}
+/* High-contrast Administration Panel hero: match the dashboard solidarity banner. */
+#wfAdminPanel .wf-admin-intro{position:relative!important;isolation:isolate;overflow:hidden;background:linear-gradient(125deg,#071b35 0%,#12345b 58%,#1b4568 100%)!important;color:#fff!important;border:1px solid rgba(214,173,82,.42)!important;box-shadow:0 18px 42px rgba(7,27,53,.2)!important}
+#wfAdminPanel .wf-admin-intro:before{content:"";position:absolute;z-index:-1;width:250px;height:250px;right:-85px;top:-155px;border:1px solid rgba(185,199,255,.18);border-radius:50%;box-shadow:0 0 0 24px rgba(157,174,255,.035),0 0 0 50px rgba(157,174,255,.025);pointer-events:none}
+#wfAdminPanel .wf-admin-intro h2,#wfAdminPanel .wf-admin-intro p,#wfAdminPanel .wf-admin-intro .wf-admin-intro-top,#wfAdminPanel .wf-admin-intro .wf-admin-shortcuts{color:#fff!important}
+#wfAdminPanel .wf-admin-intro p{color:#e5ebf7!important;line-height:1.7}
+#wfAdminPanel .wf-admin-intro .wf-admin-eyebrow,#wfAdminPanel .wf-admin-intro .wf-admin-eyebrow i{color:#ffdc72!important}
+#wfAdminPanel .wf-admin-intro .wf-admin-status{background:rgba(230,190,65,.14)!important;border:1px solid rgba(230,190,65,.4)!important;color:#ffdc72!important}
+#wfAdminPanel .wf-admin-intro .wf-admin-shortcuts span{color:#fff!important;background:rgba(255,255,255,.07)!important;border:1px solid rgba(255,255,255,.13)!important}
+#wfAdminPanel .wf-admin-intro .wf-admin-shortcuts i{color:#ffdc72!important}
 #wfAdminPanel h2,#wfAdminPanel h3{display:flex;align-items:center;gap:11px;color:#07122b!important;font-weight:850!important;letter-spacing:-.025em;line-height:1.35;margin:0 0 9px}
 #wfAdminPanel h3:before{font-family:"Font Awesome 6 Free";font-weight:900;display:inline-grid;place-items:center;width:38px;height:38px;flex:0 0 38px;border-radius:11px;background:#eef2ff;color:#4338ca;font-size:16px}
 #wfAdminAccessPanel h3:before{content:"\\f084";background:#f1f5f9;color:#0f172a}
