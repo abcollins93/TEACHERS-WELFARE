@@ -297,11 +297,17 @@ body{font-family:'Plus Jakarta Sans',Inter,system-ui,sans-serif;font-variant-num
 
 
 <style id="admin-workspace-visibility">
-/* The administrative workspace is closed on initial load and opened only by explicit sidebar navigation. */
+/* Management and audit are independent views. Audit stays hidden unless its own sidebar item is selected. */
 #dashboard #wfAdminPanel{display:none!important}
 #dashboard.admin-workspace-open #wfAdminPanel{display:block!important}
+#dashboard #wfAuditView{display:none!important}
 #dashboard.audit-trail-open #wfAuditView{display:block!important}
-#dashboard.audit-trail-open #schoolOverview,#dashboard.audit-trail-open #schoolTeachers,#dashboard.audit-trail-open #wfAdminPanel{display:none!important}
+#dashboard.audit-trail-open #schoolOverview,
+#dashboard.audit-trail-open #schoolTeachers,
+#dashboard.audit-trail-open #wfAdminPanel{display:none!important}
+#dashboard.audit-trail-open #wfAuditPanel{display:block!important}
+#dashboard.admin-workspace-open #wfAuditView,
+#dashboard.admin-workspace-open #wfAuditPanel{display:none!important}
 #dashboard.admin-workspace-open #schoolOverview{display:none!important}
 #dashboard.admin-workspace-open #schoolTeachers{display:block}
 #dashboard.admin-workspace-open #wfAdminPanel:focus{outline:none}
@@ -326,7 +332,6 @@ body{font-family:'Plus Jakarta Sans',Inter,system-ui,sans-serif;font-variant-num
 #wfAdminPanel #wfContributionPanel{border-top-color:#16a779}
 #wfAdminPanel #wfPayoutPanel{border-top-color:#d97891}
 #wfAdminPanel #wfStatementPanel,#wfAdminPanel #wfReportsPanel{border-top-color:#8972df}
-#wfAdminPanel #wfAuditPanel{border-top-color:#e2a23c}
 .dark .wf-admin-intro{background:linear-gradient(125deg,#030a16 0%,#0b1d3a 60%,#102e49 100%)!important}
 @media(max-width:600px){.wf-admin-intro{padding:19px}.wf-admin-status{white-space:normal}.wf-admin-shortcuts{gap:6px}.wf-admin-shortcuts span{font-size:.72rem;padding:7px 9px}}
 @media(prefers-reduced-motion:reduce){#wfAdminPanel *{scroll-behavior:auto}}
