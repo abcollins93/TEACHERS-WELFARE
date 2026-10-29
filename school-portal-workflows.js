@@ -258,9 +258,24 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    report.innerHTML='<h1>'+esc(ctx.name)+'</h1><h2>Monthly Welfare Fund Summary</h2><p>School code: '+esc(ctx.school_code)+' | Period: '+esc(month)+'</p><hr><p>Teachers registered: '+teachers.length+'</p><p>Contributions: GHS '+money(sumC)+' ('+mc.length+' entries)</p><p>Welfare payouts: GHS '+money(sumP)+' ('+mp.length+' entries)</p><h3>Contributions</h3><table style="width:100%;border-collapse:collapse"><tr><th>Date</th><th>Staff ID</th><th>Amount</th><th>Reference</th></tr>'+mc.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.teacher_id)+'</td><td>'+money(x.amount)+'</td><td>'+esc(x.reference||'—')+'</td></tr>').join('')+'</table><h3>Payouts</h3><table style="width:100%;border-collapse:collapse"><tr><th>Date</th><th>Staff ID</th><th>Amount</th><th>Reason</th></tr>'+mp.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.teacher_id)+'</td><td>'+money(x.amount)+'</td><td>'+esc(x.reason||x.reference||'—')+'</td></tr>').join('')+'</table>';
    window.html2pdf().set({margin:10,filename:(ctx.school_code||'school')+'-'+month+'-monthly-welfare.pdf',html2canvas:{scale:2},jsPDF:{unit:'mm',format:'a4',orientation:'landscape'}}).from(report).save();msg('wfReportMsg','Monthly PDF report is being prepared.');
  };
- // Audit records are intentionally not fetched during dashboard or administration startup.
+ // Audit is a dedicated, lazy-loaded view. Never fetch or render audit rows as part
+ // of the management panel; fetch only after the user explicitly selects Audit Trail.
  const auditNav=document.querySelector('.sidebar .navbtn[data-target="wfAuditPanel"]');
- auditNav?.addEventListener('click',()=>{loadAudit();},{passive:true});
+ const auditView=$('wfAuditView');
+ const adminHub=$('wfAdminPanel');
+ const auditPanel=$('wfAuditPanel');
+ if(auditView)auditView.setAttribute('aria-hidden','true');
+ // Defensive guard: keep the audit table outside the administration workspace.
+ if(auditPanel && adminHub && adminHub.contains(auditPanel) && auditView){
+   auditView.appendChild(auditPanel);
+ }
+ auditNav?.addEventListener('click',()=>{
+   if(auditView){
+     auditView.classList.remove('hidden');
+     auditView.setAttribute('aria-hidden','false');
+   }
+   loadAudit();
+ },{passive:true});
  $('wfStatementPdf').onclick=()=>{
    const tid=$('wfStatementTeacher').value;
    const teacher=teachers.find(t=>String(t.id)===String(tid));
