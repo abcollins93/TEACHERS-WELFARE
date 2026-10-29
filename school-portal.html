@@ -809,6 +809,69 @@ body:has(#login:not(.hidden)) .app-header-group{display:none!important}
   box-shadow:0 18px 42px rgba(7, 18, 43, 0.18);
 }
 </style>
+<style id="final-fixed-header-and-admin-hero-repair">
+/* Keep both portal header bars in one fixed, full-width stack. */
+.app-header-group{
+ position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;
+ z-index:5000!important;display:flex!important;flex-direction:column!important;gap:0!important;
+ margin:0!important;padding:0!important;box-sizing:border-box!important;isolation:isolate;
+}
+.app-header-group>header.top,.app-header-group>.overview-top{
+ position:relative!important;inset:auto!important;left:auto!important;right:auto!important;top:auto!important;
+ width:100%!important;flex:0 0 auto!important;box-sizing:border-box!important;
+}
+body:not(:has(#login:not(.hidden))) main{
+ padding-top:calc(var(--unified-header-height, 166px) + 22px)!important;
+}
+body:has(#login:not(.hidden)) main{padding-top:0!important}
+@media(max-width:650px){
+ body:not(:has(#login:not(.hidden))) main{padding-top:calc(var(--unified-header-height, 132px) + 16px)!important}
+}
+/* Do not let late dashboard card styles flatten the admin hero. */
+#wfAdminPanel .wf-admin-intro{
+ position:relative!important;isolation:isolate!important;overflow:hidden!important;
+ color:#fff!important;border:1px solid rgba(148,163,184,.22)!important;
+ border-radius:16px!important;
+ background:radial-gradient(ellipse at 100% 100%,rgba(53,79,205,.92) 0%,rgba(37,61,150,.52) 28%,transparent 58%),
+ radial-gradient(ellipse at 92% 8%,rgba(34,67,126,.48) 0%,transparent 48%),
+ linear-gradient(135deg,#06152d 0%,#101d38 48%,#17213f 72%,#203b91 100%)!important;
+ box-shadow:0 18px 42px rgba(7,18,43,.18)!important;
+}
+#wfAdminPanel .wf-admin-intro:before,#wfAdminPanel .wf-admin-intro:after{
+ content:""!important;position:absolute!important;z-index:-1!important;border-radius:50%!important;
+ pointer-events:none!important;display:block!important;
+}
+#wfAdminPanel .wf-admin-intro:before{
+ width:410px;height:410px;right:-152px;bottom:-270px;border:1px solid rgba(133,153,255,.22);
+ box-shadow:0 0 0 22px rgba(115,139,255,.045),0 0 0 48px rgba(115,139,255,.03),0 0 0 78px rgba(115,139,255,.018);
+}
+#wfAdminPanel .wf-admin-intro:after{
+ width:300px;height:300px;right:-128px;top:-190px;border:1px solid rgba(185,199,255,.16);
+ box-shadow:0 0 0 23px rgba(157,174,255,.03),0 0 0 48px rgba(157,174,255,.02);
+}
+#wfAdminPanel .wf-admin-intro .wf-admin-eyebrow{
+ position:relative;z-index:1;display:inline-flex;align-items:center;gap:8px;
+ color:#ffdc72!important;background:rgba(194,151,29,.17)!important;
+ border:1px solid rgba(230,190,65,.58)!important;border-radius:999px;
+ padding:9px 14px;letter-spacing:.075em;font-weight:850;
+}
+#wfAdminPanel .wf-admin-intro .wf-admin-eyebrow i{color:#ffd34f!important}
+#wfAdminPanel .wf-admin-intro h2{
+ position:relative;z-index:1;color:#fff!important;font-size:clamp(1.55rem,3vw,2.2rem)!important;
+ font-weight:900!important;letter-spacing:-.045em!important;line-height:1.13!important;
+ text-shadow:0 1px 1px rgba(0,0,0,.12);
+}
+#wfAdminPanel .wf-admin-intro p{position:relative;z-index:1;color:#e5ebf7!important;line-height:1.7}
+#wfAdminPanel .wf-admin-intro .wf-admin-status{
+ position:relative;z-index:1;background:rgba(22,167,121,.16)!important;
+ color:#d6ffeb!important;border:1px solid rgba(110,231,183,.35)!important;
+}
+#wfAdminPanel .wf-admin-intro .wf-admin-shortcuts span{
+ position:relative;z-index:1;background:rgba(255,255,255,.09)!important;
+ border:1px solid rgba(255,255,255,.13)!important;color:#f1f5ff!important;
+}
+@media(max-width:600px){#wfAdminPanel .wf-admin-intro:before{right:-205px;bottom:-270px}#wfAdminPanel .wf-admin-intro:after{right:-185px;top:-200px}}
+</style>
 </head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading page">
