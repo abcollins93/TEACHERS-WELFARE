@@ -300,6 +300,8 @@ body{font-family:'Plus Jakarta Sans',Inter,system-ui,sans-serif;font-variant-num
 /* The administrative workspace is closed on initial load and opened only by explicit sidebar navigation. */
 #dashboard #wfAdminPanel{display:none!important}
 #dashboard.admin-workspace-open #wfAdminPanel{display:block!important}
+#dashboard.audit-trail-open #wfAuditView{display:block!important}
+#dashboard.audit-trail-open #schoolOverview,#dashboard.audit-trail-open #schoolTeachers,#dashboard.audit-trail-open #wfAdminPanel{display:none!important}
 #dashboard.admin-workspace-open #schoolOverview{display:none!important}
 #dashboard.admin-workspace-open #schoolTeachers{display:block}
 #dashboard.admin-workspace-open #wfAdminPanel:focus{outline:none}
@@ -1313,11 +1315,15 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
     const dashboardRoot = document.getElementById('dashboard');
     const target = document.getElementById(button.dataset.target);
     const isAdminWorkspaceTarget = !!(target && target.id === 'wfAdminPanel');
-    // Administrative panels are hidden at login. Only an explicit sidebar selection opens them.
-    // All data access remains enforced by Supabase Auth and row-level security.
+    const isAuditTarget = !!(target && target.id === 'wfAuditPanel');
+    const auditView = document.getElementById('wfAuditView');
+    // Keep management and audit history as separate, explicitly selected views.
+    // Audit rows are fetched only by the audit navigation handler; Supabase RLS remains authoritative.
     if (dashboardRoot) {
       dashboardRoot.classList.toggle('admin-workspace-open', isAdminWorkspaceTarget);
+      dashboardRoot.classList.toggle('audit-trail-open', isAuditTarget);
     }
+    if (auditView) auditView.classList.toggle('hidden', !isAuditTarget);
     let notice = document.getElementById('sidebarNavigationNotice');
     if (!target) {
       if (!notice) {
