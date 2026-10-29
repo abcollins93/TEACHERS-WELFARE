@@ -1163,7 +1163,7 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
   const alias=normalized.toLowerCase()+'@'+school.school_code.toLowerCase().replace(/[^a-z0-9-]/g,'')+'.staff.invalid';
   const {data,error}=await client.auth.signInWithPassword({email:alias,password});if(error||!data.user)throw new Error('invalid');
   const {data:a,error:ae}=await client.from('teacher_accounts').select('teacher_id,school_id,active').eq('auth_user_id',data.user.id).maybeSingle();
-  if(ae||!a||!a.active||a.school_id!==school.id||a.teacher_id.toUpperCase()!==staffId.toUpperCase()){await client.auth.signOut();throw new Error('not-active');}
+  if(ae||!a||!a.active||a.school_id!==school.id||a.teacher_id.toUpperCase()!==normalized){await client.auth.signOut();throw new Error('not-active');}
   const {data:profile,error:profileError}=await client.rpc('get_my_teacher_profile');
   if(profileError||!profile||!profile.length||profile[0].school_id!==school.id){await client.auth.signOut();throw new Error('not-active');}
   const p=profile[0];
@@ -1190,7 +1190,7 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
     document.getElementById('teacherSignOut').addEventListener('click',async()=>{await client.auth.signOut();teacherDash.classList.add('hidden');$('login').classList.remove('hidden');});
   }else renderTeacherDashboard(p,school);
   return;
- }catch(err){message.className='error';message.textContent=err.message==='not-active'?'This Staff ID has not been activated for this school. Contact your school administrator.':err.message==='dashboard-pending'?'Your credentials were accepted, but the private teacher dashboard is not yet enabled. Please contact the platform administrator.':'Unable to sign in. Check your Staff ID and password, or contact your school administrator.';}
+ }catch(err){message.className='error';message.textContent=err.message==='not-active'?'This Staff ID has not been activated for this school. Contact your school administrator.':err.message==='dashboard-pending'?'Your credentials were accepted, but the private teacher dashboard is not yet enabled. Please contact the platform administrator.':'Teacher sign-in was not accepted. Confirm your Staff ID and temporary password with your school administrator. If you have never received a teacher login, ask the administrator to activate your sign-in from the Teacher Register.';}
  finally{button.disabled=false;hidePageLoader();}
 });
 $('teacherForgotPreview').addEventListener('click',()=>{ $('teacherLoginMessage').className='muted';$('teacherLoginMessage').textContent='For secure recovery, contact your school administrator to verify your identity and reset your account.';});
