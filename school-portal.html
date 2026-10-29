@@ -1005,9 +1005,30 @@ function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;',
 async function escapeTeacherText(v){return String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
 async function renderTeacherDashboard(profile,school){
  const dash=document.getElementById('teacherDashboard');
- dash.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><div class="eyebrow">Teacher portal</div><h2 style="margin:8px 0">My Welfare Account</h2><p class="muted">'+escapeTeacherText(school.name)+' · Staff ID: '+escapeTeacherText(profile.teacher_id)+'</p></div><button id="teacherSignOut" class="secondary">Sign out</button></div><div id="teacherBroadcast" class="panel hidden" role="status" aria-live="polite" style="margin:16px 0;padding:12px 16px;overflow:hidden;border-color:#d6ad52"><strong style="color:#b8860b;margin-right:10px">SCHOOL NOTICE</strong><span id="teacherBroadcastText" class="teacher-broadcast-message"></span></div><hr><h3>My contributions</h3><p id="teacherContributionsState" class="muted">Loading your contributions…</p><div id="teacherContributions"></div><h3 style="margin-top:24px">My welfare payouts</h3><p id="teacherPayoutsState" class="muted">Loading your payouts…</p><div id="teacherPayouts"></div>';
+ dash.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><div class="eyebrow">Teacher portal</div><h2 style="margin:8px 0">My Welfare Account</h2><p class="muted">'+escapeTeacherText(school.name)+' · Staff ID: '+escapeTeacherText(profile.teacher_id)+'</p></div><button id="teacherSignOut" class="secondary">Sign out</button></div><div id="teacherBroadcast" class="panel hidden" role="status" aria-live="polite" style="margin:16px 0;padding:12px 16px;overflow:hidden;border-color:#d6ad52"><strong style="color:#b8860b;margin-right:10px">SCHOOL NOTICE</strong><span id="teacherBroadcastText" class="teacher-broadcast-message"></span></div><hr><h3>My contributions</h3><p id="teacherContributionsState" class="muted">Loading your contributions…</p><div id="teacherContributions"></div><h3 style="margin-top:24px">My welfare payouts</h3><p id="teacherPayoutsState" class="muted">Loading your payouts…</p><div id="teacherPayouts"></div><details class="panel" style="margin-top:24px"><summary style="cursor:pointer;font-weight:800">Security settings · Change password</summary><p class="muted">Change your password whenever you need to. Keep it private and use at least 10 characters.</p><form id="teacherVoluntaryPasswordForm"><label for="teacherCurrentPassword">Current password</label><input id="teacherCurrentPassword" type="password" autocomplete="current-password" minlength="1" maxlength="128" required><label for="teacherVoluntaryNewPassword">New password</label><input id="teacherVoluntaryNewPassword" type="password" autocomplete="new-password" minlength="10" maxlength="128" required><label for="teacherVoluntaryConfirmPassword">Confirm new password</label><input id="teacherVoluntaryConfirmPassword" type="password" autocomplete="new-password" minlength="10" maxlength="128" required><p id="teacherVoluntaryPasswordMessage" class="muted" role="status" aria-live="polite"></p><button type="submit">Update my password</button></form></details>';
  dash.classList.remove('hidden');
  document.getElementById('teacherSignOut').addEventListener('click',async()=>{await client.auth.signOut();dash.classList.add('hidden');$('login').classList.remove('hidden');});
+ const teacherPasswordForm=document.getElementById('teacherVoluntaryPasswordForm');
+ if(teacherPasswordForm)teacherPasswordForm.addEventListener('submit',async ev=>{
+   ev.preventDefault();
+   const current=document.getElementById('teacherCurrentPassword').value;
+   const next=document.getElementById('teacherVoluntaryNewPassword').value;
+   const confirmNext=document.getElementById('teacherVoluntaryConfirmPassword').value;
+   const status=document.getElementById('teacherVoluntaryPasswordMessage');
+   const setStatus=(text,isError=false)=>{status.textContent=text;status.className=isError?'error':'muted';};
+   if(next.length<10)return setStatus('Choose a password with at least 10 characters.',true);
+   if(next!==confirmNext)return setStatus('The new passwords do not match.',true);
+   const {data:{user},error:userError}=await client.auth.getUser();
+   if(userError||!user?.email)return setStatus('Your signed-in account could not be verified. Sign in again.',true);
+   setStatus('Verifying your current password…');
+   const {error:verifyError}=await client.auth.signInWithPassword({email:user.email,password:current});
+   if(verifyError)return setStatus('Current password is incorrect. No changes were made.',true);
+   setStatus('Updating password…');
+   const {data:result,error}=await client.functions.invoke('teacher-account-security',{body:{action:'change_password',password:next}});
+   if(error||!result?.ok)return setStatus(result?.error||'Password update failed. Please try again.',true);
+   teacherPasswordForm.reset();
+   setStatus('Password updated successfully. Use your new password next time you sign in.');
+ });
  const noticePanel=document.getElementById('teacherBroadcast'), noticeText=document.getElementById('teacherBroadcastText');
  try{const {data:notice,error:noticeError}=await client.rpc('get_my_school_broadcast');if(!noticeError&&notice?.length&&notice[0].message){noticeText.textContent=notice[0].message;noticePanel.classList.remove('hidden');if(notice[0].message.length>100)noticePanel.classList.add('is-long');}}catch(_noticeError){/* Announcement is optional; keep the teacher dashboard available if notices cannot load. */}
  const [{data:cs,error:ce},{data:ps,error:pe}]=await Promise.all([client.rpc('get_my_teacher_contributions'),client.rpc('get_my_teacher_payouts')]);
