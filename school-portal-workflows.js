@@ -117,9 +117,26 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const teacherLabel=id=>{const t=teacherById.get(String(id));return t?esc(t.name)+' ('+esc(t.id)+')':esc(id||'—')};
  const renderTeacherTables=()=>{const q=String($('wfTeacherSearch')?.value||'').trim().toLowerCase();const visible=teachers.filter(t=>[t.id,t.name,t.phone,t.rank,t.class_name].some(v=>String(v||'').toLowerCase().includes(q)));
  $('teacherRows').innerHTML=visible.length?visible.map(t=>'<tr><td>'+esc(t.id)+'</td><td>'+esc(t.name)+'</td><td>'+esc(t.phone||'—')+'</td><td>'+esc(t.rank||'—')+'</td><td>'+esc(t.class_name||'—')+'</td></tr>').join(''):'<tr><td colspan="5">No matching teachers.</td></tr>';
- $('wfManageTeacherRows').innerHTML=visible.length?visible.map(t=>'<tr><td>'+esc(t.id)+'</td><td>'+esc(t.name)+'</td><td>'+esc(t.phone||'—')+'</td><td>'+esc(t.rank||'—')+'</td><td>'+esc(t.class_name||'—')+'</td><td><span>'+ (t.is_active===false?'Inactive':'Active') +'</span> <button type="button" class="secondary" data-wf-edit="'+esc(t.id)+'">Edit</button> '+(t.is_active===false?'<button type="button" data-wf-restore="'+esc(t.id)+'">Restore</button>':'<button type="button" class="secondary" data-wf-remove="'+esc(t.id)+'">Deactivate</button>')+'</td></tr>').join(''):'<tr><td colspan="6">No matching teachers.</td></tr>';};
+ $('wfManageTeacherRows').innerHTML=visible.length?visible.map(t=>'<tr><td>'+esc(t.id)+'</td><td>'+esc(t.name)+'</td><td>'+esc(t.phone||'—')+'</td><td>'+esc(t.rank||'—')+'</td><td>'+esc(t.class_name||'—')+'</td><td><span>'+ (t.is_active===false?'Inactive':'Active') +'</span> <button type="button" class="secondary" data-wf-edit="'+esc(t.id)+'">Edit</button> '+'<button type="button" data-wf-activate="'+esc(t.id)+'">Activate / reset login</button> '+(t.is_active===false?'<button type="button" data-wf-restore="'+esc(t.id)+'">Restore</button>':'<button type="button" class="secondary" data-wf-remove="'+esc(t.id)+'">Deactivate</button>')+'</td></tr>').join(''):'<tr><td colspan="6">No matching teachers.</td></tr>';};
  renderTeacherTables();
  $('wfTeacherSearch').addEventListener('input',renderTeacherTables);
+ $('wfManageTeacherRows').addEventListener('click',async e=>{
+   const button=e.target.closest('[data-wf-activate]');if(!button)return;
+   const teacher=teachers.find(t=>String(t.id)===String(button.dataset.wfActivate));
+   if(!teacher)return msg('wfTeacherMsg','That teacher is no longer in the loaded roster. Refresh and try again.',true);
+   if(teacher.is_active===false)return msg('wfTeacherMsg','Restore this teacher first, then activate the sign-in.',true);
+   const isReset=button.textContent.toLowerCase().includes('reset');
+   if(!confirm((isReset?'Create or reset':'Activate')+' the secure sign-in for '+teacher.name+' ('+teacher.id+')? A new one-time temporary password will be generated and any previous password will stop working. Share it privately with the teacher.'))return;
+   button.disabled=true;msg('wfTeacherMsg','Securing teacher sign-in…');
+   try{
+     const {data,error}=await client.functions.invoke('provision-teacher-account',{body:{school_id:ctx.id,teacher_id:teacher.id}});
+     if(error||!data?.ok)throw new Error(data?.error||error?.message||'Teacher sign-in could not be activated.');
+     await audit(client,ctx,'Activate/reset teacher sign-in','Secure teacher account activated/reset for Staff ID '+teacher.id+'.',teacher.id);
+     msg('wfTeacherMsg','Sign-in activated for '+teacher.name+'. Temporary password is shown once in the next message.');
+     alert('TEACHER SIGN-IN ACTIVATED\\nSchool: '+ctx.name+'\\nTeacher: '+data.teacher_name+'\\nStaff ID: '+data.staff_id+'\\nTemporary password: '+data.temporary_password+'\\n\\nShare this password privately. The teacher must change it after signing in.');
+   }catch(error){msg('wfTeacherMsg',error.message||'Teacher sign-in could not be activated. No success was assumed.',true);}
+   finally{button.disabled=false;}
+ });
 
  const options='<option value="">Choose teacher</option>'+teachers.filter(t=>t.is_active!==false).map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name)+' ('+esc(t.id)+')</option>').join('');
  $('wfConTeacher').innerHTML=options;$('wfPayTeacher').innerHTML=options;$('wfStatementTeacher').innerHTML=options;
