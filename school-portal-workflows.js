@@ -81,6 +81,18 @@ function addUI(){
  <div class="panel" id="wfReportsPanel"><h3>Reports and exports</h3><div class="grid"><div><label for="wfMonth">Reporting month</label><input id="wfMonth" type="month"></div><div style="align-self:end;display:flex;gap:8px;flex-wrap:wrap"><button id="wfMonthlyPdf" type="button">Monthly PDF summary</button><button id="wfExportCsv" type="button" class="secondary">Export ledgers CSV</button></div></div><p id="wfReportMsg" class="muted">Reports include records visible to this school account only.</p></div>
  <div class="panel" id="wfAuditPanel"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><h3>Audit history</h3><button id="wfAuditExport" type="button" class="secondary">Export audit CSV</button></div><p class="muted">Export includes the currently loaded school-scoped audit records, up to 300 entries.</p><div class="grid"><div><label for="wfAuditSearch">Search audit records</label><input id="wfAuditSearch" placeholder="Search action, actor, details…"></div><div><label for="wfAuditCategory">Category</label><select id="wfAuditCategory"><option value="">All categories</option><option>Welfare portal</option><option>Contribution</option><option>Payout</option><option>Teacher</option></select></div></div><p id="wfAuditMsg" class="muted">Loading audit history…</p><div style="overflow:auto"><table><thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Details</th><th>Status</th></tr></thead><tbody id="wfAuditRows"><tr><td colspan="5">Loading…</td></tr></tbody></table></div></div></section>`;
  const dash=$('dashboard');if(dash)dash.appendChild(d);
+ // Keep audit history in its own view, outside the restricted management workspace.
+ const auditPanel=$('wfAuditPanel');
+ if(dash&&auditPanel){
+   const auditView=document.createElement('section');
+   auditView.id='wfAuditView';
+   auditView.className='portal-audit-view hidden';
+   auditView.setAttribute('aria-labelledby','wfAuditViewTitle');
+   auditView.innerHTML='<div class="panel"><div class="wf-admin-eyebrow"><i class="fa-solid fa-shield-halved"></i> Accountability</div><h2 id="wfAuditViewTitle">Audit Trail Dashboard</h2><p class="muted">Review this school’s audit history separately from management tasks.</p></div>';
+   auditPanel.parentElement?.removeChild(auditPanel);
+   auditView.appendChild(auditPanel);
+   dash.appendChild(auditView);
+ }
  ['wfConDate','wfPayDate'].forEach(id=>$(id).value=today());
 }
 function msg(id,s,bad){$(id).textContent=s;$(id).className=bad?'error':'muted';}
@@ -246,7 +258,9 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    report.innerHTML='<h1>'+esc(ctx.name)+'</h1><h2>Monthly Welfare Fund Summary</h2><p>School code: '+esc(ctx.school_code)+' | Period: '+esc(month)+'</p><hr><p>Teachers registered: '+teachers.length+'</p><p>Contributions: GHS '+money(sumC)+' ('+mc.length+' entries)</p><p>Welfare payouts: GHS '+money(sumP)+' ('+mp.length+' entries)</p><h3>Contributions</h3><table style="width:100%;border-collapse:collapse"><tr><th>Date</th><th>Staff ID</th><th>Amount</th><th>Reference</th></tr>'+mc.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.teacher_id)+'</td><td>'+money(x.amount)+'</td><td>'+esc(x.reference||'—')+'</td></tr>').join('')+'</table><h3>Payouts</h3><table style="width:100%;border-collapse:collapse"><tr><th>Date</th><th>Staff ID</th><th>Amount</th><th>Reason</th></tr>'+mp.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.teacher_id)+'</td><td>'+money(x.amount)+'</td><td>'+esc(x.reason||x.reference||'—')+'</td></tr>').join('')+'</table>';
    window.html2pdf().set({margin:10,filename:(ctx.school_code||'school')+'-'+month+'-monthly-welfare.pdf',html2canvas:{scale:2},jsPDF:{unit:'mm',format:'a4',orientation:'landscape'}}).from(report).save();msg('wfReportMsg','Monthly PDF report is being prepared.');
  };
- loadAudit();
+ // Audit records are intentionally not fetched during dashboard or administration startup.
+ const auditNav=document.querySelector('.sidebar .navbtn[data-target="wfAuditPanel"]');
+ auditNav?.addEventListener('click',()=>{loadAudit();},{passive:true});
  $('wfStatementPdf').onclick=()=>{
    const tid=$('wfStatementTeacher').value;
    const teacher=teachers.find(t=>String(t.id)===String(tid));
