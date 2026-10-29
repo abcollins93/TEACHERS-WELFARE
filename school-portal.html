@@ -1444,6 +1444,39 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
 }
 </style>
 
+
+<style id="admin-hero-and-fixed-header-final">
+/* Final layout correction: the header group is the only fixed header layer. */
+.app-header-group{
+ position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;
+ z-index:1000!important;display:flex!important;flex-direction:column!important;gap:0!important;
+ margin:0!important;padding:0!important;box-sizing:border-box!important;
+}
+.app-header-group>header.top,.app-header-group>.overview-top{
+ position:relative!important;top:auto!important;left:auto!important;right:auto!important;inset:auto!important;
+ width:100%!important;flex:0 0 auto!important;transform:none!important;box-sizing:border-box!important;
+}
+.app-header-group>header.top{min-height:0!important;margin:0!important}
+.app-header-group>.overview-top{min-height:60px!important;margin:0!important}
+body:not(:has(#login:not(.hidden))) main{
+ padding-top:calc(var(--unified-header-height,120px) + 24px)!important;
+}
+body:has(#login:not(.hidden)) main{padding-top:0!important}
+#dashboard .portal-hero{
+ background:linear-gradient(125deg,#071b35 0%,#12345b 58%,#1b4568 100%)!important;
+ color:#fff!important;
+}
+#dashboard .portal-hero h1,#dashboard .portal-hero p{color:#fff!important}
+#dashboard .portal-hero p{color:#e5ebf7!important}
+#dashboard .portal-hero-badge{color:#ffdc72!important}
+#dashboard .portal-hero-badge i{color:#ffd34f!important}
+@media(max-width:650px){
+ .app-header-group>header.top{padding:8px 12px!important}
+ .app-header-group>.overview-top{min-height:56px!important;padding:6px 12px!important}
+ body:not(:has(#login:not(.hidden))) main{padding-top:calc(var(--unified-header-height,116px) + 16px)!important}
+}
+</style>
+
 </body></html>
 
 
