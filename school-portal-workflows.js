@@ -95,7 +95,7 @@ function addUI(){
  }
  ['wfConDate','wfPayDate'].forEach(id=>$(id).value=today());
 }
-function msg(id,s,bad){$(id).textContent=s;$(id).className=bad?'error':'muted';}
+function msg(id,s,bad){const el=$(id);if(!el)return;el.textContent=String(s??'');el.className=bad?'error':'muted';}
 async function audit(client,ctx,action,details,teacherId){
  const {data:{user}}=await client.auth.getUser();
  const {error}=await client.from('audit_logs').insert({id:crypto.randomUUID(),actor_name:user?.email||'School administrator',category:'Welfare portal',action,details,target_teacher_id:teacherId||null,status:'success',time_string:new Date().toLocaleString(),school_id:ctx.id});
@@ -120,11 +120,17 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      return {data:Array.isArray(result?.data)?result.data:[],error:null};
    }catch(error){console.warn('[School Welfare] '+label+' request failed:',error?.message||error);return {data:[],error};}
  };
- let tr=await loadSource('teacher roster',()=>client.from('teachers').select('id,name,phone,rank,class_name,is_active,passport').eq('school_id',school.id).order('name'));
- // Compatibility fallback for older tenant schemas without is_active and/or passport.
+ const teacherQuery=fields=>loadSource('teacher roster',()=>client.from('teachers').select(fields).eq('school_id',school.id).order('name'));
+ // Retry compatible projections independently: older tenants may lack one or both
+ // optional profile columns. Never require is_active/passport to show the roster.
+ let tr=await teacherQuery('id,name,phone,rank,class_name,is_active,passport');
+ if(tr.error)tr=await teacherQuery('id,name,phone,rank,class_name,passport');
+ if(tr.error)tr=await teacherQuery('id,name,phone,rank,class_name,is_active');
  if(tr.error){
-   tr=await loadSource('legacy teacher roster',()=>client.from('teachers').select('id,name,phone,rank,class_name').eq('school_id',school.id).order('name'));
+   tr=await teacherQuery('id,name,phone,rank,class_name');
    if(!tr.error)tr.data=tr.data.map(t=>({...t,is_active:true,passport:null}));
+ }else{
+   tr.data=tr.data.map(t=>({...t,is_active:typeof t.is_active==='boolean'?t.is_active:true,passport:t.passport??null}));
  }
  const [cr,pr,rr]=await Promise.all([
    loadSource('contribution ledger',()=>client.from('contributions').select('id,teacher_id,amount,date,reference').eq('school_id',school.id).order('date',{ascending:false})),
@@ -139,10 +145,6 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  if(rr.error)sourceWarnings.push('Reversal status unavailable');
  if(sourceWarnings.length){
    console.warn('[School Welfare] Partial dashboard data for school',school.school_code,sourceWarnings);
-   const notice=document.createElement('p');notice.className='muted';notice.setAttribute('role','status');
-   notice.style.cssText='font-size:.8rem;padding:8px 10px;border-left:3px solid #d6a637;background:rgba(214,166,55,.08);border-radius:6px';
-   notice.textContent='Some sections could not be loaded. Available sections remain usable; refresh or contact the administrator if the issue persists.';
-   const root=$('workflows');if(root)root.prepend(notice);
  }
  const reversed=new Set(reversals.map(r=>r.transaction_type+':'+r.transaction_id));
  const activeCons=cons.filter(x=>!reversed.has('contribution:'+x.id)), activePays=pays.filter(x=>!reversed.has('payout:'+x.id));
@@ -153,7 +155,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  renderMemberSummary();$('wfMemberSearch').addEventListener('input',renderMemberSummary);
  const teacherLabel=id=>{const t=teacherById.get(String(id));return t?esc(t.name)+' ('+esc(t.id)+')':esc(id||'—')};
  const renderTeacherTables=()=>{const q=String($('wfTeacherSearch')?.value||'').trim().toLowerCase();const visible=teachers.filter(t=>[t.id,t.name,t.phone,t.rank,t.class_name].some(v=>String(v||'').toLowerCase().includes(q)));
- $('teacherRows').innerHTML=visible.length?visible.map(t=>'<tr><td>'+esc(t.id)+'</td><td>'+esc(t.name)+'</td><td>'+esc(t.phone||'—')+'</td><td>'+esc(t.rank||'—')+'</td><td>'+esc(t.class_name||'—')+'</td></tr>').join(''):'<tr><td colspan="5">No matching teachers.</td></tr>';
+ const rosterRows=$('teacherRows');if(rosterRows)rosterRows.innerHTML=visible.length?visible.map(t=>'<tr><td>'+esc(t.id)+'</td><td>'+esc(t.name)+'</td><td>'+esc(t.phone||'—')+'</td><td>'+esc(t.rank||'—')+'</td><td>'+esc(t.class_name||'—')+'</td></tr>').join(''):'<tr><td colspan="5">No matching teachers.</td></tr>';
  $('wfManageTeacherRows').innerHTML=visible.length?visible.map(t=>'<tr><td>'+esc(t.id)+'</td><td>'+esc(t.name)+'</td><td>'+esc(t.phone||'—')+'</td><td>'+esc(t.rank||'—')+'</td><td>'+esc(t.class_name||'—')+'</td><td><span>'+ (t.is_active===false?'Inactive':'Active') +'</span> <button type="button" class="secondary" data-wf-edit="'+esc(t.id)+'">Edit</button> '+'<button type="button" data-wf-activate="'+esc(t.id)+'">Activate / reset login</button> '+(t.is_active===false?'<button type="button" data-wf-restore="'+esc(t.id)+'">Restore</button>':'<button type="button" class="secondary" data-wf-remove="'+esc(t.id)+'">Deactivate</button>')+'</td></tr>').join(''):'<tr><td colspan="6">No matching teachers.</td></tr>';};
  renderTeacherTables();
  $('wfTeacherSearch').addEventListener('input',renderTeacherTables);
@@ -356,9 +358,9 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  $('wfPayRows').addEventListener('click',async e=>{const b=e.target.closest('[data-wf-reverse]');if(!b)return;const type=b.dataset.wfReverse,id=b.dataset.wfId;const rows=type==='contribution'?cons:pays;const tx=rows.find(x=>String(x.id)===String(id));if(!tx||reversed.has(type+':'+id))return;const reason=prompt('Enter the reason for reversing this '+type+'. The original record will be retained:');if(!reason||!reason.trim())return;if(!confirm('Confirm reversal of GHS '+money(tx.amount)+'? The original transaction will remain visible and be excluded from active totals.'))return;const {data:{user}}=await client.auth.getUser();const {error}=await client.from('transaction_reversals').insert({school_id:ctx.id,transaction_type:type,transaction_id:id,teacher_id:tx.teacher_id,amount:tx.amount,transaction_date:tx.date,reason:reason.trim(),reversed_by:user?.email||'School administrator'});if(error){alert(error.code==='23505'?'This transaction has already been reversed.':'Reversal was not saved. Check school permissions and reversal-table policies.');return;}const ok=await audit(client,ctx,'Reverse '+type,'Original transaction '+id+'; GHS '+Number(tx.amount).toFixed(2)+'; reason: '+reason.trim(),tx.teacher_id);await refresh();if(!ok)alert('Reversal saved, but the audit entry failed.');});
  $('wfPayout').onsubmit=async e=>{e.preventDefault();const teacher_id=$('wfPayTeacher').value,amount=Number($('wfPayAmount').value);if(!teacher_id||!Number.isFinite(amount)||amount<=0)return msg('wfPayMsg','Choose a teacher and enter a positive amount.',true);const activeContributions=cons.filter(x=>!reversed.has('contribution:'+String(x.id))).reduce((sum,x)=>sum+Number(x.amount||0),0);const activePayouts=pays.filter(x=>!reversed.has('payout:'+String(x.id))).reduce((sum,x)=>sum+Number(x.amount||0),0);const available=Math.round((activeContributions-activePayouts)*100)/100;if(amount>available+0.001)return msg('wfPayMsg','Payout exceeds the available school fund balance of GHS '+money(Math.max(0,available))+'. Reverse or reconcile records before proceeding.',true);if(!confirm('Confirm welfare payout of GHS '+amount.toFixed(2)+'? Available balance after payout: GHS '+money(available-amount)+'.'))return;const row={teacher_id,amount,date:$('wfPayDate').value,reason:$('wfPayReason').value.trim(),reference:$('wfPayRef').value.trim()||null,school_id:ctx.id};msg('wfPayMsg','Saving…');const {error}=await client.rpc('record_school_welfare_payout',{p_school_id:ctx.id,p_teacher_id:teacher_id,p_amount:amount,p_date:row.date,p_reason:row.reason,p_reference:row.reference});if(error){console.warn('Secure payout RPC failed',error.code,error.message);return msg('wfPayMsg',error.code==='23514'?'Payout was not saved: the available school fund balance may be insufficient, or the amount/reason/date is invalid. Refresh the ledger and check the details.':'Payout was not saved. The secure database check failed; no payout was recorded. Check administrator access and try again.',true);}const auditOk=await audit(client,ctx,'Record payout','GHS '+amount.toFixed(2)+' — '+row.reason,teacher_id);$('wfPayout').reset();$('wfPayDate').value=today();await refresh();msg('wfPayMsg',auditOk?'Payout recorded.':'Payout saved, but the audit entry failed. Notify the platform administrator.',!auditOk);};
  }catch(error){
+   // Keep the portal shell rendered; diagnostics stay in the console rather than
+   // adding a warning card that displaces the dashboard or hides useful sections.
    console.error('[School Welfare] Workflow initialization stopped safely:',error?.message||error);
-   const root=$('workflows');
-   if(root){let notice=$('wfInitErrorNotice');if(!notice){notice=document.createElement('p');notice.id='wfInitErrorNotice';notice.className='muted';notice.setAttribute('role','status');notice.style.cssText='padding:12px;border-left:3px solid #d6a637;background:rgba(214,166,55,.08);border-radius:8px';root.prepend(notice);}notice.textContent='Some management tools could not finish loading. Available dashboard sections remain visible. Refresh or contact the administrator if the issue continues.';}
  }
 };
 })();
