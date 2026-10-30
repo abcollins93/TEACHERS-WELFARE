@@ -110,15 +110,39 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  $('wfChangePasswordForm')?.addEventListener('submit',async e=>{e.preventDefault();const current=$('wfCurrentAdminPassword').value,newPassword=$('wfNewAdminPassword').value,confirmPassword=$('wfConfirmAdminPassword').value;if(newPassword.length<10)return msg('wfPasswordMsg','Use a new password with at least 10 characters.',true);if(newPassword!==confirmPassword)return msg('wfPasswordMsg','The new passwords do not match.',true);const {data:{user},error:userError}=await client.auth.getUser();if(userError||!user?.email)return msg('wfPasswordMsg','Your signed-in administrator account could not be verified. Sign in again and retry.',true);msg('wfPasswordMsg','Verifying your current password…');const {error:verifyError}=await client.auth.signInWithPassword({email:user.email,password:current});if(verifyError)return msg('wfPasswordMsg','Current password is incorrect. No changes were made.',true);const {error:updateError}=await client.auth.updateUser({password:newPassword});if(updateError)return msg('wfPasswordMsg','Password update failed. Please try again or use password recovery.',true);$('wfChangePasswordForm').reset();msg('wfPasswordMsg','Password updated successfully for the signed-in administrator.');await audit(client,school,'Change administrator password','Administrator password changed through the school portal.');});
 
  // Tenant branding comes from the authenticated school record supplied by the portal.
-
- const [tr,cr,pr,rr]=await Promise.all([
-  client.from('teachers').select('id,name,phone,rank,class_name,is_active').eq('school_id',school.id).order('name'),
-  client.from('contributions').select('id,teacher_id,amount,date,reference').eq('school_id',school.id).order('date',{ascending:false}),
-  client.from('payouts').select('id,teacher_id,amount,date,reason,reference').eq('school_id',school.id).order('date',{ascending:false}),
-  client.from('transaction_reversals').select('transaction_type,transaction_id,reason,created_at').eq('school_id',school.id)
+ // Load sources independently: a missing optional column/table must not prevent the
+ // dashboard's other sections from rendering. Errors are logged without exposing SQL.
+ const loadSource=async(label,makeQuery)=>{
+   try{
+     const result=await makeQuery();
+     if(result?.error){console.warn('[School Welfare] '+label+' unavailable:',result.error.code||'',result.error.message||'');return {data:[],error:result.error};}
+     return {data:Array.isArray(result?.data)?result.data:[],error:null};
+   }catch(error){console.warn('[School Welfare] '+label+' request failed:',error?.message||error);return {data:[],error};}
+ };
+ let tr=await loadSource('teacher roster',()=>client.from('teachers').select('id,name,phone,rank,class_name,is_active,passport').eq('school_id',school.id).order('name'));
+ // Compatibility fallback for older tenant schemas without is_active and/or passport.
+ if(tr.error){
+   tr=await loadSource('legacy teacher roster',()=>client.from('teachers').select('id,name,phone,rank,class_name').eq('school_id',school.id).order('name'));
+   if(!tr.error)tr.data=tr.data.map(t=>({...t,is_active:true,passport:null}));
+ }
+ const [cr,pr,rr]=await Promise.all([
+   loadSource('contribution ledger',()=>client.from('contributions').select('id,teacher_id,amount,date,reference').eq('school_id',school.id).order('date',{ascending:false})),
+   loadSource('payout ledger',()=>client.from('payouts').select('id,teacher_id,amount,date,reason,reference').eq('school_id',school.id).order('date',{ascending:false})),
+   loadSource('transaction reversals',()=>client.from('transaction_reversals').select('transaction_type,transaction_id,reason,created_at').eq('school_id',school.id))
  ]);
- if(tr.error||cr.error||pr.error||rr.error){msg('wfTeacherMsg','Records could not be loaded. Check school-admin database permissions.',true);return;}
  const teachers=tr.data||[], cons=cr.data||[], pays=pr.data||[], reversals=rr.data||[];
+ const sourceWarnings=[];
+ if(tr.error)sourceWarnings.push('Teacher register unavailable');
+ if(cr.error)sourceWarnings.push('Contribution ledger unavailable');
+ if(pr.error)sourceWarnings.push('Payout ledger unavailable');
+ if(rr.error)sourceWarnings.push('Reversal status unavailable');
+ if(sourceWarnings.length){
+   console.warn('[School Welfare] Partial dashboard data for school',school.school_code,sourceWarnings);
+   const notice=document.createElement('p');notice.className='muted';notice.setAttribute('role','status');
+   notice.style.cssText='font-size:.8rem;padding:8px 10px;border-left:3px solid #d6a637;background:rgba(214,166,55,.08);border-radius:6px';
+   notice.textContent='Some sections could not be loaded. Available sections remain usable; refresh or contact the administrator if the issue persists.';
+   const root=$('workflows');if(root)root.prepend(notice);
+ }
  const reversed=new Set(reversals.map(r=>r.transaction_type+':'+r.transaction_id));
  const activeCons=cons.filter(x=>!reversed.has('contribution:'+x.id)), activePays=pays.filter(x=>!reversed.has('payout:'+x.id));
  const teacherById=new Map(teachers.map(t=>[String(t.id),t]));
