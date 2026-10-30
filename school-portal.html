@@ -1321,35 +1321,33 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
       item.setAttribute('aria-current', item === button ? 'location' : 'false');
     });
     const dashboardRoot = document.getElementById('dashboard');
-    const target = document.getElementById(button.dataset.target);
-    const isAdminWorkspaceTarget = !!(target && target.id === 'wfAdminPanel');
-    const isAuditTarget = !!(target && target.id === 'wfAuditPanel');
+    const requestedId = button.dataset.target;
     const auditView = document.getElementById('wfAuditView');
-    // Keep management and audit history as separate, explicitly selected views.
-    // Audit rows are fetched only by the audit navigation handler; Supabase RLS remains authoritative.
-    if (dashboardRoot) {
-      dashboardRoot.classList.toggle('admin-workspace-open', isAdminWorkspaceTarget);
-      dashboardRoot.classList.toggle('audit-trail-open', isAuditTarget);
-    }
-    if (auditView) auditView.classList.toggle('hidden', !isAuditTarget);
-    // Workflow panels are mounted asynchronously after the authenticated school
-    // record is loaded. A fast navigation click must wait for that mount instead
-    // of injecting a scary fallback warning into the dashboard.
     const pendingNotice = document.getElementById('sidebarNavigationNotice');
     if (pendingNotice) pendingNotice.remove();
+
+    // Workflow markup is mounted only after the authenticated school is known.
+    // Resolve the requested node on every attempt and re-apply view state only
+    // once it exists, so a first click during initialization cannot strand the UI.
+    const findTarget = () => document.getElementById(requestedId);
+    let target = findTarget();
     if (!target) {
-      const requestedId = button.dataset.target;
       const attempts = Number(button.dataset.mountAttempts || 0);
-      if (attempts < 20 && document.getElementById('dashboard') && !document.getElementById('dashboard').classList.contains('hidden')) {
+      const dashboardVisible = dashboardRoot && !dashboardRoot.classList.contains('hidden');
+      if (attempts < 30 && dashboardVisible) {
         button.dataset.mountAttempts = String(attempts + 1);
-        window.setTimeout(function () {
-          if (document.getElementById(requestedId)) button.click();
-          else if (attempts + 1 < 20) button.click();
-          else {
+        window.setTimeout(() => {
+          if (findTarget()) {
+            button.dataset.mountAttempts = '0';
+            button.click();
+          } else if (attempts + 1 < 30) {
+            button.click();
+          } else {
+            button.dataset.mountAttempts = '0';
             const overview = document.getElementById('schoolOverview');
             if (overview) overview.scrollIntoView({behavior:'smooth',block:'start'});
           }
-        }, 150);
+        }, 120);
       } else {
         button.dataset.mountAttempts = '0';
         const overview = document.getElementById('schoolOverview');
@@ -1357,13 +1355,35 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
       }
       return;
     }
-    button.dataset.mountAttempts = '0';
+
+    const isAdminWorkspaceTarget = target.id === 'wfAdminPanel';
+    const isAuditTarget = target.id === 'wfAuditPanel' || requestedId === 'wfAuditPanel';
+    if (dashboardRoot) {
+      dashboardRoot.classList.toggle('admin-workspace-open', isAdminWorkspaceTarget);
+      dashboardRoot.classList.toggle('audit-trail-open', isAuditTarget);
+    }
+    if (auditView) {
+      auditView.classList.toggle('hidden', !isAuditTarget);
+      auditView.setAttribute('aria-hidden', String(!isAuditTarget));
+    }
+
+    // Force a fresh layout calculation after revealing the requested workspace.
+    // This also handles panels mounted inside the workflow bundle after login.
+    target.classList.remove('hidden');
     target.style.scrollMarginTop = '18px';
+    if (isAdminWorkspaceTarget) {
+      const workflowRoot = document.getElementById('workflows');
+      if (workflowRoot) workflowRoot.classList.remove('hidden');
+      target.style.display = 'block';
+      target.setAttribute('aria-hidden','false');
+    }
+    void target.offsetHeight;
     target.scrollIntoView({behavior:'smooth',block:'start'});
     if (typeof target.focus === 'function') {
       if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex','-1');
       target.focus({preventScroll:true});
     }
+    button.dataset.mountAttempts = '0';
     closeSidebar();
   });
 })();
