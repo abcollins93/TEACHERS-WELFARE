@@ -1122,6 +1122,15 @@ function setHeaderProfile(user, displayName, roleLabel, photoUrl) {
  shell.classList.remove('hidden');shell.setAttribute('aria-label',cleanName+', '+(roleLabel||'Portal account'));
  initHeaderAvatarUpload();
 }
+// The workflow bundle is loaded after this inline script. Auth session restoration can
+// resolve first on fast connections, so wait for the bundle before mounting any sections.
+async function waitForSchoolWorkflows(timeoutMs=10000){
+ const started=Date.now();
+ while(typeof window.initSchoolWorkflows!=='function' && Date.now()-started<timeoutMs){
+  await new Promise(resolve=>window.setTimeout(resolve,50));
+ }
+ return typeof window.initSchoolWorkflows==='function';
+}
 async function showDashboard(){
  const {data:{user},error:userErr}=await client.auth.getUser();
  if(userErr||!user){$('login').classList.remove('hidden');$('dashboard').classList.add('hidden');return;}
@@ -1163,20 +1172,14 @@ async function showDashboard(){
 const activityDates=latestActivity.flatMap(x=>x.data||[]).map(x=>x.date).filter(Boolean).sort().reverse();
 $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'No records';
 try {
-    if (typeof window.initSchoolWorkflows !== 'function') throw new Error('The school workflow script did not load.');
-    await window.initSchoolWorkflows(client,school,showDashboard);
+    const workflowsReady=await waitForSchoolWorkflows();
+    if(!workflowsReady)throw new Error('Workflow bundle unavailable after waiting for script initialization.');
+    const initialized=await window.initSchoolWorkflows(client,school,showDashboard);
+    if(initialized===false)throw new Error('Workflow module reported incomplete initialization.');
   } catch (workflowError) {
-    console.error('School workflow initialization failed:', workflowError);
-    let warning = document.getElementById('workflowLoadNotice');
-    if (!warning) {
-      warning = document.createElement('div');
-      warning.id = 'workflowLoadNotice';
-      warning.setAttribute('role', 'alert');
-      warning.style.cssText = 'margin:12px 0;padding:14px 16px;border:1px solid #e5b94c;border-radius:12px;background:#fff8e6;color:#604600;font-weight:600;';
-      const dashboard = document.getElementById('dashboard');
-      if (dashboard) dashboard.insertBefore(warning, dashboard.firstChild);
-    }
-    warning.textContent = 'Some school portal sections could not finish loading. Refresh this page once. If the problem continues, contact the platform administrator; your records have not been reset by this message.';
+    // Keep the dashboard and its existing sections mounted; never inject a generic
+    // warning panel that users can mistake for lost data. Details remain in console.
+    console.error('[School Welfare] Workflow initialization deferred/failed:',workflowError?.message||workflowError);
   }
   const duesMetric=$('standardDuesMetric'),duesInput=$('wfMonthlyDues');if(duesMetric&&duesInput){const updateDues=()=>{duesMetric.textContent='GHS '+money(duesInput.value||0);};updateDues();duesInput.addEventListener('input',updateDues);}
  $('downloadSchoolPdf').onclick=()=>{if(!window.html2pdf){alert('PDF library is unavailable. Please check your internet connection.');return;}const report=document.createElement('div');report.style.cssText='padding:24px;color:#182235;font-family:Arial,sans-serif;background:white';report.innerHTML='<h1 style="color:#0b1d3a">'+escapeHtml(school.name)+'</h1><p>School Welfare Fund — Summary Statement</p><p>School code: '+escapeHtml(school.school_code)+' | Generated: '+new Date().toLocaleString()+'</p><hr><h2>Fund summary</h2><p>Registered teachers: '+escapeHtml($('teacherCount').textContent)+'</p><p>Total contributions: GHS '+escapeHtml($('contributionTotal').textContent)+'</p><p>Total welfare payouts: GHS '+escapeHtml($('payoutTotal').textContent)+'</p><p><strong>Net fund balance: GHS '+escapeHtml($('netTotal').textContent)+'</strong></p><h2>Teacher register</h2>'+document.querySelector('#schoolTeachers table').outerHTML;window.html2pdf().set({margin:10,filename:(school.school_code||'school')+'-welfare-summary.pdf',image:{type:'jpeg',quality:.96},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:'landscape'}}).from(report).save();};
@@ -1283,7 +1286,7 @@ client.auth.onAuthStateChange((event,session)=>{
 client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
 })();
 </script>
-<script src="school-portal-workflows.js?v=220ff33fe05d41de6a6fd8f1c038a45c453dc48e"></script>
+<script src="school-portal-workflows.js?v=9032fd88f86c6b7a6d8658c280839399b7f3b59a"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
