@@ -63,6 +63,38 @@ function addUI(){
 #wfAdminPanel .wf-restricted-badge{display:inline-flex;align-items:center;gap:6px;margin-left:4px;padding:6px 10px;border:1px solid rgba(255,220,114,.42);border-radius:999px;background:rgba(230,190,65,.12);color:#ffdc72;font-size:.7rem;letter-spacing:.03em;white-space:nowrap}\n #wfAdminPanel .wf-admin-status{display:inline-flex;align-items:center;gap:7px;padding:8px 11px;border-radius:999px;background:#ecfdf5;color:#047857;font-weight:850;font-size:.76rem}
 #wfAdminPanel .grid{gap:15px}
 @media(max-width:600px){#wfAdminPanel .panel{padding:16px!important}#wfAdminPanel h3{font-size:1rem}#wfAdminPanel h3:before{width:34px;height:34px;flex-basis:34px}#wfAdminPanel .wf-admin-status{width:max-content}#wfAdminPanel .grid{grid-template-columns:1fr}}
+
+/* Unified administration styling: apply to every workflow panel, not only the hero wrapper. */
+#workflows .panel{background:#fff;color:#07122b;border:1px solid rgba(148,163,184,.18);border-radius:16px;box-shadow:0 18px 42px rgba(7,18,43,.18);padding:22px;min-width:0}
+#workflows .panel h3{display:flex;align-items:center;gap:11px;color:#07122b;font-size:1.04rem;font-weight:850;letter-spacing:-.025em;line-height:1.35;margin:0 0 10px}
+#workflows .panel h3:before{font-family:"Font Awesome 6 Free";font-weight:900;display:inline-grid;place-items:center;width:38px;height:38px;flex:0 0 38px;border-radius:11px;background:#eff6ff;color:#1d4ed8;font-size:16px}
+#workflows #wfBroadcastPanel h3:before{content:"\\f0a1";background:#f3e8ff;color:#7e22ce}
+#workflows #wfSettingsPanel h3:before{content:"\\f1de";background:#eff6ff;color:#1d4ed8}
+#workflows #wfAdminAccessPanel h3:before{content:"\\f084";background:#eff6ff;color:#1d4ed8}
+#workflows #wfAdminUsersPanel h3:before{content:"\\f2bd";background:#ecfdf5;color:#059669}
+#workflows #wfTeacherPanel h3:before{content:"\\f234";background:#ecfdf5;color:#059669}
+#workflows #wfContributionPanel h3:before{content:"\\f4b9";background:#ecfdf5;color:#059669}
+#workflows #wfPayoutPanel h3:before,#workflows #wfResetDataPanel h3:before{content:"\\f071";background:#fff1f2;color:#e11d48}
+#workflows #wfLedgerPanel h3:before{content:"\\f03a"}
+#workflows #wfStatementPanel h3:before,#workflows #wfReportsPanel h3:before{content:"\\f15c"}
+#workflows #wfAuditPanel h3:before{content:"\\f1da"}
+#workflows #wfMemberSummaryPanel h3:before{content:"\\f0c0"}
+#workflows input,#workflows select,#workflows textarea{width:100%;min-height:44px;padding:11px 13px;border:1px solid #dbe2ec;border-radius:11px;background:#fff;color:#0f172a;box-shadow:none;transition:border-color .18s,box-shadow .18s,background .18s}
+#workflows input:focus,#workflows select:focus,#workflows textarea:focus{outline:0;border-color:#818cf8;box-shadow:0 0 0 3px rgba(99,102,241,.13)}
+#workflows button{border:1px solid transparent;border-radius:10px;min-height:42px;padding:10px 15px;background:#07122b;color:#fff;font-weight:800;box-shadow:0 5px 12px rgba(7,18,43,.12);transition:transform .18s,filter .18s,box-shadow .18s}
+#workflows button:hover:not(:disabled){filter:brightness(1.06);transform:translateY(-1px);box-shadow:0 8px 18px rgba(7,18,43,.15)}
+#workflows button.secondary{background:#f1f5f9;color:#1e293b;border-color:#e2e8f0;box-shadow:none}
+#workflows #wfBroadcastForm button[type=submit]{background:linear-gradient(120deg,#7c3aed,#4f46e5)}
+#workflows #wfInviteAdminForm button[type=submit],#workflows #wfTeacherSave,#workflows #wfContribution button[type=submit],#workflows #wfDuesForm button[type=submit]{background:#059669}
+#workflows #wfPayout button[type=submit],#workflows #wfResetDataForm button[type=submit]{background:linear-gradient(120deg,#e11d48,#be123c)}
+#workflows #wfAdminAccessPanel button[type=submit],#workflows #wfSettingsPanel button[type=submit]{background:linear-gradient(120deg,#123a76,#07122b)}
+#workflows .wf-data-protection{border-radius:12px}
+#workflows table{width:100%;border-collapse:separate;border-spacing:0;border-radius:12px;overflow:hidden}
+#workflows th{background:#f1f5f9;color:#334155;font-weight:850}
+#workflows th,#workflows td{padding:12px;border-bottom:1px solid #e8edf4}
+#workflows tbody tr:hover{background:#f8fafc}
+@media(max-width:600px){#workflows .panel{padding:16px}#workflows .panel h3{font-size:1rem}#workflows .panel h3:before{width:34px;height:34px;flex-basis:34px}#workflows .grid{grid-template-columns:1fr}}
+
 </style>
  <section class="wf-admin-hub" id="wfAdminPanel"><div class="panel wf-admin-intro"><div class="wf-admin-intro-top"><div><div class="wf-admin-eyebrow"><i class="fa-solid fa-shield-halved"></i> Secure administration</div><h2>Administration Panel <span class="wf-restricted-badge"><i class="fa-solid fa-lock"></i> Restricted Access</span></h2><p>Manage this school’s members, contributions, monthly dues, welfare payouts, announcements and reports from one organised workspace.</p></div><span class="wf-admin-status"><i class="fa-solid fa-circle-check"></i> Admin mode active</span></div><div class="wf-admin-shortcuts"><span><i class="fa-solid fa-users"></i> Members</span><span><i class="fa-solid fa-coins"></i> Contributions</span><span><i class="fa-solid fa-hand-holding-heart"></i> Welfare</span><span><i class="fa-solid fa-file-lines"></i> Reports</span></div></div>
  <div class="panel" id="wfAdminAccessPanel"><h3>Administrator access &amp; recovery</h3><p class="muted">Change the password for the administrator currently signed in. New administrator invitations remain managed through the secure platform onboarding process; use <strong>Forgot password?</strong> on the school sign-in page for account recovery.</p><form id="wfChangePasswordForm" class="grid"><div><label for="wfCurrentAdminPassword">Current password</label><input id="wfCurrentAdminPassword" type="password" autocomplete="current-password" required></div><div><label for="wfNewAdminPassword">New password</label><input id="wfNewAdminPassword" type="password" autocomplete="new-password" minlength="10" maxlength="128" required><small class="muted">Use at least 10 characters.</small></div><div><label for="wfConfirmAdminPassword">Confirm new password</label><input id="wfConfirmAdminPassword" type="password" autocomplete="new-password" minlength="10" maxlength="128" required></div><div style="align-self:end"><button type="submit"><i class="fa-solid fa-key"></i> Update my password</button></div></form><p id="wfPasswordMsg" class="muted" role="status" aria-live="polite"></p><div class="wf-data-protection"><strong><i class="fa-solid fa-lock"></i> Account security</strong><p class="muted">Administrator access is linked to this school. Account invitations and deactivation are verified server-side.</p></div></div>
