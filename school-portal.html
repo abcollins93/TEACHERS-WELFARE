@@ -1329,21 +1329,33 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
       dashboardRoot.classList.toggle('audit-trail-open', isAuditTarget);
     }
     if (auditView) auditView.classList.toggle('hidden', !isAuditTarget);
-    let notice = document.getElementById('sidebarNavigationNotice');
+    // Workflow panels are mounted asynchronously after the authenticated school
+    // record is loaded. A fast navigation click must wait for that mount instead
+    // of injecting a scary fallback warning into the dashboard.
+    const pendingNotice = document.getElementById('sidebarNavigationNotice');
+    if (pendingNotice) pendingNotice.remove();
     if (!target) {
-      if (!notice) {
-        notice = document.createElement('div');
-        notice.id = 'sidebarNavigationNotice';
-        notice.setAttribute('role', 'status');
-        notice.style.cssText = 'margin:12px 0;padding:12px 14px;border:1px solid #e5b94c;border-radius:10px;background:#fff8e6;color:#604600;font-weight:600;';
-        const dashboard = document.getElementById('dashboard');
-        if (dashboard) dashboard.insertBefore(notice, dashboard.firstChild);
+      const requestedId = button.dataset.target;
+      const attempts = Number(button.dataset.mountAttempts || 0);
+      if (attempts < 20 && document.getElementById('dashboard') && !document.getElementById('dashboard').classList.contains('hidden')) {
+        button.dataset.mountAttempts = String(attempts + 1);
+        window.setTimeout(function () {
+          button.dataset.mountAttempts = '0';
+          if (document.getElementById(requestedId)) button.click();
+          else if (attempts + 1 < 20) button.click();
+          else {
+            const overview = document.getElementById('schoolOverview');
+            if (overview) overview.scrollIntoView({behavior:'smooth',block:'start'});
+          }
+        }, 150);
+      } else {
+        button.dataset.mountAttempts = '0';
+        const overview = document.getElementById('schoolOverview');
+        if (overview) overview.scrollIntoView({behavior:'smooth',block:'start'});
       }
-      notice.textContent = 'This section has not loaded yet. Refresh the portal once; if it still does not appear, contact the platform administrator.';
-      if (notice) notice.scrollIntoView({behavior:'smooth',block:'start'});
       return;
     }
-    if (notice) notice.remove();
+    button.dataset.mountAttempts = '0';
     target.style.scrollMarginTop = '18px';
     target.scrollIntoView({behavior:'smooth',block:'start'});
     if (typeof target.focus === 'function') {
