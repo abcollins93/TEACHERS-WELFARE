@@ -1340,7 +1340,6 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
       if (attempts < 20 && document.getElementById('dashboard') && !document.getElementById('dashboard').classList.contains('hidden')) {
         button.dataset.mountAttempts = String(attempts + 1);
         window.setTimeout(function () {
-          button.dataset.mountAttempts = '0';
           if (document.getElementById(requestedId)) button.click();
           else if (attempts + 1 < 20) button.click();
           else {
