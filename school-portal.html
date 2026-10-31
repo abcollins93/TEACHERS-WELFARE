@@ -298,6 +298,10 @@ body{font-family:'Plus Jakarta Sans',Inter,system-ui,sans-serif;font-variant-num
 
 <style id="admin-workspace-visibility">
 /* Management and audit are independent views. Audit stays hidden unless its own sidebar item is selected. */
+#dashboard.admin-workspace-open #workflows{display:block!important;visibility:visible!important}
+#dashboard.admin-workspace-open #wfAdminPanel{display:flex!important;visibility:visible!important}
+#dashboard.admin-workspace-open #wfAdminPanel>.panel{display:block!important;visibility:visible!important}
+
 #dashboard #wfAdminPanel{display:none!important}
 #dashboard.admin-workspace-open #wfAdminPanel{display:block!important}
 #dashboard #wfAuditView{display:none!important}
@@ -1373,9 +1377,26 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
     target.style.scrollMarginTop = '18px';
     if (isAdminWorkspaceTarget) {
       const workflowRoot = document.getElementById('workflows');
-      if (workflowRoot) workflowRoot.classList.remove('hidden');
-      target.style.display = 'block';
+      // The workflow bundle is mounted dynamically after sign-in. Explicitly
+      // reveal both its container and the admin hub so inherited/inline hidden
+      // states cannot leave the sidebar click looking like it did nothing.
+      if (workflowRoot) {
+        workflowRoot.classList.remove('hidden');
+        workflowRoot.style.setProperty('display','block','important');
+        workflowRoot.style.setProperty('visibility','visible','important');
+      }
+      target.classList.remove('hidden');
+      target.style.setProperty('display','block','important');
+      target.style.setProperty('visibility','visible','important');
       target.setAttribute('aria-hidden','false');
+      target.querySelectorAll('.panel').forEach(function(panel){
+        panel.classList.remove('hidden');
+        panel.style.removeProperty('display');
+        panel.setAttribute('aria-hidden','false');
+      });
+      // Keep the dashboard summary out of the way while the admin workspace is open.
+      const overview = document.getElementById('schoolOverview');
+      if (overview) overview.style.setProperty('display','none','important');
     }
     void target.offsetHeight;
     target.scrollIntoView({behavior:'smooth',block:'start'});
