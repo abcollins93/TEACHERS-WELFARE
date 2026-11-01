@@ -1292,6 +1292,47 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
 </script>
 <script src="school-portal-workflows.js?v=9032fd88f86c6b7a6d8658c280839399b7f3b59a"></script>
 <script>
+/* Admin workspace navigation hardening: reveal the workflow ancestors and admin hub together. */
+(function(){
+  'use strict';
+  document.addEventListener('click', function(event){
+    const button = event.target.closest('#schoolSidebar .navbtn[data-target="wfAdminPanel"]');
+    if (!button) return;
+    const dashboard = document.getElementById('dashboard');
+    const workflows = document.getElementById('workflows');
+    const admin = document.getElementById('wfAdminPanel');
+    if (!dashboard || !workflows || !admin) return;
+    dashboard.classList.remove('audit-trail-open');
+    dashboard.classList.add('admin-workspace-open');
+    workflows.classList.remove('hidden');
+    workflows.style.setProperty('display','block','important');
+    workflows.style.setProperty('visibility','visible','important');
+    admin.classList.remove('hidden');
+    admin.style.setProperty('display','flex','important');
+    admin.style.setProperty('visibility','visible','important');
+    admin.setAttribute('aria-hidden','false');
+    const overview = document.getElementById('schoolOverview');
+    if (overview) overview.style.setProperty('display','none','important');
+    const auditView = document.getElementById('wfAuditView');
+    if (auditView) {
+      auditView.classList.add('hidden');
+      auditView.style.setProperty('display','none','important');
+      auditView.setAttribute('aria-hidden','true');
+    }
+    admin.querySelectorAll('.panel').forEach(function(panel){
+      panel.classList.remove('hidden');
+      panel.style.setProperty('display','block','important');
+      panel.style.setProperty('visibility','visible','important');
+      panel.setAttribute('aria-hidden','false');
+    });
+    window.requestAnimationFrame(function(){
+      admin.scrollIntoView({behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block:'start'});
+      if (!admin.hasAttribute('tabindex')) admin.setAttribute('tabindex','-1');
+      admin.focus({preventScroll:true});
+    });
+  }, true);
+})();
+
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
   'use strict';
