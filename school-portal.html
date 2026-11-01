@@ -303,7 +303,7 @@ body{font-family:'Plus Jakarta Sans',Inter,system-ui,sans-serif;font-variant-num
 #dashboard.admin-workspace-open #wfAdminPanel>.panel{display:block!important;visibility:visible!important}
 
 #dashboard #wfAdminPanel{display:none!important}
-#dashboard.admin-workspace-open #wfAdminPanel{display:block!important}
+#dashboard.admin-workspace-open #wfAdminPanel{display:block!important;visibility:visible!important;min-height:80vh;margin-top:calc(var(--app-header-height, 0px) + var(--dashboard-menu-height, 0px) + 18px)!important;scroll-margin-top:calc(var(--app-header-height, 0px) + var(--dashboard-menu-height, 0px) + 18px)}
 #dashboard #wfAuditView{display:none!important}
 #dashboard.audit-trail-open #wfAuditView{display:block!important}
 #dashboard.audit-trail-open #schoolOverview,
@@ -1451,10 +1451,24 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
       target.style.setProperty('display','block','important');
       target.style.setProperty('visibility','visible','important');
       target.setAttribute('aria-hidden','false');
+      // Explicit Admin Panel router: reveal the existing admin container and
+      // every management card even if an earlier render left inline hidden styles.
+      target.style.setProperty('display','block','important');
+      target.style.setProperty('visibility','visible','important');
+      target.style.minHeight='80vh';
+      target.style.marginTop='calc(var(--app-header-height, 0px) + var(--dashboard-menu-height, 0px) + 18px)';
+      target.setAttribute('aria-hidden','false');
       target.querySelectorAll('.panel').forEach(function(panel){
+        if (panel.closest('#wfAuditView') || panel.id === 'wfAuditPanel') return;
         panel.classList.remove('hidden');
-        panel.style.removeProperty('display');
-        panel.setAttribute('aria-hidden','false');
+        panel.style.setProperty('display','block','important');
+        panel.style.setProperty('visibility','visible','important');
+        panel.removeAttribute('aria-hidden');
+        panel.querySelectorAll('.hidden').forEach(function(child){
+          child.classList.remove('hidden');
+          child.style.removeProperty('display');
+          child.removeAttribute('aria-hidden');
+        });
       });
       // Keep the dashboard summary out of the way while the admin workspace is open.
       const overview = document.getElementById('schoolOverview');
