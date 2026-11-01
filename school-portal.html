@@ -883,6 +883,13 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
 }
 @media(max-width:600px){#wfAdminPanel .wf-admin-intro:before{right:-205px;bottom:-270px}#wfAdminPanel .wf-admin-intro:after{right:-185px;top:-200px}}
 </style>
+
+<style id="admin-live-indicator-style">
+.live-indicator{width:8px;height:8px;background-color:#10B981;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:middle;flex:0 0 8px;animation:liveIndicatorPulse 1.6s ease-in-out infinite;box-shadow:0 0 0 0 rgba(16,185,129,.42)}
+@keyframes liveIndicatorPulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(16,185,129,.35)}50%{opacity:.45;box-shadow:0 0 0 5px rgba(16,185,129,0)}}
+@media(prefers-reduced-motion:reduce){.live-indicator{animation:none;opacity:1;box-shadow:none}}
+</style>
+
 </head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading page">
@@ -1618,6 +1625,28 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
  body:not(:has(#login:not(.hidden))) main{padding-top:calc(var(--unified-header-height,116px) + 16px)!important}
 }
 </style>
+
+
+<script id="admin-live-indicator-init">
+(function(){
+  function addLiveDot(){
+    document.querySelectorAll('.overview-top .eyebrow, .app-header-group .eyebrow').forEach(function(el){
+      if(el.querySelector('.live-indicator')) return;
+      var label=(el.textContent||'').replace(/\\s+/g,' ').trim();
+      if(!/^HI,\\s*ADMIN!?$/i.test(label)) return;
+      var dot=document.createElement('span');
+      dot.className='live-indicator';
+      dot.setAttribute('aria-hidden','true');
+      el.insertBefore(dot,el.firstChild);
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',addLiveDot);
+  else addLiveDot();
+  if('MutationObserver' in window){
+    new MutationObserver(addLiveDot).observe(document.documentElement,{childList:true,subtree:true});
+  }
+})();
+</script>
 
 </body></html>
 
