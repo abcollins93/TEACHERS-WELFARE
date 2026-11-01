@@ -1319,11 +1319,25 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
       auditView.style.setProperty('display','none','important');
       auditView.setAttribute('aria-hidden','true');
     }
-    admin.querySelectorAll('.panel').forEach(function(panel){
+    // The administration workspace spans several workflow panels, not only
+    // the introductory hub. Reveal all management forms together so the
+    // sidebar item opens the complete administration workspace.
+    workflows.querySelectorAll('.panel').forEach(function(panel){
+      if (panel.closest('#wfAuditView') || panel.id === 'wfAuditPanel') {
+        panel.classList.add('hidden');
+        panel.style.setProperty('display','none','important');
+        panel.setAttribute('aria-hidden','true');
+        return;
+      }
       panel.classList.remove('hidden');
       panel.style.setProperty('display','block','important');
       panel.style.setProperty('visibility','visible','important');
       panel.setAttribute('aria-hidden','false');
+    });
+    workflows.querySelectorAll('#wfAuditView').forEach(function(view){
+      view.classList.add('hidden');
+      view.style.setProperty('display','none','important');
+      view.setAttribute('aria-hidden','true');
     });
     window.requestAnimationFrame(function(){
       admin.scrollIntoView({behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block:'start'});
