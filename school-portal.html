@@ -1286,7 +1286,7 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
    console.log('Teacher profile record lookup:',{found:!!teacherRecord,error:teacherRecordError?.message||null});
    if(teacherRecord){teacherName=teacherRecord.name||teacherName;teacherAvatar=teacherRecord.passport||null;}
   }catch(teacherReadError){console.warn('Optional teacher profile details could not be loaded:',teacherReadError?.message||teacherReadError);}
-  const teacherFirstName=String(teacherName||staffId).trim().split(/\\s+/)[0]||'Teacher';
+  const teacherFirstName=String(teacherName||staffId).trim().split(/\s+/)[0]||'Teacher';
   const greeting=document.getElementById('dashboardGreeting');
   if(greeting)greeting.textContent='Hi, '+teacherFirstName+'!';
   setHeaderProfile(sessionData.user,teacherName,'Teacher',teacherAvatar);
