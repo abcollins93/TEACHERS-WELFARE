@@ -244,7 +244,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    if(!teacher)return msg('wfTeacherMsg','That teacher is no longer in the loaded roster. Refresh and try again.',true);
    if(teacher.is_active===false)return msg('wfTeacherMsg','Restore this teacher first, then activate the sign-in.',true);
    const isReset=button.textContent.toLowerCase().includes('reset');
-   if(!confirm((isReset?'Create or reset':'Activate')+' the secure sign-in for '+teacher.name+' ('+teacher.id+')? A new one-time temporary password will be generated and any previous password will stop working. Share it privately with the teacher.'))return;
+   if(!confirm((isReset?'Create or reset':'Activate')+' the secure sign-in for '+teacher.name+' ('+teacher.id+')? The teacher’s Staff ID ('+teacher.id+') will be set as the temporary login password, and any previous password will stop working. Share the Staff ID privately; the teacher must change it after signing in.'))return;
    button.disabled=true;msg('wfTeacherMsg','Securing teacher sign-in…');
    try{
      const {data,error}=await client.functions.invoke('provision-teacher-account',{body:{school_id:ctx.id,teacher_id:teacher.id}});
