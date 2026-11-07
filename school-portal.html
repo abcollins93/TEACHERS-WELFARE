@@ -1092,8 +1092,14 @@ async async function renderTeacherDashboard(profile,school){
   const target=btn.dataset.target;
   const restricted=navRules.some(([id])=>id===target);
   btn.classList.toggle('role-restricted',restricted);
-  if(restricted){btn.setAttribute('aria-disabled','true');btn.title='Restricted Access — school administrators only';}
-  else{btn.removeAttribute('aria-disabled');btn.removeAttribute('title');}
+  if(restricted){
+   btn.setAttribute('aria-disabled','true');btn.title='Restricted Access — school administrators only';
+   btn.style.opacity='.62';btn.style.cursor='not-allowed';
+   if(!btn.querySelector('.role-lock-icon')){const lock=document.createElement('i');lock.className='fa-solid fa-lock role-lock-icon';lock.setAttribute('aria-hidden','true');lock.style.marginLeft='auto';btn.appendChild(lock);}
+  }else{
+   btn.removeAttribute('aria-disabled');btn.removeAttribute('title');btn.style.removeProperty('opacity');btn.style.removeProperty('cursor');
+   btn.querySelector('.role-lock-icon')?.remove();
+  }
  });
  // Keep a consistent sidebar but route teachers only to their own profile and records.
  let host=$('schoolOverview')?.parentElement;
@@ -1570,6 +1576,11 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
       return;
     }
 
+    if(window.__welfareCurrentRole==='teacher'){
+      ['schoolOverview','wfTeacherPanel','wfContributionPanel','wfPayoutPanel','wfStatementPanel'].forEach(id=>{
+        const panel=document.getElementById(id);if(panel)panel.classList.toggle('hidden',panel!==target);
+      });
+    }
     const isAdminWorkspaceTarget = target.id === 'wfAdminPanel';
     const isAuditTarget = target.id === 'wfAuditPanel' || requestedId === 'wfAuditPanel';
     if (dashboardRoot) {
