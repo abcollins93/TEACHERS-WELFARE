@@ -251,7 +251,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      if(error||!data?.ok)throw new Error(data?.error||error?.message||'Teacher sign-in could not be activated.');
      await audit(client,ctx,'Activate/reset teacher sign-in','Secure teacher account activated/reset for Staff ID '+teacher.id+'.',teacher.id);
      msg('wfTeacherMsg','Sign-in activated for '+teacher.name+'. Temporary password is shown once in the next message.');
-     alert('TEACHER SIGN-IN ACTIVATED\\nSchool: '+ctx.name+'\\nTeacher: '+data.teacher_name+'\\nStaff ID: '+data.staff_id+'\\nTemporary password: '+data.temporary_password+'\\n\\nShare this password privately. The teacher must change it after signing in.');
+     alert('TEACHER SIGN-IN ACTIVATED\\nSchool: '+ctx.name+'\\nTeacher: '+data.teacher_name+'\\nStaff ID: '+data.staff_id+'\\nTemporary password: '+data.initial_password+'\\n\\nShare this password privately. The teacher must change it after signing in.');
    }catch(error){msg('wfTeacherMsg',error.message||'Teacher sign-in could not be activated. No success was assumed.',true);}
    finally{button.disabled=false;}
  });
