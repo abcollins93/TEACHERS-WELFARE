@@ -1303,10 +1303,31 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
     if(np.length>128){msg.textContent='Password must not exceed 128 characters.';return;}
     if(np!==cp){msg.textContent='Passwords do not match.';return;}
     msg.textContent='Updating password…';
-    const {data:changeResult,error:changeError}=await client.functions.invoke('teacher-account-security',{body:{action:'change_password',password:np}});
-    if(changeError||!changeResult?.ok){msg.textContent=changeResult?.error||'Password change failed. Please try again.';return;}
-    p.must_change_password=false;
-    renderTeacherDashboard(p,school);
+    const saveButton=ev.submitter;
+    if(saveButton)saveButton.disabled=true;
+    try{
+     const {data:changeResult,error:changeError}=await client.functions.invoke('teacher-account-security',{body:{action:'change_password',password:np}});
+     let serverDetail=null;
+     if(changeError){
+      try{
+       if(changeError.context&&typeof changeError.context.json==='function')serverDetail=await changeError.context.json();
+      }catch(parseError){console.warn('Could not read password service error response:',parseError);}
+     }
+     if(changeError||!changeResult?.ok){
+      const reason=serverDetail?.error||changeResult?.error||changeError?.message||'Password service returned an unsuccessful response.';
+      console.error('Password update error:',serverDetail||changeResult||changeError);
+      msg.textContent=reason;
+      return;
+     }
+     p.must_change_password=false;
+     msg.textContent='Password updated successfully.';
+     renderTeacherDashboard(p,school);
+    }catch(passwordError){
+     console.error('Password update error:',passwordError?.message||passwordError);
+     msg.textContent=passwordError?.message||'Password update failed. Please try again.';
+    }finally{
+     if(saveButton)saveButton.disabled=false;
+    }
    });
    document.getElementById('teacherSignOut').addEventListener('click',async()=>{
     await client.auth.signOut();teacherDash.classList.add('hidden');$('login').classList.remove('hidden');
