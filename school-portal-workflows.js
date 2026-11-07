@@ -37,7 +37,6 @@ function addUI(){
 #wfSettingsPanel h3:before{content:"\\f1de";background:#eff6ff;color:#1d4ed8}
 #wfReportsPanel h3:before{content:"\\f1c1"}
 #wfAuditPanel h3:before{content:"\\f1da"}
-#wfMemberSummaryPanel h3:before{content:"\\f0c0"}
 #wfAdminPanel p.muted{color:#64748b!important;line-height:1.65}
 #wfAdminPanel label{color:#17233b;font-weight:750;margin:13px 0 7px}
 #wfAdminPanel input,#wfAdminPanel select,#wfAdminPanel textarea{width:100%;min-height:44px;padding:11px 13px!important;border:1px solid #dbe2ec!important;border-radius:11px!important;background:#fff!important;color:#0f172a!important;box-shadow:none;transition:border-color .18s,box-shadow .18s}
@@ -78,7 +77,6 @@ function addUI(){
 #workflows #wfLedgerPanel h3:before{content:"\\f03a"}
 #workflows #wfStatementPanel h3:before,#workflows #wfReportsPanel h3:before{content:"\\f15c"}
 #workflows #wfAuditPanel h3:before{content:"\\f1da"}
-#workflows #wfMemberSummaryPanel h3:before{content:"\\f0c0"}
 #workflows input,#workflows select,#workflows textarea{width:100%;min-height:44px;padding:11px 13px;border:1px solid #dbe2ec;border-radius:11px;background:#fff;color:#0f172a;box-shadow:none;transition:border-color .18s,box-shadow .18s,background .18s}
 #workflows input:focus,#workflows select:focus,#workflows textarea:focus{outline:0;border-color:#818cf8;box-shadow:0 0 0 3px rgba(99,102,241,.13)}
 #workflows button{border:1px solid transparent;border-radius:10px;min-height:42px;padding:10px 15px;background:#07122b;color:#fff;font-weight:800;box-shadow:0 5px 12px rgba(7,18,43,.12);transition:transform .18s,filter .18s,box-shadow .18s}
