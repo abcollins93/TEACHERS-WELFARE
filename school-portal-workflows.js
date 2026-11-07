@@ -93,6 +93,54 @@ function addUI(){
 #workflows tbody tr:hover{background:#f8fafc}
 @media(max-width:600px){#workflows .panel{padding:16px}#workflows .panel h3{font-size:1rem}#workflows .panel h3:before{width:34px;height:34px;flex-basis:34px}#workflows .grid{grid-template-columns:1fr}}
 
+
+/* Premium navy hero card: aligned with the dashboard solidarity hero. */
+#wfAdminPanel .wf-admin-intro{
+  position:relative!important;isolation:isolate!important;overflow:hidden!important;
+  border-radius:1.5rem!important;padding:clamp(24px,4vw,40px)!important;
+  border:1px solid rgba(214,173,82,.38)!important;
+  background:radial-gradient(circle at 88% 14%,rgba(82,112,210,.25) 0%,transparent 38%),
+             radial-gradient(circle at 12% 100%,rgba(30,64,120,.28) 0%,transparent 42%),
+             linear-gradient(135deg,#0d1b2a 0%,#1b263b 60%,#0f172a 100%)!important;
+  color:#fff!important;box-shadow:0 20px 48px rgba(7,18,43,.22)!important;
+}
+#wfAdminPanel .wf-admin-intro::before{
+  content:"";position:absolute;z-index:-1;width:420px;height:420px;right:-155px;bottom:-285px;
+  border:1px solid rgba(185,199,255,.18);border-radius:50%;
+  box-shadow:0 0 0 24px rgba(157,174,255,.035),0 0 0 52px rgba(157,174,255,.025),0 0 0 82px rgba(157,174,255,.018);
+  pointer-events:none;
+}
+#wfAdminPanel .wf-admin-intro .wf-admin-eyebrow{
+  display:inline-flex;align-items:center;gap:9px;width:max-content;max-width:100%;
+  padding:9px 16px;margin:0 0 16px;border:1px solid rgba(245,179,45,.48);
+  border-radius:999px;background:rgba(120,76,8,.20);color:#fbbf24!important;
+  font-size:.75rem;font-weight:850;letter-spacing:.09em;text-transform:uppercase;
+}
+#wfAdminPanel .wf-admin-intro .wf-admin-eyebrow i{color:#fbbf24!important}
+#wfAdminPanel .wf-admin-intro h2{
+  display:block!important;color:#fff!important;font-size:clamp(1.7rem,3.6vw,2.45rem);
+  line-height:1.12;font-weight:900!important;letter-spacing:-.045em;text-wrap:balance;
+}
+#wfAdminPanel .wf-admin-intro p{color:#cbd5e1!important;line-height:1.75}
+#wfAdminPanel .wf-admin-intro .wf-restricted-badge{
+  display:inline-flex;vertical-align:middle;margin:8px 0 0 5px;
+  border:1px solid rgba(245,179,45,.42);border-radius:999px;
+  background:rgba(120,76,8,.18);color:#fbbf24!important;
+}
+#wfAdminPanel .wf-admin-intro .wf-admin-status{
+  background:rgba(16,185,129,.13)!important;border:1px solid rgba(52,211,153,.32)!important;
+  color:#a7f3d0!important;
+}
+#wfAdminPanel .wf-admin-intro .wf-admin-shortcuts span{
+  background:rgba(255,255,255,.07)!important;border:1px solid rgba(255,255,255,.13)!important;
+  color:#e2e8f0!important;
+}
+#wfAdminPanel .wf-admin-intro .wf-admin-shortcuts i{color:#fbbf24!important}
+@media(max-width:600px){
+  #wfAdminPanel .wf-admin-intro{border-radius:1.5rem!important;padding:24px 19px!important}
+  #wfAdminPanel .wf-admin-intro .wf-admin-status{width:max-content}
+}
+
 </style>
  <section class="wf-admin-hub" id="wfAdminPanel"><div class="panel wf-admin-intro"><div class="wf-admin-intro-top"><div><div class="wf-admin-eyebrow"><i class="fa-solid fa-shield-halved"></i> Secure administration</div><h2>Administration Panel <span class="wf-restricted-badge"><i class="fa-solid fa-lock"></i> Restricted Access</span></h2><p>Manage this school’s members, contributions, monthly dues, welfare payouts, announcements and reports from one organised workspace.</p></div><span class="wf-admin-status"><i class="fa-solid fa-circle-check"></i> Admin mode active</span></div><div class="wf-admin-shortcuts"><span><i class="fa-solid fa-users"></i> Members</span><span><i class="fa-solid fa-coins"></i> Contributions</span><span><i class="fa-solid fa-hand-holding-heart"></i> Welfare</span><span><i class="fa-solid fa-file-lines"></i> Reports</span></div></div>
  <div class="panel" id="wfBroadcastPanel"><h3>School announcement</h3><p class="muted">Publish a school-scoped message for the portal. The message is stored with this school’s settings.</p><form id="wfBroadcastForm"><label for="wfBroadcastText">Announcement message</label><textarea id="wfBroadcastText" maxlength="500" rows="3" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;font:inherit" placeholder="Enter an important welfare fund announcement"></textarea><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="submit">Publish announcement</button><button id="wfBroadcastClear" class="secondary" type="button">Clear announcement</button></div></form><p id="wfBroadcastMsg" class="muted" role="status"></p></div>
