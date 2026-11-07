@@ -231,14 +231,79 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  }
  const reversed=new Set(reversals.map(r=>r.transaction_type+':'+r.transaction_id));
  const activeCons=cons.filter(x=>!reversed.has('contribution:'+x.id)), activePays=pays.filter(x=>!reversed.has('payout:'+x.id));
+
  const teacherById=new Map(teachers.map(t=>[String(t.id),t]));
+ let selectedProfileTeacherId=teachers[0]?String(teachers[0].id):'';
+ const profileHost=$('schoolOverview')?.parentElement;
+ if(profileHost){
+  document.getElementById('teacherProfileViewer')?.remove();
+  const p=document.createElement('section');p.id='teacherProfileViewer';p.className='panel hidden';p.style.cssText='margin-top:18px;padding:clamp(16px,2.4vw,28px)';
+  p.innerHTML=`
+   <header style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:20px">
+    <div><h2 style="margin:0 0 6px">Teacher Profile</h2><p class="muted" style="margin:0">Comprehensive personal, professional, and membership overview.</p></div>
+    <button type="button" id="teacherProfilePrint" class="secondary"><i class="fa-solid fa-file-pdf"></i> Print / Download Profile Statement</button>
+   </header>
+   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px"><label for="teacherProfileSelect" style="margin:0">Select teacher</label><select id="teacherProfileSelect" style="max-width:360px"></select></div>
+   <div id="teacherProfileContent" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px">
+    <article class="panel" style="margin:0;text-align:center;padding:24px;position:relative">
+     <span id="tpStatus" style="position:absolute;right:15px;top:15px;border-radius:99px;padding:6px 11px;font-size:.72rem;font-weight:800"></span>
+     <div id="tpAvatar" style="width:104px;height:104px;border-radius:24px;margin:18px auto 14px;display:grid;place-items:center;background:linear-gradient(145deg,#142746,#071326);color:#f1ce78;font-size:2rem;font-weight:900">—</div>
+     <h3 id="tpName" style="margin:0 0 5px">—</h3><p id="tpRank" class="muted">—</p><strong id="tpStaffId">—</strong>
+     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;border-top:1px solid var(--line);margin-top:20px;padding-top:15px;text-align:left">
+      <div><small class="muted">REGISTRATION DATE</small><strong id="tpRegistration">—</strong></div><div><small class="muted">MEMBERSHIP TYPE</small><strong id="tpMembership">—</strong></div>
+     </div>
+    </article>
+    <article class="panel" style="margin:0;padding:22px"><h3><i class="fa-solid fa-address-card"></i> Personal &amp; Contact Information</h3><div id="tpPersonalRows" class="tp-fields"></div><p class="muted">To update your official personal or contact information, contact the Executive Administrator.</p><button type="button" class="secondary" id="tpEditContact">Edit Contact Info</button></article>
+    <article class="panel" style="margin:0;padding:22px"><h3><i class="fa-solid fa-briefcase"></i> Professional &amp; Employment Details</h3><div id="tpProfessionalRows" class="tp-fields"></div></article>
+    <article class="panel" style="margin:0;padding:22px"><h3><i class="fa-solid fa-hand-holding-heart"></i> Welfare Membership &amp; Financial Summary</h3><div id="tpFinanceRows"></div></article>
+   </div>
+   <style>
+    #teacherProfileViewer .tp-fields{display:grid;gap:10px}
+    #teacherProfileViewer .tp-field{border:1px solid var(--line);background:rgba(120,130,150,.06);border-radius:12px;padding:11px 13px}
+    #teacherProfileViewer .tp-field small{display:block;color:var(--muted);font-size:.68rem;font-weight:850;letter-spacing:.06em;margin-bottom:5px}
+    #teacherProfileViewer .tp-field strong{display:block;overflow-wrap:anywhere;font-size:.92rem}
+    #teacherProfileViewer .tp-finance{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+    @media(max-width:760px){#teacherProfileContent{grid-template-columns:1fr!important}#teacherProfilePrint{width:100%}}
+    @media print{body *{visibility:hidden!important}#teacherProfileViewer,#teacherProfileViewer *{visibility:visible!important}#teacherProfileViewer{position:absolute;inset:0;width:100%;margin:0!important}#teacherProfilePrint,#teacherProfileSelect,#teacherProfileViewer label,#tpEditContact{display:none!important}}
+   </style>`;
+  const wf=$('workflows');profileHost.insertBefore(p,wf&&wf.parentElement===profileHost?wf:null);
+ }
+ const profileSelect=$('teacherProfileSelect');
+ const profileRows=rows=>rows.map(([k,v])=>'<div class="tp-field"><small>'+esc(k)+'</small><strong>'+esc(v||'—')+'</strong></div>').join('');
+ const profileMoney=n=>'GHS '+Number(n||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
+ const profileDate=v=>{if(!v)return '—';const d=new Date(v);return Number.isNaN(d.getTime())?String(v):d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});};
+ const renderSelectedTeacherProfile=()=>{
+  const t=teachers.find(x=>String(x.id)===selectedProfileTeacherId);if(!t)return;
+  const tc=activeCons.filter(x=>String(x.teacher_id)===String(t.id)),tp=activePays.filter(x=>String(x.teacher_id)===String(t.id));
+  const dues=tc.reduce((n,x)=>n+Number(x.amount||0),0),paid=tp.reduce((n,x)=>n+Number(x.amount||0),0);
+  const recent=[...tc].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')))[0];
+  const parts=String(t.name||'').trim().split(/\\s+/).filter(Boolean),initials=parts.slice(0,2).map(x=>x[0]).join('').toUpperCase()||'—';
+  $('tpStatus').textContent=t.is_active===false?'Inactive':'Active';$('tpStatus').style.cssText+=';background:'+(t.is_active===false?'#fee2e2':'#dcfce7')+';color:'+(t.is_active===false?'#b91c1c':'#166534');
+  $('tpAvatar').textContent=initials;$('tpName').textContent=t.name||'—';$('tpRank').textContent=t.rank||'—';$('tpStaffId').textContent='Staff ID: '+t.id;
+  $('tpRegistration').textContent=profileDate(t.registration_date||t.created_at||t.date_registered);$('tpMembership').textContent=t.membership_type||t.membership||'—';
+  $('tpPersonalRows').innerHTML=profileRows([['FULL NAME',t.name],['PHONE NUMBER',t.phone],['SCHOOL / INSTITUTION',school.name],['DISTRICT & REGION',[school.district,school.region].filter(Boolean).join(' · ')]]);
+  $('tpProfessionalRows').innerHTML=profileRows([['Staff ID',t.id],['Professional Rank',t.rank],['Class / Subject Assigned',t.class_name],['Employer',t.employer||school.employer]]);
+  $('tpFinanceRows').innerHTML=[
+   '<div class="tp-finance"><span>Total Dues Contributed</span><strong style="color:#15803d">'+esc(profileMoney(dues))+'</strong></div>',
+   '<div class="tp-finance"><span>Total Welfare Payouts Received</span><strong style="color:#dc2626">'+esc(profileMoney(paid))+'</strong></div>',
+   '<div class="tp-finance"><span>Total Payments Recorded</span><strong>'+tc.length+'</strong></div>',
+   '<div class="tp-finance"><span>Most Recent Contribution</span><strong>'+esc(recent?profileDate(recent.date):'—')+'</strong></div>'
+  ].join('');
+ };
+ if(profileSelect){profileSelect.innerHTML=teachers.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name||t.id)+' ('+esc(t.id)+')</option>').join('');profileSelect.value=selectedProfileTeacherId;profileSelect.addEventListener('change',()=>{selectedProfileTeacherId=profileSelect.value;renderSelectedTeacherProfile();});}
+ $('teacherProfilePrint')?.addEventListener('click',()=>window.print());
+ $('tpEditContact')?.addEventListener('click',()=>alert('To update official contact details, contact the Executive Administrator.'));
+ renderSelectedTeacherProfile();
+
  const teacherLabel=id=>{const t=teacherById.get(String(id));return t?esc(t.name)+' ('+esc(t.id)+')':esc(id||'—')};
  const renderTeacherTables=()=>{const q=String($('wfTeacherSearch')?.value||'').trim().toLowerCase();const visible=teachers.filter(t=>[t.id,t.name,t.phone,t.rank,t.class_name].some(v=>String(v||'').toLowerCase().includes(q)));
  const rosterRows=$('teacherRows');if(rosterRows)rosterRows.innerHTML=visible.length?visible.map(t=>'<tr><td>'+esc(t.id)+'</td><td>'+esc(t.name)+'</td><td>'+esc(t.phone||'—')+'</td><td>'+esc(t.rank||'—')+'</td><td>'+esc(t.class_name||'—')+'</td></tr>').join(''):'<tr><td colspan="5">No matching teachers.</td></tr>';
- $('wfManageTeacherRows').innerHTML=visible.length?visible.map(t=>'<tr><td>'+esc(t.id)+'</td><td>'+esc(t.name)+'</td><td>'+esc(t.phone||'—')+'</td><td>'+esc(t.rank||'—')+'</td><td>'+esc(t.class_name||'—')+'</td><td><span>'+ (t.is_active===false?'Inactive':'Active') +'</span> <button type="button" class="secondary" data-wf-edit="'+esc(t.id)+'">Edit</button> '+'<button type="button" data-wf-activate="'+esc(t.id)+'">Activate / reset login</button> '+(t.is_active===false?'<button type="button" data-wf-restore="'+esc(t.id)+'">Restore</button>':'<button type="button" class="secondary" data-wf-remove="'+esc(t.id)+'">Deactivate</button>')+'</td></tr>').join(''):'<tr><td colspan="6">No matching teachers.</td></tr>';};
+ $('wfManageTeacherRows').innerHTML=visible.length?visible.map(t=>'<tr><td>'+esc(t.id)+'</td><td>'+esc(t.name)+'</td><td>'+esc(t.phone||'—')+'</td><td>'+esc(t.rank||'—')+'</td><td>'+esc(t.class_name||'—')+'</td><td><span>'+ (t.is_active===false?'Inactive':'Active') +'</span> <button type="button" class="secondary" data-view-profile="'+esc(t.id)+'">View profile</button> <button type="button" class="secondary" data-wf-edit="'+esc(t.id)+'">Edit</button> '+'<button type="button" data-wf-activate="'+esc(t.id)+'">Activate / reset login</button> '+(t.is_active===false?'<button type="button" data-wf-restore="'+esc(t.id)+'">Restore</button>':'<button type="button" class="secondary" data-wf-remove="'+esc(t.id)+'">Deactivate</button>')+'</td></tr>').join(''):'<tr><td colspan="6">No matching teachers.</td></tr>';};
  renderTeacherTables();
  $('wfTeacherSearch').addEventListener('input',renderTeacherTables);
  $('wfManageTeacherRows').addEventListener('click',async e=>{
+   const viewButton=e.target.closest('[data-view-profile]');
+   if(viewButton){selectedProfileTeacherId=String(viewButton.dataset.viewProfile);if(profileSelect)profileSelect.value=selectedProfileTeacherId;renderSelectedTeacherProfile();const nav=document.querySelector('.sidebar .navbtn[data-target="teacherProfileViewer"]');if(nav)nav.click();return;}
    const button=e.target.closest('[data-wf-activate]');if(!button)return;
    const teacher=teachers.find(t=>String(t.id)===String(button.dataset.wfActivate));
    if(!teacher)return msg('wfTeacherMsg','That teacher is no longer in the loaded roster. Refresh and try again.',true);
