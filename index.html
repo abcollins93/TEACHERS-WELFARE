@@ -1060,11 +1060,11 @@ try {
             <div class="w-full grid grid-cols-2 gap-3 mt-6 pt-6 border-t border-slate-200 dark:border-slate-800 text-left">
                 <div>
                     <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Registration Date</p>
-                    <p id="profileRegDate" class="text-xs font-bold text-slate-700 dark:text-slate-300 mt-0.5">September 2026</p>
+                    <p id="profileRegDate" class="text-xs font-bold text-slate-700 dark:text-slate-300 mt-0.5">--</p>
                 </div>
                 <div>
                     <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Membership Type</p>
-                    <p class="text-xs font-bold text-slate-700 dark:text-slate-300 mt-0.5">Permanent Staff</p>
+                    <p id="profileMembershipType" class="text-xs font-bold text-slate-700 dark:text-slate-300 mt-0.5">--</p>
                 </div>
             </div>
         </div>
@@ -1085,11 +1085,11 @@ try {
                 </div>
                 <div class="bg-slate-50 dark:bg-slate-800/50 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700">
                     <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">School / Institution</p>
-                    <p class="font-bold text-slate-800 dark:text-slate-200 mt-1">Ntonso SDA Primary 'A' School</p>
+                    <p id="profileDetailSchool" class="font-bold text-slate-800 dark:text-slate-200 mt-1">--</p>
                 </div>
                 <div class="bg-slate-50 dark:bg-slate-800/50 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700">
                     <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">District & Region</p>
-                    <p class="font-bold text-slate-800 dark:text-slate-200 mt-1">Kwabre East District, Ashanti Region</p>
+                    <p id="profileDetailDistrictRegion" class="font-bold text-slate-800 dark:text-slate-200 mt-1">--</p>
                 </div>
             </div>
 
@@ -1123,7 +1123,7 @@ try {
                 </div>
                 <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
                     <span class="text-slate-500 font-bold">Employer</span>
-                    <span class="font-bold text-slate-800 dark:text-slate-200">Ghana Education Service (GES)</span>
+                    <span id="profileEmployer" class="font-bold text-slate-800 dark:text-slate-200">--</span>
                 </div>
             </div>
         </div>
@@ -2256,6 +2256,13 @@ async function loadCloudData() {
             className: t.class_name,
             passport: t.passport || '',
             customPassword: t.custom_password || '',
+            is_active: t.is_active,
+            registrationDate: t.registration_date || t.registered_at || t.created_at || t.createdAt || null,
+            membershipType: t.membership_type || t.membershipType || t.employment_type || t.staff_type || null,
+            schoolName: t.school_name || t.schoolName || t.school || null,
+            district: t.district || t.district_name || null,
+            region: t.region || t.region_name || null,
+            employer: t.employer || t.employer_name || null,
             payments: (t.contributions || []).map(c => ({ date: c.date, amount: Number(c.amount), reference: c.reference })),
             payouts: (t.payouts || []).map(p => ({ date: p.date, amount: Number(p.amount), reason: p.reason, reference: p.reference }))
         }));
@@ -2825,64 +2832,110 @@ function renderDashboard() {
     renderMemberLiveTicker();
 }
 
+function formatProfileDate(value) {
+    if (!value) return 'Not recorded';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return String(value);
+    return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+}
+
 function renderProfileSection() {
     const teacher = getSelectedTeacher();
-    const fullNameEl = document.getElementById('profileFullName');
-    const designationEl = document.getElementById('profileDesignation');
-    const staffIdEl = document.getElementById('profileStaffIdDisplay');
-    const avatarImg = document.getElementById('profileAvatarImg');
-    const avatarInitials = document.getElementById('profileAvatarInitials');
-    const detailName = document.getElementById('profileDetailName');
-    const detailPhone = document.getElementById('profileDetailPhone');
-    const profStaffId = document.getElementById('profileProfStaffId');
-    const profRank = document.getElementById('profileProfRank');
-    const profClass = document.getElementById('profileProfClass');
-    const finTotalPaid = document.getElementById('profileFinTotalPaid');
-    const finTotalPayouts = document.getElementById('profileFinTotalPayouts');
-    const finCount = document.getElementById('profileFinCount');
-    const finLastDate = document.getElementById('profileFinLastDate');
+    const byId = id => document.getElementById(id);
+    const fullNameEl = byId('profileFullName');
+    const designationEl = byId('profileDesignation');
+    const staffIdEl = byId('profileStaffIdDisplay');
+    const avatarImg = byId('profileAvatarImg');
+    const avatarInitials = byId('profileAvatarInitials');
+    const detailName = byId('profileDetailName');
+    const detailPhone = byId('profileDetailPhone');
+    const detailSchool = byId('profileDetailSchool');
+    const detailDistrictRegion = byId('profileDetailDistrictRegion');
+    const membershipType = byId('profileMembershipType');
+    const registrationDate = byId('profileRegDate');
+    const employer = byId('profileEmployer');
+    const statusBadge = byId('profileStatusBadge');
+    const profStaffId = byId('profileProfStaffId');
+    const profRank = byId('profileProfRank');
+    const profClass = byId('profileProfClass');
+    const finTotalPaid = byId('profileFinTotalPaid');
+    const finTotalPayouts = byId('profileFinTotalPayouts');
+    const finCount = byId('profileFinCount');
+    const finLastDate = byId('profileFinLastDate');
+
+    const setText = (element, value, fallback = '—') => {
+        if (element) element.textContent = value === null || value === undefined || String(value).trim() === '' ? fallback : String(value);
+    };
 
     if (!teacher) {
-        if (fullNameEl) fullNameEl.textContent = 'No Member Selected';
-        if (designationEl) designationEl.textContent = '--';
-        if (staffIdEl) staffIdEl.textContent = '--';
+        [fullNameEl, detailName].forEach(el => setText(el, 'No Member Selected'));
+        [designationEl, staffIdEl, detailPhone, detailSchool, detailDistrictRegion, membershipType,
+         registrationDate, employer, profStaffId, profRank, profClass, finLastDate].forEach(el => setText(el, '—'));
+        setText(finTotalPaid, money(0));
+        setText(finTotalPayouts, money(0));
+        setText(finCount, '0 Payments');
+        setText(statusBadge, 'Unavailable');
+        if (statusBadge) statusBadge.className = 'px-3 py-1 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 text-[10px] font-extrabold border border-slate-200';
+        if (avatarImg) { avatarImg.src = ''; avatarImg.classList.add('hidden'); }
+        if (avatarInitials) { avatarInitials.textContent = '--'; avatarInitials.classList.remove('hidden'); }
         return;
     }
 
-    if (fullNameEl) fullNameEl.textContent = teacher.name;
-    if (designationEl) designationEl.textContent = teacher.rank || '--';
-    if (staffIdEl) staffIdEl.textContent = teacher.id;
-    if (detailName) detailName.textContent = teacher.name;
-    if (detailPhone) detailPhone.textContent = teacher.phone;
-    if (profStaffId) profStaffId.textContent = teacher.id;
-    if (profRank) profRank.textContent = teacher.rank || '--';
-    if (profClass) profClass.textContent = teacher.className || 'General';
+    const payments = Array.isArray(teacher.payments) ? teacher.payments : [];
+    const payouts = Array.isArray(teacher.payouts) ? teacher.payouts : [];
+    const schoolContext = window.WELFARE_SCHOOL_PROFILE || {};
+    const schoolName = teacher.schoolName || teacher.school_name || teacher.school || schoolContext.name ||
+        document.getElementById('schoolName')?.textContent ||
+        document.getElementById('brand')?.textContent || 'School not specified';
+    const district = teacher.district || teacher.district_name || schoolContext.district || '';
+    const region = teacher.region || teacher.region_name || schoolContext.region || '';
+    const districtRegion = teacher.districtRegion || teacher.district_region ||
+        [district, region].filter(Boolean).join(', ') || 'Not specified';
+    const employerName = teacher.employer || teacher.employer_name || schoolContext.employer || 'Not specified';
+    const membership = teacher.membershipType || teacher.membership_type || teacher.employment_type ||
+        teacher.staff_type || (String(teacher.rank || '').toLowerCase().includes('pupil') ? 'Pupil Teacher' : 'Permanent Staff');
+    const registeredOn = teacher.registrationDate || teacher.registration_date || teacher.registered_at ||
+        teacher.created_at || teacher.createdAt || null;
+    const isRemoved = removedMembers.some(member => String(member.id) === String(teacher.id));
+    const isActive = !isRemoved && teacher.is_active !== false && teacher.isActive !== false &&
+        teacher.active !== false && String(teacher.status || '').toLowerCase() !== 'inactive';
 
-    if (teacher.passport) {
-        if (avatarImg) {
-            avatarImg.src = teacher.passport;
-            avatarImg.classList.remove('hidden');
-        }
-        if (avatarInitials) avatarInitials.classList.add('hidden');
-    } else {
-        if (avatarImg) {
-            avatarImg.src = '';
-            avatarImg.classList.add('hidden');
-        }
-        if (avatarInitials) {
-            avatarInitials.textContent = initials(teacher.name);
-            avatarInitials.classList.remove('hidden');
-        }
+    setText(fullNameEl, teacher.name, 'Unnamed Teacher');
+    setText(designationEl, teacher.rank, 'Not specified');
+    setText(staffIdEl, teacher.id);
+    setText(detailName, teacher.name, 'Unnamed Teacher');
+    setText(detailPhone, teacher.phone, 'Not provided');
+    setText(detailSchool, schoolName);
+    setText(detailDistrictRegion, districtRegion);
+    setText(membershipType, membership);
+    setText(registrationDate, formatProfileDate(registeredOn));
+    setText(employer, employerName);
+    setText(profStaffId, teacher.id);
+    setText(profRank, teacher.rank, 'Not specified');
+    setText(profClass, teacher.className || teacher.class_name, 'Not assigned');
+    setText(statusBadge, isActive ? 'Active' : 'Inactive');
+    if (statusBadge) {
+        statusBadge.className = isActive
+            ? 'px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] font-extrabold border border-emerald-200'
+            : 'px-3 py-1 rounded-full bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 text-[10px] font-extrabold border border-rose-200';
     }
 
-    const totalPaid = teacher.payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
-    const totalPayouts = teacher.payouts.reduce((sum, p) => sum + Number(p.amount || 0), 0);
-    const sortedPayments = [...teacher.payments].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+    if (teacher.passport) {
+        if (avatarImg) { avatarImg.src = teacher.passport; avatarImg.classList.remove('hidden'); }
+        if (avatarInitials) avatarInitials.classList.add('hidden');
+    } else {
+        if (avatarImg) { avatarImg.src = ''; avatarImg.classList.add('hidden'); }
+        if (avatarInitials) { avatarInitials.textContent = initials(teacher.name); avatarInitials.classList.remove('hidden'); }
+    }
 
-    if (finTotalPaid) finTotalPaid.textContent = money(totalPaid);
-    if (finTotalPayouts) finTotalPayouts.textContent = money(totalPayouts);
-    if (finCount) finCount.textContent = `${teacher.payments.length} Payment${teacher.payments.length === 1 ? '' : 's'}`;
-    if (finLastDate) finLastDate.textContent = sortedPayments.length ? formatDate(sortedPayments[0].date) : 'No contributions yet';
+    const totalPaid = payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
+    const totalPayouts = payouts.reduce((sum, payout) => sum + Number(payout.amount || 0), 0);
+    const sortedPayments = [...payments].sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+
+    setText(finTotalPaid, money(totalPaid));
+    setText(finTotalPayouts, money(totalPayouts));
+    setText(finCount, `${payments.length} Payment${payments.length === 1 ? '' : 's'}`);
+    setText(finLastDate, sortedPayments.length ? formatDate(sortedPayments[0].date) : 'No contributions yet');
 }
 
 function openProfileEditModal() {
@@ -4594,6 +4647,7 @@ function showSection(section, button = null, bypassAdmin = false) {
     if (!target) return;
 
     target.classList.add('active');
+    if (section === 'profile') renderProfileSection();
 
     document.querySelectorAll('.nav-button').forEach(nav => {
         nav.classList.remove('active');
