@@ -1083,6 +1083,7 @@ async function renderTeacherDashboard(profile,school){
  const workflows=$('workflows');if(workflows)workflows.classList.add('hidden');
  const auditView=$('wfAuditView');if(auditView)auditView.classList.add('hidden');
  $('dashboard').classList.remove('admin-workspace-open','audit-trail-open');
+ const profileViewerNav=document.querySelector('.sidebar .navbtn[data-target="teacherProfileViewer"]');if(profileViewerNav)profileViewerNav.style.display='none';
  const navRules=[
   ['schoolTeachers','Teachers & Members'],
   ['wfAdminPanel','Admin panel'],
@@ -1266,6 +1267,7 @@ async function showDashboard(){
  window.__welfareCurrentRole='admin';
  document.getElementById('teacherWorkspace')?.remove();
  $('schoolTeachers')?.classList.remove('hidden');
+ const profileViewerNav=document.querySelector('.sidebar .navbtn[data-target="teacherProfileViewer"]');if(profileViewerNav)profileViewerNav.style.removeProperty('display');
  document.querySelectorAll('.sidebar .navbtn').forEach(btn=>{btn.classList.remove('role-restricted');btn.removeAttribute('aria-disabled');btn.removeAttribute('title');btn.style.removeProperty('opacity');btn.style.removeProperty('cursor');btn.querySelector('.role-lock-icon')?.remove();});
  const adminGreeting=$('dashboardGreeting');if(adminGreeting)adminGreeting.textContent='HI, ADMIN!';
  const accountTitle=document.querySelector('.sidebar-account-copy strong');if(accountTitle)accountTitle.textContent='School Administrator';
@@ -1502,7 +1504,7 @@ client.auth.onAuthStateChange((event,session)=>{
 client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
 })();
 </script>
-<script src="school-portal-workflows.js?v=staffid-reset-v2"></script>
+<script src="school-portal-workflows.js?v=teacher-profile-viewer-v1"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
