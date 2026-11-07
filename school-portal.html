@@ -1249,11 +1249,10 @@ async function waitForSchoolWorkflows(timeoutMs=10000){
 async function showDashboard(){
  const {data:{user},error:userErr}=await client.auth.getUser();
  if(userErr||!user){$('login').classList.remove('hidden');$('dashboard').classList.add('hidden');return;}
- const accountType=String(user.user_metadata?.account_type||user.app_metadata?.role||'').toLowerCase();
- if(accountType==='teacher'){
-  const {data:teacherProfiles,error:teacherProfileError}=await client.rpc('get_my_teacher_profile');
-  const teacherProfile=Array.isArray(teacherProfiles)?teacherProfiles[0]:teacherProfiles;
-  if(teacherProfileError||!teacherProfile?.school_id){
+ const {data:teacherProfiles,error:teacherProfileError}=await client.rpc('get_my_teacher_profile');
+ const teacherProfile=Array.isArray(teacherProfiles)?teacherProfiles[0]:teacherProfiles;
+ // The active teacher_accounts mapping is authoritative; never trust editable user metadata as a permission grant.
+ if(!teacherProfileError&&teacherProfile?.school_id){
    $('loginError').textContent='Your teacher session was found, but your school profile could not be verified. Contact your school administrator.';
    $('login').classList.remove('hidden');$('dashboard').classList.add('hidden');return;
   }
