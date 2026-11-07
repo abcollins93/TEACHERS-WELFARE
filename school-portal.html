@@ -1629,6 +1629,47 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
  .app-header-group>.overview-top{min-height:56px!important;padding:6px 12px!important}
  body:not(:has(#login:not(.hidden))) main{padding-top:calc(var(--unified-header-height,116px) + 16px)!important}
 }
+
+/* Premium navy hero treatment shared with the Admin Panel reference design. */
+#dashboard .portal-hero{
+  position:relative!important;isolation:isolate!important;overflow:hidden!important;
+  border-radius:1.5rem!important;padding:clamp(24px,4vw,42px)!important;
+  border:1px solid rgba(214,173,82,.38)!important;
+  background:radial-gradient(circle at 88% 14%,rgba(82,112,210,.25) 0%,transparent 38%),
+             radial-gradient(circle at 12% 100%,rgba(30,64,120,.28) 0%,transparent 42%),
+             linear-gradient(135deg,#0d1b2a 0%,#1b263b 60%,#0f172a 100%)!important;
+  color:#fff!important;box-shadow:0 20px 48px rgba(7,18,43,.22)!important;
+}
+#dashboard .portal-hero::before{
+  content:"";position:absolute;z-index:-1;width:420px;height:420px;right:-155px;bottom:-285px;
+  border:1px solid rgba(185,199,255,.18);border-radius:50%;
+  box-shadow:0 0 0 24px rgba(157,174,255,.035),0 0 0 52px rgba(157,174,255,.025),0 0 0 82px rgba(157,174,255,.018);
+  pointer-events:none;
+}
+#dashboard .portal-hero::after{
+  content:"";position:absolute;z-index:-1;width:290px;height:290px;right:-125px;top:-185px;
+  border:1px solid rgba(214,226,255,.15);border-radius:50%;
+  box-shadow:0 0 0 22px rgba(157,174,255,.025),0 0 0 46px rgba(157,174,255,.018);
+  pointer-events:none;
+}
+#dashboard .portal-hero-badge{
+  position:relative;z-index:1;display:inline-flex;align-items:center;gap:9px;
+  padding:9px 16px;border:1px solid rgba(245,179,45,.48)!important;border-radius:999px;
+  background:rgba(120,76,8,.20)!important;color:#fbbf24!important;
+  font-size:.75rem;font-weight:850;letter-spacing:.09em;text-transform:uppercase;
+}
+#dashboard .portal-hero-badge i{color:#fbbf24!important}
+#dashboard .portal-hero h1{
+  position:relative;z-index:1;color:#fff!important;font-size:clamp(1.7rem,3.6vw,2.55rem);
+  line-height:1.12;font-weight:900;letter-spacing:-.045em;text-wrap:balance;
+}
+#dashboard .portal-hero p{position:relative;z-index:1;color:#cbd5e1!important;line-height:1.75}
+@media(max-width:600px){
+  #dashboard .portal-hero{border-radius:1.5rem!important;padding:24px 20px!important}
+  #dashboard .portal-hero::before{right:-245px;bottom:-290px}
+  #dashboard .portal-hero::after{right:-205px;top:-205px}
+}
+
 </style>
 
 
