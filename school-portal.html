@@ -1051,7 +1051,7 @@ loadGatewayIdentity().catch(()=>{$('loginSchoolName').textContent='School gatewa
 if(!/^[A-Z0-9-]{3,32}$/.test(code)){ $('loginError').textContent='This gateway link is missing a valid school code. Please use the link provided by your school platform administrator.';$('loginBtn').disabled=true; }
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 async function escapeTeacherText(v){return String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
-async async function renderTeacherDashboard(profile,school){
+async function renderTeacherDashboard(profile,school){
  window.__welfareCurrentRole='teacher';
  const {data:{user}}=await client.auth.getUser();
  const teacherId=String(profile.teacher_id||profile.id||'');
