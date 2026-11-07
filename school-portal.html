@@ -1327,63 +1327,8 @@ client.auth.onAuthStateChange((event,session)=>{
 client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
 })();
 </script>
-<script src="school-portal-workflows.js?v=9032fd88f86c6b7a6d8658c280839399b7f3b59a"></script>
+<script src="school-portal-workflows.js?v=e82641ed9a3752f0"></script>
 <script>
-/* Admin workspace navigation hardening: reveal the workflow ancestors and admin hub together. */
-(function(){
-  'use strict';
-  document.addEventListener('click', function(event){
-    const button = event.target.closest('#schoolSidebar .navbtn[data-target="wfAdminPanel"]');
-    if (!button) return;
-    const dashboard = document.getElementById('dashboard');
-    const workflows = document.getElementById('workflows');
-    const admin = document.getElementById('wfAdminPanel');
-    if (!dashboard || !workflows || !admin) return;
-    dashboard.classList.remove('audit-trail-open');
-    dashboard.classList.add('admin-workspace-open');
-    workflows.classList.remove('hidden');
-    workflows.style.setProperty('display','block','important');
-    workflows.style.setProperty('visibility','visible','important');
-    admin.classList.remove('hidden');
-    admin.style.setProperty('display','flex','important');
-    admin.style.setProperty('visibility','visible','important');
-    admin.setAttribute('aria-hidden','false');
-    const overview = document.getElementById('schoolOverview');
-    if (overview) overview.style.setProperty('display','none','important');
-    const auditView = document.getElementById('wfAuditView');
-    if (auditView) {
-      auditView.classList.add('hidden');
-      auditView.style.setProperty('display','none','important');
-      auditView.setAttribute('aria-hidden','true');
-    }
-    // The administration workspace spans several workflow panels, not only
-    // the introductory hub. Reveal all management forms together so the
-    // sidebar item opens the complete administration workspace.
-    workflows.querySelectorAll('.panel').forEach(function(panel){
-      if (panel.closest('#wfAuditView') || panel.id === 'wfAuditPanel') {
-        panel.classList.add('hidden');
-        panel.style.setProperty('display','none','important');
-        panel.setAttribute('aria-hidden','true');
-        return;
-      }
-      panel.classList.remove('hidden');
-      panel.style.setProperty('display','block','important');
-      panel.style.setProperty('visibility','visible','important');
-      panel.setAttribute('aria-hidden','false');
-    });
-    workflows.querySelectorAll('#wfAuditView').forEach(function(view){
-      view.classList.add('hidden');
-      view.style.setProperty('display','none','important');
-      view.setAttribute('aria-hidden','true');
-    });
-    window.requestAnimationFrame(function(){
-      admin.scrollIntoView({behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block:'start'});
-      if (!admin.hasAttribute('tabindex')) admin.setAttribute('tabindex','-1');
-      admin.focus({preventScroll:true});
-    });
-  }, true);
-})();
-
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
   'use strict';
@@ -1399,14 +1344,12 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
     const toggle = document.getElementById('mobileNavToggle');
     if (toggle) toggle.setAttribute('aria-expanded', 'false');
   }
-  // Close for every sidebar navigation item and action control, including sign-out.
+  // Non-view sidebar actions (for example sign-out) may close immediately.
+  // View navigation closes only after its destination has been activated below.
   document.addEventListener('click', function(event){
-    const sidebar = document.getElementById('schoolSidebar');
     const control = event.target.closest('#schoolSidebar a, #schoolSidebar button, #schoolSidebar [role="link"]');
-    if (sidebar && control) {
-      const isNavigation = control.matches('.navbtn, a, [role="link"]') || control.matches('#sidebarLogout, .sidebar-account-out');
-      if (isNavigation) closeSidebar();
-    }
+    if (!control || control.matches('.navbtn[data-target]')) return;
+    if (control.matches('a, [role="link"], #sidebarLogout, .sidebar-account-out')) closeSidebar();
   });
   document.addEventListener('click', function(event){
     const button = event.target.closest('.navbtn[data-target]');
@@ -1469,27 +1412,28 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
     target.style.scrollMarginTop = '18px';
     if (isAdminWorkspaceTarget) {
       const workflowRoot = document.getElementById('workflows');
-      // The workflow bundle is mounted dynamically after sign-in. Explicitly
-      // reveal both its container and the admin hub so inherited/inline hidden
-      // states cannot leave the sidebar click looking like it did nothing.
-      if (workflowRoot) {
-        workflowRoot.classList.remove('hidden');
-        workflowRoot.style.setProperty('display','block','important');
-        workflowRoot.style.setProperty('visibility','visible','important');
+      if (!workflowRoot || !target) {
+        console.error('[School Welfare] Admin Panel destination is not mounted.');
+        return;
       }
+      workflowRoot.classList.remove('hidden');
+      workflowRoot.style.setProperty('display','block','important');
+      workflowRoot.style.setProperty('visibility','visible','important');
+
       target.classList.remove('hidden');
-      target.style.setProperty('display','block','important');
-      target.style.setProperty('visibility','visible','important');
-      target.setAttribute('aria-hidden','false');
-      // Explicit Admin Panel router: reveal the existing admin container and
-      // every management card even if an earlier render left inline hidden styles.
       target.style.setProperty('display','block','important');
       target.style.setProperty('visibility','visible','important');
       target.style.minHeight='80vh';
       target.style.marginTop='calc(var(--app-header-height, 0px) + var(--dashboard-menu-height, 0px) + 18px)';
       target.setAttribute('aria-hidden','false');
+
       target.querySelectorAll('.panel').forEach(function(panel){
-        if (panel.closest('#wfAuditView') || panel.id === 'wfAuditPanel') return;
+        if (panel.closest('#wfAuditView') || panel.id === 'wfAuditPanel') {
+          panel.classList.add('hidden');
+          panel.style.setProperty('display','none','important');
+          panel.setAttribute('aria-hidden','true');
+          return;
+        }
         panel.classList.remove('hidden');
         panel.style.setProperty('display','block','important');
         panel.style.setProperty('visibility','visible','important');
@@ -1500,9 +1444,26 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
           child.removeAttribute('aria-hidden');
         });
       });
-      // Keep the dashboard summary out of the way while the admin workspace is open.
+
       const overview = document.getElementById('schoolOverview');
-      if (overview) overview.style.setProperty('display','none','important');
+      if (overview) {
+        overview.style.setProperty('display','none','important');
+        overview.setAttribute('aria-hidden','true');
+      }
+    } else {
+      const adminViewNode = document.getElementById('wfAdminPanel');
+      if (adminViewNode) {
+        adminViewNode.style.removeProperty('display');
+        adminViewNode.style.removeProperty('visibility');
+        adminViewNode.style.removeProperty('min-height');
+        adminViewNode.style.removeProperty('margin-top');
+        adminViewNode.setAttribute('aria-hidden','true');
+      }
+      const overview = document.getElementById('schoolOverview');
+      if (overview) {
+        overview.style.removeProperty('display');
+        overview.removeAttribute('aria-hidden');
+      }
     }
     void target.offsetHeight;
     target.scrollIntoView({behavior:'smooth',block:'start'});
