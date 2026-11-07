@@ -1263,7 +1263,9 @@ async function showDashboard(){
   return;
  }
  window.__welfareCurrentRole='admin';
- document.querySelectorAll('.sidebar .navbtn').forEach(btn=>{btn.classList.remove('role-restricted');btn.removeAttribute('aria-disabled');btn.removeAttribute('title');btn.querySelector('.role-lock-icon')?.remove();});
+ document.getElementById('teacherWorkspace')?.remove();
+ $('schoolTeachers')?.classList.remove('hidden');
+ document.querySelectorAll('.sidebar .navbtn').forEach(btn=>{btn.classList.remove('role-restricted');btn.removeAttribute('aria-disabled');btn.removeAttribute('title');btn.style.removeProperty('opacity');btn.style.removeProperty('cursor');btn.querySelector('.role-lock-icon')?.remove();});
  const adminGreeting=$('dashboardGreeting');if(adminGreeting)adminGreeting.textContent='HI, ADMIN!';
  const accountTitle=document.querySelector('.sidebar-account-copy strong');if(accountTitle)accountTitle.textContent='School Administrator';
  // RLS must return only the school assigned to this authenticated administrator.
