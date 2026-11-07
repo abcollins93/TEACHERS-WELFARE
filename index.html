@@ -2233,6 +2233,14 @@ let adminLogs = [];
 let standardMonthlyDues = 100;
 let currentBroadcastMessage = '';
 
+// School-level profile defaults are configurable; teacher-row values override them.
+const PROFILE_SCHOOL_DEFAULTS = Object.freeze({
+    name: "Ntonso SDA Primary 'A' School",
+    district: 'Kwabre East District',
+    region: 'Ashanti Region',
+    employer: 'Ghana Education Service (GES)'
+});
+
 // Cloud Data Loader replacing local storage persistence with Supabase
 async function loadCloudData() {
     if (!supabaseClient) {
@@ -2883,7 +2891,7 @@ function renderProfileSection() {
 
     const payments = Array.isArray(teacher.payments) ? teacher.payments : [];
     const payouts = Array.isArray(teacher.payouts) ? teacher.payouts : [];
-    const schoolContext = window.WELFARE_SCHOOL_PROFILE || {};
+    const schoolContext = { ...PROFILE_SCHOOL_DEFAULTS, ...(window.WELFARE_SCHOOL_PROFILE || {}) };
     const schoolName = teacher.schoolName || teacher.school_name || teacher.school || schoolContext.name ||
         document.getElementById('schoolName')?.textContent ||
         document.getElementById('brand')?.textContent || 'School not specified';
