@@ -206,7 +206,9 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const teacherQuery=fields=>loadSource('teacher roster',()=>client.from('teachers').select(fields).eq('school_id',school.id).order('name'));
  // Retry compatible projections independently: older tenants may lack one or both
  // optional profile columns. Never require is_active/passport to show the roster.
- let tr=await teacherQuery('id,name,phone,rank,class_name,is_active,passport');
+ let tr=await teacherQuery('id,name,phone,rank,class_name,is_active,passport,created_at,registration_date,membership_type,employer');
+ if(tr.error)tr=await teacherQuery('id,name,phone,rank,class_name,is_active,passport,created_at');
+ if(tr.error)tr=await teacherQuery('id,name,phone,rank,class_name,is_active,passport');
  if(tr.error)tr=await teacherQuery('id,name,phone,rank,class_name,passport');
  if(tr.error)tr=await teacherQuery('id,name,phone,rank,class_name,is_active');
  if(tr.error){
