@@ -1253,9 +1253,6 @@ async function showDashboard(){
  const teacherProfile=Array.isArray(teacherProfiles)?teacherProfiles[0]:teacherProfiles;
  // The active teacher_accounts mapping is authoritative; never trust editable user metadata as a permission grant.
  if(!teacherProfileError&&teacherProfile?.school_id){
-   $('loginError').textContent='Your teacher session was found, but your school profile could not be verified. Contact your school administrator.';
-   $('login').classList.remove('hidden');$('dashboard').classList.add('hidden');return;
-  }
   const {data:teacherSchool,error:teacherSchoolError}=await client.from('schools').select('id,name,school_code,school_type,region,district,status').eq('id',teacherProfile.school_id).maybeSingle();
   if(teacherSchoolError||!teacherSchool||teacherSchool.status!=='active'){
    $('loginError').textContent='Your teacher account could not access its active school portal. Contact your school administrator.';
