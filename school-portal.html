@@ -1051,45 +1051,113 @@ loadGatewayIdentity().catch(()=>{$('loginSchoolName').textContent='School gatewa
 if(!/^[A-Z0-9-]{3,32}$/.test(code)){ $('loginError').textContent='This gateway link is missing a valid school code. Please use the link provided by your school platform administrator.';$('loginBtn').disabled=true; }
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 async function escapeTeacherText(v){return String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
-async function renderTeacherDashboard(profile,school){
- const dash=document.getElementById('teacherDashboard');
- dash.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><div class="eyebrow">Teacher portal</div><h2 style="margin:8px 0">My Welfare Account</h2><p class="muted">'+escapeTeacherText(school.name)+' · Staff ID: '+escapeTeacherText(profile.teacher_id)+'</p></div><button id="teacherSignOut" class="secondary">Sign out</button></div><div id="teacherBroadcast" class="panel hidden" role="status" aria-live="polite" style="margin:16px 0;padding:12px 16px;overflow:hidden;border-color:#d6ad52"><strong style="color:#b8860b;margin-right:10px">SCHOOL NOTICE</strong><span id="teacherBroadcastText" class="teacher-broadcast-message"></span></div><hr><h3>My contributions</h3><p id="teacherContributionsState" class="muted">Loading your contributions…</p><div id="teacherContributions"></div><h3 style="margin-top:24px">My welfare payouts</h3><p id="teacherPayoutsState" class="muted">Loading your payouts…</p><div id="teacherPayouts"></div><details class="panel" style="margin-top:24px"><summary style="cursor:pointer;font-weight:800">Security settings · Change password</summary><p class="muted">Change your password whenever you need to. Keep it private and use at least 6 characters.</p><form id="teacherVoluntaryPasswordForm"><label for="teacherCurrentPassword">Current password</label><input id="teacherCurrentPassword" type="password" autocomplete="current-password" minlength="1" maxlength="128" required><label for="teacherVoluntaryNewPassword">New password</label><input id="teacherVoluntaryNewPassword" type="password" autocomplete="new-password" minlength="6" maxlength="128" required><label for="teacherVoluntaryConfirmPassword">Confirm new password</label><input id="teacherVoluntaryConfirmPassword" type="password" autocomplete="new-password" minlength="6" maxlength="128" required><p id="teacherVoluntaryPasswordMessage" class="muted" role="status" aria-live="polite"></p><button type="submit">Update my password</button></form></details>';
- dash.classList.remove('hidden');
- document.getElementById('teacherSignOut').addEventListener('click',async()=>{await client.auth.signOut();dash.classList.add('hidden');$('login').classList.remove('hidden');});
- const teacherPasswordForm=document.getElementById('teacherVoluntaryPasswordForm');
- if(teacherPasswordForm)teacherPasswordForm.addEventListener('submit',async ev=>{
-   ev.preventDefault();
-   const current=document.getElementById('teacherCurrentPassword').value;
-   const next=document.getElementById('teacherVoluntaryNewPassword').value;
-   const confirmNext=document.getElementById('teacherVoluntaryConfirmPassword').value;
-   const status=document.getElementById('teacherVoluntaryPasswordMessage');
-   const setStatus=(text,isError=false)=>{status.textContent=text;status.className=isError?'error':'muted';};
-   if(next.length<6)return setStatus('Password must be at least 6 characters long.',true);
-   if(next!==confirmNext)return setStatus('The new passwords do not match.',true);
-   const {data:{user},error:userError}=await client.auth.getUser();
-   if(userError||!user?.email)return setStatus('Your signed-in account could not be verified. Sign in again.',true);
-   setStatus('Verifying your current password…');
-   const {error:verifyError}=await client.auth.signInWithPassword({email:user.email,password:current});
-   if(verifyError)return setStatus('Current password is incorrect. No changes were made.',true);
-   setStatus('Updating password…');
-   const {data:result,error}=await client.functions.invoke('teacher-account-security',{body:{action:'change_password',password:next}});
-   if(error||!result?.ok)return setStatus(result?.error||'Password update failed. Please try again.',true);
-   teacherPasswordForm.reset();
-   setStatus('Password updated successfully. Use your new password next time you sign in.');
+async async function renderTeacherDashboard(profile,school){
+ window.__welfareCurrentRole='teacher';
+ const {data:{user}}=await client.auth.getUser();
+ const teacherId=String(profile.teacher_id||profile.id||'');
+ let teacherName=window.__welfareTeacherDisplayName||profile.name||user?.user_metadata?.full_name||teacherId;
+ let teacherAvatar=null,teacherRecord=null;
+ try{
+  const {data,error}=await client.from('teachers').select('id,name,rank,class_name,phone,passport').eq('id',teacherId).eq('school_id',school.id).maybeSingle();
+  if(!error&&data){teacherRecord=data;teacherName=data.name||teacherName;teacherAvatar=data.passport||null;}
+ }catch(_){}
+ window.__welfareTeacherDisplayName=teacherName;
+ $('login').classList.add('hidden');
+ $('dashboard').classList.remove('hidden');
+ $('teacherDashboard')?.classList.add('hidden');
+ $('schoolName').textContent=school.name;$('brand').textContent=school.name;
+ $('sideSchoolName').textContent=school.name;$('sideSchoolCode').textContent=school.school_code;
+ $('schoolDescription').textContent='Your personal welfare account and school updates for '+school.name+'.';
+ $('schoolMeta').textContent=[school.school_code,school.school_type,school.district,school.region].filter(Boolean).join(' · ');
+ const firstName=String(teacherName||teacherId).trim().split(/\s+/)[0]||'Teacher';
+ const greeting=$('dashboardGreeting');if(greeting)greeting.textContent='Hi, '+firstName+'!';
+ setHeaderProfile(user,teacherName,'Teacher',teacherAvatar);
+ const accountTitle=document.querySelector('.sidebar-account-copy strong');
+ if(accountTitle)accountTitle.textContent='Teacher account';
+ const accountMark=document.querySelector('.sidebar-account-mark i');
+ if(accountMark)accountMark.className='fa-solid fa-user';
+ // Teachers use the same dashboard shell and metric-card design, but the figures below
+ // are calculated only from their own RLS-protected records.
+ const roster=$('schoolTeachers');if(roster)roster.classList.add('hidden');
+ const workflows=$('workflows');if(workflows)workflows.classList.add('hidden');
+ const auditView=$('wfAuditView');if(auditView)auditView.classList.add('hidden');
+ $('dashboard').classList.remove('admin-workspace-open','audit-trail-open');
+ const navRules=[
+  ['schoolTeachers','Teachers & Members'],
+  ['wfAdminPanel','Admin panel'],
+  ['wfAuditPanel','Audit trail dashboard'],
+  ['wfReportsPanel','PDF reports']
+ ];
+ document.querySelectorAll('.sidebar .navbtn[data-target]').forEach(btn=>{
+  const target=btn.dataset.target;
+  const restricted=navRules.some(([id])=>id===target);
+  btn.classList.toggle('role-restricted',restricted);
+  if(restricted){btn.setAttribute('aria-disabled','true');btn.title='Restricted Access — school administrators only';}
+  else{btn.removeAttribute('aria-disabled');btn.removeAttribute('title');}
  });
- const noticePanel=document.getElementById('teacherBroadcast'), noticeText=document.getElementById('teacherBroadcastText');
- try{const {data:notice,error:noticeError}=await client.rpc('get_my_school_broadcast');if(!noticeError&&notice?.length&&notice[0].message){noticeText.textContent=notice[0].message;noticePanel.classList.remove('hidden');if(notice[0].message.length>100)noticePanel.classList.add('is-long');}}catch(_noticeError){/* Announcement is optional; keep the teacher dashboard available if notices cannot load. */}
- const [{data:cs,error:ce},{data:ps,error:pe}]=await Promise.all([client.rpc('get_my_teacher_contributions'),client.rpc('get_my_teacher_payouts')]);
- const fmtDate=v=>v?new Date(v+'T00:00:00').toLocaleDateString():'—';
- const fmtMoney=v=>'GHS '+Number(v||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
- if(ce){document.getElementById('teacherContributionsState').textContent='Could not load contributions securely. Please contact your administrator.';}else{
- document.getElementById('teacherContributionsState').textContent=cs?.length?cs.length+' record(s)':'No contribution records are available for this account yet.';
- document.getElementById('teacherContributions').innerHTML=cs?.length?'<div style="overflow:auto"><table><thead><tr><th>Date</th><th>Amount</th><th>Reference</th></tr></thead><tbody>'+cs.map(x=>'<tr><td>'+escapeTeacherText(fmtDate(x.date))+'</td><td>'+escapeTeacherText(fmtMoney(x.amount))+'</td><td>'+escapeTeacherText(x.reference||'—')+'</td></tr>').join('')+'</tbody></table></div>':'';
- }
- if(pe){document.getElementById('teacherPayoutsState').textContent='Could not load payouts securely. Please contact your administrator.';}else{
- document.getElementById('teacherPayoutsState').textContent=ps?.length?ps.length+' record(s)':'No payout records are available for this account yet.';
- document.getElementById('teacherPayouts').innerHTML=ps?.length?'<div style="overflow:auto"><table><thead><tr><th>Date</th><th>Amount</th><th>Reason</th><th>Reference</th></tr></thead><tbody>'+ps.map(x=>'<tr><td>'+escapeTeacherText(fmtDate(x.date))+'</td><td>'+escapeTeacherText(fmtMoney(x.amount))+'</td><td>'+escapeTeacherText(x.reason||'—')+'</td><td>'+escapeTeacherText(x.reference||'—')+'</td></tr>').join('')+'</tbody></table></div>':'';
- }
+ // Keep a consistent sidebar but route teachers only to their own profile and records.
+ let host=$('schoolOverview')?.parentElement;
+ if(!host)throw new Error('Shared dashboard content area is unavailable.');
+ document.getElementById('teacherWorkspace')?.remove();
+ const workspace=document.createElement('div');workspace.id='teacherWorkspace';
+ workspace.innerHTML=`
+ <section class="panel teacher-workspace-panel" id="wfTeacherPanel"><div class="eyebrow">My account</div><h2>Teacher profile</h2><p class="muted">Your verified school welfare account.</p><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px"><div class="metric"><span>Full name</span><strong>${escapeHtml(teacherName)}</strong></div><div class="metric"><span>Staff ID</span><strong>${escapeHtml(teacherId)}</strong></div><div class="metric"><span>School</span><strong>${escapeHtml(school.name)}</strong></div><div class="metric"><span>Position / rank</span><strong>${escapeHtml(teacherRecord?.rank||profile.rank||'—')}</strong></div><div class="metric"><span>Class</span><strong>${escapeHtml(teacherRecord?.class_name||profile.class_name||'—')}</strong></div></div><details class="panel" style="margin-top:16px"><summary style="cursor:pointer;font-weight:800">Security settings · Change password</summary><p class="muted">Use at least 6 characters.</p><form id="teacherVoluntaryPasswordForm"><label for="teacherCurrentPassword">Current password</label><input id="teacherCurrentPassword" type="password" autocomplete="current-password" minlength="1" maxlength="128" required><label for="teacherVoluntaryNewPassword">New password</label><input id="teacherVoluntaryNewPassword" type="password" autocomplete="new-password" minlength="6" maxlength="128" required><label for="teacherVoluntaryConfirmPassword">Confirm new password</label><input id="teacherVoluntaryConfirmPassword" type="password" autocomplete="new-password" minlength="6" maxlength="128" required><p id="teacherVoluntaryPasswordMessage" class="muted" role="status" aria-live="polite"></p><button type="submit">Update my password</button></form></details></section>
+ <section class="panel teacher-workspace-panel" id="wfContributionPanel"><div class="eyebrow">Personal records</div><h2>My contributions</h2><p id="teacherContributionsState" class="muted">Loading your contributions…</p><div id="teacherContributions"></div></section>
+ <section class="panel teacher-workspace-panel" id="wfPayoutPanel"><div class="eyebrow">Personal records</div><h2>My welfare payouts</h2><p id="teacherPayoutsState" class="muted">Loading your payouts…</p><div id="teacherPayouts"></div></section>
+ <section class="panel teacher-workspace-panel" id="wfStatementPanel"><div class="eyebrow">Personal summary</div><h2>My welfare statement</h2><p class="muted">This statement contains only records linked to your teacher account. PDF report generation is restricted to school administrators.</p><div id="teacherStatementSummary"></div></section>`;
+ host.appendChild(workspace);
+ document.querySelectorAll('.teacher-workspace-panel').forEach(panel=>panel.classList.add('hidden'));
+ $('schoolOverview').classList.remove('hidden');
+ const [{data:cs,error:ce},{data:ps,error:pe}]=await Promise.all([
+  client.rpc('get_my_teacher_contributions'),client.rpc('get_my_teacher_payouts')
+ ]);
+ const contributions=ce?[]:(cs||[]),payouts=pe?[]:(ps||[]);
+ const totalC=contributions.reduce((sum,x)=>sum+Number(x.amount||0),0);
+ const totalP=payouts.reduce((sum,x)=>sum+Number(x.amount||0),0);
+ const monthKey=new Date().toISOString().slice(0,7);
+ const monthC=contributions.filter(x=>String(x.date||'').slice(0,7)===monthKey).reduce((sum,x)=>sum+Number(x.amount||0),0);
+ const money=n=>Number(n||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
+ const metricLabels=document.querySelectorAll('#schoolOverview .dashboard-metrics .metric-compact span');
+ if(metricLabels[0])metricLabels[0].innerHTML='<i class="fa-solid fa-user"></i> My account';
+ if(metricLabels[1])metricLabels[1].innerHTML='<i class="fa-solid fa-arrow-trend-up"></i> My contributions · GHS';
+ if(metricLabels[2])metricLabels[2].innerHTML='<i class="fa-solid fa-hand-holding-heart"></i> My payouts · GHS';
+ if(metricLabels[3])metricLabels[3].innerHTML='<i class="fa-solid fa-calendar-days"></i> My contributions this month · GHS';
+ $('teacherCount').textContent='1';$('contributionTotal').textContent=money(totalC);
+ $('payoutTotal').textContent=money(totalP);$('monthlyContributionTotal').textContent=money(monthC);
+ $('netTotal').textContent=money(totalC-totalP);
+ const balanceLabel=document.querySelector('#schoolOverview .metric-balance .metric-label');
+ if(balanceLabel)balanceLabel.textContent='MY NET WELFARE RECORD · GHS';
+ const balanceNote=document.querySelector('#schoolOverview .metric-balance .metric-note');
+ if(balanceNote)balanceNote.textContent='Personal contributions less recorded payouts';
+ const standardLabel=document.querySelector('#schoolOverview .metric-standard .metric-label');
+ if(standardLabel)standardLabel.textContent='MY CONTRIBUTION RECORDS';
+ const standardValue=$('standardDuesMetric');if(standardValue)standardValue.textContent=String(contributions.length);
+ const latest=[...contributions,...payouts].map(x=>x.date).filter(Boolean).sort().reverse()[0];
+ $('lastActivity').textContent=latest?new Date(latest+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'No records';
+ const date=v=>v?new Date(v+'T00:00:00').toLocaleDateString('en-GB'):'—';
+ const cash=v=>'GHS '+money(v);
+ $('teacherContributionsState').textContent=ce?'Could not load your contribution records securely.':contributions.length?contributions.length+' record(s)':'No contribution records are available yet.';
+ $('teacherContributions').innerHTML=contributions.length?'<div style="overflow:auto"><table><thead><tr><th>Date</th><th>Amount</th><th>Reference</th></tr></thead><tbody>'+contributions.map(x=>'<tr><td>'+escapeHtml(date(x.date))+'</td><td>'+escapeHtml(cash(x.amount))+'</td><td>'+escapeHtml(x.reference||'—')+'</td></tr>').join('')+'</tbody></table></div>':'';
+ $('teacherPayoutsState').textContent=pe?'Could not load your payout records securely.':payouts.length?payouts.length+' record(s)':'No welfare payouts are available yet.';
+ $('teacherPayouts').innerHTML=payouts.length?'<div style="overflow:auto"><table><thead><tr><th>Date</th><th>Amount</th><th>Reason</th><th>Reference</th></tr></thead><tbody>'+payouts.map(x=>'<tr><td>'+escapeHtml(date(x.date))+'</td><td>'+escapeHtml(cash(x.amount))+'</td><td>'+escapeHtml(x.reason||'—')+'</td><td>'+escapeHtml(x.reference||'—')+'</td></tr>').join('')+'</tbody></table></div>':'';
+ $('teacherStatementSummary').innerHTML='<p>Contributions: <strong>'+escapeHtml(cash(totalC))+'</strong></p><p>Welfare payouts: <strong>'+escapeHtml(cash(totalP))+'</strong></p><p>Net personal record: <strong>'+escapeHtml(cash(totalC-totalP))+'</strong></p><p>Last activity: <strong>'+escapeHtml(latest?date(latest):'No records')+'</strong></p>';
+ try{const {data:notice}=await client.rpc('get_my_school_broadcast');if(notice?.[0]?.message){const n=document.createElement('div');n.className='panel';n.style.borderColor='#d6ad52';n.innerHTML='<strong>School notice</strong><p>'+escapeHtml(notice[0].message)+'</p>';host.insertBefore(n,workspace);}}catch(_){}
+ const form=$('teacherVoluntaryPasswordForm');
+ form?.addEventListener('submit',async ev=>{
+  ev.preventDefault();const current=$('teacherCurrentPassword').value,next=$('teacherVoluntaryNewPassword').value,confirmNext=$('teacherVoluntaryConfirmPassword').value,status=$('teacherVoluntaryPasswordMessage');
+  const say=(m,bad=false)=>{status.textContent=m;status.className=bad?'error':'muted';};
+  if(next.length<6)return say('Password must be at least 6 characters long.',true);
+  if(next.length>128)return say('Password must not exceed 128 characters.',true);
+  if(next!==confirmNext)return say('The new passwords do not match.',true);
+  const {data:{user:currentUser}}=await client.auth.getUser();
+  if(!currentUser?.email)return say('Your signed-in account could not be verified. Sign in again.',true);
+  const {error:verifyError}=await client.auth.signInWithPassword({email:currentUser.email,password:current});
+  if(verifyError)return say('Current password is incorrect. No changes were made.',true);
+  const {data:changed,error}=await client.functions.invoke('teacher-account-security',{body:{action:'change_password',password:next}});
+  if(error||!changed?.ok)return say(changed?.error||'Password update failed. Please try again.',true);
+  form.reset();say('Password updated successfully. Use your new password next time you sign in.');
+ });
+ resetInactivityTimer();
 }
 
 const HEADER_AVATAR_MAX_BYTES = 1024 * 1024;
