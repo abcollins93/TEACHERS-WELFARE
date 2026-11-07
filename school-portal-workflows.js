@@ -184,7 +184,6 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const reversed=new Set(reversals.map(r=>r.transaction_type+':'+r.transaction_id));
  const activeCons=cons.filter(x=>!reversed.has('contribution:'+x.id)), activePays=pays.filter(x=>!reversed.has('payout:'+x.id));
  const teacherById=new Map(teachers.map(t=>[String(t.id),t]));
- // Member fund summary card and its search/render handler are intentionally omitted.
  const teacherLabel=id=>{const t=teacherById.get(String(id));return t?esc(t.name)+' ('+esc(t.id)+')':esc(id||'—')};
  const renderTeacherTables=()=>{const q=String($('wfTeacherSearch')?.value||'').trim().toLowerCase();const visible=teachers.filter(t=>[t.id,t.name,t.phone,t.rank,t.class_name].some(v=>String(v||'').toLowerCase().includes(q)));
  const rosterRows=$('teacherRows');if(rosterRows)rosterRows.innerHTML=visible.length?visible.map(t=>'<tr><td>'+esc(t.id)+'</td><td>'+esc(t.name)+'</td><td>'+esc(t.phone||'—')+'</td><td>'+esc(t.rank||'—')+'</td><td>'+esc(t.class_name||'—')+'</td></tr>').join(''):'<tr><td colspan="5">No matching teachers.</td></tr>';
