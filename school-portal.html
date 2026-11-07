@@ -1212,7 +1212,7 @@ async function showDashboard(){
   try{
    const {data:result,error:invokeError}=await client.functions.invoke('provision-teacher-account',{body:{school_id:school.id,teacher_id:teacherId}});
    if(invokeError||!result?.ok)throw new Error(result?.error||'Teacher login could not be activated.');
-   window.alert('Teacher login activated.\\n\\nUsername / Staff ID: '+result.staff_id+'\\nInitial password: '+result.initial_password+'\\n\\nShare these details privately. The teacher must change the password after signing in.');
+   window.alert('Teacher login activated.\n\nUsername / Staff ID: '+result.staff_id+'\nInitial password: '+result.initial_password+'\n\nShare these details privately. The teacher must change the password after signing in.');
    button.textContent='Login activated';
   }catch(err){window.alert(err?.message||'Teacher login activation failed.');button.disabled=false;button.textContent=originalText;}
  }));
