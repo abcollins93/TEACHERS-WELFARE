@@ -220,18 +220,6 @@ async function audit(client,ctx,action,details,teacherId){
  return true;
 }
 window.initSchoolWorkflows=async function(client,school,refresh){
- // Refresh only school-scoped workflow data after a transaction. Avoid rerunning
- // the full gateway/dashboard bootstrap, which can eject the administrator from
- // the active tenant view after a successful save.
- const refreshWorkflow=async()=>{
-  const activeTarget=document.querySelector('.sidebar .navbtn.active')?.dataset.target||'';
-  const initialized=await window.initSchoolWorkflows(client,school,refresh);
-  if(initialized&&activeTarget){
-   const activeButton=Array.from(document.querySelectorAll('.sidebar .navbtn')).find(button=>button.dataset.target===activeTarget);
-   activeButton?.click();
-  }
-  return initialized;
- };
  try{
  // Rebuild workflow markup on refresh so handlers always use the latest school-scoped data.
  const existingWorkflows=$('workflows');const retainedRoster=$('schoolTeachers');const overview=$('schoolOverview');if(existingWorkflows&&retainedRoster&&existingWorkflows.contains(retainedRoster)&&overview?.parentElement)overview.parentElement.insertBefore(retainedRoster,overview.nextElementSibling);retainedRoster?.querySelector('#wfTeacherPanel')?.remove();if(existingWorkflows)existingWorkflows.remove();
@@ -345,12 +333,12 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  }else{
    tr.data=tr.data.map(t=>({...t,is_active:typeof t.is_active==='boolean'?t.is_active:true,passport:t.passport??null}));
  }
- const [cr,pr,rr]=await Promise.all([
+ let [cr,pr,rr]=await Promise.all([
    loadSource('contribution ledger',()=>client.from('contributions').select('id,teacher_id,amount,date,reference').eq('school_id',school.id).order('date',{ascending:false})),
    loadSource('payout ledger',()=>client.from('payouts').select('id,teacher_id,amount,date,reason,reference').eq('school_id',school.id).order('date',{ascending:false})),
    loadSource('transaction reversals',()=>client.from('transaction_reversals').select('transaction_type,transaction_id,reason,created_at').eq('school_id',school.id))
  ]);
- const teachers=tr.data||[], cons=cr.data||[], pays=pr.data||[], reversals=rr.data||[];
+ const teachers=tr.data||[];let cons=cr.data||[], pays=pr.data||[], reversals=rr.data||[];
  const sourceWarnings=[];
  if(tr.error)sourceWarnings.push('Teacher register unavailable');
  if(cr.error)sourceWarnings.push('Contribution ledger unavailable');
@@ -360,7 +348,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    console.warn('[School Welfare] Partial dashboard data for school',school.school_code,sourceWarnings);
  }
  const reversed=new Set(reversals.map(r=>r.transaction_type+':'+r.transaction_id));
- const activeCons=cons.filter(x=>!reversed.has('contribution:'+x.id)), activePays=pays.filter(x=>!reversed.has('payout:'+x.id));
+ let activeCons=cons.filter(x=>!reversed.has('contribution:'+x.id)), activePays=pays.filter(x=>!reversed.has('payout:'+x.id));
 
  const contribStyle=document.createElement('style');
  contribStyle.textContent=`
@@ -525,11 +513,37 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     $('wfPayRows').innerHTML=pr.error?'<tr><td colspan="6">Payout records could not be loaded. Check the school account permissions and try again.</td></tr>':rows.length?rows.map(x=>'<tr><td>'+esc(x.reference||'—')+'</td><td>'+teacherLabel(x.teacher_id)+'</td><td>'+esc(x.reason||'Welfare support')+'</td><td>GHS '+money(x.amount)+'</td><td>'+esc(x.date||'—')+'</td><td>'+reversalCell('payout',x)+'</td></tr>').join(''):'<tr><td colspan="6">No matching payouts.</td></tr>';
   };
   renderPayoutLedger();$('wfPayoutSearch').addEventListener('input',renderPayoutLedger);
+  // Reload transaction data in place; keep the authenticated dashboard and
+  // currently selected section mounted after a contribution or payout is saved.
+  const refreshWorkflow=async()=>{
+    const [nextCon,nextPay,nextRev]=await Promise.all([
+      loadSource('contribution ledger refresh',()=>client.from('contributions').select('id,teacher_id,amount,date,reference').eq('school_id',ctx.id).order('date',{ascending:false})),
+      loadSource('payout ledger refresh',()=>client.from('payouts').select('id,teacher_id,amount,date,reason,reference').eq('school_id',ctx.id).order('date',{ascending:false})),
+      loadSource('transaction reversals refresh',()=>client.from('transaction_reversals').select('transaction_type,transaction_id,reason,created_at').eq('school_id',ctx.id))
+    ]);
+    cr=nextCon;pr=nextPay;rr=nextRev;
+    cons=nextCon.data||[];pays=nextPay.data||[];reversals=nextRev.data||[];
+    reversed.clear();
+    reversals.forEach(item=>reversed.add(item.transaction_type+':'+item.transaction_id));
+    activeCons=cons.filter(item=>!reversed.has('contribution:'+item.id));
+    activePays=pays.filter(item=>!reversed.has('payout:'+item.id));
+    const totalCon=activeCons.reduce((sum,item)=>sum+Number(item.amount||0),0);
+    const totalPay=activePays.reduce((sum,item)=>sum+Number(item.amount||0),0);
+    $('contributionTotal').textContent=cr.error?'Unavailable':money(totalCon);
+    $('payoutTotal').textContent=pr.error?'Unavailable':money(totalPay);
+    $('netTotal').textContent=(cr.error||pr.error)?'Unavailable':money(totalCon-totalPay);
+    const now=new Date(),monthKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+    if($('monthlyContributionTotal'))$('monthlyContributionTotal').textContent=cr.error?'Unavailable':money(activeCons.filter(item=>String(item.date||'').slice(0,7)===monthKey).reduce((sum,item)=>sum+Number(item.amount||0),0));
+    renderContributionLedger();
+    renderPayoutLedger();
+    renderSelectedTeacherProfile();
+    await refreshAdminActivityTicker();
+    return !cr.error&&!pr.error;
+  };
   $('teacherCount').textContent=tr.error?'Unavailable':String(teachers.filter(t=>t.is_active!==false).length);
   $('contributionTotal').textContent=cr.error?'Unavailable':money(activeCons.reduce((a,x)=>a+Number(x.amount||0),0));
   $('payoutTotal').textContent=pr.error?'Unavailable':money(activePays.reduce((a,x)=>a+Number(x.amount||0),0));
   $('netTotal').textContent=(cr.error||pr.error)?'Unavailable':money(activeCons.reduce((a,x)=>a+Number(x.amount||0),0)-activePays.reduce((a,x)=>a+Number(x.amount||0),0));
-  const ctx=school;
 
  $('wfResetExpected').textContent='Required phrase: RESET:'+ctx.school_code;
  $('wfResetConfirmation').placeholder='RESET:'+ctx.school_code;
