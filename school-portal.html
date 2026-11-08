@@ -920,6 +920,22 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
 }
 </style>
 
+<style id="contributions-view-styles">
+#wfContributionPanel .wf-contrib-metrics{display:grid;grid-template-columns:1fr;gap:12px;margin:0 0 20px}
+#wfContributionPanel .wf-contrib-metric{min-height:104px;border:1px solid var(--line);border-left:5px solid;border-radius:14px;padding:17px 19px;background:var(--surface,#fff);display:flex;flex-direction:column;justify-content:center;gap:9px;box-shadow:0 5px 16px rgba(15,23,42,.045)}
+#wfContributionPanel .wf-contrib-metric small{font-size:.72rem;letter-spacing:.11em;font-weight:850;color:var(--muted,#64748b)}
+#wfContributionPanel .wf-contrib-metric strong{font-size:clamp(1.45rem,3vw,1.9rem);font-weight:900;letter-spacing:-.035em;color:var(--text,#14213d)}
+#wfContributionPanel .wf-contrib-green{border-left-color:#16a34a}.wf-contrib-red{border-left-color:#e11d48}.wf-contrib-blue{border-left-color:#2563eb}
+#wfContributionPanel .wf-contrib-log{border:1px solid var(--line);border-radius:15px;overflow:hidden;background:var(--surface,#fff)}
+#wfContributionPanel .wf-contrib-log-head{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;padding:16px 18px;border-bottom:1px solid var(--line)}
+#wfContributionPanel .wf-contrib-table-wrap{overflow-x:auto}
+#wfContributionPanel table{width:100%;min-width:720px;border-collapse:collapse}
+#wfContributionPanel th{padding:13px 15px;text-align:left;font-size:.68rem;letter-spacing:.1em;font-weight:850;color:var(--muted,#64748b);white-space:nowrap;background:rgba(120,130,150,.055)}
+#wfContributionPanel td{padding:14px 15px;border-top:1px solid var(--line);font-size:.86rem;white-space:nowrap}
+@media(min-width:900px){#wfContributionPanel .wf-contrib-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:600px){#wfContributionPanel .wf-contrib-table-wrap{margin:0 -2px}}
+.dark #wfContributionPanel .wf-contrib-metric,.dark #wfContributionPanel .wf-contrib-log{background:var(--surface,#101b2d)}
+</style>
 </head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading page">
@@ -1130,6 +1146,7 @@ async function renderTeacherDashboard(profile,school){
  if(metricLabels[1])metricLabels[1].innerHTML='<i class="fa-solid fa-arrow-trend-up"></i> My contributions · GHS';
  if(metricLabels[2])metricLabels[2].innerHTML='<i class="fa-solid fa-hand-holding-heart"></i> My payouts · GHS';
  if(metricLabels[3])metricLabels[3].innerHTML='<i class="fa-solid fa-calendar-days"></i> My contributions this month · GHS';
+ window.__welfareTeacherName=String(teacherProfile?.name||teacherProfile?.full_name||'My record');
  $('teacherCount').textContent='1';$('contributionTotal').textContent=money(totalC);
  $('payoutTotal').textContent=money(totalP);$('monthlyContributionTotal').textContent=money(monthC);
  $('netTotal').textContent=money(totalC-totalP);
@@ -1145,7 +1162,8 @@ async function renderTeacherDashboard(profile,school){
  const date=v=>v?new Date(v+'T00:00:00').toLocaleDateString('en-GB'):'—';
  const cash=v=>'GHS '+money(v);
  $('teacherContributionsState').textContent=ce?'Could not load your contribution records securely.':contributions.length?contributions.length+' record(s)':'No contribution records are available yet.';
- $('teacherContributions').innerHTML=contributions.length?'<div style="overflow:auto"><table><thead><tr><th>Date</th><th>Amount</th><th>Reference</th></tr></thead><tbody>'+contributions.map(x=>'<tr><td>'+escapeHtml(date(x.date))+'</td><td>'+escapeHtml(cash(x.amount))+'</td><td>'+escapeHtml(x.reference||'—')+'</td></tr>').join('')+'</tbody></table></div>':'';
+ $('teacherConTotal').textContent=cash(totalC);$('teacherConDisbursement').textContent=cash(totalP);$('teacherConNet').textContent=cash(totalC-totalP);
+ $('teacherContribRows').innerHTML=contributions.length?contributions.map(x=>{const d=String(x.date||''),my=d.length>=7?new Date(d+'T00:00:00').toLocaleDateString('en-GB',{month:'short',year:'numeric'}):'—';return '<tr><td>'+escapeHtml(window.__welfareTeacherName||'My record')+'</td><td>'+escapeHtml(my)+'</td><td>'+escapeHtml(x.reference||'—')+'</td><td>'+escapeHtml(cash(x.amount))+'</td><td>'+escapeHtml(date(x.date))+'</td><td><span class="wf-admin-pill">Recorded</span></td></tr>';}).join(''):'<tr><td colspan="6">No matching contributions.</td></tr>';
  $('teacherPayoutsState').textContent=pe?'Could not load your payout records securely.':payouts.length?payouts.length+' record(s)':'No welfare payouts are available yet.';
  $('teacherPayouts').innerHTML=payouts.length?'<div style="overflow:auto"><table><thead><tr><th>Date</th><th>Amount</th><th>Reason</th><th>Reference</th></tr></thead><tbody>'+payouts.map(x=>'<tr><td>'+escapeHtml(date(x.date))+'</td><td>'+escapeHtml(cash(x.amount))+'</td><td>'+escapeHtml(x.reason||'—')+'</td><td>'+escapeHtml(x.reference||'—')+'</td></tr>').join('')+'</tbody></table></div>':'';
  $('teacherStatementSummary').innerHTML='<p>Contributions: <strong>'+escapeHtml(cash(totalC))+'</strong></p><p>Welfare payouts: <strong>'+escapeHtml(cash(totalP))+'</strong></p><p>Net personal record: <strong>'+escapeHtml(cash(totalC-totalP))+'</strong></p><p>Last activity: <strong>'+escapeHtml(latest?date(latest):'No records')+'</strong></p>';
