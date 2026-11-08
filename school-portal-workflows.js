@@ -513,9 +513,14 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const saveBroadcast=async value=>{
    msg('wfBroadcastMsg','Saving announcement…');
    const {error}=await client.from('system_settings').upsert({school_id:ctx.id,key:'broadcast_message',value},{onConflict:'school_id,key'});
-   if(error){msg('wfBroadcastMsg','Announcement could not be saved. Check the school settings permissions and unique key; no database schema was changed.',true);return;}
-   const ok=await audit(client,ctx,value?'Publish school announcement':'Clear school announcement',value?'Announcement updated.':'Announcement cleared.');
-   msg('wfBroadcastMsg',ok?(value?'Announcement published.':'Announcement cleared.'):'Announcement saved, but its audit entry failed. Notify the platform administrator.',!ok);
+   if(error){msg('wfBroadcastMsg','Announcement could not be saved. Check the school settings permissions and unique key.',true);return;}
+   if(value){
+     const {data:{user}}=await client.auth.getUser();
+     const {error:archiveError}=await client.from('school_announcements').insert({school_id:ctx.id,message:value,published_by:user?.id||null});
+     if(archiveError){console.error('[School announcements] History insert failed:',archiveError.message);msg('wfBroadcastMsg','Current notice saved, but it could not be added to the live announcement history. Please retry publishing.',true);return;}
+   }
+   const ok=await audit(client,ctx,value?'Publish school announcement':'Clear school announcement',value?'Announcement published to the school feed.':'Current announcement cleared; previously published announcements remain in history.');
+   msg('wfBroadcastMsg',ok?(value?'Announcement published to the live teacher feed.':'Current announcement cleared; published history retained.'):'Announcement saved, but its audit entry failed. Notify the platform administrator.',!ok);
  };
  $('wfBroadcastForm').onsubmit=async e=>{e.preventDefault();const value=$('wfBroadcastText').value.trim();if(!value)return msg('wfBroadcastMsg','Enter an announcement before publishing.',true);if(!confirm('Publish this announcement for this school?'))return;await saveBroadcast(value);};
  $('wfBroadcastClear').onclick=async()=>{if(!confirm('Clear this school’s current announcement?'))return;$('wfBroadcastText').value='';await saveBroadcast('');};
