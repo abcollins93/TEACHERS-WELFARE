@@ -242,6 +242,31 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  if(!workflowMountNode||!adminPanelNode)throw new Error('Admin Panel markup could not be mounted in the dashboard.');
  const roster=$('schoolTeachers'),teacherRegisterPanel=$('wfTeacherRegisterPanel');
  const ctx=school;
+ // Capture the monthly dues form submit before any browser-level form navigation can occur.
+ const duesForm=$('wfDuesForm');
+ if(duesForm){
+   duesForm.addEventListener('submit',async event=>{
+     event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
+     const input=$('wfMonthlyDues'),button=duesForm.querySelector('button[type="submit"],button:not([type])');
+     const value=Number(input?.value);
+     if(!Number.isFinite(value)||value<0){msg('wfDuesMsg','Enter a valid monthly dues amount.',true);return;}
+     if(button)button.disabled=true;
+     msg('wfDuesMsg','Saving monthly dues…');
+     try{
+       const {error}=await client.from('system_settings').upsert(
+         {school_id:ctx.id,key:'standard_dues',value:String(value)},
+         {onConflict:'school_id,key'}
+       );
+       if(error)throw error;
+       const auditOk=await audit(client,ctx,'Update monthly dues','GHS '+value.toFixed(2));
+       msg('wfDuesMsg',auditOk?'Standard monthly dues updated successfully.':'Monthly dues were saved, but the audit entry could not be recorded.',!auditOk);
+     }catch(error){
+       console.error('[School settings] Monthly dues save failed:',error);
+       msg('wfDuesMsg','Monthly dues could not be saved. Please check your connection and school settings permissions, then try again.',true);
+     }finally{if(button)button.disabled=false;}
+   },true);
+ }
+
  if(!roster||!teacherRegisterPanel)throw new Error('Teachers & Members workspace could not be mounted.');
  roster.appendChild(teacherRegisterPanel);
  // School-scoped administrator activity ticker. The existing audit-log RLS policy
@@ -668,7 +693,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  $('wfBroadcastClear').onclick=async()=>{if(!confirm('Clear this school’s current announcement?'))return;$('wfBroadcastText').value='';await saveBroadcast('');};
  const {data:duesSetting,error:duesLoadError}=await client.from('system_settings').select('value').eq('school_id',ctx.id).eq('key','standard_dues').maybeSingle();
  if(!duesLoadError && duesSetting) $('wfMonthlyDues').value=Number(duesSetting.value||0);
- $('wfDuesForm').onsubmit=async e=>{e.preventDefault();const value=Number($('wfMonthlyDues').value);if(!Number.isFinite(value)||value<0)return msg('wfDuesMsg','Enter a valid monthly dues amount.',true);msg('wfDuesMsg','Saving…');const {error}=await client.from('system_settings').upsert({school_id:ctx.id,key:'standard_dues',value:String(value)},{onConflict:'school_id,key'});if(error){msg('wfDuesMsg','Monthly dues could not be saved. The settings table may need a school-scoped unique key/policy; no schema changes were made.',true);return;}const auditOk=await audit(client,ctx,'Update monthly dues','GHS '+value.toFixed(2));msg('wfDuesMsg',auditOk?'Standard monthly dues updated.':'Dues saved, but the audit entry failed.',!auditOk);};
+
  let auditRows=[];
  async function loadAudit(){
    const {data,error}=await client.from('audit_logs').select('time_string,actor_name,action,details,status,category').eq('school_id',ctx.id).order('created_at',{ascending:false}).limit(300);
