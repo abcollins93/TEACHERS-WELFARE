@@ -1133,6 +1133,14 @@ async function renderTeacherDashboard(profile,school){
  const auditView=$('wfAuditView');if(auditView)auditView.classList.add('hidden');
  $('dashboard').classList.remove('admin-workspace-open','audit-trail-open');
  const profileViewerNav=document.querySelector('.sidebar .navbtn[data-target="teacherProfileViewer"]');if(profileViewerNav)profileViewerNav.style.display='none';
+ // Teachers must be routed to their own single-account statement, never the
+ // administrator's three-card report generator. Admin navigation remains unchanged.
+ const teacherStatementNav=[...document.querySelectorAll('.sidebar .navbtn[data-target="wfReportsPanel"]')]
+  .find(btn=>btn.querySelector('span')?.textContent.trim()==='Statements & Reports');
+ if(teacherStatementNav)teacherStatementNav.dataset.target='wfStatementPanel';
+ const adminPdfReportsNav=[...document.querySelectorAll('.sidebar .navbtn[data-target="wfReportsPanel"]')]
+  .find(btn=>btn.querySelector('span')?.textContent.trim()==='PDF reports');
+ if(adminPdfReportsNav){adminPdfReportsNav.style.display='none';adminPdfReportsNav.setAttribute('aria-hidden','true');}
  const navRules=[
   ['schoolTeachers','Teachers & Members'],
   ['wfAdminPanel','Admin panel'],
