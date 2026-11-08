@@ -1120,17 +1120,46 @@ function setTenantFooter(school){
  if(copyright)copyright.textContent='© '+new Date().getFullYear()+' Teachers Welfare Fund Portal. All Rights Reserved.';
 }
 function showLoginWelcome(displayName,roleLabel,schoolName){
- const first=String(displayName||'').trim().split(/\s+/)[0]||'there';
+ const first=String(displayName||'').trim().split(/\\s+/)[0]||'there';
  let toast=document.getElementById('loginWelcomeToast');
+ if(!document.getElementById('loginWelcomeStyles')){
+  const style=document.createElement('style');style.id='loginWelcomeStyles';
+  style.textContent=`
+   @keyframes wfWelcomeEnter{0%{opacity:0;transform:translate(-50%,-18px) scale(.96);filter:blur(3px)}70%{opacity:1;transform:translate(-50%,3px) scale(1.01);filter:blur(0)}100%{opacity:1;transform:translate(-50%,0) scale(1)}}
+   @keyframes wfWelcomeExit{to{opacity:0;transform:translate(-50%,-12px) scale(.98);filter:blur(2px)}}
+   @keyframes wfWelcomeGlow{0%,100%{box-shadow:0 14px 42px rgba(2,10,25,.32),0 0 0 1px rgba(232,196,112,.12)}50%{box-shadow:0 16px 48px rgba(2,10,25,.38),0 0 24px rgba(232,196,112,.18)}}
+   @keyframes wfWelcomeProgress{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+   #loginWelcomeToast{position:fixed;z-index:2500;top:calc(env(safe-area-inset-top,0px) + 14px);left:50%;width:min(430px,calc(100vw - 28px));overflow:hidden;border:1px solid rgba(232,196,112,.62);border-radius:19px;background:linear-gradient(125deg,#07162d 0%,#10294a 58%,#17385b 100%);color:#fff;box-shadow:0 14px 42px rgba(2,10,25,.32);font-family:inherit;pointer-events:none;opacity:0}
+   #loginWelcomeToast .wf-welcome-inner{display:flex;align-items:center;gap:14px;padding:16px 18px 17px}
+   #loginWelcomeToast .wf-welcome-emblem{display:grid;place-items:center;flex:0 0 46px;width:46px;height:46px;border:1px solid rgba(239,205,128,.72);border-radius:15px;background:linear-gradient(145deg,#f4d68d,#d6a83e);color:#10233e;font-size:20px;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 5px 16px rgba(0,0,0,.2)}
+   #loginWelcomeToast .wf-welcome-copy{min-width:0;flex:1}
+   #loginWelcomeToast .wf-welcome-kicker{display:block;margin-bottom:3px;color:#edcf8b;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
+   #loginWelcomeToast .wf-welcome-title{display:block;color:#fff;font-size:18px;font-weight:800;line-height:1.2;letter-spacing:-.25px}
+   #loginWelcomeToast .wf-welcome-subtitle{display:block;margin-top:4px;color:rgba(238,244,252,.82);font-size:12px;line-height:1.4}
+   #loginWelcomeToast .wf-welcome-progress{height:3px;background:rgba(255,255,255,.10);transform-origin:left}
+   #loginWelcomeToast .wf-welcome-progress>span{display:block;width:100%;height:100%;background:linear-gradient(90deg,#d8aa49,#ffe6a8,#d8aa49);transform-origin:left}
+   #loginWelcomeToast.wf-welcome-show{animation:wfWelcomeEnter .55s cubic-bezier(.2,.85,.25,1) forwards,wfWelcomeGlow 2.2s ease-in-out .55s 2}
+   #loginWelcomeToast.wf-welcome-hide{animation:wfWelcomeExit .38s ease forwards}
+   #loginWelcomeToast.wf-welcome-show .wf-welcome-progress>span{animation:wfWelcomeProgress 5.2s linear forwards}
+   @media(max-width:420px){#loginWelcomeToast .wf-welcome-inner{gap:11px;padding:14px}#loginWelcomeToast .wf-welcome-emblem{flex-basis:42px;width:42px;height:42px;font-size:18px}#loginWelcomeToast .wf-welcome-title{font-size:16px}}
+   @media(prefers-reduced-motion:reduce){#loginWelcomeToast.wf-welcome-show,#loginWelcomeToast.wf-welcome-hide{animation:none;opacity:1;transform:translateX(-50%)}#loginWelcomeToast .wf-welcome-progress>span{animation:none}}
+  `;
+  document.head.appendChild(style);
+ }
  if(!toast){
   toast=document.createElement('div');toast.id='loginWelcomeToast';toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');
-  toast.style.cssText='position:fixed;z-index:2500;top:calc(env(safe-area-inset-top, 0px) + 14px);left:50%;transform:translateX(-50%) translateY(-8px);width:min( min(92vw, 430px), calc(100vw - 24px));padding:13px 17px;border:1px solid rgba(226,190,105,.55);border-radius:14px;background:linear-gradient(120deg,#07172d,#15365b);color:#fff;box-shadow:0 12px 32px rgba(4,12,27,.28);font-size:.9rem;line-height:1.45;text-align:center;opacity:0;transition:opacity .22s ease,transform .22s ease;pointer-events:none';
+  toast.innerHTML='<div class="wf-welcome-inner"><div class="wf-welcome-emblem" aria-hidden="true"><i class="fa-solid fa-star"></i></div><div class="wf-welcome-copy"><span class="wf-welcome-kicker">A warm welcome</span><strong class="wf-welcome-title" id="wfWelcomeTitle"></strong><span class="wf-welcome-subtitle" id="wfWelcomeSubtitle"></span></div></div><div class="wf-welcome-progress" aria-hidden="true"><span></span></div>';
   document.body.appendChild(toast);
  }
- toast.textContent='Welcome, '+first+'. '+(roleLabel==='School Administrator'?'Your '+(schoolName||'school')+' admin portal is ready.':'Your personal welfare account is ready.');
- toast.style.opacity='1';toast.style.transform='translateX(-50%) translateY(0)';
+ const title=toast.querySelector('#wfWelcomeTitle'),subtitle=toast.querySelector('#wfWelcomeSubtitle');
+ if(title)title.textContent='Welcome, '+first+'!';
+ if(subtitle)subtitle.textContent=roleLabel==='School Administrator'?(schoolName||'Your school')+' · Administrator portal':'Your personal welfare account is ready';
+ toast.classList.remove('wf-welcome-hide','wf-welcome-show');
+ const progress=toast.querySelector('.wf-welcome-progress>span');
+ if(progress){progress.style.animation='none';void progress.offsetWidth;progress.style.animation='';}
+ void toast.offsetWidth;toast.classList.add('wf-welcome-show');
  if(window.__welfareWelcomeTimer)clearTimeout(window.__welfareWelcomeTimer);
- window.__welfareWelcomeTimer=setTimeout(()=>{toast.style.opacity='0';toast.style.transform='translateX(-50%) translateY(-8px)';},4200);
+ window.__welfareWelcomeTimer=setTimeout(()=>{toast.classList.remove('wf-welcome-show');toast.classList.add('wf-welcome-hide');},5200);
 }
 async function renderTeacherDashboard(profile,school){
  window.__welfareCurrentRole='teacher';
