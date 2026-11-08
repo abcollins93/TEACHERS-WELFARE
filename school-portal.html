@@ -1723,7 +1723,7 @@ client.auth.onAuthStateChange((event,session)=>{
 client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
 })();
 </script>
-<script src="school-portal-workflows.js?v=admin-panel-visibility-restore-20261108"></script>
+<script src="school-portal-workflows.js?v=audit-trail-visibility-restore-20261108"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
@@ -1893,12 +1893,20 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
       target.removeAttribute('aria-hidden');
     }
     if (requestedId === 'wfAuditPanel') {
+      // Audit history is mounted inside its own wrapper, outside the admin hub.
+      // Restore both wrapper and table panel explicitly so prior navigation
+      // cannot leave either one hidden by a stale class or inline display rule.
       const auditView = document.getElementById('wfAuditView');
       if (auditView) {
         auditView.classList.remove('hidden');
-        auditView.style.removeProperty('display');
-        auditView.setAttribute('aria-hidden','false');
+        auditView.style.setProperty('display','block','important');
+        auditView.style.setProperty('visibility','visible','important');
+        auditView.removeAttribute('aria-hidden');
       }
+      target.classList.remove('hidden');
+      target.style.setProperty('display','block','important');
+      target.style.setProperty('visibility','visible','important');
+      target.removeAttribute('aria-hidden');
     }
 
     // Keep the selected navigation item as the sole active item and update the
