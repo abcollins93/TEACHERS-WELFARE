@@ -2475,7 +2475,7 @@ window.generateTenantWelfarePdf=async function(o){
  const type=o.type,school=o.school||{},teacher=o.teacher||{},cs=[...(o.contributions||[])],ps=[...(o.payouts||[])],ts=[...(o.teachers||[])],month=o.month||'';
  const reportYear=String(o.year||'');
  if(type==='annual'){
-  if(!/^\\d{4}$/.test(reportYear))throw new Error('Choose a valid reporting year.');
+  if(!/^\d{4}$/.test(reportYear))throw new Error('Choose a valid reporting year.');
   const start=reportYear+'-01-01',end=reportYear+'-12-31';
   cs.splice(0,cs.length,...cs.filter(x=>String(x.date||'').slice(0,10)>=start&&String(x.date||'').slice(0,10)<=end));
   ps.splice(0,ps.length,...ps.filter(x=>String(x.date||'').slice(0,10)>=start&&String(x.date||'').slice(0,10)<=end));
@@ -2538,7 +2538,7 @@ window.generateTenantWelfarePdf=async function(o){
  const type=o.type,school=o.school&&typeof o.school==='object'?o.school:{},teacher=o.teacher&&typeof o.teacher==='object'?o.teacher:{},cs=Array.isArray(o.contributions)?o.contributions.slice():[],ps=Array.isArray(o.payouts)?o.payouts.slice():[],ts=Array.isArray(o.teachers)?o.teachers.slice():[],month=String(o.month||'');
  const reportYear=String(o.year||'');
  if(type==='annual'){
-  if(!/^\\d{4}$/.test(reportYear))throw new Error('Choose a valid reporting year.');
+  if(!/^\d{4}$/.test(reportYear))throw new Error('Choose a valid reporting year.');
   const start=reportYear+'-01-01',end=reportYear+'-12-31';
   cs.splice(0,cs.length,...cs.filter(x=>String(x.date||'').slice(0,10)>=start&&String(x.date||'').slice(0,10)<=end));
   ps.splice(0,ps.length,...ps.filter(x=>String(x.date||'').slice(0,10)>=start&&String(x.date||'').slice(0,10)<=end));
