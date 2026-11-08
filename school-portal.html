@@ -1475,20 +1475,9 @@ async function showDashboard(){
   const now=new Date();const monthKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');const monthContributions=contributions.filter(r=>!reversedContributions.has(String(r.id))&&String(r.date||'').slice(0,7)===monthKey).reduce((sum,r)=>sum+Number(r.amount||0),0);
  const p=payouts.filter(r=>!reversedPayouts.has(String(r.id))).reduce((sum,r)=>sum+Number(r.amount||0),0);
  $('teacherCount').textContent=teachers.length;if($('monthlyContributionTotal'))$('monthlyContributionTotal').textContent=money(monthContributions);$('contributionTotal').textContent=money(c);$('payoutTotal').textContent=money(p);$('netTotal').textContent=money(c-p);$('lastActivity').textContent='Loading…';
- $('teacherRows').innerHTML=teachers.length?teachers.map(t=>'<tr><td>'+escapeHtml(t.id)+'</td><td>'+escapeHtml(t.name)+'</td><td>'+escapeHtml(t.phone||'—')+'</td><td>'+escapeHtml(t.rank||'—')+'</td><td>'+escapeHtml(t.class_name||'—')+'</td><td><button type="button" class="secondary" data-provision-teacher="'+escapeHtml(t.id)+'" style="white-space:nowrap;padding:7px 10px;font-size:12px">Activate / Reset Login</button></td></tr>').join(''):'<tr><td colspan="6">No teachers are assigned to this school yet.</td></tr>';
- document.querySelectorAll('[data-provision-teacher]').forEach(button=>button.addEventListener('click',async()=>{
-  const teacherId=button.getAttribute('data-provision-teacher');if(!teacherId)return;
-  if(!window.confirm('Activate or reset this teacher login? The initial password will be reset to the Staff ID and the teacher must change it at next sign-in.'))return;
-  const originalText=button.textContent;button.disabled=true;button.textContent='Processing…';
-  try{
-   const {data:result,error:invokeError}=await client.functions.invoke('provision-teacher-account',{body:{school_id:school.id,teacher_id:teacherId}});
-   if(invokeError||!result?.ok)throw new Error(result?.error||'Teacher login could not be activated.');
-   window.alert('Teacher login activated.\n\nUsername / Staff ID: '+result.staff_id+'\nInitial password: '+result.initial_password+'\n\nShare these details privately. The teacher must change the password after signing in.');
-   button.textContent='Login activated';
-  }catch(err){window.alert(err?.message||'Teacher login activation failed.');button.disabled=false;button.textContent=originalText;}
- }));
- 
- const latestActivity=await Promise.all([
+ // The Teachers & Members workflow owns roster rendering and teacher-login
+ // provisioning. The retired #teacherRows element is intentionally not used.
+const latestActivity=await Promise.all([
   client.from('contributions').select('date').eq('school_id',school.id).order('date',{ascending:false}).limit(1),
   client.from('payouts').select('date').eq('school_id',school.id).order('date',{ascending:false}).limit(1)
 ]);
@@ -1505,7 +1494,15 @@ try {
     console.error('[School Welfare] Workflow initialization deferred/failed:',workflowError?.message||workflowError);
   }
   const duesMetric=$('standardDuesMetric'),duesInput=$('wfMonthlyDues');if(duesMetric&&duesInput){const updateDues=()=>{duesMetric.textContent='GHS '+money(duesInput.value||0);};updateDues();duesInput.addEventListener('input',updateDues);}
- $('downloadSchoolPdf').onclick=()=>{if(!window.html2pdf){alert('PDF library is unavailable. Please check your internet connection.');return;}const report=document.createElement('div');report.style.cssText='padding:24px;color:#182235;font-family:Arial,sans-serif;background:white';report.innerHTML='<h1 style="color:#0b1d3a">'+escapeHtml(school.name)+'</h1><p>School Welfare Fund — Summary Statement</p><p>School code: '+escapeHtml(school.school_code)+' | Generated: '+new Date().toLocaleString()+'</p><hr><h2>Fund summary</h2><p>Registered teachers: '+escapeHtml($('teacherCount').textContent)+'</p><p>Total contributions: GHS '+escapeHtml($('contributionTotal').textContent)+'</p><p>Total welfare payouts: GHS '+escapeHtml($('payoutTotal').textContent)+'</p><p><strong>Net fund balance: GHS '+escapeHtml($('netTotal').textContent)+'</strong></p><h2>Teacher register</h2>'+document.querySelector('#schoolTeachers table').outerHTML;window.html2pdf().set({margin:10,filename:(school.school_code||'school')+'-welfare-summary.pdf',image:{type:'jpeg',quality:.96},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:'landscape'}}).from(report).save();};
+ const schoolPdfButton=$('downloadSchoolPdf');
+ if(schoolPdfButton)schoolPdfButton.onclick=()=>{
+  if(!window.html2pdf){alert('PDF library is unavailable. Please check your internet connection.');return;}
+  const teacherTable=document.querySelector('#schoolTeachers table');
+  if(!teacherTable){alert('The teacher register is still loading. Please try again in a moment.');return;}
+  const report=document.createElement('div');report.style.cssText='padding:24px;color:#182235;font-family:Arial,sans-serif;background:white';
+  report.innerHTML='<h1 style="color:#0b1d3a">'+escapeHtml(school.name)+'</h1><p>School Welfare Fund — Summary Statement</p><p>School code: '+escapeHtml(school.school_code)+' | Generated: '+new Date().toLocaleString()+'</p><hr><h2>Fund summary</h2><p>Registered teachers: '+escapeHtml($('teacherCount').textContent)+'</p><p>Total contributions: GHS '+escapeHtml($('contributionTotal').textContent)+'</p><p>Total welfare payouts: GHS '+escapeHtml($('payoutTotal').textContent)+'</p><p><strong>Net fund balance: GHS '+escapeHtml($('netTotal').textContent)+'</strong></p><h2>Teacher register</h2>'+teacherTable.outerHTML;
+  window.html2pdf().set({margin:10,filename:(school.school_code||'school')+'-welfare-summary.pdf',image:{type:'jpeg',quality:.96},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:'landscape'}}).from(report).save();
+ };
 }
 $('teacherLoginForm').addEventListener('submit',async e=>{
  e.preventDefault();
