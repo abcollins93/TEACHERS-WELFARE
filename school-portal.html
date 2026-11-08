@@ -1496,14 +1496,16 @@ async function renderTeacherDashboard(profile,school){
  window.__teacherTickerTimer=setInterval(refreshTeacherTicker,30000);
  document.querySelectorAll('.teacher-workspace-panel').forEach(panel=>panel.classList.add('hidden'));
  $('schoolOverview').classList.remove('hidden');
- const [{data:cs,error:ce},{data:ps,error:pe},{data:schoolPayoutData,error:spe}]=await Promise.all([
+ const [{data:cs,error:ce},{data:ps,error:pe},{data:schoolPayoutData,error:spe},{data:personalContributionFeed,error:pcfe}]=await Promise.all([
   client.rpc('get_my_teacher_contributions'),
   client.rpc('get_my_teacher_payouts'),
-  client.rpc('get_my_school_welfare_payout_feed')
+  client.rpc('get_my_school_welfare_payout_feed'),
+  client.rpc('get_my_teacher_contribution_feed')
  ]);
- // Personal records remain bound to auth.uid(); the school feed returns limited payout fields only.
- let contributionLoadError=ce,schoolPayoutLoadError=spe;
+ // Personal records remain bound to auth.uid(); school-wide payouts expose limited fields only.
+ let contributionLoadError=pcfe,schoolPayoutLoadError=spe;
  const contributions=ce?[]:(cs||[]),payouts=pe?[]:(ps||[]);
+ let teacherContributionRows=pcfe?[]:(personalContributionFeed||[]);
  let schoolPayoutRows=spe?[]:(schoolPayoutData||[]);
  const totalC=contributions.reduce((sum,x)=>sum+Number(x.amount||0),0);
  const totalP=payouts.reduce((sum,x)=>sum+Number(x.amount||0),0);
@@ -1536,9 +1538,9 @@ async function renderTeacherDashboard(profile,school){
   if(contributionBody){
    contributionBody.innerHTML=contributionLoadError
     ?'<tr><td colspan="6">Your personal contribution records could not be loaded securely.</td></tr>'
-    :contributions.length?contributions.slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).map(x=>{
-      const raw=String(x.date||''),month=raw.length>=7?new Date(raw.slice(0,10)+'T00:00:00').toLocaleDateString('en-GB',{month:'long',year:'numeric'}):'—';
-      return '<tr><td>'+escapeHtml(month)+'</td><td>'+escapeHtml(x.reference||'—')+'</td><td class="teacher-dashboard-contribution-amount">'+escapeHtml(cash(x.amount))+'</td><td>'+escapeHtml(date(raw))+'</td><td><span class="teacher-dashboard-status">Recorded</span></td><td><button type="button" class="teacher-dashboard-action" data-teacher-dashboard-statement>Statement</button></td></tr>';
+    :teacherContributionRows.length?teacherContributionRows.map(x=>{
+      const raw=String(x.contribution_date||''),month=raw.length>=7?new Date(raw.slice(0,10)+'T00:00:00').toLocaleDateString('en-GB',{month:'long',year:'numeric'}):'—',isReversed=!!x.is_reversed;
+      return '<tr><td>'+escapeHtml(month)+'</td><td>'+escapeHtml(x.reference||'—')+'</td><td class="teacher-dashboard-contribution-amount">'+escapeHtml(cash(x.amount))+'</td><td>'+escapeHtml(date(raw))+'</td><td><span class="teacher-dashboard-status'+(isReversed?' reversed':'')+'">'+(isReversed?'Reversed':'Recorded')+'</span></td><td><button type="button" class="teacher-dashboard-action" data-teacher-dashboard-statement>Statement</button></td></tr>';
      }).join('')
     :'<tr><td colspan="6">No personal contributions have been recorded yet.</td></tr>';
   }
@@ -1552,7 +1554,7 @@ async function renderTeacherDashboard(profile,school){
     :'<tr><td colspan="6">No school-wide welfare payouts have been recorded yet.</td></tr>';
   }
   const contributionState=$('teacherDashboardContributionState'),payoutState=$('teacherDashboardPayoutState');
-  if(contributionState)contributionState.textContent=contributionLoadError?'Personal records unavailable':contributions.length+' personal record(s)';
+  if(contributionState)contributionState.textContent=contributionLoadError?'Personal records unavailable':teacherContributionRows.length+' personal record(s)';
   if(payoutState)payoutState.textContent=schoolPayoutLoadError?'School feed unavailable':schoolPayoutRows.length+' school record(s)';
  };
  renderTeacherDashboardLedgers();
@@ -1562,14 +1564,16 @@ async function renderTeacherDashboard(profile,school){
  if(window.__teacherDashboardLedgerTimer)clearInterval(window.__teacherDashboardLedgerTimer);
  window.__teacherDashboardLedgerTimer=setInterval(async()=>{
   try{
-   const [freshCon,freshOwnPay,freshSchoolPay]=await Promise.all([
+   const [freshCon,freshOwnPay,freshSchoolPay,freshContributionFeed]=await Promise.all([
     client.rpc('get_my_teacher_contributions'),
     client.rpc('get_my_teacher_payouts'),
-    client.rpc('get_my_school_welfare_payout_feed')
+    client.rpc('get_my_school_welfare_payout_feed'),
+    client.rpc('get_my_teacher_contribution_feed')
    ]);
-   if(!freshCon.error){contributions.splice(0,contributions.length,...(freshCon.data||[]));contributionLoadError=false;}else contributionLoadError=true;
+   if(!freshCon.error){contributions.splice(0,contributions.length,...(freshCon.data||[]));}
    if(!freshOwnPay.error){payouts.splice(0,payouts.length,...(freshOwnPay.data||[]));}
    if(!freshSchoolPay.error){schoolPayoutRows=freshSchoolPay.data||[];schoolPayoutLoadError=false;}else schoolPayoutLoadError=true;
+   if(!freshContributionFeed.error){teacherContributionRows=freshContributionFeed.data||[];contributionLoadError=false;}else contributionLoadError=true;
    const refreshedConTotal=contributions.reduce((sum,row)=>sum+Number(row.amount||0),0);
    const refreshedOwnPayoutTotal=payouts.reduce((sum,row)=>sum+Number(row.amount||0),0);
    const refreshedMonthKey=new Date().toISOString().slice(0,7);
