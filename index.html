@@ -1158,33 +1158,36 @@ try {
      TEACHERS
 ========================================================= -->
 <section id="section-teachers" class="page-section">
-    <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-            <h2 class="text-2xl font-black text-slate-900 dark:text-white">Teachers & Members</h2>
-            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">Registered welfare fund active members (Admin Access Only).</p>
-        </div>
-        <div class="bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-400 px-3.5 py-1.5 rounded-xl text-xs font-bold border border-amber-200 dark:border-amber-900">
-            <i class="fa-solid fa-user-shield mr-1.5"></i> Admin Roster View
-        </div>
-    </div>
-
     <div class="glass-card rounded-2xl shadow-sm overflow-hidden">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-5 sm:p-6 border-b border-slate-200/80 dark:border-slate-700/80">
+            <div>
+                <h2 class="text-2xl font-black text-slate-900 dark:text-white">Teachers &amp; Members</h2>
+                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Registered welfare fund active members (Admin Access Only).</p>
+            </div>
+            <div class="shrink-0 bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-400 px-3.5 py-1.5 rounded-xl text-xs font-bold border border-amber-200 dark:border-amber-900">
+                <i class="fa-solid fa-user-shield mr-1.5"></i> Admin Roster View
+            </div>
+        </div>
         <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+            <table class="w-full min-w-[920px] text-sm">
                 <thead class="bg-slate-100/80 dark:bg-slate-800/80 text-xs uppercase text-slate-600 dark:text-slate-300 font-extrabold tracking-wider">
                     <tr>
-                        <th class="px-6 py-4 text-left">Staff ID</th>
-                        <th class="px-6 py-4 text-left">Name</th>
-                        <th class="px-6 py-4 text-left">Phone</th>
-                        <th class="px-6 py-4 text-left">Rank / Grade</th>
-                        <th class="px-6 py-4 text-left">Class/Subject Assigned</th>
-                        <th class="px-6 py-4 text-left">Total Paid</th>
-                        <th class="px-6 py-4 text-left">Action</th>
+                        <th class="px-5 py-4 text-left">Staff ID</th>
+                        <th class="px-5 py-4 text-left">Name</th>
+                        <th class="px-5 py-4 text-left">Phone</th>
+                        <th class="px-5 py-4 text-left">Rank / Grade</th>
+                        <th class="px-5 py-4 text-left">Class / Subject Assigned</th>
+                        <th class="px-5 py-4 text-left">Total Paid</th>
+                        <th class="px-5 py-4 text-left">Action</th>
                     </tr>
                 </thead>
                 <tbody id="teachersSectionBody" class="divide-y divide-slate-200 dark:divide-slate-800/80 font-medium">
+                    <tr><td colspan="7" class="px-5 py-8 text-center text-slate-500">Loading registered members…</td></tr>
                 </tbody>
             </table>
+        </div>
+        <div class="px-5 py-3 bg-slate-50/80 dark:bg-slate-800/40 border-t border-slate-200/80 dark:border-slate-700/80 text-xs text-slate-500 dark:text-slate-400">
+            Active members are loaded from this school's registered teacher records.
         </div>
     </div>
 </section>
@@ -3092,22 +3095,43 @@ async function handleReversePayout(teacherId, payoutIndex) {
 
 function renderTeachersSection() {
     const body = document.getElementById('teachersSectionBody');
-    if (!welfareData.teachers.length) {
-        body.innerHTML = emptyRow(7, 'No registered members.');
+    if (!body) return;
+
+    // The roster is sourced only from the authenticated portal's loaded teacher dataset.
+    // Require administrator access and exclude inactive/removed profiles.
+    if (!adminLoggedIn || !requireAdmin()) {
+        body.innerHTML = emptyRow(7, 'Administrator access is required to view this roster.');
         return;
     }
-    body.innerHTML = welfareData.teachers.map(teacher => {
-        const total = teacher.payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+
+    const activeTeachers = (Array.isArray(welfareData.teachers) ? welfareData.teachers : [])
+        .filter(teacher =>
+            teacher &&
+            teacher.is_active !== false &&
+            teacher.isActive !== false &&
+            teacher.active !== false &&
+            String(teacher.status || '').toLowerCase() !== 'inactive' &&
+            !removedMembers.some(member => String(member.id) === String(teacher.id))
+        );
+
+    if (!activeTeachers.length) {
+        body.innerHTML = emptyRow(7, 'No active registered members found for this school.');
+        return;
+    }
+
+    body.innerHTML = activeTeachers.map(teacher => {
+        const payments = Array.isArray(teacher.payments) ? teacher.payments : [];
+        const total = payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
         return `
-            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
-                <td class="px-6 py-4 font-mono font-semibold text-xs">${escapeHtml(teacher.id)}</td>
-                <td class="px-6 py-4 font-black text-slate-900 dark:text-white">${escapeHtml(teacher.name)}</td>
-                <td class="px-6 py-4">${escapeHtml(teacher.phone)}</td>
-                <td class="px-6 py-4"><span class="bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 px-2.5 py-1 rounded-lg text-xs font-bold border border-blue-200 dark:border-blue-900">${escapeHtml(teacher.rank)}</span></td>
-                <td class="px-6 py-4 font-bold text-amber-600 dark:text-amber-400">${escapeHtml(teacher.className || 'General')}</td>
-                <td class="px-6 py-4 font-black text-emerald-600 dark:text-emerald-400">${money(total)}</td>
-                <td class="px-6 py-4">
-                    <button onclick="openEditMemberModal('${escapeAttr(teacher.id)}')" class="px-3.5 py-2 rounded-xl bg-blue-100 hover:bg-blue-200 dark:bg-blue-950 dark:hover:bg-blue-900 text-blue-700 dark:text-blue-300 font-extrabold text-xs transition-all flex items-center gap-1.5 shadow-sm">
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                <td class="px-5 py-4 font-mono font-bold text-xs text-slate-700 dark:text-slate-200 whitespace-nowrap">${escapeHtml(teacher.id || '—')}</td>
+                <td class="px-5 py-4 font-black uppercase tracking-wide text-slate-900 dark:text-white">${escapeHtml(teacher.name || 'Unnamed Member')}</td>
+                <td class="px-5 py-4 text-slate-600 dark:text-slate-300 whitespace-nowrap">${escapeHtml(teacher.phone || '—')}</td>
+                <td class="px-5 py-4"><span class="inline-flex items-center bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 px-2.5 py-1.5 rounded-full text-xs font-bold border border-blue-200 dark:border-blue-900 whitespace-nowrap">${escapeHtml(teacher.rank || 'Not specified')}</span></td>
+                <td class="px-5 py-4 font-extrabold text-amber-600 dark:text-amber-400 whitespace-nowrap">${escapeHtml(teacher.className || teacher.class_name || 'General')}</td>
+                <td class="px-5 py-4 font-black text-emerald-600 dark:text-emerald-400 whitespace-nowrap">GHS ${money(total)}</td>
+                <td class="px-5 py-4">
+                    <button type="button" onclick="openEditMemberModal('${escapeAttr(teacher.id)}')" class="px-3.5 py-2 rounded-xl bg-blue-100 hover:bg-blue-200 dark:bg-blue-950 dark:hover:bg-blue-900 text-blue-700 dark:text-blue-300 font-extrabold text-xs transition-all inline-flex items-center gap-1.5 shadow-sm whitespace-nowrap">
                         <i class="fa-solid fa-pen text-[10px]"></i> Edit
                     </button>
                 </td>
