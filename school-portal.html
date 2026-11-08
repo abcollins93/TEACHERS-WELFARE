@@ -979,7 +979,7 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
   <div class="page-loader-dots" aria-hidden="true"><span></span><span></span><span></span></div>
  </div>
 </div>
-<header class="top"><div><div class="eyebrow">Teachers Welfare Fund</div><h1 id="brand">School Portal</h1></div><div class="top-account-actions" style="display:flex;align-items:center;gap:12px"><button id="themeToggle" class="secondary" type="button" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i> Theme</button><div class="shield"><i class="fa-solid fa-shield-halved"></i>Secure school administrator access</div><div id="headerProfile" class="header-profile hidden" aria-label="Signed-in profile"><button type="button" class="header-avatar" id="headerAvatar" aria-label="Change profile picture" title="Change profile picture"><i class="fa-solid fa-user" aria-hidden="true"></i><span class="header-avatar-edit" aria-hidden="true"><i class="fa-solid fa-camera"></i></span></button><input id="headerAvatarFile" type="file" accept="image/*" hidden><span id="headerAvatarStatus" class="header-avatar-status" role="status" aria-live="polite"></span><div class="header-profile-copy"><strong id="headerProfileName">Signed-in user</strong><small id="headerProfileRole">Portal account</small></div></div></div></header>
+<header class="top"><div><div class="eyebrow" id="sectionPageTitle">Dashboard</div><h1 id="brand">School Portal</h1></div><div class="top-account-actions" style="display:flex;align-items:center;gap:12px"><button id="themeToggle" class="secondary" type="button" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i> Theme</button><div class="shield"><i class="fa-solid fa-shield-halved"></i>Secure school administrator access</div><div id="headerProfile" class="header-profile hidden" aria-label="Signed-in profile"><button type="button" class="header-avatar" id="headerAvatar" aria-label="Change profile picture" title="Change profile picture"><i class="fa-solid fa-user" aria-hidden="true"></i><span class="header-avatar-edit" aria-hidden="true"><i class="fa-solid fa-camera"></i></span></button><input id="headerAvatarFile" type="file" accept="image/*" hidden><span id="headerAvatarStatus" class="header-avatar-status" role="status" aria-live="polite"></span><div class="header-profile-copy"><strong id="headerProfileName">Signed-in user</strong><small id="headerProfileRole">Portal account</small></div></div></div></header>
 <main>
 <section id="login" class="panel narrow"><div class="gateway-brand"><div class="gateway-icon"><i class="fa-solid fa-graduation-cap"></i></div><div class="eyebrow"><span class="gateway-live-dot" aria-hidden="true"></span>Protected school gateway · Live</div><h2 id="loginSchoolName">School name</h2><div class="gateway-school-badge">Welfare Fund Portal Gateway</div></div><p class="muted" style="text-align:center;margin:0 0 24px">School gateway code: <strong id="codeLabel"></strong><br>Sign in with your registered school account.</p><p class="eyebrow" style="margin-top:0">School administrator access</p><p class="muted">Use the email invitation and password created for your school administrator account.</p>
 <form id="loginForm"><label for="email">Administrator email</label><input id="email" type="email" autocomplete="username" required><label for="password">Password</label><div class="password-field"><input id="password" type="password" autocomplete="current-password" required><button type="button" class="password-toggle" data-password-target="password" aria-label="Show password" aria-pressed="false" title="Show password"><i class="fa-solid fa-eye" aria-hidden="true"></i></button></div><p id="loginError" class="error" role="alert"></p><button id="loginBtn" type="submit"><i class="fa-solid fa-right-to-bracket"></i> &nbsp;Sign in securely</button><button id="forgotPassword" type="button" class="secondary" style="width:100%;margin-top:8px">Forgot password?</button></form>
@@ -1676,7 +1676,7 @@ client.auth.onAuthStateChange((event,session)=>{
 client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
 })();
 </script>
-<script src="school-portal-workflows.js?v=admin-ticker-gentle-20261108"></script>
+<script src="school-portal-workflows.js?v=exclusive-section-navigation-20261108"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
@@ -1776,86 +1776,82 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
       return;
     }
 
-    if(window.__welfareCurrentRole==='teacher'){
-      ['schoolOverview','wfTeacherPanel','wfContributionPanel','wfPayoutPanel','wfStatementPanel'].forEach(id=>{
-        const panel=document.getElementById(id);if(panel)panel.classList.toggle('hidden',panel!==target);
+    // Strict single-view navigation: hide every other portal destination, then
+    // reveal only the selected destination and the ancestor containers it needs.
+    const sectionTitles = {
+      schoolOverview: 'Dashboard',
+      teacherProfileViewer: 'Teacher Profile',
+      wfTeacherPanel: 'Teacher Profile',
+      schoolTeachers: 'Teachers & Members',
+      wfContributionPanel: 'Contributions',
+      wfPayoutPanel: 'Welfare & Payouts',
+      wfStatementPanel: 'Statements & Reports',
+      wfReportsPanel: 'Statements & Reports',
+      wfAdminPanel: 'Administration Panel',
+      wfAuditPanel: 'Audit Trail Dashboard'
+    };
+    const pageTitle = document.getElementById('sectionPageTitle');
+    if (pageTitle) pageTitle.textContent = sectionTitles[requestedId] || 'Dashboard';
+
+    const viewIds = [
+      'schoolOverview','teacherProfileViewer','schoolTeachers','wfTeacherPanel',
+      'wfContributionPanel','wfPayoutPanel','wfStatementPanel','wfReportsPanel',
+      'wfAdminPanel','wfAuditView','teacherWorkspace','workflows'
+    ];
+    viewIds.forEach(function(id){
+      const view = document.getElementById(id);
+      if (!view || view === target || view.contains(target)) return;
+      view.classList.add('hidden');
+      view.style.setProperty('display','none','important');
+      view.setAttribute('aria-hidden','true');
+    });
+
+    // A selected item nested inside Administration Panel (for example,
+    // Contributions or Welfare & Payouts) keeps its required parent containers,
+    // but all unrelated admin cards are hidden.
+    const adminHub = document.getElementById('wfAdminPanel');
+    const selectedInsideAdmin = !!(adminHub && adminHub.contains(target) && target !== adminHub);
+    if (selectedInsideAdmin) {
+      adminHub.querySelectorAll('.panel').forEach(function(panel){
+        if (panel === target || panel.contains(target)) return;
+        panel.classList.add('hidden');
+        panel.style.setProperty('display','none','important');
+        panel.setAttribute('aria-hidden','true');
       });
     }
-    // The full register and registration form are visible only in Teachers & Members.
-    const teacherMembersView=document.getElementById('schoolTeachers');
-    if(window.__welfareCurrentRole!=='teacher'&&teacherMembersView){
-      teacherMembersView.classList.toggle('hidden',requestedId!=='schoolTeachers');
-    }
-    const isAdminWorkspaceTarget = target.id === 'wfAdminPanel';
-    const isAuditTarget = target.id === 'wfAuditPanel' || requestedId === 'wfAuditPanel';
-    if (dashboardRoot) {
-      dashboardRoot.classList.toggle('admin-workspace-open', isAdminWorkspaceTarget);
-      dashboardRoot.classList.toggle('audit-trail-open', isAuditTarget);
-    }
-    if (auditView) {
-      auditView.classList.toggle('hidden', !isAuditTarget);
-      auditView.setAttribute('aria-hidden', String(!isAuditTarget));
-    }
 
-    // Force a fresh layout calculation after revealing the requested workspace.
-    // This also handles panels mounted inside the workflow bundle after login.
-    target.classList.remove('hidden');
-    target.style.scrollMarginTop = '18px';
-    if (isAdminWorkspaceTarget) {
-      const workflowRoot = document.getElementById('workflows');
-      if (!workflowRoot || !target) {
-        console.error('[School Welfare] Admin Panel destination is not mounted.');
-        return;
-      }
-      workflowRoot.classList.remove('hidden');
-      workflowRoot.style.setProperty('display','block','important');
-      workflowRoot.style.setProperty('visibility','visible','important');
-
-      target.classList.remove('hidden');
+    // Reveal the target and only the ancestors required to place it in the
+    // dashboard layout. This also handles audit and dynamically mounted views.
+    let ancestor = target;
+    while (ancestor && ancestor !== dashboardRoot) {
+      ancestor.classList.remove('hidden');
+      ancestor.style.removeProperty('display');
+      ancestor.style.removeProperty('visibility');
+      ancestor.removeAttribute('aria-hidden');
+      ancestor = ancestor.parentElement;
+    }
+    if (requestedId === 'wfAdminPanel') {
       target.style.setProperty('display','block','important');
       target.style.setProperty('visibility','visible','important');
-      target.style.minHeight='80vh';
-      target.style.marginTop='calc(var(--app-header-height, 0px) + var(--dashboard-menu-height, 0px) + 18px)';
-      target.setAttribute('aria-hidden','false');
-
-      target.querySelectorAll('.panel').forEach(function(panel){
-        if (panel.closest('#wfAuditView') || panel.id === 'wfAuditPanel') {
-          panel.classList.add('hidden');
-          panel.style.setProperty('display','none','important');
-          panel.setAttribute('aria-hidden','true');
-          return;
-        }
-        panel.classList.remove('hidden');
-        panel.style.setProperty('display','block','important');
-        panel.style.setProperty('visibility','visible','important');
-        panel.removeAttribute('aria-hidden');
-        panel.querySelectorAll('.hidden').forEach(function(child){
-          child.classList.remove('hidden');
-          child.style.removeProperty('display');
-          child.removeAttribute('aria-hidden');
-        });
-      });
-
-      const overview = document.getElementById('schoolOverview');
-      if (overview) {
-        overview.style.setProperty('display','none','important');
-        overview.setAttribute('aria-hidden','true');
-      }
-    } else {
-      const adminViewNode = document.getElementById('wfAdminPanel');
-      if (adminViewNode) {
-        adminViewNode.style.removeProperty('display');
-        adminViewNode.style.removeProperty('visibility');
-        adminViewNode.style.removeProperty('min-height');
-        adminViewNode.style.removeProperty('margin-top');
-        adminViewNode.setAttribute('aria-hidden','true');
-      }
-      const overview = document.getElementById('schoolOverview');
-      if (overview) {
-        overview.style.removeProperty('display');
-        overview.removeAttribute('aria-hidden');
+    }
+    if (requestedId === 'wfAuditPanel') {
+      const auditView = document.getElementById('wfAuditView');
+      if (auditView) {
+        auditView.classList.remove('hidden');
+        auditView.style.removeProperty('display');
+        auditView.setAttribute('aria-hidden','false');
       }
     }
+
+    // Keep the selected navigation item as the sole active item and update the
+    // accessible current-page state.
+    document.querySelectorAll('.sidebar .navbtn[data-target]').forEach(function(item){
+      const active = item === button;
+      item.classList.toggle('active', active);
+      if (active) item.setAttribute('aria-current','page');
+      else item.removeAttribute('aria-current');
+    });
+    closeSidebar();
     void target.offsetHeight;
     target.scrollIntoView({behavior:'smooth',block:'start'});
     if (typeof target.focus === 'function') {
