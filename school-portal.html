@@ -1676,7 +1676,7 @@ client.auth.onAuthStateChange((event,session)=>{
 client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
 })();
 </script>
-<script src="school-portal-workflows.js?v=exclusive-section-navigation-20261108"></script>
+<script src="school-portal-workflows.js?v=pure-white-surfaces-20261108"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
@@ -2099,7 +2099,41 @@ window.generateTenantWelfarePdf=async function(o){
  }
  const qr='twfqr'+id;
  const sign='<div class="twf-signatures"><div class="twf-sign"><div class="twf-line"></div><b>Welfare Financial Secretary</b><br>Signature &amp; Date</div><div class="twf-qr"><div id="'+qr+'"></div>Document reference</div><div class="twf-sign"><div class="twf-line"></div><b>Headteacher / Patron</b><br>'+esc(schoolName)+'</div></div><div class="twf-footer">'+esc(schoolName)+' Teachers Welfare Fund · '+(individual?'Official Member Statement':monthly?'Monthly Summary Report':'Complete Financial Summary')+' · Generated electronically</div>';
- const host=document.createElement('div');host.className='twf-pdf '+orientation;host.style.cssText='position:fixed;left:-100000px;top:0;z-index:-1;background:#fff';host.innerHTML='<style>'+style+'</style>'+head+body+sign;document.body.appendChild(host);
+ const host=document.createElement('div');host.className='twf-pdf '+orientation;host.style.cssText='position:fixed;left:-100000px;top:0;z-index:-1;background:#fff';host.innerHTML='<style>'+style+'
+/* Light-mode surface correction: every neutral white card/surface is true white. */
+body:not(.dark) .panel:not(.wf-admin-intro),
+body:not(.dark) .metric,
+body:not(.dark) .support,
+body:not(.dark) .teacher-login-card,
+body:not(.dark) #teacherProfileViewer .tp-field,
+body:not(.dark) #wfTeacherPanel,
+body:not(.dark) #wfAdminPanel .panel:not(.wf-admin-intro),
+body:not(.dark) #workflows .panel,
+body:not(.dark) .wf-payout-view,
+body:not(.dark) .wf-payout-metric,
+body:not(.dark) #wfReportsPanel.wf-reports-view {
+  background: #fff !important;
+}
+body:not(.dark) .metric {
+  background: #fff !important;
+}
+body:not(.dark) th,
+body:not(.dark) #wfTeacherPanel th,
+body:not(.dark) #wfAdminPanel th,
+body:not(.dark) #workflows th {
+  background: #fff !important;
+}
+body:not(.dark) .teacher-login-card input,
+body:not(.dark) #wfTeacherPanel input,
+body:not(.dark) #wfAdminPanel input,
+body:not(.dark) #wfAdminPanel select,
+body:not(.dark) #wfAdminPanel textarea,
+body:not(.dark) #workflows input,
+body:not(.dark) #workflows select,
+body:not(.dark) #workflows textarea {
+  background: #fff !important;
+}
+</style>'+head+body+sign;document.body.appendChild(host);
  try{
   const qrNode=host.querySelector('#'+qr);
   if(window.QRCode&&qrNode)new window.QRCode(qrNode,{text:'TWF DOCUMENT '+id+' | SCHOOL '+schoolCode,width:76,height:76,colorDark:'#030a16',colorLight:'#ffffff',correctLevel:window.QRCode.CorrectLevel.M});
