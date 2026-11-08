@@ -1320,6 +1320,21 @@ async function renderTeacherDashboard(profile,school){
  const firstName=String(teacherName||teacherId).trim().split(/\s+/)[0]||'Teacher';
  const greeting=$('dashboardGreeting');if(greeting)greeting.textContent='Hi, '+firstName+'!';
  setHeaderProfile(user,teacherName,'Teacher',teacherAvatar);
+ // Fixed, authenticated teacher identity: no profile switcher is exposed to individual accounts.
+ const teacherDashboardProfile=$('teacherDashboardProfile');
+ const teacherDashboardLedgers=$('teacherDashboardLedgers');
+ if(teacherDashboardProfile){
+  teacherDashboardProfile.hidden=false;
+  $('teacherDashboardName').textContent=teacherName||'Teacher';
+  $('teacherDashboardRank').textContent=teacherRecord?.rank||profile.rank||'Teacher';
+  $('teacherDashboardStaffId').textContent='STAFF ID · '+teacherId;
+  $('teacherDashboardPhone').textContent=teacherRecord?.phone||profile.phone||'Not provided';
+  $('teacherDashboardClass').textContent=teacherRecord?.class_name||profile.class_name||'Not assigned';
+  const avatar=$('teacherDashboardAvatar');avatar.textContent=String(teacherName||teacherId).trim().split(/\\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join('').toUpperCase()||'—';
+  if(teacherAvatar){const photo=document.createElement('img');photo.src=teacherAvatar;photo.alt='Profile photo of '+teacherName;photo.onerror=()=>{photo.remove();};avatar.textContent='';avatar.appendChild(photo);}
+ }
+ if(teacherDashboardLedgers)teacherDashboardLedgers.hidden=false;
+ $('teacherDashboardStatementButton')?.addEventListener('click',()=>document.getElementById('teacherStatementDownload')?.click());
  // Teacher-only shortcut: open the signed-in teacher's own fixed profile.
  // The target is always wfTeacherPanel; no roster selector is exposed to teachers.
  const overviewTop=document.querySelector('#schoolOverview .overview-top');
@@ -1481,12 +1496,14 @@ async function renderTeacherDashboard(profile,school){
  window.__teacherTickerTimer=setInterval(refreshTeacherTicker,30000);
  document.querySelectorAll('.teacher-workspace-panel').forEach(panel=>panel.classList.add('hidden'));
  $('schoolOverview').classList.remove('hidden');
- const [{data:cs,error:ce},{data:ps,error:pe}]=await Promise.all([
-  client.rpc('get_my_teacher_contributions'),client.rpc('get_my_teacher_payouts')
+ const [{data:cs,error:ce},{data:ps,error:pe},{data:schoolPayoutData,error:spe}]=await Promise.all([
+  client.rpc('get_my_teacher_contributions'),
+  client.rpc('get_my_teacher_payouts'),
+  client.rpc('get_my_school_welfare_payout_feed')
  ]);
- // These RPCs return only records belonging to the authenticated teacher.
-// Never turn a failed request into a misleading zero balance.
+ // Personal records remain bound to auth.uid(); the school feed returns limited payout fields only.
  const contributions=ce?[]:(cs||[]),payouts=pe?[]:(ps||[]);
+ let schoolPayoutRows=spe?[]:(schoolPayoutData||[]);
  const totalC=contributions.reduce((sum,x)=>sum+Number(x.amount||0),0);
  const totalP=payouts.reduce((sum,x)=>sum+Number(x.amount||0),0);
  const ownMemberCount=teacherRecord?.is_active===false?0:1;
@@ -1513,6 +1530,48 @@ async function renderTeacherDashboard(profile,school){
  $('lastActivity').textContent=latest?new Date(latest+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'No records';
  const date=v=>v?new Date(v+'T00:00:00').toLocaleDateString('en-GB'):'—';
  const cash=v=>'GHS '+money(v);
+ const renderTeacherDashboardLedgers=()=>{
+  const contributionBody=$('teacherDashboardContributionRows'),payoutBody=$('teacherDashboardPayoutRows');
+  if(contributionBody){
+   contributionBody.innerHTML=ce
+    ?'<tr><td colspan="6">Your personal contribution records could not be loaded securely.</td></tr>'
+    :contributions.length?contributions.slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).map(x=>{
+      const raw=String(x.date||''),month=raw.length>=7?new Date(raw.slice(0,10)+'T00:00:00').toLocaleDateString('en-GB',{month:'long',year:'numeric'}):'—';
+      return '<tr><td>'+escapeHtml(month)+'</td><td>'+escapeHtml(x.reference||'—')+'</td><td class="teacher-dashboard-contribution-amount">'+escapeHtml(cash(x.amount))+'</td><td>'+escapeHtml(date(raw))+'</td><td><span class="teacher-dashboard-status">Recorded</span></td><td><button type="button" class="teacher-dashboard-action" data-teacher-dashboard-statement>Statement</button></td></tr>';
+     }).join('')
+    :'<tr><td colspan="6">No personal contributions have been recorded yet.</td></tr>';
+  }
+  if(payoutBody){
+   payoutBody.innerHTML=spe
+    ?'<tr><td colspan="6">School-wide payout records could not be loaded. Please try again later.</td></tr>'
+    :schoolPayoutRows.length?schoolPayoutRows.map(x=>{
+      const isReversed=!!x.is_reversed;
+      return '<tr><td>'+escapeHtml(x.reference||'—')+'</td><td class="teacher-dashboard-beneficiary">'+escapeHtml(x.beneficiary||'Former member')+'</td><td>'+escapeHtml(x.reason||'Welfare support')+'</td><td class="teacher-dashboard-payout-amount">'+escapeHtml(cash(x.amount))+'</td><td>'+escapeHtml(date(x.payout_date))+'</td><td><span class="teacher-dashboard-status'+(isReversed?' reversed':'')+'">'+(isReversed?'Reversed':'Disbursed')+'</span></td></tr>';
+     }).join('')
+    :'<tr><td colspan="6">No school-wide welfare payouts have been recorded yet.</td></tr>';
+  }
+  const contributionState=$('teacherDashboardContributionState'),payoutState=$('teacherDashboardPayoutState');
+  if(contributionState)contributionState.textContent=ce?'Personal records unavailable':contributions.length+' personal record(s)';
+  if(payoutState)payoutState.textContent=spe?'School feed unavailable':schoolPayoutRows.length+' school record(s)';
+ };
+ renderTeacherDashboardLedgers();
+ $('teacherDashboardContributionRows')?.addEventListener('click',event=>{
+  if(event.target.closest('[data-teacher-dashboard-statement]'))document.getElementById('teacherStatementDownload')?.click();
+ });
+ if(window.__teacherDashboardLedgerTimer)clearInterval(window.__teacherDashboardLedgerTimer);
+ window.__teacherDashboardLedgerTimer=setInterval(async()=>{
+  try{
+   const [freshCon,freshOwnPay,freshSchoolPay]=await Promise.all([
+    client.rpc('get_my_teacher_contributions'),
+    client.rpc('get_my_teacher_payouts'),
+    client.rpc('get_my_school_welfare_payout_feed')
+   ]);
+   if(!freshCon.error){contributions.splice(0,contributions.length,...(freshCon.data||[]));}
+   if(!freshOwnPay.error){payouts.splice(0,payouts.length,...(freshOwnPay.data||[]));}
+   if(!freshSchoolPay.error){schoolPayoutRows=freshSchoolPay.data||[];}
+   renderTeacherDashboardLedgers();
+  }catch(error){console.warn('[Teacher dashboard] Ledger refresh failed:',error?.message||error);}
+ },30000);
  const profileFieldRows=rows=>rows.map(([label,value])=>'<div class="tp-field"><small>'+escapeHtml(label)+'</small><strong>'+escapeHtml(value||'—')+'</strong></div>').join('');
  const profileDate=v=>{if(!v)return '—';const d=new Date(v);return Number.isNaN(d.getTime())?String(v):d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});};
  const ownParts=String(teacherName||teacherId).trim().split(/\\s+/).filter(Boolean);
@@ -1945,7 +2004,7 @@ client.auth.onAuthStateChange((event,session)=>{
 client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
 })();
 </script>
-<script src="school-portal-workflows.js?v=welfare-payout-table-polish-20261108"></script>
+<script src="school-portal-workflows.js?v=teacher-dashboard-ledgers-20261108"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
