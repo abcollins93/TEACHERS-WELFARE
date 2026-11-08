@@ -1179,7 +1179,7 @@ async function renderTeacherDashboard(profile,school){
  if(!tickerStyles){
   tickerStyles=document.createElement('style');tickerStyles.id='teacherLiveTickerStyles';
   tickerStyles.textContent=`
-   #teacherLiveTicker{position:fixed;z-index:1200;left:0;right:0;bottom:0;min-height:68px;display:flex;align-items:center;gap:14px;padding:10px 18px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(112deg,#061326 0%,#0d2544 46%,#102f54 72%,#07172c 100%);border-top:1px solid rgba(255,255,255,.14);box-shadow:0 -12px 34px rgba(3,10,22,.24),inset 0 1px rgba(255,255,255,.08);color:#fff;overflow:hidden}
+   #teacherLiveTicker{position:fixed;z-index:1200;left:0;right:0;bottom:0;min-height:48px;display:flex;align-items:center;gap:10px;padding:6px 12px calc(6px + env(safe-area-inset-bottom));background:linear-gradient(112deg,#061326 0%,#0d2544 46%,#102f54 72%,#07172c 100%);border-top:1px solid rgba(255,255,255,.14);box-shadow:0 -12px 34px rgba(3,10,22,.24),inset 0 1px rgba(255,255,255,.08);color:#fff;overflow:hidden}
    #teacherLiveTicker:before{content:'';position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,#8b6722,#f8df91 22%,#d6a637 52%,#fff0bd 72%,#8b6722)}
    #teacherLiveTicker:after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(100deg,rgba(255,255,255,.055),transparent 30%,transparent 70%,rgba(255,255,255,.035))}
    #teacherLiveTicker .ticker-brand{position:relative;z-index:1;flex:0 0 auto;display:flex;align-items:center;gap:9px;padding:8px 12px;border:1px solid rgba(230,190,91,.34);border-radius:12px;background:linear-gradient(145deg,rgba(255,255,255,.12),rgba(255,255,255,.035));box-shadow:inset 0 1px rgba(255,255,255,.1),0 4px 14px rgba(0,0,0,.12)}
@@ -1198,18 +1198,18 @@ async function renderTeacherDashboard(profile,school){
    #teacherLiveTicker .ticker-control{position:relative;z-index:2;flex:0 0 24px;width:24px;height:24px;min-width:24px;min-height:24px;padding:0!important;display:grid;place-items:center;border:1px solid rgba(255,255,255,.2);border-radius:50%;background:rgba(255,255,255,.07);color:#f7df9e;font-size:.58rem;line-height:1;box-shadow:none}
    #teacherLiveTicker .ticker-control i{font-size:.58rem;line-height:1}
    #teacherLiveTicker .ticker-control:hover{background:rgba(255,255,255,.16)}
-   body.teacher-ticker-active{padding-bottom:86px}
-   body.teacher-ticker-active .sidebar{padding-bottom:90px}
+   body.teacher-ticker-active{padding-bottom:64px}
+   body.teacher-ticker-active .sidebar{padding-bottom:68px}
    @keyframes teacherTickerMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
    @keyframes teacherTickerPulse{50%{opacity:.55;transform:scale(.82)}}
-   @media(max-width:600px){#teacherLiveTicker{min-height:64px;padding:8px 9px calc(8px + env(safe-area-inset-bottom));gap:8px}#teacherLiveTicker .ticker-brand{gap:7px;padding:7px 8px}#teacherLiveTicker .ticker-brand-icon{width:25px;height:25px}#teacherLiveTicker .ticker-brand-copy strong{font-size:.59rem}#teacherLiveTicker .ticker-brand-copy small{display:none}#teacherLiveTicker .ticker-group{gap:25px;padding-right:25px}#teacherLiveTicker .ticker-item{font-size:.72rem}#teacherLiveTicker .ticker-item b{font-size:.55rem;padding:4px 6px}#teacherLiveTicker .ticker-time{font-size:.6rem}#teacherLiveTicker .ticker-control{width:32px;height:32px;min-height:32px}}
+   @media(max-width:600px){#teacherLiveTicker{min-height:48px;padding:5px 8px calc(5px + env(safe-area-inset-bottom));gap:7px}#teacherLiveTicker .ticker-brand{gap:7px;padding:7px 8px}#teacherLiveTicker .ticker-brand-icon{width:25px;height:25px}#teacherLiveTicker .ticker-brand-copy strong{font-size:.59rem}#teacherLiveTicker .ticker-brand-copy small{display:none}#teacherLiveTicker .ticker-group{gap:25px;padding-right:25px}#teacherLiveTicker .ticker-item{font-size:.72rem}#teacherLiveTicker .ticker-item b{font-size:.55rem;padding:4px 6px}#teacherLiveTicker .ticker-time{font-size:.6rem}#teacherLiveTicker .ticker-control{width:20px;height:20px;min-width:20px;min-height:20px;flex-basis:20px}}
    @media(max-width:360px){#teacherLiveTicker .ticker-brand-copy{display:none}#teacherLiveTicker .ticker-brand{padding:6px}}
    @media(prefers-reduced-motion:reduce){#teacherLiveTicker .ticker-track,#teacherLiveTicker .ticker-live{animation:none!important}}
   `;
   document.head.appendChild(tickerStyles);
  }
  const ticker=document.createElement('aside');ticker.id='teacherLiveTicker';ticker.setAttribute('aria-label','School announcements and your account activity');
- ticker.innerHTML='<div class="ticker-brand"><span class="ticker-brand-icon"><i class="fa-solid fa-sparkles" aria-hidden="true"></i></span><span class="ticker-brand-copy"><strong>SCHOOL FEED</strong><small>NOTICES & YOUR ACTIVITY</small></span><span class="ticker-live" aria-hidden="true"></span></div><div class="ticker-window"><div class="ticker-track"><div class="ticker-group" id="teacherTickerItems"></div><div class="ticker-group" id="teacherTickerItemsClone" aria-hidden="true"></div></div></div><button type="button" class="ticker-control" aria-label="Pause scrolling" aria-pressed="false" title="Pause scrolling"><i class="fa-solid fa-pause" aria-hidden="true"></i></button>';
+ ticker.innerHTML='<div class="ticker-brand"><span class="ticker-brand-copy"><strong>SCHOOL FEED</strong><small>NOTICES & YOUR ACTIVITY</small></span><span class="ticker-live" aria-hidden="true"></span></div><div class="ticker-window"><div class="ticker-track"><div class="ticker-group" id="teacherTickerItems"></div><div class="ticker-group" id="teacherTickerItemsClone" aria-hidden="true"></div></div></div><button type="button" class="ticker-control" aria-label="Pause scrolling" aria-pressed="false" title="Pause scrolling"><i class="fa-solid fa-pause" aria-hidden="true"></i></button>';
  workspace.appendChild(ticker);
  const teacherTickerControl=ticker.querySelector('.ticker-control');
  teacherTickerControl?.addEventListener('click',()=>{
@@ -1676,7 +1676,7 @@ client.auth.onAuthStateChange((event,session)=>{
 client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
 })();
 </script>
-<script src="school-portal-workflows.js?v=dashboard-load-fix-20261108"></script>
+<script src="school-portal-workflows.js?v=compact-ticker-20261108"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
