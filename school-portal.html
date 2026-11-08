@@ -1723,7 +1723,7 @@ client.auth.onAuthStateChange((event,session)=>{
 client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
 })();
 </script>
-<script src="school-portal-workflows.js?v=teacher-profile-matches-admin-viewer-20261108"></script>
+<script src="school-portal-workflows.js?v=admin-panel-visibility-restore-20261108"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
@@ -1878,8 +1878,19 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
       ancestor = ancestor.parentElement;
     }
     if (requestedId === 'wfAdminPanel') {
+      // A previous visit to a nested admin destination (such as Contributions
+      // or Welfare & Payouts) hides the other admin cards. Restore the complete
+      // administration workspace whenever its main navigation item is selected.
+      target.querySelectorAll('.panel').forEach(function(panel){
+        panel.classList.remove('hidden');
+        panel.style.removeProperty('display');
+        panel.style.removeProperty('visibility');
+        panel.removeAttribute('aria-hidden');
+      });
+      target.classList.remove('hidden');
       target.style.setProperty('display','block','important');
       target.style.setProperty('visibility','visible','important');
+      target.removeAttribute('aria-hidden');
     }
     if (requestedId === 'wfAuditPanel') {
       const auditView = document.getElementById('wfAuditView');
