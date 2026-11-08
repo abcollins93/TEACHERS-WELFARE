@@ -672,14 +672,14 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    return runWelfarePdf($('wfMonthlyPdf'),'wfReportMsg','Monthly summary PDF downloaded successfully.',()=>({
      type:'monthly',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},
      month,contributions:activeCons,payouts:activePays,teachers,
-     academicYear:typeof getCurrentAcademicYear==='function'?getCurrentAcademicYear():'',
+     academicYear:window.getCurrentAcademicYear(),
      standardMonthlyDues:typeof standardMonthlyDues!=='undefined'?standardMonthlyDues:0
    }));
  });
  $('wfCompletePdf').addEventListener('click',()=>runWelfarePdf($('wfCompletePdf'),'wfReportMsg','Complete fund summary PDF downloaded successfully.',()=>({
    type:'complete',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},
    contributions:activeCons,payouts:activePays,teachers,
-   academicYear:typeof getCurrentAcademicYear==='function'?getCurrentAcademicYear():'',
+   academicYear:window.getCurrentAcademicYear(),
    standardMonthlyDues:typeof standardMonthlyDues!=='undefined'?standardMonthlyDues:0
  })));
  $('wfStatementPdf').addEventListener('click',()=>{
@@ -691,7 +691,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      payouts:activePays.filter(x=>String(x.teacher_id)===String(tid)),
      personalContributionTotal:activeCons.filter(x=>String(x.teacher_id)===String(tid)).reduce((sum,row)=>sum+Number(row.amount||0),0),
      schoolFundBalance:activeCons.reduce((sum,row)=>sum+Number(row.amount||0),0)-activePays.reduce((sum,row)=>sum+Number(row.amount||0),0),
-     academicYear:typeof getCurrentAcademicYear==='function'?getCurrentAcademicYear():'',
+     academicYear:window.getCurrentAcademicYear(),
      standardMonthlyDues:typeof standardMonthlyDues!=='undefined'?standardMonthlyDues:0
    }));
  });
