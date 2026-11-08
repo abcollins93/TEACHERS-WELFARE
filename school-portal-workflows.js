@@ -344,6 +344,28 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  $('wfManageTeacherRows').addEventListener('click',async e=>{
    const viewButton=e.target.closest('[data-view-profile]');
    if(viewButton){selectedProfileTeacherId=String(viewButton.dataset.viewProfile);if(profileSelect)profileSelect.value=selectedProfileTeacherId;renderSelectedTeacherProfile();const nav=document.querySelector('.sidebar .navbtn[data-target="teacherProfileViewer"]');if(nav)nav.click();return;}
+   const deactivateButton=e.target.closest('[data-wf-remove]');
+   if(deactivateButton){
+     const teacher=teachers.find(t=>String(t.id)===String(deactivateButton.dataset.wfRemove));
+     if(!teacher)return msg('wfTeacherMsg','That teacher is no longer in the loaded roster. Refresh and try again.',true);
+     if(teacher.is_active===false)return msg('wfTeacherMsg','This teacher is already inactive.',true);
+     const confirmed=confirm('OK to deactivate '+teacher.name+' ('+teacher.id+')?\n\nThe teacher will be removed from the active register and will no longer be eligible to sign in. Existing contributions, payouts and historical records will be retained.\n\nSelect Cancel to leave the teacher active.');
+     if(!confirmed)return;
+     deactivateButton.disabled=true;
+     msg('wfTeacherMsg','Deactivating '+teacher.name+'…');
+     try{
+       const {error}=await client.from('teachers').update({is_active:false}).eq('id',teacher.id).eq('school_id',ctx.id);
+       if(error)throw new Error(error.message||'The teacher could not be deactivated.');
+       const auditOk=await audit(client,ctx,'Deactivate teacher profile',teacher.name+' ('+teacher.id+'); existing financial history retained.',teacher.id);
+       await refresh();
+       msg('wfTeacherMsg',auditOk?teacher.name+' has been deactivated successfully. Financial history was retained.':teacher.name+' was deactivated, but the audit entry failed. Notify the platform administrator.',!auditOk);
+     }catch(error){
+       console.error('[School Welfare] Teacher deactivation failed:',error);
+       msg('wfTeacherMsg',error.message||'Teacher deactivation failed. No change was confirmed.',true);
+       deactivateButton.disabled=false;
+     }
+     return;
+   }
    const button=e.target.closest('[data-wf-activate]');if(!button)return;
    const teacher=teachers.find(t=>String(t.id)===String(button.dataset.wfActivate));
    if(!teacher)return msg('wfTeacherMsg','That teacher is no longer in the loaded roster. Refresh and try again.',true);
