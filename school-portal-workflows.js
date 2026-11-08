@@ -481,25 +481,15 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
    a.href=url;a.download=(ctx.school_code||'school')+'-welfare-ledgers.csv';a.click();URL.revokeObjectURL(url);msg('wfReportMsg','CSV export prepared for download.');
  };
- $('wfMonthlyPdf').onclick=()=>{
-   const month=$('wfMonth').value;if(!month)return msg('wfReportMsg','Choose a reporting month first.',true);
-   if(!window.html2pdf)return msg('wfReportMsg','PDF service is unavailable.',true);
-   const mc=activeCons.filter(x=>String(x.date||'').startsWith(month)),mp=activePays.filter(x=>String(x.date||'').startsWith(month));
-   const sumC=mc.reduce((a,x)=>a+Number(x.amount||0),0),sumP=mp.reduce((a,x)=>a+Number(x.amount||0),0);
-   const report=document.createElement('div');report.style.cssText='padding:24px;background:white;color:#182235;font-family:Arial,sans-serif';
-   report.innerHTML='<h1>'+esc(ctx.name)+'</h1><h2>Monthly Welfare Fund Summary</h2><p>School code: '+esc(ctx.school_code)+' | Period: '+esc(month)+'</p><hr><p>Teachers registered: '+teachers.length+'</p><p>Contributions: GHS '+money(sumC)+' ('+mc.length+' entries)</p><p>Welfare payouts: GHS '+money(sumP)+' ('+mp.length+' entries)</p><h3>Contributions</h3><table style="width:100%;border-collapse:collapse"><tr><th>Date</th><th>Staff ID</th><th>Amount</th><th>Reference</th></tr>'+mc.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.teacher_id)+'</td><td>'+money(x.amount)+'</td><td>'+esc(x.reference||'—')+'</td></tr>').join('')+'</table><h3>Payouts</h3><table style="width:100%;border-collapse:collapse"><tr><th>Date</th><th>Staff ID</th><th>Amount</th><th>Reason</th></tr>'+mp.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.teacher_id)+'</td><td>'+money(x.amount)+'</td><td>'+esc(x.reason||x.reference||'—')+'</td></tr>').join('')+'</table>';
-   window.html2pdf().set({margin:10,filename:(ctx.school_code||'school')+'-'+month+'-monthly-welfare.pdf',html2canvas:{scale:2},jsPDF:{unit:'mm',format:'a4',orientation:'landscape'}}).from(report).save();msg('wfReportMsg','Monthly PDF report is being prepared.');
- };
- $('wfCompletePdf').onclick=()=>{
-   if(!window.html2pdf)return msg('wfReportMsg','PDF service is unavailable. Check your internet connection.',true);
-   const totalC=activeCons.reduce((n,x)=>n+Number(x.amount||0),0),totalP=activePays.reduce((n,x)=>n+Number(x.amount||0),0),net=totalC-totalP,activeMembers=teachers.filter(t=>t.is_active!==false).length;
-   const contributionRows=activeCons.map(x=>'<tr><td>'+esc(x.date||'—')+'</td><td>'+esc(x.teacher_id)+'</td><td>GHS '+money(x.amount)+'</td><td>'+esc(x.reference||'—')+'</td></tr>').join('');
-   const payoutRows=activePays.map(x=>'<tr><td>'+esc(x.date||'—')+'</td><td>'+esc(teacherById.get(String(x.teacher_id))?.name||x.teacher_id)+'</td><td>GHS '+money(x.amount)+'</td><td>'+esc(x.reason||x.reference||'—')+'</td></tr>').join('');
-   const report=document.createElement('div');report.style.cssText='padding:28px;background:#fff;color:#17243a;font-family:Arial,sans-serif;font-size:10pt;line-height:1.45';
-   report.innerHTML='<h1 style="color:#102b4f;margin-bottom:4px">'+esc(ctx.name)+'</h1><h2>Complete Welfare Fund Summary</h2><p>School code: '+esc(ctx.school_code)+' | Generated: '+new Date().toLocaleString('en-GH')+'</p><hr><h3>Executive overview</h3><p>Active members: <b>'+activeMembers+'</b> | Total registered members: <b>'+teachers.length+'</b></p><p>Total contributions: <b>GHS '+money(totalC)+'</b> ('+activeCons.length+' transactions)</p><p>Total welfare payouts: <b>GHS '+money(totalP)+'</b> ('+activePays.length+' transactions)</p><p>Current net fund balance: <b>GHS '+money(net)+'</b></p><h3>Complete contribution ledger</h3><table style="width:100%;border-collapse:collapse"><thead><tr><th>Date</th><th>Staff ID</th><th>Amount</th><th>Reference</th></tr></thead><tbody>'+contributionRows+'</tbody></table><h3 style="margin-top:24px">Complete welfare payout ledger</h3><table style="width:100%;border-collapse:collapse"><thead><tr><th>Date</th><th>Beneficiary</th><th>Amount</th><th>Reason / reference</th></tr></thead><tbody>'+payoutRows+'</tbody></table><p style="margin-top:22px;font-size:8pt;color:#64748b">This report contains active, non-reversed transactions available to this authenticated school account.</p>';
-   window.html2pdf().set({margin:10,filename:(ctx.school_code||'school')+'-complete-welfare-fund-summary.pdf',image:{type:'jpeg',quality:.96},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:'landscape'},pagebreak:{mode:['css','legacy']}}).from(report).save();
-   msg('wfReportMsg','Complete fund summary PDF is being prepared.');
- };
+ $('wfMonthlyPdf').onclick=async()=>{
+ const month=$('wfMonth').value;if(!month)return msg('wfReportMsg','Choose a reporting month first.',true);
+ try{await window.generateTenantWelfarePdf({type:'monthly',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},month,contributions:activeCons,payouts:activePays,teachers,academicYear:typeof getCurrentAcademicYear==='function'?getCurrentAcademicYear():'',standardMonthlyDues:typeof standardMonthlyDues!=='undefined'?standardMonthlyDues:0});msg('wfReportMsg','Monthly summary PDF downloaded successfully.');}
+ catch(error){console.error('[Monthly welfare PDF]',error);msg('wfReportMsg',error?.message||'Monthly PDF could not be generated.',true);}
+};
+$('wfCompletePdf').onclick=async()=>{
+ try{await window.generateTenantWelfarePdf({type:'complete',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},contributions:activeCons,payouts:activePays,teachers,academicYear:typeof getCurrentAcademicYear==='function'?getCurrentAcademicYear():'',standardMonthlyDues:typeof standardMonthlyDues!=='undefined'?standardMonthlyDues:0});msg('wfReportMsg','Complete fund summary PDF downloaded successfully.');}
+ catch(error){console.error('[Complete welfare PDF]',error);msg('wfReportMsg',error?.message||'Complete fund PDF could not be generated.',true);}
+};
  // Audit is a dedicated, lazy-loaded view. Never fetch or render audit rows as part
  // of the management panel; fetch only after the user explicitly selects Audit Trail.
  const auditNav=document.querySelector('.sidebar .navbtn[data-target="wfAuditPanel"]');
@@ -518,19 +508,12 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    }
    loadAudit();
  },{passive:true});
- $('wfStatementPdf').onclick=()=>{
-   const tid=$('wfStatementTeacher').value;
-   const teacher=teachers.find(t=>String(t.id)===String(tid));
-   if(!teacher){msg('wfStatementMsg','Choose a teacher first.',true);return;}
-   if(!window.html2pdf){msg('wfStatementMsg','PDF service is unavailable. Check your internet connection.',true);return;}
-   const tc=activeCons.filter(x=>String(x.teacher_id)===String(tid)),tp=activePays.filter(x=>String(x.teacher_id)===String(tid));
-   const totalC=tc.reduce((a,x)=>a+Number(x.amount||0),0),totalP=tp.reduce((a,x)=>a+Number(x.amount||0),0);
-   const safe=s=>esc(s);
-   const report=document.createElement('div');report.style.cssText='padding:24px;color:#182235;background:white;font-family:Arial,sans-serif';
-   report.innerHTML='<h1 style="color:#0b1d3a">'+safe(school.name)+'</h1><h2>Individual Welfare Statement</h2><p>School code: '+safe(school.school_code)+' | Generated: '+new Date().toLocaleString()+'</p><hr><p><b>Teacher:</b> '+safe(teacher.name)+'</p><p><b>Staff ID:</b> '+safe(teacher.id)+'</p><p><b>Rank:</b> '+safe(teacher.rank||'—')+' | <b>Class:</b> '+safe(teacher.class_name||'—')+'</p><h3>Summary</h3><p>Total contributions: GHS '+money(totalC)+'</p><p>Total welfare payouts: GHS '+money(totalP)+'</p><p><b>Net member position: GHS '+money(totalC-totalP)+'</b></p><h3>Contribution history</h3><table style="width:100%;border-collapse:collapse"><thead><tr><th>Date</th><th>Amount (GHS)</th><th>Reference</th></tr></thead><tbody>'+tc.map(x=>'<tr><td>'+safe(x.date)+'</td><td>'+money(x.amount)+'</td><td>'+safe(x.reference||'—')+'</td></tr>').join('')+'</tbody></table><h3>Welfare payout history</h3><table style="width:100%;border-collapse:collapse"><thead><tr><th>Date</th><th>Amount (GHS)</th><th>Reason</th></tr></thead><tbody>'+tp.map(x=>'<tr><td>'+safe(x.date)+'</td><td>'+money(x.amount)+'</td><td>'+safe(x.reason||x.reference||'—')+'</td></tr>').join('')+'</tbody></table>';
-   window.html2pdf().set({margin:10,filename:(String(teacher.id).replace(/[^a-z0-9_-]/gi,'_')||'member')+'-welfare-statement.pdf',image:{type:'jpeg',quality:.96},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(report).save();
-   msg('wfStatementMsg','Your statement is being prepared for download.');
- };
+ $('wfStatementPdf').onclick=async()=>{
+ const tid=$('wfStatementTeacher').value,teacher=teachers.find(t=>String(t.id)===String(tid));
+ if(!teacher){msg('wfStatementMsg','Choose a teacher first.',true);return;}
+ try{await window.generateTenantWelfarePdf({type:'individual',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},teacher,contributions:activeCons.filter(x=>String(x.teacher_id)===String(tid)),payouts:activePays.filter(x=>String(x.teacher_id)===String(tid)),academicYear:typeof getCurrentAcademicYear==='function'?getCurrentAcademicYear():'',standardMonthlyDues:typeof standardMonthlyDues!=='undefined'?standardMonthlyDues:0});msg('wfStatementMsg','Member statement PDF downloaded successfully.');}
+ catch(error){console.error('[Member welfare PDF]',error);msg('wfStatementMsg',error?.message||'Member statement could not be generated.',true);}
+};
  let editingTeacherId=null;
  let selectedPassportData=null;
  $('wfPassport').addEventListener('change',()=>{
