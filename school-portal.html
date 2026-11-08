@@ -1334,7 +1334,7 @@ async function renderTeacherDashboard(profile,school){
   if(teacherAvatar){const photo=document.createElement('img');photo.src=teacherAvatar;photo.alt='Profile photo of '+teacherName;photo.onerror=()=>{photo.remove();};avatar.textContent='';avatar.appendChild(photo);}
  }
  if(teacherDashboardLedgers)teacherDashboardLedgers.hidden=false;
- $('teacherDashboardStatementButton')?.addEventListener('click',()=>document.getElementById('teacherStatementDownload')?.click());
+ if($('teacherDashboardStatementButton'))$('teacherDashboardStatementButton').onclick=()=>document.getElementById('teacherStatementDownload')?.click();
  // Teacher-only shortcut: open the signed-in teacher's own fixed profile.
  // The target is always wfTeacherPanel; no roster selector is exposed to teachers.
  const overviewTop=document.querySelector('#schoolOverview .overview-top');
@@ -1502,6 +1502,7 @@ async function renderTeacherDashboard(profile,school){
   client.rpc('get_my_school_welfare_payout_feed')
  ]);
  // Personal records remain bound to auth.uid(); the school feed returns limited payout fields only.
+ let contributionLoadError=ce,schoolPayoutLoadError=spe;
  const contributions=ce?[]:(cs||[]),payouts=pe?[]:(ps||[]);
  let schoolPayoutRows=spe?[]:(schoolPayoutData||[]);
  const totalC=contributions.reduce((sum,x)=>sum+Number(x.amount||0),0);
@@ -1533,7 +1534,7 @@ async function renderTeacherDashboard(profile,school){
  const renderTeacherDashboardLedgers=()=>{
   const contributionBody=$('teacherDashboardContributionRows'),payoutBody=$('teacherDashboardPayoutRows');
   if(contributionBody){
-   contributionBody.innerHTML=ce
+   contributionBody.innerHTML=contributionLoadError
     ?'<tr><td colspan="6">Your personal contribution records could not be loaded securely.</td></tr>'
     :contributions.length?contributions.slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).map(x=>{
       const raw=String(x.date||''),month=raw.length>=7?new Date(raw.slice(0,10)+'T00:00:00').toLocaleDateString('en-GB',{month:'long',year:'numeric'}):'—';
@@ -1542,7 +1543,7 @@ async function renderTeacherDashboard(profile,school){
     :'<tr><td colspan="6">No personal contributions have been recorded yet.</td></tr>';
   }
   if(payoutBody){
-   payoutBody.innerHTML=spe
+   payoutBody.innerHTML=schoolPayoutLoadError
     ?'<tr><td colspan="6">School-wide payout records could not be loaded. Please try again later.</td></tr>'
     :schoolPayoutRows.length?schoolPayoutRows.map(x=>{
       const isReversed=!!x.is_reversed;
@@ -1551,13 +1552,13 @@ async function renderTeacherDashboard(profile,school){
     :'<tr><td colspan="6">No school-wide welfare payouts have been recorded yet.</td></tr>';
   }
   const contributionState=$('teacherDashboardContributionState'),payoutState=$('teacherDashboardPayoutState');
-  if(contributionState)contributionState.textContent=ce?'Personal records unavailable':contributions.length+' personal record(s)';
-  if(payoutState)payoutState.textContent=spe?'School feed unavailable':schoolPayoutRows.length+' school record(s)';
+  if(contributionState)contributionState.textContent=contributionLoadError?'Personal records unavailable':contributions.length+' personal record(s)';
+  if(payoutState)payoutState.textContent=schoolPayoutLoadError?'School feed unavailable':schoolPayoutRows.length+' school record(s)';
  };
  renderTeacherDashboardLedgers();
- $('teacherDashboardContributionRows')?.addEventListener('click',event=>{
+ if($('teacherDashboardContributionRows'))$('teacherDashboardContributionRows').onclick=event=>{
   if(event.target.closest('[data-teacher-dashboard-statement]'))document.getElementById('teacherStatementDownload')?.click();
- });
+ };
  if(window.__teacherDashboardLedgerTimer)clearInterval(window.__teacherDashboardLedgerTimer);
  window.__teacherDashboardLedgerTimer=setInterval(async()=>{
   try{
@@ -1566,9 +1567,16 @@ async function renderTeacherDashboard(profile,school){
     client.rpc('get_my_teacher_payouts'),
     client.rpc('get_my_school_welfare_payout_feed')
    ]);
-   if(!freshCon.error){contributions.splice(0,contributions.length,...(freshCon.data||[]));}
+   if(!freshCon.error){contributions.splice(0,contributions.length,...(freshCon.data||[]));contributionLoadError=false;}else contributionLoadError=true;
    if(!freshOwnPay.error){payouts.splice(0,payouts.length,...(freshOwnPay.data||[]));}
-   if(!freshSchoolPay.error){schoolPayoutRows=freshSchoolPay.data||[];}
+   if(!freshSchoolPay.error){schoolPayoutRows=freshSchoolPay.data||[];schoolPayoutLoadError=false;}else schoolPayoutLoadError=true;
+   const refreshedConTotal=contributions.reduce((sum,row)=>sum+Number(row.amount||0),0);
+   const refreshedOwnPayoutTotal=payouts.reduce((sum,row)=>sum+Number(row.amount||0),0);
+   const refreshedMonthKey=new Date().toISOString().slice(0,7);
+   const refreshedMonthTotal=contributions.filter(row=>String(row.date||'').slice(0,7)===refreshedMonthKey).reduce((sum,row)=>sum+Number(row.amount||0),0);
+   if(!contributionLoadError){$('contributionTotal').textContent=money(refreshedConTotal);$('monthlyContributionTotal').textContent=money(refreshedMonthTotal);$('teacherConTotal').textContent=cash(refreshedConTotal);}
+   if(!freshOwnPay.error){$('payoutTotal').textContent=money(refreshedOwnPayoutTotal);$('teacherConDisbursement').textContent=cash(refreshedOwnPayoutTotal);}
+   if(!contributionLoadError&&!freshOwnPay.error){$('netTotal').textContent=money(refreshedConTotal-refreshedOwnPayoutTotal);$('teacherConNet').textContent=cash(refreshedConTotal-refreshedOwnPayoutTotal);}
    renderTeacherDashboardLedgers();
   }catch(error){console.warn('[Teacher dashboard] Ledger refresh failed:',error?.message||error);}
  },30000);
@@ -1766,6 +1774,9 @@ async function showDashboard(){
   return;
  }
  window.__welfareCurrentRole='admin';
+ if(window.__teacherDashboardLedgerTimer){clearInterval(window.__teacherDashboardLedgerTimer);window.__teacherDashboardLedgerTimer=null;}
+ if($('teacherDashboardProfile'))$('teacherDashboardProfile').hidden=true;
+ if($('teacherDashboardLedgers'))$('teacherDashboardLedgers').hidden=true;
  document.getElementById('teacherWorkspace')?.remove();
  $('schoolTeachers')?.classList.add('hidden');
  const profileViewerNav=document.querySelector('.sidebar .navbtn[data-target="teacherProfileViewer"]');if(profileViewerNav)profileViewerNav.style.removeProperty('display');
@@ -1931,6 +1942,7 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
     }
    });
    document.getElementById('teacherSignOut').addEventListener('click',async()=>{
+    if(window.__teacherDashboardLedgerTimer){clearInterval(window.__teacherDashboardLedgerTimer);window.__teacherDashboardLedgerTimer=null;}
     await client.auth.signOut();teacherDash.classList.add('hidden');$('login').classList.remove('hidden');
    });
   }else renderTeacherDashboard(p,school);
@@ -1959,7 +1971,7 @@ $('forgotPassword').addEventListener('click',async()=>{
  finally{btn.disabled=false;btn.textContent='Forgot password?';}
 });
 // Sidebar navigation is handled by the standalone delegated listener after this script.
-$('sidebarLogout')?.addEventListener('click',async()=>{await client.auth.signOut();$('dashboard').classList.add('hidden');$('login').classList.remove('hidden');$('password').value='';});
+$('sidebarLogout')?.addEventListener('click',async()=>{if(window.__teacherDashboardLedgerTimer){clearInterval(window.__teacherDashboardLedgerTimer);window.__teacherDashboardLedgerTimer=null;}await client.auth.signOut();$('dashboard').classList.add('hidden');$('login').classList.remove('hidden');$('password').value='';});
 
 // End unattended sessions after seven minutes, with a warning at minute six.
 let inactivityTimer, inactivityWarningTimer, inactivityWarning;
