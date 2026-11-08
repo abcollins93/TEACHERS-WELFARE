@@ -1009,7 +1009,7 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
 </section>
 </main>
 <footer id="tenantPortalFooter" class="tenant-portal-footer">
-  <div id="tenantFooterSchool" class="tenant-footer-school">WELFARE FUND PORTAL GATEWAY • WELFARE EXECUTIVE COMMITTEE</div>
+  <div id="tenantFooterSchool" class="tenant-footer-school">loading school.</div>
   <div id="tenantFooterCopyright" class="tenant-footer-copyright">© 2026 Teachers Welfare Fund Portal. All Rights Reserved.</div>
   <section class="support" aria-labelledby="portalSupportTitle">
     <h2 id="portalSupportTitle" style="margin:0 0 6px;color:var(--navy);font-size:1rem;font-weight:750">Need Assistance?</h2>
@@ -1113,10 +1113,10 @@ if(!/^[A-Z0-9-]{3,32}$/.test(code)){ $('loginError').textContent='This gateway l
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 async function escapeTeacherText(v){return String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
 function setTenantFooter(school){
- const name=String(school?.name||'Welfare Fund Portal Gateway').trim()||'Welfare Fund Portal Gateway';
+ const name=String(school?.name||'').trim();
  const schoolLine=document.getElementById('tenantFooterSchool');
  const copyright=document.getElementById('tenantFooterCopyright');
- if(schoolLine)schoolLine.textContent=name.toLocaleUpperCase()+' • WELFARE EXECUTIVE COMMITTEE';
+ if(schoolLine)schoolLine.textContent=name?name.toLocaleUpperCase()+' • WELFARE EXECUTIVE COMMITTEE':'loading school.';
  if(copyright)copyright.textContent='© '+new Date().getFullYear()+' Teachers Welfare Fund Portal. All Rights Reserved.';
 }
 async function renderTeacherDashboard(profile,school){
