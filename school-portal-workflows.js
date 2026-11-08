@@ -250,7 +250,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     #adminActivityTicker .admin-ticker-brand-copy small{font-size:.58rem;letter-spacing:.08em;color:#aebed2;font-weight:700}
     #adminActivityTicker .admin-ticker-indicator{width:6px;height:6px;border-radius:50%;background:#50dfa8;box-shadow:0 0 0 4px rgba(80,223,168,.13);animation:adminTickerPulse 2.6s ease-in-out infinite}
     #adminActivityTicker .admin-ticker-window{position:relative;z-index:1;min-width:0;flex:1;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent)}
-    #adminActivityTicker .admin-ticker-track{display:flex;width:max-content;align-items:center;animation:adminTickerMove 58s linear infinite;will-change:transform}
+    #adminActivityTicker .admin-ticker-track{display:flex;width:max-content;align-items:center;animation:adminTickerMove 90s linear infinite;will-change:transform}
     #adminActivityTicker.is-paused .admin-ticker-track{animation-play-state:paused}
     #adminActivityTicker .admin-ticker-group{display:flex;flex:0 0 auto;align-items:center;gap:38px;padding-right:38px;white-space:nowrap}
     #adminActivityTicker .admin-ticker-item{display:inline-flex;align-items:center;gap:9px;color:#f7f9fd;font-size:.8rem}
