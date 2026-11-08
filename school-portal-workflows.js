@@ -20,27 +20,27 @@ const csvCell=v=>{let s=String(v??'');if(/^[\s]*[=+@\-\t\r]/.test(s))s="'"+s;ret
 function addUI(){
  const d=document.createElement('section');d.id='workflows';d.innerHTML=`<style>
 #wfAdminPanel{--wf-purple:#6d28d9;--wf-green:#059669;--wf-red:#e11d48;--wf-ink:#07122b;color:var(--wf-ink)}
-#wfTeacherPanel{background:#fff!important;color:#07122b!important;border:1px solid rgba(148,163,184,.2)!important;border-radius:18px!important;box-shadow:0 16px 38px rgba(7,18,43,.09)!important;margin:18px 0!important;padding:clamp(16px,2.5vw,24px)!important;min-width:0}
-#wfTeacherPanel .wf-teacher-register-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:14px}
-#wfTeacherPanel .wf-teacher-register-heading h3{margin:0 0 5px;color:#07122b;font-size:1.25rem;font-weight:850}
-#wfTeacherPanel .wf-teacher-register-heading p{margin:0;max-width:760px;line-height:1.6}
-#wfTeacherPanel .wf-teacher-register-badge{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:999px;background:#ecfdf5;color:#047857;font-size:.72rem;font-weight:850;white-space:nowrap}
-#wfTeacherPanel label{display:block;color:#17233b;font-weight:750;margin:12px 0 7px}
-#wfTeacherPanel input:not([type=file]),#wfTeacherPanel input[type=file]{width:100%;min-height:44px;padding:10px 12px;border:1px solid #dbe2ec;border-radius:10px;background:#fff;color:#0f172a;box-sizing:border-box}
-#wfTeacherPanel input:focus{outline:0;border-color:#818cf8;box-shadow:0 0 0 3px rgba(99,102,241,.13)}
-#wfTeacherPanel button{border:1px solid transparent;border-radius:10px;min-height:42px;padding:10px 15px;background:#07122b;color:#fff;font-weight:800}
-#wfTeacherPanel button.secondary{background:#f1f5f9;color:#1e293b;border-color:#e2e8f0}
-#wfTeacherPanel table{width:100%;min-width:850px;border-collapse:collapse}
-#wfTeacherPanel th{background:#f1f5f9;color:#334155;text-align:left;font-size:.73rem;letter-spacing:.04em;text-transform:uppercase}
-#wfTeacherPanel th,#wfTeacherPanel td{padding:11px 10px;border-bottom:1px solid #e5eaf1;vertical-align:middle}
-#wfTeacherPanel td{color:#17233b;font-size:.83rem}
-#wfTeacherPanel .wf-teacher-status{display:inline-flex;padding:5px 9px;border-radius:999px;font-size:.7rem;font-weight:850}
-#wfTeacherPanel .wf-teacher-status.active{background:#dcfce7;color:#166534}
-#wfTeacherPanel .wf-teacher-status.inactive{background:#fee2e2;color:#991b1b}
-.dark #wfTeacherPanel{background:#0b1d3a!important;color:#e6edf7!important;border-color:#26364d!important}
-.dark #wfTeacherPanel h3,.dark #wfTeacherPanel td{color:#e6edf7}
-.dark #wfTeacherPanel input{background:#071328;color:#e6edf7;border-color:#354862}
-@media(max-width:640px){#wfTeacherPanel .wf-teacher-register-heading h3{font-size:1.08rem}#wfTeacherPanel .wf-teacher-register-badge{font-size:.65rem}}
+#wfTeacherRegisterPanel{background:#fff!important;color:#07122b!important;border:1px solid rgba(148,163,184,.2)!important;border-radius:18px!important;box-shadow:0 16px 38px rgba(7,18,43,.09)!important;margin:18px 0!important;padding:clamp(16px,2.5vw,24px)!important;min-width:0}
+#wfTeacherRegisterPanel .wf-teacher-register-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+#wfTeacherRegisterPanel .wf-teacher-register-heading h3{margin:0 0 5px;color:#07122b;font-size:1.25rem;font-weight:850}
+#wfTeacherRegisterPanel .wf-teacher-register-heading p{margin:0;max-width:760px;line-height:1.6}
+#wfTeacherRegisterPanel .wf-teacher-register-badge{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:999px;background:#ecfdf5;color:#047857;font-size:.72rem;font-weight:850;white-space:nowrap}
+#wfTeacherRegisterPanel label{display:block;color:#17233b;font-weight:750;margin:12px 0 7px}
+#wfTeacherRegisterPanel input:not([type=file]),#wfTeacherRegisterPanel input[type=file]{width:100%;min-height:44px;padding:10px 12px;border:1px solid #dbe2ec;border-radius:10px;background:#fff;color:#0f172a;box-sizing:border-box}
+#wfTeacherRegisterPanel input:focus{outline:0;border-color:#818cf8;box-shadow:0 0 0 3px rgba(99,102,241,.13)}
+#wfTeacherRegisterPanel button{border:1px solid transparent;border-radius:10px;min-height:42px;padding:10px 15px;background:#07122b;color:#fff;font-weight:800}
+#wfTeacherRegisterPanel button.secondary{background:#f1f5f9;color:#1e293b;border-color:#e2e8f0}
+#wfTeacherRegisterPanel table{width:100%;min-width:850px;border-collapse:collapse}
+#wfTeacherRegisterPanel th{background:#f1f5f9;color:#334155;text-align:left;font-size:.73rem;letter-spacing:.04em;text-transform:uppercase}
+#wfTeacherRegisterPanel th,#wfTeacherRegisterPanel td{padding:11px 10px;border-bottom:1px solid #e5eaf1;vertical-align:middle}
+#wfTeacherRegisterPanel td{color:#17233b;font-size:.83rem}
+#wfTeacherRegisterPanel .wf-teacher-status{display:inline-flex;padding:5px 9px;border-radius:999px;font-size:.7rem;font-weight:850}
+#wfTeacherRegisterPanel .wf-teacher-status.active{background:#dcfce7;color:#166534}
+#wfTeacherRegisterPanel .wf-teacher-status.inactive{background:#fee2e2;color:#991b1b}
+.dark #wfTeacherRegisterPanel{background:#0b1d3a!important;color:#e6edf7!important;border-color:#26364d!important}
+.dark #wfTeacherRegisterPanel h3,.dark #wfTeacherRegisterPanel td{color:#e6edf7}
+.dark #wfTeacherRegisterPanel input{background:#071328;color:#e6edf7;border-color:#354862}
+@media(max-width:640px){#wfTeacherRegisterPanel .wf-teacher-register-heading h3{font-size:1.08rem}#wfTeacherRegisterPanel .wf-teacher-register-badge{font-size:.65rem}}
 
 #wfAdminPanel .panel{background:#fff!important;color:#07122b!important;border:1px solid rgba(148,163,184,.18)!important;border-radius:16px!important;box-shadow:0 18px 42px rgba(7,18,43,.12)!important;margin-bottom:18px;padding:22px;min-width:0}
 #wfAdminPanel .wf-admin-intro{background:linear-gradient(145deg,#fff,#f8fafc)!important}
@@ -58,7 +58,7 @@ function addUI(){
 #wfAdminAccessPanel h3:before{content:"\\f084";background:#f1f5f9;color:#0f172a}
 #wfAdminUsersPanel h3:before{content:"\\f2bd";background:#ecfdf5;color:#059669}
 #wfResetDataPanel h3:before{content:"\\f071";background:#fff1f2;color:#e11d48}
-#wfTeacherPanel h3:before{content:"\\f234";background:#ecfdf5;color:#059669}
+#wfTeacherRegisterPanel h3:before{content:"\\f234";background:#ecfdf5;color:#059669}
 #wfContributionPanel h3:before{content:"\\f4b9";background:#ecfdf5;color:#059669}
 #wfPayoutPanel h3:before,#wfPayoutLedgerPanel h3:before{content:"\\f4b9";background:#fff1f2;color:#e11d48}
 #wfStatementPanel h3:before{content:"\\f15c"}
@@ -101,7 +101,7 @@ function addUI(){
 #workflows #wfSettingsPanel h3:before{content:"\\f1de";background:#eff6ff;color:#1d4ed8}
 #workflows #wfAdminAccessPanel h3:before{content:"\\f084";background:#eff6ff;color:#1d4ed8}
 #workflows #wfAdminUsersPanel h3:before{content:"\\f2bd";background:#ecfdf5;color:#059669}
-#workflows #wfTeacherPanel h3:before{content:"\\f234";background:#ecfdf5;color:#059669}
+#workflows #wfTeacherRegisterPanel h3:before{content:"\\f234";background:#ecfdf5;color:#059669}
 #workflows #wfContributionPanel h3:before{content:"\\f4b9";background:#ecfdf5;color:#059669}
 #workflows #wfPayoutPanel h3:before,#workflows #wfResetDataPanel h3:before{content:"\\f071";background:#fff1f2;color:#e11d48}
 #workflows #wfLedgerPanel h3:before{content:"\\f03a"}
@@ -190,7 +190,7 @@ function addUI(){
   <!-- Destructive reset intentionally placed last in the Administration Panel. -->
   <div class="panel" id="wfResetDataPanel"><h3>Reset this school’s welfare data</h3><div class="wf-data-protection"><strong><i class="fa-solid fa-triangle-exclamation"></i> Permanent action</strong><p class="muted">This deletes only this school’s registered members, contribution records, payout records and transaction-reversal records. The audit history and school settings are preserved. This cannot be undone.</p></div><form id="wfResetDataForm" class="grid"><div><label for="wfResetPassword">Current administrator password</label><input id="wfResetPassword" type="password" autocomplete="current-password" required></div><div><label for="wfResetConfirmation">School-specific confirmation</label><input id="wfResetConfirmation" required autocomplete="off" placeholder="RESET:SCHOOLCODE"><small id="wfResetExpected" class="muted">Confirmation phrase will appear after the school loads.</small></div><div><label for="wfResetAllConfirmation">Final safety phrase</label><input id="wfResetAllConfirmation" required autocomplete="off" pattern="RESET ALL" title="Type RESET ALL exactly" placeholder="Type RESET ALL"><small class="muted">Required second confirmation before any records can be cleared.</small></div><div><button type="submit" class="danger"><i class="fa-solid fa-trash-can"></i> Permanently reset this school’s welfare data</button></div></form><p id="wfResetDataMsg" class="muted" role="status" aria-live="polite"></p></div>
 </section>
- <div class="panel" id="wfTeacherPanel"><div class="wf-teacher-register-heading"><div><h3>Teacher Register</h3><p class="muted">Manage verified members of this school. Changes are saved to this school’s teacher records; existing financial history is preserved.</p></div><span class="wf-teacher-register-badge"><i class="fa-solid fa-shield-check"></i> Admin access</span></div><label for="wfTeacherSearch">Search teachers</label><input id="wfTeacherSearch" type="search" placeholder="Search teachers">
+ <div class="panel" id="wfTeacherRegisterPanel"><div class="wf-teacher-register-heading"><div><h3>Teacher Register</h3><p class="muted">Manage verified members of this school. Changes are saved to this school’s teacher records; existing financial history is preserved.</p></div><span class="wf-teacher-register-badge"><i class="fa-solid fa-shield-check"></i> Admin access</span></div><label for="wfTeacherSearch">Search teachers</label><input id="wfTeacherSearch" type="search" placeholder="Search teachers">
  <form id="wfTeacher" class="grid">
  <div><label for="wfTid">Staff ID</label><input id="wfTid" required maxlength="80"></div><div><label for="wfName">Full name</label><input id="wfName" required maxlength="160"></div>
  <div><label for="wfPhone">Phone</label><input id="wfPhone" maxlength="40"></div><div><label for="wfRank">Rank / Grade</label><select id="wfRank" style="width:100%;min-height:44px;padding:10px 12px;border:1px solid #dbe2ec;border-radius:10px;background:#fff;color:#0f172a;box-sizing:border-box">${rankOptionsMarkup()}</select></div>
@@ -222,12 +222,12 @@ async function audit(client,ctx,action,details,teacherId){
 window.initSchoolWorkflows=async function(client,school,refresh){
  try{
  // Rebuild workflow markup on refresh so handlers always use the latest school-scoped data.
- const existingWorkflows=$('workflows');const retainedRoster=$('schoolTeachers');const overview=$('schoolOverview');if(existingWorkflows&&retainedRoster&&existingWorkflows.contains(retainedRoster)&&overview?.parentElement)overview.parentElement.insertBefore(retainedRoster,overview.nextElementSibling);retainedRoster?.querySelector('#wfTeacherPanel')?.remove();if(existingWorkflows)existingWorkflows.remove();
+ const existingWorkflows=$('workflows');const retainedRoster=$('schoolTeachers');const overview=$('schoolOverview');if(existingWorkflows&&retainedRoster&&existingWorkflows.contains(retainedRoster)&&overview?.parentElement)overview.parentElement.insertBefore(retainedRoster,overview.nextElementSibling);retainedRoster?.querySelector('#wfTeacherRegisterPanel')?.remove();if(existingWorkflows)existingWorkflows.remove();
  addUI();
  const workflowMountNode=$('workflows');
  const adminPanelNode=$('wfAdminPanel');
  if(!workflowMountNode||!adminPanelNode)throw new Error('Admin Panel markup could not be mounted in the dashboard.');
- const roster=$('schoolTeachers'),teacherRegisterPanel=$('wfTeacherPanel');
+ const roster=$('schoolTeachers'),teacherRegisterPanel=$('wfTeacherRegisterPanel');
  const ctx=school;
  if(!roster||!teacherRegisterPanel)throw new Error('Teachers & Members workspace could not be mounted.');
  roster.appendChild(teacherRegisterPanel);
