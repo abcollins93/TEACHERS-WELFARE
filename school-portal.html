@@ -2391,6 +2391,95 @@ body:not(.dark) #workflows textarea {
 };
 })();
 </script>
+
+<!-- Independent shared PDF generator: keep available even if unrelated portal initialization is deferred. -->
+<script>
+(function(){
+'use strict';
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const cash=v=>'GHS '+Number(v||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
+const date=v=>{if(!v)return '—';const d=new Date(String(v).slice(0,10)+'T00:00:00');return Number.isNaN(d.getTime())?esc(v):d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});};
+const sum=rows=>(rows||[]).reduce((a,x)=>a+Number(x.amount||0),0);
+const monthName=m=>{if(!/^\d{4}-\d{2}$/.test(m||''))return 'Selected month';const p=m.split('-').map(Number);return new Date(p[0],p[1]-1,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'});};
+const docId=p=>p+'-'+new Date().toISOString().replace(/\D/g,'').slice(0,14)+'-'+Math.random().toString(36).slice(2,7).toUpperCase();
+const rows=(data,fn,empty,n)=>data.length?data.map((x,i)=>'<tr>'+fn(x,i)+'</tr>').join(''):'<tr><td class="empty" colspan="'+n+'">'+esc(empty)+'</td></tr>';
+const style='.twf-pdf{box-sizing:border-box;background:#fff;color:#111827;font:12px/1.45 Arial,sans-serif;padding:10mm;position:relative}.twf-pdf *{box-sizing:border-box}.twf-pdf.portrait{width:190mm;min-height:277mm}.twf-pdf.landscape{width:277mm;min-height:190mm}.twf-head{display:flex;justify-content:space-between;gap:8mm;align-items:flex-start;border-bottom:2px solid #172b4d;padding-bottom:5mm;margin-bottom:5mm}.twf-head-main{flex:1;text-align:center}.twf-head h2{font-size:17px;margin:0;color:#172b4d}.twf-head h1{font-size:23px;margin:2px 0;color:#153c78}.twf-brand{font-size:11px;font-weight:800;letter-spacing:1.3px;color:#a97810}.twf-sub{font-size:10px;color:#64748b;margin-top:4px}.twf-photo{width:25mm;height:32mm;object-fit:cover;border:1px solid #cbd5e1;border-radius:5px;background:#f8fafc}.twf-meta{display:flex;justify-content:space-between;gap:8mm;margin:4mm 0;font-size:10px}.twf-box{border:1px solid #cbd5e1;border-radius:6px;padding:4mm;margin:4mm 0}.twf-box h3,.twf-section{font-size:12px;font-weight:800;text-transform:uppercase;margin:0 0 3mm;color:#172b4d}.twf-details{display:grid;grid-template-columns:1fr 1fr;gap:2mm 5mm}.twf-details p{margin:0;overflow-wrap:anywhere}.twf-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3mm;margin:5mm 0}.twf-metric{border:1px solid #dbe3ee;border-radius:6px;padding:3mm;text-align:center;break-inside:avoid}.twf-metric small{display:block;font-size:9px;font-weight:800;color:#475569;text-transform:uppercase}.twf-metric strong{display:block;font-size:15px;margin-top:2mm;color:#102b4f}.twf-metric.green{background:#ecfdf5;border-color:#a7f3d0}.twf-metric.red{background:#fff1f2;border-color:#fecdd3}.twf-metric.blue{background:#eff6ff;border-color:#bfdbfe}.twf-metric.gold{background:#fffbeb;border-color:#fde68a}.twf-section{margin:6mm 0 2mm}.twf-table{width:100%;border-collapse:collapse;font-size:9px;table-layout:auto}.twf-table thead{display:table-header-group}.twf-table th{background:#eef2f7;color:#26364d;font-weight:800;text-align:left}.twf-table th,.twf-table td{border:1px solid #cbd5e1;padding:2.2mm;vertical-align:top;overflow-wrap:anywhere}.twf-table tr{break-inside:avoid;page-break-inside:avoid}.twf-table .amount{text-align:right;white-space:nowrap;font-weight:800}.twf-table .empty{text-align:center;color:#64748b;padding:5mm}.twf-signatures{display:grid;grid-template-columns:1fr 25mm 1fr;gap:8mm;align-items:end;margin-top:10mm;break-inside:avoid}.twf-sign{text-align:center;font-size:9px}.twf-line{height:9mm;border-bottom:1px dashed #64748b;margin-bottom:2mm}.twf-qr{text-align:center;font-size:8px;color:#64748b}.twf-qr img{display:block;margin:0 auto 2mm;width:19mm;height:19mm}.twf-footer{border-top:1px solid #cbd5e1;margin-top:7mm;padding-top:2mm;text-align:center;color:#64748b;font-size:8px}.twf-finance{border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;margin-top:3mm}.twf-finance div{display:flex;justify-content:space-between;gap:5mm;padding:3mm 4mm;border-bottom:1px solid #e2e8f0}.twf-finance div:last-child{border:0;background:#f1f5f9;font-weight:900}';
+window.generateTenantWelfarePdf=async function(o){
+ if(typeof window.html2pdf!=='function')throw new Error('PDF service is unavailable. Check your internet connection.');
+ const type=o.type,school=o.school||{},teacher=o.teacher||{},cs=[...(o.contributions||[])],ps=[...(o.payouts||[])],ts=[...(o.teachers||[])],month=o.month||'';
+ if(!['individual','monthly','complete'].includes(type))throw new Error('Unknown PDF report type.');
+ const individual=type==='individual',monthly=type==='monthly',orientation=individual?'portrait':'landscape',id=docId(individual?'STMT':monthly?'MON':'FUND'),schoolName=school.name||'School Welfare Tenant',schoolCode=school.school_code||'',teacherName=teacher.name||teacher.full_name||'Member',totalC=sum(cs),totalP=sum(ps),net=totalC-totalP,byId=new Map(ts.map(t=>[String(t.id),t]));
+ const head='<div class="twf-head">'+(individual&&teacher.passport?'<img class="twf-photo" src="'+esc(teacher.passport)+'" alt="Member passport photo">':'')+'<div class="twf-head-main"><h2>GHANA EDUCATION SERVICE</h2><h1>'+esc(schoolName)+'</h1><div class="twf-brand">TEACHERS WELFARE FUND</div><div class="twf-sub">'+(individual?'Official Member Contribution & Welfare Statement':monthly?'Monthly Financial Summary Report — '+esc(monthName(month)):'Complete Fund Summary Report')+'</div></div>'+(individual&&!teacher.passport?'<div class="twf-photo" style="display:grid;place-items:center;color:#94a3b8;font-size:9px;text-align:center">PASSPORT PHOTO</div>':'')+'</div>';
+ const meta='<div class="twf-meta"><div><p><b>Document ID:</b> '+esc(id)+'</p><p><b>School code:</b> '+esc(schoolCode||'—')+'</p><p><b>'+(monthly?'Target month':'Academic year')+':</b> '+esc(monthly?monthName(month):(o.academicYear||'—'))+'</p></div><div style="text-align:right"><p><b>Date issued:</b> '+esc(new Date().toLocaleDateString('en-GB'))+'</p></div></div>';
+ let body='';
+ if(individual){
+  body=meta+'<div class="twf-box"><h3>Member Information</h3><div class="twf-details"><p><b>Name:</b> '+esc(teacherName)+'</p><p><b>Staff ID:</b> '+esc(teacher.id||'—')+'</p><p><b>Phone:</b> '+esc(teacher.phone||'—')+'</p><p><b>Rank / Grade:</b> '+esc(teacher.rank||'—')+'</p><p><b>Class / Subject Assigned:</b> '+esc(teacher.class_name||teacher.className||'—')+'</p><p><b>School:</b> '+esc(schoolName)+'</p></div></div>'+
+  '<div class="twf-metrics"><div class="twf-metric green"><small>Total Contributions</small><strong>'+cash(totalC)+'</strong></div><div class="twf-metric red"><small>Total Welfare Payouts</small><strong>'+cash(totalP)+'</strong></div><div class="twf-metric blue"><small>Net Member Position</small><strong>'+cash(net)+'</strong></div></div>'+
+  '<h3 class="twf-section">1. Contribution History</h3><table class="twf-table"><thead><tr><th>#</th><th>Month / Year</th><th>Receipt / Reference</th><th>Date Paid</th><th class="amount">Amount</th></tr></thead><tbody>'+rows(cs,(x,i)=>'<td>'+(i+1)+'</td><td>'+esc(x.date?new Date(String(x.date).slice(0,10)+'T00:00:00').toLocaleDateString('en-GB',{month:'short',year:'numeric'}):'—')+'</td><td>'+esc(x.reference||'—')+'</td><td>'+date(x.date)+'</td><td class="amount">'+cash(x.amount)+'</td>','No contribution records available.',5)+'</tbody></table>'+
+  '<h3 class="twf-section">2. Welfare Payouts / Fund Withdrawals</h3><table class="twf-table"><thead><tr><th>#</th><th>Beneficiary</th><th>Reason</th><th>Reference</th><th>Date</th><th class="amount">Amount</th></tr></thead><tbody>'+rows(ps,(x,i)=>'<td>'+(i+1)+'</td><td>'+esc(teacherName)+'</td><td>'+esc(x.reason||'Welfare support')+'</td><td>'+esc(x.reference||'—')+'</td><td>'+date(x.date)+'</td><td class="amount">'+cash(x.amount)+'</td>','No welfare payouts recorded.',6)+'</tbody></table>';
+ }else if(monthly){
+  const mc=cs.filter(x=>String(x.date||'').slice(0,7)===month),mp=ps.filter(x=>String(x.date||'').slice(0,7)===month);
+  body=meta+'<div class="twf-metrics"><div class="twf-metric green"><small>Monthly Contributions</small><strong>'+cash(sum(mc))+'</strong></div><div class="twf-metric red"><small>Monthly Payouts</small><strong>'+cash(sum(mp))+'</strong></div><div class="twf-metric blue"><small>Net Monthly Balance</small><strong>'+cash(sum(mc)-sum(mp))+'</strong></div></div>'+
+  '<h3 class="twf-section">1. Contributions for the Month</h3><table class="twf-table"><thead><tr><th>#</th><th>Staff ID</th><th>Member Name</th><th>Reference</th><th>Date Paid</th><th class="amount">Amount</th></tr></thead><tbody>'+rows(mc,(x,i)=>{const t=byId.get(String(x.teacher_id))||{};return '<td>'+(i+1)+'</td><td>'+esc(x.teacher_id||'—')+'</td><td>'+esc(t.name||x.teacher_id||'—')+'</td><td>'+esc(x.reference||'—')+'</td><td>'+date(x.date)+'</td><td class="amount">'+cash(x.amount)+'</td>;' },'No contributions recorded for '+monthName(month)+'.',6)+'</tbody></table>'+
+  '<h3 class="twf-section">2. Payouts for the Month</h3><table class="twf-table"><thead><tr><th>#</th><th>Beneficiary</th><th>Reason</th><th>Reference</th><th>Date</th><th class="amount">Amount</th></tr></thead><tbody>'+rows(mp,(x,i)=>{const t=byId.get(String(x.teacher_id))||{};return '<td>'+(i+1)+'</td><td>'+esc(t.name||x.teacher_id||'—')+'</td><td>'+esc(x.reason||'Welfare support')+'</td><td>'+esc(x.reference||'—')+'</td><td>'+date(x.date)+'</td><td class="amount">'+cash(x.amount)+'</td>';},'No payouts recorded for '+monthName(month)+'.',6)+'</tbody></table>';
+ }else{
+  const active=ts.filter(t=>t.is_active!==false);
+  const memberRows=active.map((t,i)=>{const mine=cs.filter(x=>String(x.teacher_id)===String(t.id));return '<tr><td>'+(i+1)+'</td><td>'+esc(t.id)+'</td><td>'+esc(t.name||'—')+'</td><td>'+esc(t.rank||'—')+'</td><td>'+mine.length+'</td><td class="amount">'+cash(sum(mine))+'</td></tr>';}).join('');
+  body=meta+'<div class="twf-metrics"><div class="twf-metric blue"><small>Active Members</small><strong>'+active.length+'</strong></div><div class="twf-metric green"><small>Total Contributions</small><strong>'+cash(totalC)+'</strong></div><div class="twf-metric red"><small>Welfare Payouts</small><strong>'+cash(totalP)+'</strong></div><div class="twf-metric gold"><small>Total Fund Balance</small><strong>'+cash(net)+'</strong></div></div>'+
+  '<h3 class="twf-section">1. Members Contribution Summary</h3><table class="twf-table"><thead><tr><th>#</th><th>Staff ID</th><th>Member Name</th><th>Rank / Grade</th><th>Payments</th><th class="amount">Total Contribution</th></tr></thead><tbody>'+(memberRows||'<tr><td class="empty" colspan="6">No active members registered.</td></tr>')+'</tbody></table>'+
+  '<h3 class="twf-section">2. Welfare Payout Summary</h3><table class="twf-table"><thead><tr><th>#</th><th>Date</th><th>Beneficiary</th><th>Reason</th><th>Reference</th><th class="amount">Amount</th></tr></thead><tbody>'+rows([...ps].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))),(x,i)=>{const t=byId.get(String(x.teacher_id))||{};return '<td>'+(i+1)+'</td><td>'+date(x.date)+'</td><td>'+esc(t.name||x.teacher_id||'—')+'</td><td>'+esc(x.reason||'Welfare support')+'</td><td>'+esc(x.reference||'—')+'</td><td class="amount">'+cash(x.amount)+'</td>';},'No welfare payouts recorded.',6)+'</tbody></table>'+
+  '<h3 class="twf-section">3. Fund Financial Summary</h3><div class="twf-finance"><div><span>Total Member Contributions</span><b>'+cash(totalC)+'</b></div><div><span>Total Welfare Payouts</span><b>'+cash(totalP)+'</b></div><div><span>Standard Monthly Dues</span><b>'+cash(o.standardMonthlyDues||0)+'</b></div><div><span>Total Fund Balance</span><b>'+cash(net)+'</b></div></div>';
+ }
+ const qr='twfqr'+id;
+ const sign='<div class="twf-signatures"><div class="twf-sign"><div class="twf-line"></div><b>Welfare Financial Secretary</b><br>Signature &amp; Date</div><div class="twf-qr"><div id="'+qr+'"></div>Document reference</div><div class="twf-sign"><div class="twf-line"></div><b>Headteacher / Patron</b><br>'+esc(schoolName)+'</div></div><div class="twf-footer">'+esc(schoolName)+' Teachers Welfare Fund · '+(individual?'Official Member Statement':monthly?'Monthly Summary Report':'Complete Financial Summary')+' · Generated electronically</div>';
+ const host=document.createElement('div');host.className='twf-pdf '+orientation;host.style.cssText='position:fixed;left:-100000px;top:0;z-index:-1;background:#fff';host.innerHTML='<style>'+style+'
+/* Light-mode surface correction: every neutral white card/surface is true white. */
+body:not(.dark) .panel:not(.wf-admin-intro),
+body:not(.dark) .metric,
+body:not(.dark) .support,
+body:not(.dark) .teacher-login-card,
+body:not(.dark) #teacherProfileViewer .tp-field,
+body:not(.dark) #wfTeacherPanel,
+body:not(.dark) #wfAdminPanel .panel:not(.wf-admin-intro),
+body:not(.dark) #workflows .panel,
+body:not(.dark) .wf-payout-view,
+body:not(.dark) .wf-payout-metric,
+body:not(.dark) #wfReportsPanel.wf-reports-view {
+  background: #fff !important;
+}
+body:not(.dark) .metric {
+  background: #fff !important;
+}
+body:not(.dark) th,
+body:not(.dark) #wfTeacherPanel th,
+body:not(.dark) #wfAdminPanel th,
+body:not(.dark) #workflows th {
+  background: #fff !important;
+}
+body:not(.dark) .teacher-login-card input,
+body:not(.dark) #wfTeacherPanel input,
+body:not(.dark) #wfAdminPanel input,
+body:not(.dark) #wfAdminPanel select,
+body:not(.dark) #wfAdminPanel textarea,
+body:not(.dark) #workflows input,
+body:not(.dark) #workflows select,
+body:not(.dark) #workflows textarea {
+  background: #fff !important;
+}
+</style>'+head+body+sign;document.body.appendChild(host);
+ try{
+  const qrNode=host.querySelector('#'+qr);
+  if(window.QRCode&&qrNode)new window.QRCode(qrNode,{text:'TWF DOCUMENT '+id+' | SCHOOL '+schoolCode,width:76,height:76,colorDark:'#030a16',colorLight:'#ffffff',correctLevel:window.QRCode.CorrectLevel.M});
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+  host.style.position='relative';host.style.left='auto';host.style.top='auto';
+  const safeCode=String(schoolCode||schoolName).replace(/[^a-z0-9_-]/gi,'_')||'school';
+  const filename=safeCode+'-'+(individual?'member-'+String(teacher.id||'statement').replace(/[^a-z0-9_-]/gi,'_')+'-statement':monthly?month+'-monthly-summary':'complete-fund-summary')+'.pdf';
+  await window.html2pdf().set({margin:[8,8,8,8],filename,image:{type:'jpeg',quality:.97},html2canvas:{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0,windowWidth:individual?794:1120},jsPDF:{unit:'mm',format:'a4',orientation,compress:true},pagebreak:{mode:['css','legacy'],avoid:['tr','.twf-metric','.twf-signatures']}}).from(host).save();
+ }finally{host.remove();}
+ return {documentId:id};
+};
+})();
+</script>
 </body></html>
 
 
