@@ -1106,7 +1106,7 @@ async function renderTeacherDashboard(profile,school){
  let teacherName=window.__welfareTeacherDisplayName||profile.name||user?.user_metadata?.full_name||teacherId;
  let teacherAvatar=null,teacherRecord=null;
  try{
-  const {data,error}=await client.from('teachers').select('id,name,rank,class_name,phone,passport').eq('id',teacherId).eq('school_id',school.id).maybeSingle();
+  const {data,error}=await client.from('teachers').select('id,name,rank,class_name,phone,passport,created_at,is_active').eq('id',teacherId).eq('school_id',school.id).maybeSingle();
   if(!error&&data){teacherRecord=data;teacherName=data.name||teacherName;teacherAvatar=data.passport||null;}
  }catch(_){}
  window.__welfareTeacherDisplayName=teacherName;
