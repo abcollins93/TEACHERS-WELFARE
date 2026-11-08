@@ -1195,7 +1195,8 @@ async function renderTeacherDashboard(profile,school){
    #teacherLiveTicker .ticker-item{display:inline-flex;align-items:center;gap:10px;color:#f7f9fd;font-size:.8rem}
    #teacherLiveTicker .ticker-item b{padding:5px 8px;border-radius:7px;background:rgba(214,166,55,.13);border:1px solid rgba(214,166,55,.22);color:#ffdf91;font-size:.59rem;letter-spacing:.09em}
    #teacherLiveTicker .ticker-time{color:#9fb2ca;font-size:.66rem}
-   #teacherLiveTicker .ticker-control{position:relative;z-index:2;flex:0 0 auto;width:36px;height:36px;min-height:36px;padding:0;display:grid;place-items:center;border:1px solid rgba(255,255,255,.16);border-radius:11px;background:rgba(255,255,255,.08);color:#f7df9e;box-shadow:none}
+   #teacherLiveTicker .ticker-control{position:relative;z-index:2;flex:0 0 24px;width:24px;height:24px;min-width:24px;min-height:24px;padding:0!important;display:grid;place-items:center;border:1px solid rgba(255,255,255,.2);border-radius:50%;background:rgba(255,255,255,.07);color:#f7df9e;font-size:.58rem;line-height:1;box-shadow:none}
+   #teacherLiveTicker .ticker-control i{font-size:.58rem;line-height:1}
    #teacherLiveTicker .ticker-control:hover{background:rgba(255,255,255,.16)}
    body.teacher-ticker-active{padding-bottom:86px}
    body.teacher-ticker-active .sidebar{padding-bottom:90px}
@@ -1678,7 +1679,7 @@ client.auth.onAuthStateChange((event,session)=>{
 client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
 })();
 </script>
-<script src="school-portal-workflows.js?v=premium-ticker-20261108"></script>
+<script src="school-portal-workflows.js?v=ticker-control-compact-20261108"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
