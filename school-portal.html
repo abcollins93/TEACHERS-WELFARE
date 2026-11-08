@@ -2473,15 +2473,15 @@ const style='.twf-pdf{box-sizing:border-box;background:#fff;color:#111827;font:1
 window.generateTenantWelfarePdf=async function(o){
  if(typeof window.html2pdf!=='function')throw new Error('PDF service is unavailable. Check your internet connection.');
  const type=o.type,school=o.school||{},teacher=o.teacher||{},cs=[...(o.contributions||[])],ps=[...(o.payouts||[])],ts=[...(o.teachers||[])],month=o.month||'';
- if(!['individual','monthly','annual','complete'].includes(type))throw new Error('Unknown PDF report type.');
- const individual=type==='individual',monthly=type==='monthly',annual=type==='annual',year=String(o.year||''),orientation=individual?'portrait':'landscape',id=docId(individual?'STMT':monthly?'MON':annual?'ANN':'FUND'),schoolName=school.name||'School Welfare Tenant',schoolCode=school.school_code||'',teacherName=teacher.name||teacher.full_name||'Member',totalC=sum(cs),totalP=sum(ps),net=totalC-totalP,individualContributionTotal=Number.isFinite(Number(o.personalContributionTotal))?Number(o.personalContributionTotal):totalC,schoolFundBalance=Number.isFinite(Number(o.schoolFundBalance))?Number(o.schoolFundBalance):null,byId=new Map(ts.map(t=>[String(t.id),t]));
- if(annual){
-  if(!/^\\d{4}$/.test(year))throw new Error('Choose a valid reporting year.');
-  const start=year+'-01-01',end=year+'-12-31';
-  const annualCs=cs.filter(x=>String(x.date||'').slice(0,10)>=start&&String(x.date||'').slice(0,10)<=end);
-  const annualPs=ps.filter(x=>String(x.date||'').slice(0,10)>=start&&String(x.date||'').slice(0,10)<=end);
-  cs.splice(0,cs.length,...annualCs);ps.splice(0,ps.length,...annualPs);
+ const reportYear=String(o.year||'');
+ if(type==='annual'){
+  if(!/^\\d{4}$/.test(reportYear))throw new Error('Choose a valid reporting year.');
+  const start=reportYear+'-01-01',end=reportYear+'-12-31';
+  cs.splice(0,cs.length,...cs.filter(x=>String(x.date||'').slice(0,10)>=start&&String(x.date||'').slice(0,10)<=end));
+  ps.splice(0,ps.length,...ps.filter(x=>String(x.date||'').slice(0,10)>=start&&String(x.date||'').slice(0,10)<=end));
  }
+ if(!['individual','monthly','annual','complete'].includes(type))throw new Error('Unknown PDF report type.');
+ const individual=type==='individual',monthly=type==='monthly',annual=type==='annual',year=reportYear,orientation=individual?'portrait':'landscape',id=docId(individual?'STMT':monthly?'MON':annual?'ANN':'FUND'),schoolName=school.name||'School Welfare Tenant',schoolCode=school.school_code||'',teacherName=teacher.name||teacher.full_name||'Member',totalC=sum(cs),totalP=sum(ps),net=totalC-totalP,individualContributionTotal=Number.isFinite(Number(o.personalContributionTotal))?Number(o.personalContributionTotal):totalC,schoolFundBalance=Number.isFinite(Number(o.schoolFundBalance))?Number(o.schoolFundBalance):null,byId=new Map(ts.map(t=>[String(t.id),t]));
  const head='<div class="twf-head">'+(individual&&teacher.passport?'<img class="twf-photo" src="'+esc(teacher.passport)+'" alt="Member passport photo">':'')+'<div class="twf-head-main"><h2>GHANA EDUCATION SERVICE</h2><h1>'+esc(schoolName)+'</h1><div class="twf-brand">TEACHERS WELFARE FUND</div><div class="twf-sub">'+(individual?'Official Member Contribution & Welfare Statement':monthly?'Monthly Financial Summary Report — '+esc(monthName(month)):annual?'Yearly Financial Summary Report — '+esc(year):'Complete Fund Summary Report')+'</div></div>'+(individual&&!teacher.passport?'<div class="twf-photo" style="display:grid;place-items:center;color:#94a3b8;font-size:9px;text-align:center">PASSPORT PHOTO</div>':'')+'</div>';
  const meta='<div class="twf-meta"><div><p><b>Document ID:</b> '+esc(id)+'</p><p><b>School code:</b> '+esc(schoolCode||'—')+'</p><p><b>'+(monthly?'Target month':annual?'Reporting year':'Academic year')+':</b> '+esc(monthly?monthName(month):annual?year:(o.academicYear||'—'))+'</p></div><div style="text-align:right"><p><b>Date issued:</b> '+esc(new Date().toLocaleDateString('en-GB'))+'</p></div></div>';
  let body='';
@@ -2536,15 +2536,15 @@ window.generateTenantWelfarePdf=async function(o){
  o=o&&typeof o==='object'?o:{};
  if(typeof window.html2pdf!=='function')throw new Error('PDF service is unavailable. Check your internet connection.');
  const type=o.type,school=o.school&&typeof o.school==='object'?o.school:{},teacher=o.teacher&&typeof o.teacher==='object'?o.teacher:{},cs=Array.isArray(o.contributions)?o.contributions.slice():[],ps=Array.isArray(o.payouts)?o.payouts.slice():[],ts=Array.isArray(o.teachers)?o.teachers.slice():[],month=String(o.month||'');
- if(!['individual','monthly','annual','complete'].includes(type))throw new Error('Unknown PDF report type.');
- const individual=type==='individual',monthly=type==='monthly',annual=type==='annual',year=String(o.year||''),orientation=individual?'portrait':'landscape',id=docId(individual?'STMT':monthly?'MON':annual?'ANN':'FUND'),schoolName=school.name||'School Welfare Tenant',schoolCode=school.school_code||'',teacherName=teacher.name||teacher.full_name||'Member',totalC=sum(cs),totalP=sum(ps),net=totalC-totalP,individualContributionTotal=Number.isFinite(Number(o.personalContributionTotal))?Number(o.personalContributionTotal):totalC,schoolFundBalance=Number.isFinite(Number(o.schoolFundBalance))?Number(o.schoolFundBalance):null,byId=new Map(ts.map(t=>[String(t.id),t]));
- if(annual){
-  if(!/^\\d{4}$/.test(year))throw new Error('Choose a valid reporting year.');
-  const start=year+'-01-01',end=year+'-12-31';
-  const annualCs=cs.filter(x=>String(x.date||'').slice(0,10)>=start&&String(x.date||'').slice(0,10)<=end);
-  const annualPs=ps.filter(x=>String(x.date||'').slice(0,10)>=start&&String(x.date||'').slice(0,10)<=end);
-  cs.splice(0,cs.length,...annualCs);ps.splice(0,ps.length,...annualPs);
+ const reportYear=String(o.year||'');
+ if(type==='annual'){
+  if(!/^\\d{4}$/.test(reportYear))throw new Error('Choose a valid reporting year.');
+  const start=reportYear+'-01-01',end=reportYear+'-12-31';
+  cs.splice(0,cs.length,...cs.filter(x=>String(x.date||'').slice(0,10)>=start&&String(x.date||'').slice(0,10)<=end));
+  ps.splice(0,ps.length,...ps.filter(x=>String(x.date||'').slice(0,10)>=start&&String(x.date||'').slice(0,10)<=end));
  }
+ if(!['individual','monthly','annual','complete'].includes(type))throw new Error('Unknown PDF report type.');
+ const individual=type==='individual',monthly=type==='monthly',annual=type==='annual',year=reportYear,orientation=individual?'portrait':'landscape',id=docId(individual?'STMT':monthly?'MON':annual?'ANN':'FUND'),schoolName=school.name||'School Welfare Tenant',schoolCode=school.school_code||'',teacherName=teacher.name||teacher.full_name||'Member',totalC=sum(cs),totalP=sum(ps),net=totalC-totalP,individualContributionTotal=Number.isFinite(Number(o.personalContributionTotal))?Number(o.personalContributionTotal):totalC,schoolFundBalance=Number.isFinite(Number(o.schoolFundBalance))?Number(o.schoolFundBalance):null,byId=new Map(ts.map(t=>[String(t.id),t]));
  const head='<div class="twf-head">'+(individual&&teacher.passport?'<img class="twf-photo" src="'+esc(teacher.passport)+'" alt="Member passport photo">':'')+'<div class="twf-head-main"><h2>GHANA EDUCATION SERVICE</h2><h1>'+esc(schoolName)+'</h1><div class="twf-brand">TEACHERS WELFARE FUND</div><div class="twf-sub">'+(individual?'Official Member Contribution & Welfare Statement':monthly?'Monthly Financial Summary Report — '+esc(monthName(month)):annual?'Yearly Financial Summary Report — '+esc(year):'Complete Fund Summary Report')+'</div></div>'+(individual&&!teacher.passport?'<div class="twf-photo" style="display:grid;place-items:center;color:#94a3b8;font-size:9px;text-align:center">PASSPORT PHOTO</div>':'')+'</div>';
  const meta='<div class="twf-meta"><div><p><b>Document ID:</b> '+esc(id)+'</p><p><b>School code:</b> '+esc(schoolCode||'—')+'</p><p><b>'+(monthly?'Target month':annual?'Reporting year':'Academic year')+':</b> '+esc(monthly?monthName(month):annual?year:(o.academicYear||'—'))+'</p></div><div style="text-align:right"><p><b>Date issued:</b> '+esc(new Date().toLocaleDateString('en-GB'))+'</p></div></div>';
  let body='';
