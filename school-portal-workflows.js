@@ -452,28 +452,46 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  if(!adminTickerStyles){
    adminTickerStyles=document.createElement('style');adminTickerStyles.id='adminActivityTickerStyles';
    adminTickerStyles.textContent=`
-    #adminActivityTicker{position:fixed;z-index:1200;left:0;right:0;bottom:0;min-height:58px;display:flex;align-items:center;gap:12px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(105deg,#071b35,#12345b 62%,#071b35);border-top:2px solid #d6ad52;box-shadow:0 -8px 26px rgba(3,10,22,.2);color:#fff;overflow:hidden}
-    #adminActivityTicker .admin-ticker-indicator{flex:0 0 8px;width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 0 4px rgba(52,211,153,.15);animation:adminTickerPulse 1.8s ease-in-out infinite}
-    #adminActivityTicker .admin-ticker-window{min-width:0;flex:1;overflow:hidden}
+    #adminActivityTicker{position:fixed;z-index:1200;left:0;right:0;bottom:0;min-height:68px;display:flex;align-items:center;gap:14px;padding:10px 18px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(112deg,#061326 0%,#0d2544 46%,#102f54 72%,#07172c 100%);border-top:1px solid rgba(255,255,255,.14);box-shadow:0 -12px 34px rgba(3,10,22,.24),inset 0 1px rgba(255,255,255,.08);color:#fff;overflow:hidden}
+    #adminActivityTicker:before{content:'';position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,#8b6722,#f8df91 22%,#d6a637 52%,#fff0bd 72%,#8b6722)}
+    #adminActivityTicker:after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(100deg,rgba(255,255,255,.055),transparent 30%,transparent 70%,rgba(255,255,255,.035))}
+    #adminActivityTicker .admin-ticker-brand{position:relative;z-index:1;flex:0 0 auto;display:flex;align-items:center;gap:9px;padding:8px 12px;border:1px solid rgba(230,190,91,.34);border-radius:12px;background:linear-gradient(145deg,rgba(255,255,255,.12),rgba(255,255,255,.035));box-shadow:inset 0 1px rgba(255,255,255,.1),0 4px 14px rgba(0,0,0,.12)}
+    #adminActivityTicker .admin-ticker-brand-icon{width:28px;height:28px;display:grid;place-items:center;border-radius:9px;background:linear-gradient(145deg,#f4d98b,#c18b24);color:#10213a;font-size:.8rem;box-shadow:0 3px 10px rgba(214,166,55,.2)}
+    #adminActivityTicker .admin-ticker-brand-copy{display:grid;gap:1px;line-height:1.1}
+    #adminActivityTicker .admin-ticker-brand-copy strong{font-size:.67rem;letter-spacing:.12em;color:#ffe6a0;font-weight:900}
+    #adminActivityTicker .admin-ticker-brand-copy small{font-size:.58rem;letter-spacing:.08em;color:#aebed2;font-weight:700}
+    #adminActivityTicker .admin-ticker-indicator{width:6px;height:6px;border-radius:50%;background:#50dfa8;box-shadow:0 0 0 4px rgba(80,223,168,.13);animation:adminTickerPulse 2.6s ease-in-out infinite}
+    #adminActivityTicker .admin-ticker-window{position:relative;z-index:1;min-width:0;flex:1;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent)}
     #adminActivityTicker .admin-ticker-track{display:flex;width:max-content;align-items:center;animation:adminTickerMove 58s linear infinite;will-change:transform}
-    #adminActivityTicker:hover .admin-ticker-track{animation-play-state:paused}
-    #adminActivityTicker .admin-ticker-group{display:flex;flex:0 0 auto;align-items:center;gap:34px;padding-right:34px;white-space:nowrap}
-    #adminActivityTicker .admin-ticker-item{display:inline-flex;align-items:center;gap:8px;color:#f8fafc;font-size:.82rem}
-    #adminActivityTicker .admin-ticker-item b{color:#ffdc72;font-size:.68rem;letter-spacing:.04em}
-    #adminActivityTicker .admin-ticker-time{color:#a9bdd6;font-size:.68rem}
-    body.admin-activity-ticker-active{padding-bottom:78px}
-    body.admin-activity-ticker-active .sidebar{padding-bottom:84px}
+    #adminActivityTicker.is-paused .admin-ticker-track{animation-play-state:paused}
+    #adminActivityTicker .admin-ticker-group{display:flex;flex:0 0 auto;align-items:center;gap:38px;padding-right:38px;white-space:nowrap}
+    #adminActivityTicker .admin-ticker-item{display:inline-flex;align-items:center;gap:9px;color:#f7f9fd;font-size:.8rem}
+    #adminActivityTicker .admin-ticker-item b{color:#ffdf91;font-size:.67rem;letter-spacing:.06em}
+    #adminActivityTicker .admin-ticker-time{color:#9fb2ca;font-size:.66rem}
+    #adminActivityTicker .admin-ticker-control{position:relative;z-index:2;flex:0 0 auto;width:36px;height:36px;min-height:36px;padding:0;display:grid;place-items:center;border:1px solid rgba(255,255,255,.16);border-radius:11px;background:rgba(255,255,255,.08);color:#f7df9e;box-shadow:none}
+    #adminActivityTicker .admin-ticker-control:hover{background:rgba(255,255,255,.16)}
+    body.admin-activity-ticker-active{padding-bottom:86px}
+    body.admin-activity-ticker-active .sidebar{padding-bottom:90px}
     @keyframes adminTickerMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-    @keyframes adminTickerPulse{50%{opacity:.45;transform:scale(.82)}}
-    @media(max-width:600px){#adminActivityTicker{min-height:56px;padding:9px 11px calc(9px + env(safe-area-inset-bottom));gap:10px}#adminActivityTicker .admin-ticker-item{font-size:.75rem}#adminActivityTicker .admin-ticker-group{gap:24px;padding-right:24px}}
+    @keyframes adminTickerPulse{50%{opacity:.55;transform:scale(.82)}}
+    @media(max-width:600px){#adminActivityTicker{min-height:64px;padding:8px 9px calc(8px + env(safe-area-inset-bottom));gap:8px}#adminActivityTicker .admin-ticker-brand{gap:7px;padding:7px 8px}#adminActivityTicker .admin-ticker-brand-icon{width:25px;height:25px}#adminActivityTicker .admin-ticker-brand-copy strong{font-size:.59rem}#adminActivityTicker .admin-ticker-brand-copy small{display:none}#adminActivityTicker .admin-ticker-group{gap:25px;padding-right:25px}#adminActivityTicker .admin-ticker-item{font-size:.72rem}#adminActivityTicker .admin-ticker-time{font-size:.6rem}#adminActivityTicker .admin-ticker-control{width:32px;height:32px;min-height:32px}}
+    @media(max-width:360px){#adminActivityTicker .admin-ticker-brand-copy{display:none}#adminActivityTicker .admin-ticker-brand{padding:6px}}
     @media(prefers-reduced-motion:reduce){#adminActivityTicker .admin-ticker-track,#adminActivityTicker .admin-ticker-indicator{animation:none!important}}
    `;
    document.head.appendChild(adminTickerStyles);
  }
  const adminTicker=document.createElement('aside');
  adminTicker.id='adminActivityTicker';adminTicker.setAttribute('aria-label','Administrator activity');
- adminTicker.innerHTML='<span class="admin-ticker-indicator" aria-hidden="true"></span><div class="admin-ticker-window"><div class="admin-ticker-track"><div class="admin-ticker-group" id="adminTickerItems"></div><div class="admin-ticker-group" id="adminTickerItemsClone" aria-hidden="true"></div></div></div>';
+ adminTicker.innerHTML='<div class="admin-ticker-brand"><span class="admin-ticker-brand-icon"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i></span><span class="admin-ticker-brand-copy"><strong>ADMIN ACTIVITY</strong><small>SCHOOL OPERATIONS</small></span><span class="admin-ticker-indicator" aria-hidden="true"></span></div><div class="admin-ticker-window"><div class="admin-ticker-track"><div class="admin-ticker-group" id="adminTickerItems"></div><div class="admin-ticker-group" id="adminTickerItemsClone" aria-hidden="true"></div></div></div><button type="button" class="admin-ticker-control" aria-label="Pause scrolling" aria-pressed="false" title="Pause scrolling"><i class="fa-solid fa-pause" aria-hidden="true"></i></button>';
  document.body.appendChild(adminTicker);
+ const adminTickerControl=adminTicker.querySelector('.admin-ticker-control');
+ adminTickerControl?.addEventListener('click',()=>{
+   const paused=adminTicker.classList.toggle('is-paused');
+   adminTickerControl.setAttribute('aria-pressed',String(paused));
+   adminTickerControl.setAttribute('aria-label',paused?'Resume scrolling':'Pause scrolling');
+   adminTickerControl.title=paused?'Resume scrolling':'Pause scrolling';
+   adminTickerControl.innerHTML='<i class="fa-solid '+(paused?'fa-play':'fa-pause')+'" aria-hidden="true"></i>';
+ });
  const refreshAdminActivityTicker=async()=>{
    const {data:rows,error}=await client.from('audit_logs')
      .select('created_at,time_string,actor_name,action,details,status')
