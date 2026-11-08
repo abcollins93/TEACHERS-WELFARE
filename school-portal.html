@@ -1171,6 +1171,50 @@ async function renderTeacherDashboard(profile,school){
  <section class="panel teacher-workspace-panel wf-payout-view" id="wfPayoutPanel"><header class="wf-payout-heading"><div><h2>Welfare &amp; Payouts</h2><p>Welfare fund disbursement history and support log.</p></div></header><div class="wf-payout-metrics"><article class="wf-payout-metric wf-payout-pink"><small>TOTAL PAYOUTS</small><strong id="teacherPayoutTotal">Loading…</strong></article><article class="wf-payout-metric wf-payout-blue"><small>CURRENT FUND</small><strong id="teacherCurrentFund">Loading…</strong></article><article class="wf-payout-metric wf-payout-purple"><small>ACTIVE MEMBERS</small><strong id="teacherActiveMembers">Loading…</strong></article></div><div class="wf-payout-log"><div class="wf-payout-log-head"><h3>Disbursement Log</h3><p id="teacherPayoutsState" class="muted">Loading your payouts…</p></div><div class="wf-payout-table-wrap"><table><thead><tr><th>REFERENCE</th><th>BENEFICIARY</th><th>REASON</th><th>AMOUNT</th><th>DATE</th><th>ACTION</th></tr></thead><tbody id="teacherPayoutRows"><tr><td colspan="6">Loading…</td></tr></tbody></table></div></div><div id="teacherPayouts" hidden></div></section>
  <section class="panel teacher-workspace-panel" id="wfStatementPanel"><div class="eyebrow">Personal financial records</div><h2>Statements &amp; Reports</h2><p class="muted">Generate a complete PDF statement of your own membership details, contributions and welfare payouts.</p><div id="teacherStatementSummary" class="teacher-statement-summary"></div><div class="teacher-statement-action"><button id="teacherStatementDownload" type="button"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i> Download PDF Statement</button><p id="teacherStatementMessage" class="muted" role="status" aria-live="polite">Your personal statement is ready to generate.</p></div></section>`;
  host.appendChild(workspace);
+ // Persistent teacher-only ticker: the server RPC returns school notices and only this
+ // authenticated teacher's targeted administrative activity.
+ if(window.__teacherTickerTimer){clearInterval(window.__teacherTickerTimer);window.__teacherTickerTimer=null;}
+ document.body.classList.add('teacher-ticker-active');
+ let tickerStyles=document.getElementById('teacherLiveTickerStyles');
+ if(!tickerStyles){
+  tickerStyles=document.createElement('style');tickerStyles.id='teacherLiveTickerStyles';
+  tickerStyles.textContent=`
+   #teacherLiveTicker{position:fixed;z-index:1200;left:0;right:0;bottom:0;min-height:58px;display:flex;align-items:center;gap:14px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(105deg,#071b35,#12345b 62%,#071b35);border-top:2px solid #d6ad52;box-shadow:0 -8px 26px rgba(3,10,22,.2);color:#fff;overflow:hidden}
+   #teacherLiveTicker .ticker-live{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;color:#ffdc72;font-size:.68rem;font-weight:900;letter-spacing:.1em;white-space:nowrap}
+   #teacherLiveTicker .ticker-live:before{content:'';width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 0 4px rgba(52,211,153,.15);animation:teacherTickerPulse 1.8s ease-in-out infinite}
+   #teacherLiveTicker .ticker-window{min-width:0;flex:1;overflow:hidden}
+   #teacherLiveTicker .ticker-track{display:flex;width:max-content;align-items:center;animation:teacherTickerMove 48s linear infinite;will-change:transform}
+   #teacherLiveTicker:hover .ticker-track{animation-play-state:paused}
+   #teacherLiveTicker .ticker-group{display:flex;flex:0 0 auto;align-items:center;gap:36px;padding-right:36px;white-space:nowrap}
+   #teacherLiveTicker .ticker-item{display:inline-flex;align-items:center;gap:9px;color:#f8fafc;font-size:.82rem}
+   #teacherLiveTicker .ticker-item b{color:#ffdc72;font-size:.66rem;letter-spacing:.08em}
+   #teacherLiveTicker .ticker-time{color:#a9bdd6;font-size:.68rem}
+   body.teacher-ticker-active{padding-bottom:76px}
+   body.teacher-ticker-active .sidebar{padding-bottom:82px}
+   @keyframes teacherTickerMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+   @keyframes teacherTickerPulse{50%{opacity:.45;transform:scale(.82)}}
+   @media(max-width:600px){#teacherLiveTicker{min-height:56px;padding:9px 11px calc(9px + env(safe-area-inset-bottom));gap:10px}#teacherLiveTicker .ticker-live{font-size:.6rem}#teacherLiveTicker .ticker-item{font-size:.75rem}#teacherLiveTicker .ticker-group{gap:24px;padding-right:24px}}
+   @media(prefers-reduced-motion:reduce){#teacherLiveTicker .ticker-track,#teacherLiveTicker .ticker-live:before{animation:none!important}}
+  `;
+  document.head.appendChild(tickerStyles);
+ }
+ const ticker=document.createElement('aside');ticker.id='teacherLiveTicker';ticker.setAttribute('aria-label','Live school announcements and your account activity');
+ ticker.innerHTML='<span class="ticker-live">LIVE UPDATES</span><div class="ticker-window"><div class="ticker-track"><div class="ticker-group" id="teacherTickerItems"></div><div class="ticker-group" id="teacherTickerItemsClone" aria-hidden="true"></div></div></div>';
+ workspace.appendChild(ticker);
+ const refreshTeacherTicker=async()=>{
+  const {data:feed,error:feedError}=await client.rpc('get_my_teacher_ticker_feed');
+  if(feedError){console.warn('[Teacher live ticker] Feed unavailable:',feedError.message);return;}
+  const rows=Array.isArray(feed)?feed:[];
+  const items=rows.length?rows.map(item=>{
+   const label=item.feed_type==='announcement'?'SCHOOL ANNOUNCEMENT':'YOUR ACCOUNT ACTIVITY';
+   const time=item.published_at?new Date(item.published_at).toLocaleString('en-GH',{dateStyle:'medium',timeStyle:'short'}):'';
+   return '<span class="ticker-item"><b>'+label+'</b><span>'+escapeHtml(item.message||'')+'</span><time class="ticker-time">'+escapeHtml(time)+'</time></span>';
+  }).join(''):'<span class="ticker-item"><b>WELCOME</b><span>No announcements or recent account activity yet.</span></span>';
+  const primary=document.getElementById('teacherTickerItems'),clone=document.getElementById('teacherTickerItemsClone');
+  if(primary&&clone){primary.innerHTML=items;clone.innerHTML=items;}
+ };
+ await refreshTeacherTicker();
+ window.__teacherTickerTimer=setInterval(refreshTeacherTicker,30000);
  document.querySelectorAll('.teacher-workspace-panel').forEach(panel=>panel.classList.add('hidden'));
  $('schoolOverview').classList.remove('hidden');
  const [{data:cs,error:ce},{data:ps,error:pe}]=await Promise.all([
@@ -1262,7 +1306,7 @@ async function renderTeacherDashboard(profile,school){
   }finally{statementButton.disabled=false;}
  }
  statementButton?.addEventListener('click',downloadTeacherStatement);
- try{const {data:notice}=await client.rpc('get_my_school_broadcast');if(notice?.[0]?.message){const n=document.createElement('div');n.className='panel';n.style.borderColor='#d6ad52';n.innerHTML='<strong>School notice</strong><p>'+escapeHtml(notice[0].message)+'</p>';host.insertBefore(n,workspace);}}catch(_){}
+
  const form=$('teacherVoluntaryPasswordForm');
  form?.addEventListener('submit',async ev=>{
   ev.preventDefault();const current=$('teacherCurrentPassword').value,next=$('teacherVoluntaryNewPassword').value,confirmNext=$('teacherVoluntaryConfirmPassword').value,status=$('teacherVoluntaryPasswordMessage');
