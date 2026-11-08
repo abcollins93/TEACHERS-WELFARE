@@ -196,7 +196,7 @@ function addUI(){
  <div><label for="wfPhone">Phone</label><input id="wfPhone" maxlength="40"></div><div><label for="wfRank">Rank / Grade</label><select id="wfRank" style="width:100%;min-height:44px;padding:10px 12px;border:1px solid #dbe2ec;border-radius:10px;background:#fff;color:#0f172a;box-sizing:border-box">${rankOptionsMarkup()}</select></div>
  <div><label for="wfClass">Class / Subject / Responsibility</label><input id="wfClass" maxlength="100" placeholder="e.g. Primary 6, Mathematics"></div><div><label for="wfPassport">Passport photograph (optional)</label><input id="wfPassport" type="file" accept="image/jpeg,image/png,image/webp"><small class="muted">JPEG, PNG or WebP; maximum 1 MB. Leave blank to keep the current photo.</small><div id="wfPassportPreview" class="muted" aria-live="polite"></div></div><div style="align-self:end;display:flex;gap:8px;flex-wrap:wrap"><button id="wfTeacherSave" type="submit">Register teacher</button><button id="wfTeacherCancel" class="secondary" type="button">Cancel edit</button></div></form><p id="wfTeacherMsg" class="muted" role="status" aria-live="polite"></p><div class="wf-teacher-register-table" style="overflow:auto"><table><thead><tr><th>Staff ID</th><th>Name</th><th>Phone</th><th>Rank</th><th>Class</th><th>Status</th><th>Profile actions</th></tr></thead><tbody id="wfManageTeacherRows"></tbody></table></div></div>
  
- <section class="wf-reports-view hidden" id="wfReportsPanel"><header class="wf-reports-heading"><div><h2>Statements &amp; Reports</h2><p>Generate individual member statements or executive fund summary reports instantly.</p></div><span class="wf-reports-admin-status"><i class="fa-solid fa-shield-check"></i> Administrator access active</span></header><div class="wf-report-cards"><article class="wf-report-card"><div class="wf-report-card-icon wf-report-icon-blue"><i class="fa-solid fa-file-lines"></i></div><div class="wf-report-card-content"><h3>Individual Statement</h3><p>Generate a comprehensive, print-ready official A4 statement for the selected member account.</p><label for="wfStatementTeacher">Select Member Account</label><select id="wfStatementTeacher" aria-label="Select Member Account"></select><button id="wfStatementPdf" type="button" class="wf-report-button wf-report-button-dark"><i class="fa-solid fa-file-pdf"></i> Download Member Statement</button><p id="wfStatementMsg" class="wf-report-message" role="status" aria-live="polite"></p></div></article><article class="wf-report-card"><div class="wf-report-card-icon wf-report-icon-orange"><i class="fa-solid fa-calendar-days"></i></div><div class="wf-report-card-content"><h3>Monthly Summary Report</h3><p>Administrator access active. Select target month to generate report.</p><div class="wf-month-year-picker" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:560px;margin-bottom:13px"><div><label for="wfReportMonth">Select Month</label><select id="wfReportMonth" aria-label="Select reporting month"></select></div><div><label for="wfReportYear">Select Year</label><select id="wfReportYear" aria-label="Select reporting year"></select></div></div><button id="wfMonthlyPdf" type="button" class="wf-report-button wf-report-button-orange"><i class="fa-solid fa-file-pdf"></i> Download Monthly Summary (Admin)</button></div></article><article class="wf-report-card"><div class="wf-report-card-icon wf-report-icon-green"><i class="fa-solid fa-chart-column"></i></div><div class="wf-report-card-content"><h3>Complete Fund Summary</h3><p>Administrator access is active. You can generate the complete fund report.</p><button id="wfCompletePdf" type="button" class="wf-report-button wf-report-button-green"><i class="fa-solid fa-file-pdf"></i> Download Complete Summary (Admin)</button></div></article></div><div class="wf-report-footer"><p id="wfReportMsg" class="muted" role="status" aria-live="polite">Reports include records visible to this authenticated school administrator only.</p><button id="wfExportCsv" type="button" class="wf-report-csv"><i class="fa-solid fa-file-csv"></i> Export ledgers CSV</button></div></section>`;
+ <section class="wf-reports-view hidden" id="wfReportsPanel"><header class="wf-reports-heading"><div><h2>Statements &amp; Reports</h2><p>Generate individual member statements or executive fund summary reports instantly.</p></div><span class="wf-reports-admin-status"><i class="fa-solid fa-shield-check"></i> Administrator access active</span></header><div class="wf-report-cards"><article class="wf-report-card"><div class="wf-report-card-icon wf-report-icon-blue"><i class="fa-solid fa-file-lines"></i></div><div class="wf-report-card-content"><h3>Individual Statement</h3><p>Generate a comprehensive, print-ready official A4 statement for the selected member account.</p><label for="wfStatementTeacher">Select Member Account</label><select id="wfStatementTeacher" aria-label="Select Member Account"></select><button id="wfStatementPdf" type="button" class="wf-report-button wf-report-button-dark"><i class="fa-solid fa-file-pdf"></i> Download Member Statement</button><p id="wfStatementMsg" class="wf-report-message" role="status" aria-live="polite"></p></div></article><article class="wf-report-card"><div class="wf-report-card-icon wf-report-icon-orange"><i class="fa-solid fa-calendar-days"></i></div><div class="wf-report-card-content"><h3>Monthly Summary Report</h3><p>Administrator access active. Select target month to generate report.</p><div class="wf-month-year-picker" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:560px;margin-bottom:13px"><div><label for="wfReportMonth">Select Month</label><select id="wfReportMonth" aria-label="Select reporting month"></select></div><div><label for="wfReportYear">Select Year</label><select id="wfReportYear" aria-label="Select reporting year"></select></div></div><button id="wfMonthlyPdf" type="button" class="wf-report-button wf-report-button-orange"><i class="fa-solid fa-file-pdf"></i> Download Monthly Summary (Admin)</button></div></article><article class="wf-report-card"><div class="wf-report-card-icon wf-report-icon-green"><i class="fa-solid fa-chart-column"></i></div><div class="wf-report-card-content"><h3>Complete Fund Summary</h3><p>Administrator access is active. You can generate the complete fund report.</p><button id="wfCompletePdf" type="button" class="wf-report-button wf-report-button-green"><i class="fa-solid fa-file-pdf"></i> Download Complete Summary (Admin)</button></div></article><article class="wf-report-card"><div class="wf-report-card-icon wf-report-icon-blue"><i class="fa-solid fa-calendar-check"></i></div><div class="wf-report-card-content"><h3>Yearly Summary Report</h3><p>Select a calendar year to download that year’s school-wide contribution and welfare payout summary.</p><label for="wfAnnualYear">Select Year</label><select id="wfAnnualYear" aria-label="Select annual report year"></select><button id="wfAnnualPdf" type="button" class="wf-report-button wf-report-button-dark"><i class="fa-solid fa-file-pdf"></i> Download Yearly Summary (Admin)</button></div></article></div><div class="wf-report-footer"><p id="wfReportMsg" class="muted" role="status" aria-live="polite">Reports include records visible to this authenticated school administrator only.</p><button id="wfExportCsv" type="button" class="wf-report-csv"><i class="fa-solid fa-file-csv"></i> Export ledgers CSV</button></div></section>`;
  // Financial workspaces are independent sidebar destinations, not admin-panel cards.
  const contributionWorkspace=d.querySelector('#wfContributionPanel');
  const payoutWorkspace=d.querySelector('#wfPayoutPanel');
@@ -219,16 +219,23 @@ function addUI(){
  }
  // Populate the monthly report selectors immediately after mounting the report
  // view. This keeps Month and Year available even if later optional setup is slow.
- const reportMonthSelect=$('wfReportMonth'),reportYearSelect=$('wfReportYear');
- if(reportMonthSelect&&reportYearSelect){
+ const reportMonthSelect=$('wfReportMonth'),reportYearSelect=$('wfReportYear'),annualYearSelect=$('wfAnnualYear');
+ {
    const reportMonthNow=new Date();
    const monthNames=Array.from({length:12},(_,i)=>new Date(2000,i,1).toLocaleDateString('en-GH',{month:'long'}));
-   reportMonthSelect.replaceChildren(...monthNames.map((name,i)=>new Option(name,String(i+1).padStart(2,'0'))));
    const reportYears=Array.from({length:11},(_,i)=>reportMonthNow.getFullYear()-i);
-   reportYearSelect.replaceChildren(...reportYears.map(year=>new Option(String(year),String(year))));
-   reportMonthSelect.disabled=false;reportYearSelect.disabled=false;
-   reportMonthSelect.value=String(reportMonthNow.getMonth()+1).padStart(2,'0');
-   reportYearSelect.value=String(reportMonthNow.getFullYear());
+   if(reportMonthSelect&&reportYearSelect){
+     reportMonthSelect.replaceChildren(...monthNames.map((name,i)=>new Option(name,String(i+1).padStart(2,'0'))));
+     reportYearSelect.replaceChildren(...reportYears.map(year=>new Option(String(year),String(year))));
+     reportMonthSelect.disabled=false;reportYearSelect.disabled=false;
+     reportMonthSelect.value=String(reportMonthNow.getMonth()+1).padStart(2,'0');
+     reportYearSelect.value=String(reportMonthNow.getFullYear());
+   }
+   if(annualYearSelect){
+     annualYearSelect.replaceChildren(...reportYears.map(year=>new Option(String(year),String(year))));
+     annualYearSelect.disabled=false;
+     annualYearSelect.value=String(reportMonthNow.getFullYear());
+   }
  }
  // Keep audit history in its own view, outside the restricted management workspace.
  const auditPanel=$('wfAuditPanel');
@@ -682,6 +689,16 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    academicYear:window.getCurrentAcademicYear(),
    standardMonthlyDues:typeof standardMonthlyDues!=='undefined'?standardMonthlyDues:0
  })));
+ $('wfAnnualPdf').addEventListener('click',()=>{
+   const selectedYear=$('wfAnnualYear').value;
+   if(!/^\\d{4}$/.test(selectedYear||''))return msg('wfReportMsg','Choose a valid reporting year.',true);
+   return runWelfarePdf($('wfAnnualPdf'),'wfReportMsg','Yearly summary PDF downloaded successfully.',()=>({
+     type:'annual',year:selectedYear,school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},
+     contributions:activeCons,payouts:activePays,teachers,
+     academicYear:window.getCurrentAcademicYear(),
+     standardMonthlyDues:typeof standardMonthlyDues!=='undefined'?standardMonthlyDues:0
+   }));
+ });
  $('wfStatementPdf').addEventListener('click',()=>{
    const tid=$('wfStatementTeacher').value,teacher=teachers.find(t=>String(t.id)===String(tid));
    if(!teacher)return msg('wfStatementMsg','Choose a teacher first.',true);
