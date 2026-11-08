@@ -315,7 +315,7 @@ body{font-family:'Plus Jakarta Sans',Inter,system-ui,sans-serif;font-variant-num
 #dashboard.admin-workspace-open #wfAuditView,
 #dashboard.admin-workspace-open #wfAuditPanel{display:none!important}
 #dashboard.admin-workspace-open #schoolOverview{display:none!important}
-#dashboard.admin-workspace-open #schoolTeachers{display:block}
+#dashboard.admin-workspace-open #schoolTeachers{display:none!important}
 #dashboard.admin-workspace-open #wfAdminPanel:focus{outline:none}
 #dashboard.admin-workspace-open #wfAdminPanel .wf-admin-intro{scroll-margin-top:18px}
 </style>
@@ -1423,7 +1423,7 @@ async function showDashboard(){
  }
  window.__welfareCurrentRole='admin';
  document.getElementById('teacherWorkspace')?.remove();
- $('schoolTeachers')?.classList.remove('hidden');
+ $('schoolTeachers')?.classList.add('hidden');
  const profileViewerNav=document.querySelector('.sidebar .navbtn[data-target="teacherProfileViewer"]');if(profileViewerNav)profileViewerNav.style.removeProperty('display');
  document.querySelectorAll('.sidebar .navbtn').forEach(btn=>{btn.classList.remove('role-restricted');btn.removeAttribute('aria-disabled');btn.removeAttribute('title');btn.style.removeProperty('opacity');btn.style.removeProperty('cursor');btn.querySelector('.role-lock-icon')?.remove();});
  const adminGreeting=$('dashboardGreeting');if(adminGreeting)adminGreeting.textContent='HI, ADMIN!';
@@ -1661,7 +1661,7 @@ client.auth.onAuthStateChange((event,session)=>{
 client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
 })();
 </script>
-<script src="school-portal-workflows.js?v=teacher-register-relocation-final-20261108"></script>
+<script src="school-portal-workflows.js?v=teacher-register-relocation-visibility-fix-20261108"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
