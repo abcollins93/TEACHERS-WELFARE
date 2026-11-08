@@ -1122,6 +1122,25 @@ async function renderTeacherDashboard(profile,school){
  const firstName=String(teacherName||teacherId).trim().split(/\s+/)[0]||'Teacher';
  const greeting=$('dashboardGreeting');if(greeting)greeting.textContent='Hi, '+firstName+'!';
  setHeaderProfile(user,teacherName,'Teacher',teacherAvatar);
+ // Teacher-only shortcut: open the signed-in teacher's own fixed profile.
+ // The target is always wfTeacherPanel; no roster selector is exposed to teachers.
+ const overviewTop=document.querySelector('#schoolOverview .overview-top');
+ if(overviewTop){
+  let ownProfileButton=document.getElementById('teacherQuickProfileButton');
+  if(!ownProfileButton){
+   ownProfileButton=document.createElement('button');
+   ownProfileButton.type='button';
+   ownProfileButton.id='teacherQuickProfileButton';
+   ownProfileButton.className='secondary';
+   ownProfileButton.style.cssText='flex:0 0 auto;align-self:flex-start;white-space:nowrap;margin-left:auto';
+   ownProfileButton.innerHTML='<i class="fa-solid fa-id-card" aria-hidden="true"></i> View my profile';
+   ownProfileButton.addEventListener('click',()=>{
+    const ownProfileNav=document.querySelector('.sidebar .navbtn[data-target="wfTeacherPanel"]');
+    if(ownProfileNav)ownProfileNav.click();
+   });
+   overviewTop.appendChild(ownProfileButton);
+  }
+ }
  const accountTitle=document.querySelector('.sidebar-account-copy strong');
  if(accountTitle)accountTitle.textContent='Teacher account';
  const accountMark=document.querySelector('.sidebar-account-mark i');
