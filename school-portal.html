@@ -1119,6 +1119,19 @@ function setTenantFooter(school){
  if(schoolLine)schoolLine.textContent=name?name.toLocaleUpperCase()+' • WELFARE EXECUTIVE COMMITTEE':'loading school.';
  if(copyright)copyright.textContent='© '+new Date().getFullYear()+' Teachers Welfare Fund Portal. All Rights Reserved.';
 }
+function showLoginWelcome(displayName,roleLabel,schoolName){
+ const first=String(displayName||'').trim().split(/\\s+/)[0]||'there';
+ let toast=document.getElementById('loginWelcomeToast');
+ if(!toast){
+  toast=document.createElement('div');toast.id='loginWelcomeToast';toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');
+  toast.style.cssText='position:fixed;z-index:2500;top:calc(env(safe-area-inset-top, 0px) + 14px);left:50%;transform:translateX(-50%) translateY(-8px);width:min( min(92vw, 430px), calc(100vw - 24px));padding:13px 17px;border:1px solid rgba(226,190,105,.55);border-radius:14px;background:linear-gradient(120deg,#07172d,#15365b);color:#fff;box-shadow:0 12px 32px rgba(4,12,27,.28);font-size:.9rem;line-height:1.45;text-align:center;opacity:0;transition:opacity .22s ease,transform .22s ease;pointer-events:none';
+  document.body.appendChild(toast);
+ }
+ toast.textContent='Welcome, '+first+'. '+(roleLabel==='School Administrator'?'Your '+(schoolName||'school')+' admin portal is ready.':'Your personal welfare account is ready.');
+ toast.style.opacity='1';toast.style.transform='translateX(-50%) translateY(0)';
+ if(window.__welfareWelcomeTimer)clearTimeout(window.__welfareWelcomeTimer);
+ window.__welfareWelcomeTimer=setTimeout(()=>{toast.style.opacity='0';toast.style.transform='translateX(-50%) translateY(-8px)';},4200);
+}
 async function renderTeacherDashboard(profile,school){
  window.__welfareCurrentRole='teacher';
  const {data:{user}}=await client.auth.getUser();
@@ -1426,6 +1439,7 @@ async function renderTeacherDashboard(profile,school){
   if(error||!changed?.ok)return say(changed?.error||'Password update failed. Please try again.',true);
   form.reset();say('Password updated successfully. Use your new password next time you sign in.');
  });
+ showLoginWelcome(teacherName,'Teacher',school.name);
  resetInactivityTimer();
 }
 
@@ -1590,6 +1604,7 @@ try {
   report.innerHTML='<h1 style="color:#0b1d3a">'+escapeHtml(school.name)+'</h1><p>School Welfare Fund — Summary Statement</p><p>School code: '+escapeHtml(school.school_code)+' | Generated: '+new Date().toLocaleString()+'</p><hr><h2>Fund summary</h2><p>Registered teachers: '+escapeHtml($('teacherCount').textContent)+'</p><p>Total contributions: GHS '+escapeHtml($('contributionTotal').textContent)+'</p><p>Total welfare payouts: GHS '+escapeHtml($('payoutTotal').textContent)+'</p><p><strong>Net fund balance: GHS '+escapeHtml($('netTotal').textContent)+'</strong></p><h2>Teacher register</h2>'+teacherTable.outerHTML;
   window.html2pdf().set({margin:10,filename:(school.school_code||'school')+'-welfare-summary.pdf',image:{type:'jpeg',quality:.96},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:'landscape'}}).from(report).save();
  };
+ showLoginWelcome(user.user_metadata?.full_name||user.user_metadata?.name||user.email,'School Administrator',school.name);
 }
 $('teacherLoginForm').addEventListener('submit',async e=>{
  e.preventDefault();
