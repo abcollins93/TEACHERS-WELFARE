@@ -468,7 +468,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     #adminActivityTicker .admin-ticker-item{display:inline-flex;align-items:center;gap:9px;color:#f7f9fd;font-size:.8rem}
     #adminActivityTicker .admin-ticker-item b{color:#ffdf91;font-size:.67rem;letter-spacing:.06em}
     #adminActivityTicker .admin-ticker-time{color:#9fb2ca;font-size:.66rem}
-    #adminActivityTicker .admin-ticker-control{position:relative;z-index:2;flex:0 0 auto;width:36px;height:36px;min-height:36px;padding:0;display:grid;place-items:center;border:1px solid rgba(255,255,255,.16);border-radius:11px;background:rgba(255,255,255,.08);color:#f7df9e;box-shadow:none}
+    #adminActivityTicker .admin-ticker-control{position:relative;z-index:2;flex:0 0 24px;width:24px;height:24px;min-width:24px;min-height:24px;padding:0!important;display:grid;place-items:center;border:1px solid rgba(255,255,255,.2);border-radius:50%;background:rgba(255,255,255,.07);color:#f7df9e;font-size:.58rem;line-height:1;box-shadow:none}
+    #adminActivityTicker .admin-ticker-control i{font-size:.58rem;line-height:1}
     #adminActivityTicker .admin-ticker-control:hover{background:rgba(255,255,255,.16)}
     body.admin-activity-ticker-active{padding-bottom:86px}
     body.admin-activity-ticker-active .sidebar{padding-bottom:90px}
