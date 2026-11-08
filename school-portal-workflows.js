@@ -153,7 +153,16 @@ function addUI(){
  <div><label>Class / Subject / responsibility</label><input id="wfClass" maxlength="100" placeholder="e.g. Primary 6, Mathematics"></div><div><label for="wfPassport">Passport photograph (optional)</label><input id="wfPassport" type="file" accept="image/jpeg,image/png,image/webp"><small class="muted">JPEG, PNG or WebP; maximum 1 MB. Leave blank to keep the current photo.</small><div id="wfPassportPreview" class="muted" aria-live="polite"></div></div><div style="align-self:end;display:flex;gap:8px;flex-wrap:wrap"><button id="wfTeacherSave">Register teacher</button><button id="wfTeacherCancel" class="secondary" type="button">Cancel edit</button></div></form><p id="wfTeacherMsg" class="muted"></p><div style="overflow:auto"><table><thead><tr><th>Staff ID</th><th>Name</th><th>Phone</th><th>Rank</th><th>Class</th><th>Profile actions</th></tr></thead><tbody id="wfManageTeacherRows"></tbody></table></div></div>
  <div class="grid"><div class="panel" id="wfContributionPanel"><h3>Record contribution</h3><form id="wfContribution"><label>Teacher</label><select id="wfConTeacher" required style="width:100%;padding:12px"></select><label>Amount (GHS)</label><input id="wfConAmount" type="number" min=".01" step=".01" required><label>Date</label><input id="wfConDate" type="date" required><label>Reference</label><input id="wfConRef" maxlength="180"><p id="wfConMsg" class="muted"></p><button>Save contribution</button></form></div>
  <div class="panel" id="wfPayoutPanel"><h3>Record welfare payout</h3><form id="wfPayout"><label>Teacher</label><select id="wfPayTeacher" required style="width:100%;padding:12px"></select><label>Amount (GHS)</label><input id="wfPayAmount" type="number" min=".01" step=".01" required><label>Date</label><input id="wfPayDate" type="date" required><label>Reason</label><input id="wfPayReason" maxlength="180" required><label>Reference</label><input id="wfPayRef" maxlength="180"><p id="wfPayMsg" class="muted"></p><button>Save payout</button></form></div></div>
- <div class="grid"><div class="panel" id="wfStatementPanel"><h3>Member PDF statement</h3><p class="muted">Download an individual teacher statement showing contributions, welfare payouts and net position.</p><label for="wfStatementTeacher">Teacher</label><select id="wfStatementTeacher" style="width:100%;padding:12px"></select><button id="wfStatementPdf" type="button" style="margin-top:10px"><i class="fa-solid fa-file-pdf"></i> Download member statement</button><p id="wfStatementMsg" class="muted"></p></div><div class="panel" id="wfLedgerPanel"><h3>Monthly Contribution Ledger</h3><p class="muted">Search and filter this school’s contribution history. Reversed entries remain visible for accountability.</p><div class="grid"><div><label for="wfLedgerSearch">Search ledger</label><input id="wfLedgerSearch" type="search" placeholder="Teacher, staff ID or reference"></div><div><label for="wfLedgerMonth">Filter month</label><input id="wfLedgerMonth" type="month"></div></div><div style="overflow:auto"><table><thead><tr><th>Date</th><th>Teacher</th><th>Amount (GHS)</th><th>Reference</th><th>Reversal</th></tr></thead><tbody id="wfConRows"></tbody></table></div></div>
+ <div class="grid"><div class="panel" id="wfStatementPanel"><h3>Member PDF statement</h3><p class="muted">Download an individual teacher statement showing contributions, welfare payouts and net position.</p><label for="wfStatementTeacher">Teacher</label><select id="wfStatementTeacher" style="width:100%;padding:12px"></select><button id="wfStatementPdf" type="button" style="margin-top:10px"><i class="fa-solid fa-file-pdf"></i> Download member statement</button><p id="wfStatementMsg" class="muted"></p></div><div class="panel" id="wfLedgerPanel">
+ <header class="wf-contrib-header"><div><h2>Contributions</h2><p class="muted">Complete contribution records and financial logs.</p></div></header>
+ <div class="wf-contrib-metrics">
+  <article class="wf-contrib-metric wf-contrib-green"><small>TOTAL CONTRIBUTIONS</small><strong id="wfConTotal">GHS 0.00</strong></article>
+  <article class="wf-contrib-metric wf-contrib-red"><small>TOTAL DISBURSEMENT</small><strong id="wfConDisbursement">GHS 0.00</strong></article>
+  <article class="wf-contrib-metric wf-contrib-blue"><small>TOTAL NET FUND</small><strong id="wfConNet">GHS 0.00</strong></article>
+ </div>
+ <div class="wf-contrib-log"><div class="wf-contrib-log-head"><h3>Financial Records</h3><div class="wf-contrib-filters"><input id="wfLedgerSearch" type="search" aria-label="Search financial records" placeholder="Search teacher or reference"><input id="wfLedgerMonth" type="month" aria-label="Filter by month"></div></div>
+ <div class="wf-contrib-table-wrap"><table><thead><tr><th>TEACHER</th><th>MONTH / YEAR</th><th>REFERENCE</th><th>AMOUNT</th><th>DATE</th><th>ACTION</th></tr></thead><tbody id="wfConRows"></tbody></table></div></div>
+</div>
  <div class="panel" id="wfPayoutLedgerPanel"><h3>Welfare Payouts & Fund Withdrawal Log</h3><p class="muted">Search payout records and retain reversed transactions in the history.</p><label for="wfPayoutSearch">Search payouts</label><input id="wfPayoutSearch" type="search" placeholder="Teacher, staff ID or reason"><div style="overflow:auto"><table><thead><tr><th>Date</th><th>Teacher</th><th>Amount (GHS)</th><th>Reason</th><th>Reversal</th></tr></thead><tbody id="wfPayRows"></tbody></table></div></div></div>
  <div class="panel" id="wfReportsPanel"><h3>Reports and exports</h3><div class="grid"><div><label for="wfMonth">Reporting month</label><input id="wfMonth" type="month"></div><div style="align-self:end;display:flex;gap:8px;flex-wrap:wrap"><button id="wfMonthlyPdf" type="button">Monthly PDF summary</button><button id="wfExportCsv" type="button" class="secondary">Export ledgers CSV</button></div></div><p id="wfReportMsg" class="muted">Reports include records visible to this school account only.</p></div>
  <div class="panel" id="wfAuditPanel"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><h3>Audit history</h3><button id="wfAuditExport" type="button" class="secondary">Export audit CSV</button></div><p class="muted">Export includes the currently loaded school-scoped audit records, up to 300 entries.</p><div class="grid"><div><label for="wfAuditSearch">Search audit records</label><input id="wfAuditSearch" placeholder="Search action, actor, details…"></div><div><label for="wfAuditCategory">Category</label><select id="wfAuditCategory"><option value="">All categories</option><option>Welfare portal</option><option>Contribution</option><option>Payout</option><option>Teacher</option></select></div></div><p id="wfAuditMsg" class="muted">Loading audit history…</p><div style="overflow:auto"><table><thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Details</th><th>Status</th></tr></thead><tbody id="wfAuditRows"><tr><td colspan="5">Loading…</td></tr></tbody></table></div></div>
@@ -234,6 +243,31 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const reversed=new Set(reversals.map(r=>r.transaction_type+':'+r.transaction_id));
  const activeCons=cons.filter(x=>!reversed.has('contribution:'+x.id)), activePays=pays.filter(x=>!reversed.has('payout:'+x.id));
 
+ const contribStyle=document.createElement('style');
+ contribStyle.textContent=`
+ #wfLedgerPanel{border:1px solid var(--line);border-radius:18px;padding:clamp(16px,2.2vw,24px);box-shadow:0 10px 28px rgba(7,19,40,.06)}
+ #wfLedgerPanel .wf-contrib-header h2{font-size:1.45rem;margin:0 0 5px;color:var(--text,#14213d)}
+ #wfLedgerPanel .wf-contrib-header p{margin:0 0 20px}
+ #wfLedgerPanel .wf-contrib-metrics{display:grid;grid-template-columns:1fr;gap:12px;margin:0 0 20px}
+ #wfLedgerPanel .wf-contrib-metric{min-height:104px;border:1px solid var(--line);border-left:5px solid;border-radius:14px;padding:17px 19px;background:var(--surface,#fff);display:flex;flex-direction:column;justify-content:center;gap:9px;box-shadow:0 5px 16px rgba(15,23,42,.045)}
+ #wfLedgerPanel .wf-contrib-metric small{font-size:.72rem;letter-spacing:.11em;font-weight:850;color:var(--muted,#64748b)}
+ #wfLedgerPanel .wf-contrib-metric strong{font-size:clamp(1.45rem,3vw,1.9rem);font-weight:900;letter-spacing:-.035em;color:var(--text,#14213d)}
+ #wfLedgerPanel .wf-contrib-green{border-left-color:#16a34a}.wf-contrib-red{border-left-color:#e11d48}.wf-contrib-blue{border-left-color:#2563eb}
+ #wfLedgerPanel .wf-contrib-log{border:1px solid var(--line);border-radius:15px;overflow:hidden;background:var(--surface,#fff)}
+ #wfLedgerPanel .wf-contrib-log-head{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;padding:16px 18px;border-bottom:1px solid var(--line)}
+ #wfLedgerPanel .wf-contrib-log-head h3{margin:0;font-size:1.05rem}
+ #wfLedgerPanel .wf-contrib-filters{display:flex;gap:8px;flex-wrap:wrap}
+ #wfLedgerPanel .wf-contrib-filters input{min-height:40px;max-width:220px;padding:8px 11px;border:1px solid var(--line);border-radius:10px;background:var(--surface,#fff);color:inherit}
+ #wfLedgerPanel .wf-contrib-table-wrap{overflow-x:auto}
+ #wfLedgerPanel table{width:100%;min-width:720px;border-collapse:collapse}
+ #wfLedgerPanel th{padding:13px 15px;text-align:left;font-size:.68rem;letter-spacing:.1em;font-weight:850;color:var(--muted,#64748b);white-space:nowrap;background:rgba(120,130,150,.055)}
+ #wfLedgerPanel td{padding:14px 15px;border-top:1px solid var(--line);font-size:.86rem;white-space:nowrap}
+ #wfLedgerPanel td:nth-child(4){font-weight:850}
+ .dark #wfLedgerPanel .wf-contrib-metric,.dark #wfLedgerPanel .wf-contrib-log{background:var(--surface,#101b2d)}
+ @media(min-width:900px){#wfLedgerPanel .wf-contrib-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}
+ @media(max-width:600px){#wfLedgerPanel .wf-contrib-filters,#wfLedgerPanel .wf-contrib-filters input{width:100%;max-width:none}}
+ `;
+ document.head.appendChild(contribStyle);
  const teacherById=new Map(teachers.map(t=>[String(t.id),t]));
  let selectedProfileTeacherId=teachers[0]?String(teachers[0].id):'';
  const profileHost=$('schoolOverview')?.parentElement;
@@ -326,7 +360,18 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const options='<option value="">Choose teacher</option>'+teachers.filter(t=>t.is_active!==false).map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name)+' ('+esc(t.id)+')</option>').join('');
  $('wfConTeacher').innerHTML=options;$('wfPayTeacher').innerHTML=options;$('wfStatementTeacher').innerHTML=options;
  const reversalCell=(type,x)=>reversed.has(type+':'+x.id)?'<strong>REVERSED</strong> <span class="muted">· '+esc(reversals.find(r=>r.transaction_type===type&&String(r.transaction_id)===String(x.id))?.reason||'Reason recorded')+'</span>':'<button type="button" class="secondary" data-wf-reverse="'+type+'" data-wf-id="'+esc(x.id)+'">Reverse</button>';
- const renderContributionLedger=()=>{const q=String($('wfLedgerSearch')?.value||'').trim().toLowerCase(),month=$('wfLedgerMonth')?.value||'';const rows=cons.filter(x=>(!month||String(x.date||'').startsWith(month))&&[x.teacher_id,x.reference,teacherById.get(String(x.teacher_id))?.name].some(v=>String(v||'').toLowerCase().includes(q)));$('wfConRows').innerHTML=rows.length?rows.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+teacherLabel(x.teacher_id)+'</td><td>'+money(x.amount)+'</td><td>'+esc(x.reference||'—')+'</td><td>'+reversalCell('contribution',x)+'</td></tr>').join(''):'<tr><td colspan="5">No matching contributions.</td></tr>';};
+ const renderContributionLedger=()=>{
+  const q=String($('wfLedgerSearch')?.value||'').trim().toLowerCase(),month=$('wfLedgerMonth')?.value||'';
+  const rows=cons.filter(x=>(!month||String(x.date||'').startsWith(month))&&[x.teacher_id,x.reference,teacherById.get(String(x.teacher_id))?.name].some(v=>String(v||'').toLowerCase().includes(q)));
+  const totalCon=activeCons.reduce((n,x)=>n+Number(x.amount||0),0),totalPay=activePays.reduce((n,x)=>n+Number(x.amount||0),0);
+  $('wfConTotal').textContent='GHS '+money(totalCon);$('wfConDisbursement').textContent='GHS '+money(totalPay);$('wfConNet').textContent='GHS '+money(totalCon-totalPay);
+  $('wfConRows').innerHTML=rows.length?rows.map(x=>{
+   const d=String(x.date||''),monthYear=d.length>=7?new Date(d+'T00:00:00').toLocaleDateString('en-GB',{month:'short',year:'numeric'}):'—';
+   const reversedEntry=reversed.has('contribution:'+x.id);
+   const action=reversedEntry?'<span class="wf-admin-pill">Reversed</span>':'<button type="button" class="secondary" data-wf-reverse="contribution" data-wf-id="'+esc(x.id)+'">Reverse</button>';
+   return '<tr><td>'+teacherLabel(x.teacher_id)+'</td><td>'+esc(monthYear)+'</td><td>'+esc(x.reference||'—')+'</td><td>GHS '+money(x.amount)+'</td><td>'+esc(d||'—')+'</td><td>'+action+'</td></tr>';
+  }).join(''):'<tr><td colspan="6">No matching contributions.</td></tr>';
+ };
  renderContributionLedger();$('wfLedgerSearch').addEventListener('input',renderContributionLedger);$('wfLedgerMonth').addEventListener('change',renderContributionLedger);
  const renderPayoutLedger=()=>{const q=String($('wfPayoutSearch')?.value||'').trim().toLowerCase();const rows=pays.filter(x=>[x.teacher_id,x.reason,x.reference,teacherById.get(String(x.teacher_id))?.name].some(v=>String(v||'').toLowerCase().includes(q)));$('wfPayRows').innerHTML=rows.length?rows.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+teacherLabel(x.teacher_id)+'</td><td>'+money(x.amount)+'</td><td>'+esc(x.reason||x.reference||'—')+'</td><td>'+reversalCell('payout',x)+'</td></tr>').join(''):'<tr><td colspan="5">No matching payouts.</td></tr>';};renderPayoutLedger();$('wfPayoutSearch').addEventListener('input',renderPayoutLedger);
  $('teacherCount').textContent=teachers.filter(t=>t.is_active!==false).length;
