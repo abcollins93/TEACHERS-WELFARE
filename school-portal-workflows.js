@@ -200,14 +200,22 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  // Tenant branding comes from the authenticated school record supplied by the portal.
  // Load sources independently: a missing optional column/table must not prevent the
  // dashboard's other sections from rendering. Errors are logged without exposing SQL.
- const loadSource=async(label,makeQuery)=>{
-   try{
-     const result=await makeQuery();
-     if(result?.error){console.warn('[School Welfare] '+label+' unavailable:',result.error.code||'',result.error.message||'');return {data:[],error:result.error};}
-     return {data:Array.isArray(result?.data)?result.data:[],error:null};
-   }catch(error){console.warn('[School Welfare] '+label+' request failed:',error?.message||error);return {data:[],error};}
- };
- const teacherQuery=fields=>loadSource('teacher roster',()=>client.from('teachers').select(fields).eq('school_id',school.id).order('name'));
+ // Fetch every page so totals and ledgers are not silently capped by the API row limit.
+  const loadSource=async(label,makeQuery)=>{
+    try{
+      const all=[];let from=0;const pageSize=1000;
+      while(true){
+        const result=await makeQuery().range(from,from+pageSize-1);
+        if(result?.error){console.warn('[School Welfare] '+label+' unavailable:',result.error.code||'',result.error.message||'');return {data:[],error:result.error};}
+        const batch=Array.isArray(result?.data)?result.data:[];
+        all.push(...batch);
+        if(batch.length<pageSize)break;
+        from+=pageSize;
+      }
+      return {data:all,error:null};
+    }catch(error){console.warn('[School Welfare] '+label+' request failed:',error?.message||error);return {data:[],error};}
+  };
+  const teacherQuery=fields=>loadSource('teacher roster',()=>client.from('teachers').select(fields).eq('school_id',school.id).order('name'));
  // Retry compatible projections independently: older tenants may lack one or both
  // optional profile columns. Never require is_active/passport to show the roster.
  let tr=await teacherQuery('id,name,phone,rank,class_name,is_active,passport,created_at,registration_date,membership_type,employer');
@@ -356,24 +364,35 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  $('wfConTeacher').innerHTML=options;$('wfPayTeacher').innerHTML=options;$('wfStatementTeacher').innerHTML=options;
  const reversalCell=(type,x)=>reversed.has(type+':'+x.id)?'<strong>REVERSED</strong> <span class="muted">· '+esc(reversals.find(r=>r.transaction_type===type&&String(r.transaction_id)===String(x.id))?.reason||'Reason recorded')+'</span>':'<button type="button" class="secondary" data-wf-reverse="'+type+'" data-wf-id="'+esc(x.id)+'">Reverse</button>';
  const renderContributionLedger=()=>{
-  const q=String($('wfLedgerSearch')?.value||'').trim().toLowerCase(),month=$('wfLedgerMonth')?.value||'';
-  const rows=cons.filter(x=>(!month||String(x.date||'').startsWith(month))&&[x.teacher_id,x.reference,teacherById.get(String(x.teacher_id))?.name].some(v=>String(v||'').toLowerCase().includes(q)));
-  const totalCon=activeCons.reduce((n,x)=>n+Number(x.amount||0),0),totalPay=activePays.reduce((n,x)=>n+Number(x.amount||0),0);
-  $('wfConTotal').textContent='GHS '+money(totalCon);$('wfConDisbursement').textContent='GHS '+money(totalPay);$('wfConNet').textContent='GHS '+money(totalCon-totalPay);
-  $('wfConRows').innerHTML=rows.length?rows.map(x=>{
-   const d=String(x.date||''),monthYear=d.length>=7?new Date(d+'T00:00:00').toLocaleDateString('en-GB',{month:'short',year:'numeric'}):'—';
-   const reversedEntry=reversed.has('contribution:'+x.id);
-   const action=reversedEntry?'<span class="wf-admin-pill">Reversed</span>':'<button type="button" class="secondary" data-wf-reverse="contribution" data-wf-id="'+esc(x.id)+'">Reverse</button>';
-   return '<tr><td>'+teacherLabel(x.teacher_id)+'</td><td>'+esc(monthYear)+'</td><td>'+esc(x.reference||'—')+'</td><td>GHS '+money(x.amount)+'</td><td>'+esc(d||'—')+'</td><td>'+action+'</td></tr>';
-  }).join(''):'<tr><td colspan="6">No matching contributions.</td></tr>';
- };
- renderContributionLedger();$('wfLedgerSearch').addEventListener('input',renderContributionLedger);$('wfLedgerMonth').addEventListener('change',renderContributionLedger);
- const renderPayoutLedger=()=>{const q=String($('wfPayoutSearch')?.value||'').trim().toLowerCase();const rows=pays.filter(x=>[x.teacher_id,x.reason,x.reference,teacherById.get(String(x.teacher_id))?.name].some(v=>String(v||'').toLowerCase().includes(q)));const totalPayout=activePays.reduce((n,x)=>n+Number(x.amount||0),0),currentFund=activeCons.reduce((n,x)=>n+Number(x.amount||0),0)-totalPayout,activeMembers=teachers.filter(t=>t.is_active!==false).length;$('wfPayoutTotal').textContent='GHS '+money(totalPayout);$('wfPayoutCurrentFund').textContent='GHS '+money(currentFund);$('wfPayoutActiveMembers').textContent=String(activeMembers);$('wfPayRows').innerHTML=rows.length?rows.map(x=>'<tr><td>'+esc(x.reference||'—')+'</td><td>'+teacherLabel(x.teacher_id)+'</td><td>'+esc(x.reason||'Welfare support')+'</td><td>GHS '+money(x.amount)+'</td><td>'+esc(x.date||'—')+'</td><td>'+reversalCell('payout',x)+'</td></tr>').join(''):'<tr><td colspan="6">No matching payouts.</td></tr>';};renderPayoutLedger();$('wfPayoutSearch').addEventListener('input',renderPayoutLedger);
- $('teacherCount').textContent=teachers.filter(t=>t.is_active!==false).length;
- $('contributionTotal').textContent=money(activeCons.reduce((a,x)=>a+Number(x.amount||0),0));
- $('payoutTotal').textContent=money(activePays.reduce((a,x)=>a+Number(x.amount||0),0));
- $('netTotal').textContent=money(activeCons.reduce((a,x)=>a+Number(x.amount||0),0)-activePays.reduce((a,x)=>a+Number(x.amount||0),0));
- const ctx=school;
+    const q=String($('wfLedgerSearch')?.value||'').trim().toLowerCase(),month=$('wfLedgerMonth')?.value||'';
+    const rows=cons.filter(x=>(!month||String(x.date||'').startsWith(month))&&[x.teacher_id,x.reference,teacherById.get(String(x.teacher_id))?.name].some(v=>String(v||'').toLowerCase().includes(q)));
+    const totalCon=activeCons.reduce((n,x)=>n+Number(x.amount||0),0),totalPay=activePays.reduce((n,x)=>n+Number(x.amount||0),0);
+    $('wfConTotal').textContent=cr.error?'Unavailable':'GHS '+money(totalCon);
+    $('wfConDisbursement').textContent=pr.error?'Unavailable':'GHS '+money(totalPay);
+    $('wfConNet').textContent=(cr.error||pr.error)?'Unavailable':'GHS '+money(totalCon-totalPay);
+    $('wfConRows').innerHTML=cr.error?'<tr><td colspan="6">Contribution records could not be loaded. Check school account permissions and try again.</td></tr>':rows.length?rows.map(x=>{
+     const d=String(x.date||''),monthYear=d.length>=7?new Date(d+'T00:00:00').toLocaleDateString('en-GB',{month:'short',year:'numeric'}):'—';
+     const reversedEntry=reversed.has('contribution:'+x.id);
+     const action=reversedEntry?'<span class="wf-admin-pill">Reversed</span>':'<button type="button" class="secondary" data-wf-reverse="contribution" data-wf-id="'+esc(x.id)+'">Reverse</button>';
+     return '<tr><td>'+teacherLabel(x.teacher_id)+'</td><td>'+esc(monthYear)+'</td><td>'+esc(x.reference||'—')+'</td><td>GHS '+money(x.amount)+'</td><td>'+esc(d||'—')+'</td><td>'+action+'</td></tr>';
+    }).join(''):'<tr><td colspan="6">No matching contributions.</td></tr>';
+  };
+  renderContributionLedger();$('wfLedgerSearch').addEventListener('input',renderContributionLedger);$('wfLedgerMonth').addEventListener('change',renderContributionLedger);
+  const renderPayoutLedger=()=>{
+    const q=String($('wfPayoutSearch')?.value||'').trim().toLowerCase();
+    const rows=pays.filter(x=>[x.teacher_id,x.reason,x.reference,teacherById.get(String(x.teacher_id))?.name].some(v=>String(v||'').toLowerCase().includes(q)));
+    const totalPayout=activePays.reduce((n,x)=>n+Number(x.amount||0),0),currentFund=activeCons.reduce((n,x)=>n+Number(x.amount||0),0)-totalPayout,activeMembers=teachers.filter(t=>t.is_active!==false).length;
+    $('wfPayoutTotal').textContent=pr.error?'Unavailable':'GHS '+money(totalPayout);
+    $('wfPayoutCurrentFund').textContent=(cr.error||pr.error)?'Unavailable':'GHS '+money(currentFund);
+    $('wfPayoutActiveMembers').textContent=tr.error?'Unavailable':String(activeMembers);
+    $('wfPayRows').innerHTML=pr.error?'<tr><td colspan="6">Payout records could not be loaded. Check the school account permissions and try again.</td></tr>':rows.length?rows.map(x=>'<tr><td>'+esc(x.reference||'—')+'</td><td>'+teacherLabel(x.teacher_id)+'</td><td>'+esc(x.reason||'Welfare support')+'</td><td>GHS '+money(x.amount)+'</td><td>'+esc(x.date||'—')+'</td><td>'+reversalCell('payout',x)+'</td></tr>').join(''):'<tr><td colspan="6">No matching payouts.</td></tr>';
+  };
+  renderPayoutLedger();$('wfPayoutSearch').addEventListener('input',renderPayoutLedger);
+  $('teacherCount').textContent=tr.error?'Unavailable':String(teachers.filter(t=>t.is_active!==false).length);
+  $('contributionTotal').textContent=cr.error?'Unavailable':money(activeCons.reduce((a,x)=>a+Number(x.amount||0),0));
+  $('payoutTotal').textContent=pr.error?'Unavailable':money(activePays.reduce((a,x)=>a+Number(x.amount||0),0));
+  $('netTotal').textContent=(cr.error||pr.error)?'Unavailable':money(activeCons.reduce((a,x)=>a+Number(x.amount||0),0)-activePays.reduce((a,x)=>a+Number(x.amount||0),0));
+  const ctx=school;
  $('wfResetExpected').textContent='Required phrase: RESET:'+ctx.school_code;
  $('wfResetConfirmation').placeholder='RESET:'+ctx.school_code;
  const callAdminManagement=async payload=>{
