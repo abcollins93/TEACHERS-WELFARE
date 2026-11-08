@@ -2017,6 +2017,7 @@ window.generateTenantWelfarePdf=async function(o){
   const qrNode=host.querySelector('#'+qr);
   if(window.QRCode&&qrNode)new window.QRCode(qrNode,{text:'TWF DOCUMENT '+id+' | SCHOOL '+schoolCode,width:76,height:76,colorDark:'#030a16',colorLight:'#ffffff',correctLevel:window.QRCode.CorrectLevel.M});
   await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+  host.style.position='relative';host.style.left='auto';host.style.top='auto';
   const safeCode=String(schoolCode||schoolName).replace(/[^a-z0-9_-]/gi,'_')||'school';
   const filename=safeCode+'-'+(individual?'member-'+String(teacher.id||'statement').replace(/[^a-z0-9_-]/gi,'_')+'-statement':monthly?month+'-monthly-summary':'complete-fund-summary')+'.pdf';
   await window.html2pdf().set({margin:[8,8,8,8],filename,image:{type:'jpeg',quality:.97},html2canvas:{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0,windowWidth:individual?794:1120},jsPDF:{unit:'mm',format:'a4',orientation,compress:true},pagebreak:{mode:['css','legacy'],avoid:['tr','.twf-metric','.twf-signatures']}}).from(host).save();
