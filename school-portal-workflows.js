@@ -440,6 +440,51 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  };
  loadSchoolAdmins();
  const reportMonthNow=new Date();const reportMonths=Array.from({length:36},(_,i)=>{const d=new Date(reportMonthNow.getFullYear(),reportMonthNow.getMonth()-i,1);return '<option value="'+d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'">'+d.toLocaleDateString('en-GH',{month:'long',year:'numeric'})+'</option>';}).join('');$('wfMonth').innerHTML=reportMonths;$('wfMonth').value=reportMonthNow.getFullYear()+'-'+String(reportMonthNow.getMonth()+1).padStart(2,'0');
+
+ // Bind report actions as soon as report controls and school-scoped data are ready.
+ // Install these BEFORE optional settings requests so slow settings cannot leave
+ // visible PDF buttons without click handlers.
+ const runWelfarePdf=async(button,statusId,successText,buildOptions)=>{
+   if(button.disabled)return;
+   button.disabled=true;
+   msg(statusId,'Preparing PDF…');
+   try{
+     if(typeof window.generateTenantWelfarePdf!=='function')throw new Error('The PDF generator is unavailable. Reload the portal and try again.');
+     await window.generateTenantWelfarePdf(buildOptions());
+     msg(statusId,successText);
+   }catch(error){
+     console.error('[School Welfare PDF]',error);
+     msg(statusId,error?.message||'The PDF could not be generated. Check your connection and try again.',true);
+   }finally{button.disabled=false;}
+ };
+ $('wfMonthlyPdf').addEventListener('click',()=>{
+   const month=$('wfMonth').value;
+   if(!month)return msg('wfReportMsg','Choose a reporting month first.',true);
+   return runWelfarePdf($('wfMonthlyPdf'),'wfReportMsg','Monthly summary PDF downloaded successfully.',()=>({
+     type:'monthly',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},
+     month,contributions:activeCons,payouts:activePays,teachers,
+     academicYear:typeof getCurrentAcademicYear==='function'?getCurrentAcademicYear():'',
+     standardMonthlyDues:typeof standardMonthlyDues!=='undefined'?standardMonthlyDues:0
+   }));
+ });
+ $('wfCompletePdf').addEventListener('click',()=>runWelfarePdf($('wfCompletePdf'),'wfReportMsg','Complete fund summary PDF downloaded successfully.',()=>({
+   type:'complete',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},
+   contributions:activeCons,payouts:activePays,teachers,
+   academicYear:typeof getCurrentAcademicYear==='function'?getCurrentAcademicYear():'',
+   standardMonthlyDues:typeof standardMonthlyDues!=='undefined'?standardMonthlyDues:0
+ })));
+ $('wfStatementPdf').addEventListener('click',()=>{
+   const tid=$('wfStatementTeacher').value,teacher=teachers.find(t=>String(t.id)===String(tid));
+   if(!teacher)return msg('wfStatementMsg','Choose a teacher first.',true);
+   return runWelfarePdf($('wfStatementPdf'),'wfStatementMsg','Member statement PDF downloaded successfully.',()=>({
+     type:'individual',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},
+     teacher,contributions:activeCons.filter(x=>String(x.teacher_id)===String(tid)),
+     payouts:activePays.filter(x=>String(x.teacher_id)===String(tid)),
+     academicYear:typeof getCurrentAcademicYear==='function'?getCurrentAcademicYear():'',
+     standardMonthlyDues:typeof standardMonthlyDues!=='undefined'?standardMonthlyDues:0
+   }));
+ });
+
  const {data:broadcastSetting,error:broadcastLoadError}=await client.from('system_settings').select('value').eq('school_id',ctx.id).eq('key','broadcast_message').maybeSingle();
  if(!broadcastLoadError&&broadcastSetting)$('wfBroadcastText').value=String(broadcastSetting.value||'');
  const saveBroadcast=async value=>{
@@ -482,16 +527,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
    a.href=url;a.download=(ctx.school_code||'school')+'-welfare-ledgers.csv';a.click();URL.revokeObjectURL(url);msg('wfReportMsg','CSV export prepared for download.');
  };
- $('wfMonthlyPdf').onclick=async()=>{
- const month=$('wfMonth').value;if(!month)return msg('wfReportMsg','Choose a reporting month first.',true);
- try{await window.generateTenantWelfarePdf({type:'monthly',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},month,contributions:activeCons,payouts:activePays,teachers,academicYear:typeof getCurrentAcademicYear==='function'?getCurrentAcademicYear():'',standardMonthlyDues:typeof standardMonthlyDues!=='undefined'?standardMonthlyDues:0});msg('wfReportMsg','Monthly summary PDF downloaded successfully.');}
- catch(error){console.error('[Monthly welfare PDF]',error);msg('wfReportMsg',error?.message||'Monthly PDF could not be generated.',true);}
-};
-$('wfCompletePdf').onclick=async()=>{
- try{await window.generateTenantWelfarePdf({type:'complete',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},contributions:activeCons,payouts:activePays,teachers,academicYear:typeof getCurrentAcademicYear==='function'?getCurrentAcademicYear():'',standardMonthlyDues:typeof standardMonthlyDues!=='undefined'?standardMonthlyDues:0});msg('wfReportMsg','Complete fund summary PDF downloaded successfully.');}
- catch(error){console.error('[Complete welfare PDF]',error);msg('wfReportMsg',error?.message||'Complete fund PDF could not be generated.',true);}
-};
- // Audit is a dedicated, lazy-loaded view. Never fetch or render audit rows as part
+  // Audit is a dedicated, lazy-loaded view. Never fetch or render audit rows as part
  // of the management panel; fetch only after the user explicitly selects Audit Trail.
  const auditNav=document.querySelector('.sidebar .navbtn[data-target="wfAuditPanel"]');
  const auditView=$('wfAuditView');
@@ -509,12 +545,7 @@ $('wfCompletePdf').onclick=async()=>{
    }
    loadAudit();
  },{passive:true});
- $('wfStatementPdf').onclick=async()=>{
- const tid=$('wfStatementTeacher').value,teacher=teachers.find(t=>String(t.id)===String(tid));
- if(!teacher){msg('wfStatementMsg','Choose a teacher first.',true);return;}
- try{await window.generateTenantWelfarePdf({type:'individual',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},teacher,contributions:activeCons.filter(x=>String(x.teacher_id)===String(tid)),payouts:activePays.filter(x=>String(x.teacher_id)===String(tid)),academicYear:typeof getCurrentAcademicYear==='function'?getCurrentAcademicYear():'',standardMonthlyDues:typeof standardMonthlyDues!=='undefined'?standardMonthlyDues:0});msg('wfStatementMsg','Member statement PDF downloaded successfully.');}
- catch(error){console.error('[Member welfare PDF]',error);msg('wfStatementMsg',error?.message||'Member statement could not be generated.',true);}
-};
+ 
  let editingTeacherId=null;
  let selectedPassportData=null;
  $('wfPassport').addEventListener('change',()=>{
