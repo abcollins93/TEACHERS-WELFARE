@@ -1661,7 +1661,7 @@ client.auth.onAuthStateChange((event,session)=>{
 client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
 })();
 </script>
-<script src="school-portal-workflows.js?v=teacher-register-relocation-admin-ticker-20261108"></script>
+<script src="school-portal-workflows.js?v=admin-panel-drawer-navigation-fix-20261108"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
@@ -1669,11 +1669,19 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
   function closeSidebar(){
     const sidebar = document.getElementById('schoolSidebar');
     const overlay = document.getElementById('mobile-nav-overlay');
+    const isMobile = window.matchMedia('(max-width: 950px)').matches;
     if (sidebar) {
       sidebar.classList.remove('is-mobile-open', 'mobile-open');
-      sidebar.setAttribute('aria-hidden', window.matchMedia('(max-width: 950px)').matches ? 'true' : 'false');
+      sidebar.setAttribute('aria-hidden', isMobile ? 'true' : 'false');
+      if (isMobile) sidebar.style.setProperty('transform', 'translateX(-105%)', 'important');
     }
-    if (overlay) overlay.classList.remove('is-open');
+    if (overlay) {
+      overlay.classList.remove('is-open');
+      overlay.setAttribute('aria-hidden', 'true');
+      overlay.style.setProperty('opacity', '0', 'important');
+      overlay.style.setProperty('visibility', 'hidden', 'important');
+      overlay.style.setProperty('pointer-events', 'none', 'important');
+    }
     document.body.classList.remove('sidebar-open');
     const toggle = document.getElementById('mobileNavToggle');
     if (toggle) toggle.setAttribute('aria-expanded', 'false');
@@ -1685,10 +1693,25 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
     if (!control || control.matches('.navbtn[data-target]')) return;
     if (control.matches('a, [role="link"], #sidebarLogout, .sidebar-account-out')) closeSidebar();
   });
+  const mobileToggle = document.getElementById('mobileNavToggle');
+  if (mobileToggle) mobileToggle.addEventListener('click', function(){
+    const sidebar = document.getElementById('schoolSidebar');
+    const overlay = document.getElementById('mobile-nav-overlay');
+    if (sidebar) sidebar.style.removeProperty('transform');
+    if (overlay) {
+      overlay.style.removeProperty('opacity');
+      overlay.style.removeProperty('visibility');
+      overlay.style.removeProperty('pointer-events');
+      overlay.setAttribute('aria-hidden', 'false');
+    }
+  });
   document.addEventListener('click', function(event){
     const button = event.target.closest('.navbtn[data-target]');
     if (!button) return;
     event.preventDefault();
+    // Close the mobile drawer immediately. If a workflow view is still mounting,
+    // its loading delay must not leave the dark overlay covering the page.
+    closeSidebar();
     document.querySelectorAll('.navbtn').forEach(function(item){
       item.classList.toggle('active', item === button);
       item.setAttribute('aria-current', item === button ? 'location' : 'false');
