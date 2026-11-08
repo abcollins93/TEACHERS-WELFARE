@@ -1800,7 +1800,7 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
     ];
     viewIds.forEach(function(id){
       const view = document.getElementById(id);
-      if (!view || view === target || view.contains(target)) return;
+      if (!view || view === target || view.contains(target) || target.contains(view)) return;
       view.classList.add('hidden');
       view.style.setProperty('display','none','important');
       view.setAttribute('aria-hidden','true');
