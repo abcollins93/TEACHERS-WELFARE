@@ -1183,7 +1183,7 @@ async function renderTeacherDashboard(profile,school){
    #teacherLiveTicker .ticker-live{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;color:#ffdc72;font-size:.68rem;font-weight:900;letter-spacing:.1em;white-space:nowrap}
    #teacherLiveTicker .ticker-live:before{content:'';width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 0 4px rgba(52,211,153,.15);animation:teacherTickerPulse 1.8s ease-in-out infinite}
    #teacherLiveTicker .ticker-window{min-width:0;flex:1;overflow:hidden}
-   #teacherLiveTicker .ticker-track{display:flex;width:max-content;align-items:center;animation:teacherTickerMove 48s linear infinite;will-change:transform}
+   #teacherLiveTicker .ticker-track{display:flex;width:max-content;align-items:center;animation:teacherTickerMove 58s linear infinite;will-change:transform}
    #teacherLiveTicker:hover .ticker-track{animation-play-state:paused}
    #teacherLiveTicker .ticker-group{display:flex;flex:0 0 auto;align-items:center;gap:36px;padding-right:36px;white-space:nowrap}
    #teacherLiveTicker .ticker-item{display:inline-flex;align-items:center;gap:9px;color:#f8fafc;font-size:.82rem}
@@ -1198,8 +1198,8 @@ async function renderTeacherDashboard(profile,school){
   `;
   document.head.appendChild(tickerStyles);
  }
- const ticker=document.createElement('aside');ticker.id='teacherLiveTicker';ticker.setAttribute('aria-label','Live school announcements and your account activity');
- ticker.innerHTML='<span class="ticker-live">LIVE UPDATES</span><div class="ticker-window"><div class="ticker-track"><div class="ticker-group" id="teacherTickerItems"></div><div class="ticker-group" id="teacherTickerItemsClone" aria-hidden="true"></div></div></div>';
+ const ticker=document.createElement('aside');ticker.id='teacherLiveTicker';ticker.setAttribute('aria-label','School announcements and your account activity');
+ ticker.innerHTML='<span class="ticker-live" aria-hidden="true"></span><div class="ticker-window"><div class="ticker-track"><div class="ticker-group" id="teacherTickerItems"></div><div class="ticker-group" id="teacherTickerItemsClone" aria-hidden="true"></div></div></div>';
  workspace.appendChild(ticker);
  const refreshTeacherTicker=async()=>{
   const {data:feed,error:feedError}=await client.rpc('get_my_teacher_ticker_feed');
@@ -1661,7 +1661,7 @@ client.auth.onAuthStateChange((event,session)=>{
 client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
 })();
 </script>
-<script src="school-portal-workflows.js?v=teacher-register-relocation-visibility-fix-20261108"></script>
+<script src="school-portal-workflows.js?v=teacher-register-relocation-admin-ticker-20261108"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
