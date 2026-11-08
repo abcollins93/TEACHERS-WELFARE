@@ -240,8 +240,75 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const adminPanelNode=$('wfAdminPanel');
  if(!workflowMountNode||!adminPanelNode)throw new Error('Admin Panel markup could not be mounted in the dashboard.');
  const roster=$('schoolTeachers'),teacherRegisterPanel=$('wfTeacherPanel');
+ const ctx=school;
  if(!roster||!teacherRegisterPanel)throw new Error('Teachers & Members workspace could not be mounted.');
  roster.appendChild(teacherRegisterPanel);
+ // School-scoped administrator activity ticker. The existing audit-log RLS policy
+ // permits only an active administrator to read records for their own school.
+ if(window.__adminActivityTickerTimer){clearInterval(window.__adminActivityTickerTimer);window.__adminActivityTickerTimer=null;}
+ document.getElementById('adminActivityTicker')?.remove();
+ document.body.classList.add('admin-activity-ticker-active');
+ let adminTickerStyles=document.getElementById('adminActivityTickerStyles');
+ if(!adminTickerStyles){
+   adminTickerStyles=document.createElement('style');adminTickerStyles.id='adminActivityTickerStyles';
+   adminTickerStyles.textContent=`
+    #adminActivityTicker{position:fixed;z-index:1200;left:0;right:0;bottom:0;min-height:48px;display:flex;align-items:center;gap:10px;padding:6px 12px calc(6px + env(safe-area-inset-bottom));background:linear-gradient(112deg,#061326 0%,#0d2544 46%,#102f54 72%,#07172c 100%);border-top:1px solid rgba(255,255,255,.14);box-shadow:0 -12px 34px rgba(3,10,22,.24),inset 0 1px rgba(255,255,255,.08);color:#fff;overflow:hidden}
+    #adminActivityTicker:before{content:'';position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,#8b6722,#f8df91 22%,#d6a637 52%,#fff0bd 72%,#8b6722)}
+    #adminActivityTicker:after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(100deg,rgba(255,255,255,.055),transparent 30%,transparent 70%,rgba(255,255,255,.035))}
+    #adminActivityTicker .admin-ticker-brand{position:relative;z-index:1;flex:0 0 auto;display:flex;align-items:center;gap:9px;padding:8px 12px;border:1px solid rgba(230,190,91,.34);border-radius:12px;background:linear-gradient(145deg,rgba(255,255,255,.12),rgba(255,255,255,.035));box-shadow:inset 0 1px rgba(255,255,255,.1),0 4px 14px rgba(0,0,0,.12)}
+    #adminActivityTicker .admin-ticker-brand-icon{width:28px;height:28px;display:grid;place-items:center;border-radius:9px;background:linear-gradient(145deg,#f4d98b,#c18b24);color:#10213a;font-size:.8rem;box-shadow:0 3px 10px rgba(214,166,55,.2)}
+    #adminActivityTicker .admin-ticker-brand-copy{display:grid;gap:1px;line-height:1.1}
+    #adminActivityTicker .admin-ticker-brand-copy strong{font-size:.67rem;letter-spacing:.12em;color:#ffe6a0;font-weight:900}
+    #adminActivityTicker .admin-ticker-brand-copy small{font-size:.58rem;letter-spacing:.08em;color:#aebed2;font-weight:700}
+    #adminActivityTicker .admin-ticker-indicator{width:6px;height:6px;border-radius:50%;background:#50dfa8;box-shadow:0 0 0 4px rgba(80,223,168,.13);animation:adminTickerPulse 2.6s ease-in-out infinite}
+    #adminActivityTicker .admin-ticker-window{position:relative;z-index:1;min-width:0;flex:1;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent)}
+    #adminActivityTicker .admin-ticker-track{display:flex;width:max-content;align-items:center;animation:adminTickerMove 58s linear infinite;will-change:transform}
+    #adminActivityTicker.is-paused .admin-ticker-track{animation-play-state:paused}
+    #adminActivityTicker .admin-ticker-group{display:flex;flex:0 0 auto;align-items:center;gap:38px;padding-right:38px;white-space:nowrap}
+    #adminActivityTicker .admin-ticker-item{display:inline-flex;align-items:center;gap:9px;color:#f7f9fd;font-size:.8rem}
+    #adminActivityTicker .admin-ticker-item b{color:#ffdf91;font-size:.67rem;letter-spacing:.06em}
+    #adminActivityTicker .admin-ticker-time{color:#9fb2ca;font-size:.66rem}
+    #adminActivityTicker .admin-ticker-control{position:relative;z-index:2;flex:0 0 24px;width:24px;height:24px;min-width:24px;min-height:24px;padding:0!important;display:grid;place-items:center;border:1px solid rgba(255,255,255,.2);border-radius:50%;background:rgba(255,255,255,.07);color:#f7df9e;font-size:.58rem;line-height:1;box-shadow:none}
+    #adminActivityTicker .admin-ticker-control i{font-size:.58rem;line-height:1}
+    #adminActivityTicker .admin-ticker-control:hover{background:rgba(255,255,255,.16)}
+    body.admin-activity-ticker-active{padding-bottom:64px}
+    body.admin-activity-ticker-active .sidebar{padding-bottom:68px}
+    @keyframes adminTickerMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+    @keyframes adminTickerPulse{50%{opacity:.55;transform:scale(.82)}}
+    @media(max-width:600px){#adminActivityTicker{min-height:48px;padding:5px 8px calc(5px + env(safe-area-inset-bottom));gap:7px}#adminActivityTicker .admin-ticker-brand{gap:7px;padding:7px 8px}#adminActivityTicker .admin-ticker-brand-icon{width:25px;height:25px}#adminActivityTicker .admin-ticker-brand-copy strong{font-size:.59rem}#adminActivityTicker .admin-ticker-brand-copy small{display:none}#adminActivityTicker .admin-ticker-group{gap:25px;padding-right:25px}#adminActivityTicker .admin-ticker-item{font-size:.72rem}#adminActivityTicker .admin-ticker-time{font-size:.6rem}#adminActivityTicker .admin-ticker-control{width:20px;height:20px;min-width:20px;min-height:20px;flex-basis:20px}}
+    @media(max-width:360px){#adminActivityTicker .admin-ticker-brand-copy{display:none}#adminActivityTicker .admin-ticker-brand{padding:6px}}
+    @media(prefers-reduced-motion:reduce){#adminActivityTicker .admin-ticker-track,#adminActivityTicker .admin-ticker-indicator{animation:none!important}}
+   `;
+   document.head.appendChild(adminTickerStyles);
+ }
+ const adminTicker=document.createElement('aside');
+ adminTicker.id='adminActivityTicker';adminTicker.setAttribute('aria-label','Administrator activity');
+ adminTicker.innerHTML='<div class="admin-ticker-brand"><span class="admin-ticker-brand-copy"><strong>ADMIN ACTIVITY</strong><small>SCHOOL OPERATIONS</small></span><span class="admin-ticker-indicator" aria-hidden="true"></span></div><div class="admin-ticker-window"><div class="admin-ticker-track"><div class="admin-ticker-group" id="adminTickerItems"></div><div class="admin-ticker-group" id="adminTickerItemsClone" aria-hidden="true"></div></div></div><button type="button" class="admin-ticker-control" aria-label="Pause scrolling" aria-pressed="false" title="Pause scrolling"><i class="fa-solid fa-pause" aria-hidden="true"></i></button>';
+ document.body.appendChild(adminTicker);
+ const adminTickerControl=adminTicker.querySelector('.admin-ticker-control');
+ adminTickerControl?.addEventListener('click',()=>{
+   const paused=adminTicker.classList.toggle('is-paused');
+   adminTickerControl.setAttribute('aria-pressed',String(paused));
+   adminTickerControl.setAttribute('aria-label',paused?'Resume scrolling':'Pause scrolling');
+   adminTickerControl.title=paused?'Resume scrolling':'Pause scrolling';
+   adminTickerControl.innerHTML='<i class="fa-solid '+(paused?'fa-play':'fa-pause')+'" aria-hidden="true"></i>';
+ });
+ const refreshAdminActivityTicker=async()=>{
+   const {data:rows,error}=await client.from('audit_logs')
+     .select('created_at,time_string,actor_name,action,details,status')
+     .eq('school_id',ctx.id).order('created_at',{ascending:false}).limit(50);
+   if(error){console.warn('[Administrator activity ticker] Feed unavailable:',error.message);return;}
+   const items=rows?.length?rows.map(row=>{
+     const stamp=row.created_at?new Date(row.created_at).toLocaleString('en-GH',{dateStyle:'medium',timeStyle:'short'}):(row.time_string||'');
+     const detail=String(row.details||'').trim();
+     return '<span class="admin-ticker-item"><b>'+esc(row.actor_name||'Administrator')+'</b><span>'+esc(row.action||'Activity recorded')+(detail?' · '+esc(detail):'')+'</span><time class="admin-ticker-time">'+esc(stamp)+'</time></span>';
+   }).join(''):'<span class="admin-ticker-item"><b>ACTIVITY</b><span>No administrator activity has been recorded yet.</span></span>';
+   const primary=document.getElementById('adminTickerItems'),clone=document.getElementById('adminTickerItemsClone');
+   if(primary&&clone){primary.innerHTML=items;clone.innerHTML=items;}
+ };
+ await refreshAdminActivityTicker();
+ window.__adminActivityTickerTimer=setInterval(refreshAdminActivityTicker,30000);
+
  const adminTeacherProfileNav=document.querySelector('.sidebar .navbtn[data-target="wfTeacherPanel"]');
  if(adminTeacherProfileNav){adminTeacherProfileNav.style.display='none';adminTeacherProfileNav.setAttribute('aria-hidden','true');}
  $('wfChangePasswordForm')?.addEventListener('submit',async e=>{e.preventDefault();const current=$('wfCurrentAdminPassword').value,newPassword=$('wfNewAdminPassword').value,confirmPassword=$('wfConfirmAdminPassword').value;if(newPassword.length<10)return msg('wfPasswordMsg','Use a new password with at least 10 characters.',true);if(newPassword!==confirmPassword)return msg('wfPasswordMsg','The new passwords do not match.',true);const {data:{user},error:userError}=await client.auth.getUser();if(userError||!user?.email)return msg('wfPasswordMsg','Your signed-in administrator account could not be verified. Sign in again and retry.',true);msg('wfPasswordMsg','Verifying your current password…');const {error:verifyError}=await client.auth.signInWithPassword({email:user.email,password:current});if(verifyError)return msg('wfPasswordMsg','Current password is incorrect. No changes were made.',true);const {error:updateError}=await client.auth.updateUser({password:newPassword});if(updateError)return msg('wfPasswordMsg','Password update failed. Please try again or use password recovery.',true);$('wfChangePasswordForm').reset();msg('wfPasswordMsg','Password updated successfully for the signed-in administrator.');await audit(client,school,'Change administrator password','Administrator password changed through the school portal.');});
@@ -463,71 +530,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   $('payoutTotal').textContent=pr.error?'Unavailable':money(activePays.reduce((a,x)=>a+Number(x.amount||0),0));
   $('netTotal').textContent=(cr.error||pr.error)?'Unavailable':money(activeCons.reduce((a,x)=>a+Number(x.amount||0),0)-activePays.reduce((a,x)=>a+Number(x.amount||0),0));
   const ctx=school;
- // School-scoped administrator activity ticker. The existing audit-log RLS policy
- // permits only an active administrator to read records for their own school.
- if(window.__adminActivityTickerTimer){clearInterval(window.__adminActivityTickerTimer);window.__adminActivityTickerTimer=null;}
- document.getElementById('adminActivityTicker')?.remove();
- document.body.classList.add('admin-activity-ticker-active');
- let adminTickerStyles=document.getElementById('adminActivityTickerStyles');
- if(!adminTickerStyles){
-   adminTickerStyles=document.createElement('style');adminTickerStyles.id='adminActivityTickerStyles';
-   adminTickerStyles.textContent=`
-    #adminActivityTicker{position:fixed;z-index:1200;left:0;right:0;bottom:0;min-height:48px;display:flex;align-items:center;gap:10px;padding:6px 12px calc(6px + env(safe-area-inset-bottom));background:linear-gradient(112deg,#061326 0%,#0d2544 46%,#102f54 72%,#07172c 100%);border-top:1px solid rgba(255,255,255,.14);box-shadow:0 -12px 34px rgba(3,10,22,.24),inset 0 1px rgba(255,255,255,.08);color:#fff;overflow:hidden}
-    #adminActivityTicker:before{content:'';position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,#8b6722,#f8df91 22%,#d6a637 52%,#fff0bd 72%,#8b6722)}
-    #adminActivityTicker:after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(100deg,rgba(255,255,255,.055),transparent 30%,transparent 70%,rgba(255,255,255,.035))}
-    #adminActivityTicker .admin-ticker-brand{position:relative;z-index:1;flex:0 0 auto;display:flex;align-items:center;gap:9px;padding:8px 12px;border:1px solid rgba(230,190,91,.34);border-radius:12px;background:linear-gradient(145deg,rgba(255,255,255,.12),rgba(255,255,255,.035));box-shadow:inset 0 1px rgba(255,255,255,.1),0 4px 14px rgba(0,0,0,.12)}
-    #adminActivityTicker .admin-ticker-brand-icon{width:28px;height:28px;display:grid;place-items:center;border-radius:9px;background:linear-gradient(145deg,#f4d98b,#c18b24);color:#10213a;font-size:.8rem;box-shadow:0 3px 10px rgba(214,166,55,.2)}
-    #adminActivityTicker .admin-ticker-brand-copy{display:grid;gap:1px;line-height:1.1}
-    #adminActivityTicker .admin-ticker-brand-copy strong{font-size:.67rem;letter-spacing:.12em;color:#ffe6a0;font-weight:900}
-    #adminActivityTicker .admin-ticker-brand-copy small{font-size:.58rem;letter-spacing:.08em;color:#aebed2;font-weight:700}
-    #adminActivityTicker .admin-ticker-indicator{width:6px;height:6px;border-radius:50%;background:#50dfa8;box-shadow:0 0 0 4px rgba(80,223,168,.13);animation:adminTickerPulse 2.6s ease-in-out infinite}
-    #adminActivityTicker .admin-ticker-window{position:relative;z-index:1;min-width:0;flex:1;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent)}
-    #adminActivityTicker .admin-ticker-track{display:flex;width:max-content;align-items:center;animation:adminTickerMove 58s linear infinite;will-change:transform}
-    #adminActivityTicker.is-paused .admin-ticker-track{animation-play-state:paused}
-    #adminActivityTicker .admin-ticker-group{display:flex;flex:0 0 auto;align-items:center;gap:38px;padding-right:38px;white-space:nowrap}
-    #adminActivityTicker .admin-ticker-item{display:inline-flex;align-items:center;gap:9px;color:#f7f9fd;font-size:.8rem}
-    #adminActivityTicker .admin-ticker-item b{color:#ffdf91;font-size:.67rem;letter-spacing:.06em}
-    #adminActivityTicker .admin-ticker-time{color:#9fb2ca;font-size:.66rem}
-    #adminActivityTicker .admin-ticker-control{position:relative;z-index:2;flex:0 0 24px;width:24px;height:24px;min-width:24px;min-height:24px;padding:0!important;display:grid;place-items:center;border:1px solid rgba(255,255,255,.2);border-radius:50%;background:rgba(255,255,255,.07);color:#f7df9e;font-size:.58rem;line-height:1;box-shadow:none}
-    #adminActivityTicker .admin-ticker-control i{font-size:.58rem;line-height:1}
-    #adminActivityTicker .admin-ticker-control:hover{background:rgba(255,255,255,.16)}
-    body.admin-activity-ticker-active{padding-bottom:64px}
-    body.admin-activity-ticker-active .sidebar{padding-bottom:68px}
-    @keyframes adminTickerMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-    @keyframes adminTickerPulse{50%{opacity:.55;transform:scale(.82)}}
-    @media(max-width:600px){#adminActivityTicker{min-height:48px;padding:5px 8px calc(5px + env(safe-area-inset-bottom));gap:7px}#adminActivityTicker .admin-ticker-brand{gap:7px;padding:7px 8px}#adminActivityTicker .admin-ticker-brand-icon{width:25px;height:25px}#adminActivityTicker .admin-ticker-brand-copy strong{font-size:.59rem}#adminActivityTicker .admin-ticker-brand-copy small{display:none}#adminActivityTicker .admin-ticker-group{gap:25px;padding-right:25px}#adminActivityTicker .admin-ticker-item{font-size:.72rem}#adminActivityTicker .admin-ticker-time{font-size:.6rem}#adminActivityTicker .admin-ticker-control{width:20px;height:20px;min-width:20px;min-height:20px;flex-basis:20px}}
-    @media(max-width:360px){#adminActivityTicker .admin-ticker-brand-copy{display:none}#adminActivityTicker .admin-ticker-brand{padding:6px}}
-    @media(prefers-reduced-motion:reduce){#adminActivityTicker .admin-ticker-track,#adminActivityTicker .admin-ticker-indicator{animation:none!important}}
-   `;
-   document.head.appendChild(adminTickerStyles);
- }
- const adminTicker=document.createElement('aside');
- adminTicker.id='adminActivityTicker';adminTicker.setAttribute('aria-label','Administrator activity');
- adminTicker.innerHTML='<div class="admin-ticker-brand"><span class="admin-ticker-brand-copy"><strong>ADMIN ACTIVITY</strong><small>SCHOOL OPERATIONS</small></span><span class="admin-ticker-indicator" aria-hidden="true"></span></div><div class="admin-ticker-window"><div class="admin-ticker-track"><div class="admin-ticker-group" id="adminTickerItems"></div><div class="admin-ticker-group" id="adminTickerItemsClone" aria-hidden="true"></div></div></div><button type="button" class="admin-ticker-control" aria-label="Pause scrolling" aria-pressed="false" title="Pause scrolling"><i class="fa-solid fa-pause" aria-hidden="true"></i></button>';
- document.body.appendChild(adminTicker);
- const adminTickerControl=adminTicker.querySelector('.admin-ticker-control');
- adminTickerControl?.addEventListener('click',()=>{
-   const paused=adminTicker.classList.toggle('is-paused');
-   adminTickerControl.setAttribute('aria-pressed',String(paused));
-   adminTickerControl.setAttribute('aria-label',paused?'Resume scrolling':'Pause scrolling');
-   adminTickerControl.title=paused?'Resume scrolling':'Pause scrolling';
-   adminTickerControl.innerHTML='<i class="fa-solid '+(paused?'fa-play':'fa-pause')+'" aria-hidden="true"></i>';
- });
- const refreshAdminActivityTicker=async()=>{
-   const {data:rows,error}=await client.from('audit_logs')
-     .select('created_at,time_string,actor_name,action,details,status')
-     .eq('school_id',ctx.id).order('created_at',{ascending:false}).limit(50);
-   if(error){console.warn('[Administrator activity ticker] Feed unavailable:',error.message);return;}
-   const items=rows?.length?rows.map(row=>{
-     const stamp=row.created_at?new Date(row.created_at).toLocaleString('en-GH',{dateStyle:'medium',timeStyle:'short'}):(row.time_string||'');
-     const detail=String(row.details||'').trim();
-     return '<span class="admin-ticker-item"><b>'+esc(row.actor_name||'Administrator')+'</b><span>'+esc(row.action||'Activity recorded')+(detail?' · '+esc(detail):'')+'</span><time class="admin-ticker-time">'+esc(stamp)+'</time></span>';
-   }).join(''):'<span class="admin-ticker-item"><b>ACTIVITY</b><span>No administrator activity has been recorded yet.</span></span>';
-   const primary=document.getElementById('adminTickerItems'),clone=document.getElementById('adminTickerItemsClone');
-   if(primary&&clone){primary.innerHTML=items;clone.innerHTML=items;}
- };
- await refreshAdminActivityTicker();
- window.__adminActivityTickerTimer=setInterval(refreshAdminActivityTicker,30000);
+
  $('wfResetExpected').textContent='Required phrase: RESET:'+ctx.school_code;
  $('wfResetConfirmation').placeholder='RESET:'+ctx.school_code;
  const callAdminManagement=async payload=>{
