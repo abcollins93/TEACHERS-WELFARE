@@ -198,6 +198,20 @@ function addUI(){
  
  <section class="wf-reports-view hidden" id="wfReportsPanel"><header class="wf-reports-heading"><div><h2>Statements &amp; Reports</h2><p>Generate individual member statements or executive fund summary reports instantly.</p></div><span class="wf-reports-admin-status"><i class="fa-solid fa-shield-check"></i> Administrator access active</span></header><div class="wf-report-cards"><article class="wf-report-card"><div class="wf-report-card-icon wf-report-icon-blue"><i class="fa-solid fa-file-lines"></i></div><div class="wf-report-card-content"><h3>Individual Statement</h3><p>Generate a comprehensive, print-ready official A4 statement for the selected member account.</p><label for="wfStatementTeacher">Select Member Account</label><select id="wfStatementTeacher" aria-label="Select Member Account"></select><button id="wfStatementPdf" type="button" class="wf-report-button wf-report-button-dark"><i class="fa-solid fa-file-pdf"></i> Download Member Statement</button><p id="wfStatementMsg" class="wf-report-message" role="status" aria-live="polite"></p></div></article><article class="wf-report-card"><div class="wf-report-card-icon wf-report-icon-orange"><i class="fa-solid fa-calendar-days"></i></div><div class="wf-report-card-content"><h3>Monthly Summary Report</h3><p>Administrator access active. Select target month to generate report.</p><div class="wf-month-year-picker" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:560px;margin-bottom:13px"><div><label for="wfReportMonth">Select Month</label><select id="wfReportMonth" aria-label="Select reporting month"></select></div><div><label for="wfReportYear">Select Year</label><select id="wfReportYear" aria-label="Select reporting year"></select></div></div><button id="wfMonthlyPdf" type="button" class="wf-report-button wf-report-button-orange"><i class="fa-solid fa-file-pdf"></i> Download Monthly Summary (Admin)</button></div></article><article class="wf-report-card"><div class="wf-report-card-icon wf-report-icon-green"><i class="fa-solid fa-chart-column"></i></div><div class="wf-report-card-content"><h3>Complete Fund Summary</h3><p>Administrator access is active. You can generate the complete fund report.</p><button id="wfCompletePdf" type="button" class="wf-report-button wf-report-button-green"><i class="fa-solid fa-file-pdf"></i> Download Complete Summary (Admin)</button></div></article></div><div class="wf-report-footer"><p id="wfReportMsg" class="muted" role="status" aria-live="polite">Reports include records visible to this authenticated school administrator only.</p><button id="wfExportCsv" type="button" class="wf-report-csv"><i class="fa-solid fa-file-csv"></i> Export ledgers CSV</button></div></section>`;
  const dash=$('dashboard');if(dash)dash.appendChild(d);
+ // Guard the contribution form before the rest of workflow initialization runs.
+ // If an earlier optional setup step fails, the browser must never submit the form
+ // natively (which reloads the portal and can send the admin back to the gateway).
+ const contributionFormGuard=$('wfContribution');
+ if(contributionFormGuard&&!contributionFormGuard.dataset.nativeSubmitGuard){
+  contributionFormGuard.dataset.nativeSubmitGuard='1';
+  contributionFormGuard.addEventListener('submit',event=>{
+   event.preventDefault();
+   if(typeof contributionFormGuard.onsubmit!=='function'){
+    const status=$('wfConMsg');
+    if(status){status.textContent='The contribution form is still initializing. Please wait a moment and try again.';status.className='muted';}
+   }
+  },true);
+ }
  // Populate the monthly report selectors immediately after mounting the report
  // view. This keeps Month and Year available even if later optional setup is slow.
  const reportMonthSelect=$('wfReportMonth'),reportYearSelect=$('wfReportYear');
