@@ -236,6 +236,16 @@ body{font-family:'Plus Jakarta Sans',Inter,system-ui,sans-serif;font-variant-num
 
 
 .wf-payout-view{padding:clamp(18px,2.5vw,28px)!important;border:1px solid var(--line)!important;border-radius:18px!important;background:#fff!important;box-shadow:0 12px 32px rgba(11,29,58,.07)!important;min-width:0;color:#17243a!important}.wf-payout-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:20px}.wf-payout-heading h2{margin:0 0 5px!important;color:#14233d!important;font-size:clamp(1.35rem,2.4vw,1.8rem)!important;font-weight:850!important;letter-spacing:-.035em}.wf-payout-heading p{margin:0;color:#718096!important;font-size:.9rem}.wf-payout-metrics{display:grid;grid-template-columns:1fr;gap:13px;margin:0 0 20px}.wf-payout-metric{position:relative;display:flex;flex-direction:column;justify-content:center;min-height:104px;padding:17px 20px 17px 22px;background:#fff;border:1px solid #e8edf4;border-left:5px solid transparent;border-radius:14px;box-shadow:0 7px 20px rgba(15,35,65,.055);overflow:hidden}.wf-payout-metric small{font-size:.7rem;font-weight:900;letter-spacing:.12em;color:#718096}.wf-payout-metric strong{display:block;margin-top:7px;color:#14233d;font-size:clamp(1.45rem,3vw,1.9rem);line-height:1.15;font-weight:900;font-variant-numeric:tabular-nums}.wf-payout-pink{border-left-color:#e34c78}.wf-payout-pink:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(180deg,#f472b6,#dc365f)}.wf-payout-blue{border-left-color:#3b82f6}.wf-payout-purple{border-left-color:#8b5cf6}.wf-payout-log{border:1px solid #e8edf4;border-radius:15px;background:#fff;overflow:hidden}.wf-payout-log-head{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:17px 19px;border-bottom:1px solid #edf1f6}.wf-payout-log-head h3{margin:0!important;color:#17243a!important;font-size:1rem!important;font-weight:850!important}.wf-payout-log-head p{margin:4px 0 0;font-size:.82rem}.wf-payout-log-head input{width:min(100%,290px)!important;min-height:40px!important;margin:0!important}.wf-payout-table-wrap{width:100%;overflow-x:auto}.wf-payout-table-wrap table{width:100%;min-width:760px;border-collapse:collapse;font-size:.84rem}.wf-payout-table-wrap th{padding:13px 15px;background:#f6f8fb;color:#617087;font-size:.68rem;font-weight:900;letter-spacing:.1em;text-align:left;white-space:nowrap}.wf-payout-table-wrap td{padding:14px 15px;border-top:1px solid #edf1f6;color:#334155;vertical-align:middle}.wf-payout-table-wrap tbody tr:hover{background:#fafbfe}.wf-payout-status{display:inline-flex;align-items:center;padding:5px 9px;border-radius:999px;background:#eff6ff;color:#315f9c;font-size:.72rem;font-weight:800;white-space:nowrap}.dark .wf-payout-view,.dark .wf-payout-log,.dark .wf-payout-metric{background:#0b1d3a!important;color:#e6edf7!important;border-color:#26364d!important}.dark .wf-payout-heading h2,.dark .wf-payout-metric strong,.dark .wf-payout-log-head h3,.dark .wf-payout-table-wrap td{color:#e6edf7!important}.dark .wf-payout-metric small,.dark .wf-payout-heading p{color:#a8b5c8!important}.dark .wf-payout-table-wrap th{background:#142d52;color:#d4deeb}.dark .wf-payout-table-wrap td{border-color:#26364d}.dark .wf-payout-log-head{border-color:#26364d}@media(min-width:760px){.wf-payout-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.wf-payout-metric{min-height:116px}}@media(max-width:520px){.wf-payout-view{padding:16px!important}.wf-payout-metric{min-height:94px}.wf-payout-log-head{align-items:stretch}.wf-payout-log-head input{width:100%!important}}
+
+/* Shared tenant footer: school identity is supplied by the authenticated school profile. */
+footer.tenant-portal-footer{
+ width:100%;max-width:100%;margin-top:28px;padding:34px 18px 30px;
+ background:#030a16;color:#e2e8f0;text-align:center;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+ box-sizing:border-box;overflow-wrap:anywhere;
+}
+.tenant-footer-school{max-width:100%;font-size:clamp(.82rem,2.6vw,1rem);line-height:1.55;font-weight:850;letter-spacing:.035em;text-transform:uppercase;color:#e2e8f0}
+.tenant-footer-copyright{max-width:100%;font-size:clamp(.78rem,2.3vw,.95rem);line-height:1.5;color:#8290a5}
 </style>
 <style id="teacher-broadcast-motion">
 #teacherBroadcast{white-space:nowrap}#teacherBroadcast .teacher-broadcast-message{display:inline-block;white-space:normal;overflow-wrap:anywhere;vertical-align:middle;max-width:100%}@media (prefers-reduced-motion:no-preference){#teacherBroadcast.is-long .teacher-broadcast-message{white-space:nowrap;max-width:none;padding-left:100%;animation:teacherBroadcastScroll 22s linear infinite}}@keyframes teacherBroadcastScroll{from{transform:translateX(0)}to{transform:translateX(-100%)}}@media(prefers-reduced-motion:reduce){#teacherBroadcast .teacher-broadcast-message{animation:none!important}}
@@ -998,8 +1008,9 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
 <div class="panel hidden" id="schoolTeachers" style="margin-top:18px"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><h3><i class="fa-solid fa-address-book" style="color:var(--gold)"></i> Teachers &amp; Members</h3><button id="downloadSchoolPdf" type="button"><i class="fa-solid fa-file-pdf"></i> Download PDF summary</button></div><p class="muted">Verified teacher register, membership details and profile management for this school.</p></div></div></div>
 </section>
 </main>
-<footer>
-  <div>School records are restricted by your authenticated school-admin account.</div>
+<footer id="tenantPortalFooter" class="tenant-portal-footer">
+  <div id="tenantFooterSchool" class="tenant-footer-school">WELFARE FUND PORTAL GATEWAY • WELFARE EXECUTIVE COMMITTEE</div>
+  <div id="tenantFooterCopyright" class="tenant-footer-copyright">© 2026 Teachers Welfare Fund Portal. All Rights Reserved.</div>
   <section class="support" aria-labelledby="portalSupportTitle">
     <h2 id="portalSupportTitle" style="margin:0 0 6px;color:var(--navy);font-size:1rem;font-weight:750">Need Assistance?</h2>
     <p style="margin:0 0 12px">Portal Support</p>
@@ -1101,6 +1112,13 @@ loadGatewayIdentity().catch(()=>{$('loginSchoolName').textContent='School gatewa
 if(!/^[A-Z0-9-]{3,32}$/.test(code)){ $('loginError').textContent='This gateway link is missing a valid school code. Please use the link provided by your school platform administrator.';$('loginBtn').disabled=true; }
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 async function escapeTeacherText(v){return String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+function setTenantFooter(school){
+ const name=String(school?.name||'Welfare Fund Portal Gateway').trim()||'Welfare Fund Portal Gateway';
+ const schoolLine=document.getElementById('tenantFooterSchool');
+ const copyright=document.getElementById('tenantFooterCopyright');
+ if(schoolLine)schoolLine.textContent=name.toLocaleUpperCase()+' • WELFARE EXECUTIVE COMMITTEE';
+ if(copyright)copyright.textContent='© '+new Date().getFullYear()+' Teachers Welfare Fund Portal. All Rights Reserved.';
+}
 async function renderTeacherDashboard(profile,school){
  window.__welfareCurrentRole='teacher';
  const {data:{user}}=await client.auth.getUser();
@@ -1115,6 +1133,7 @@ async function renderTeacherDashboard(profile,school){
  $('login').classList.add('hidden');
  $('dashboard').classList.remove('hidden');
  $('teacherDashboard')?.classList.add('hidden');
+ setTenantFooter(school);
  $('schoolName').textContent=school.name;$('brand').textContent=school.name;
  $('sideSchoolName').textContent=school.name;$('sideSchoolCode').textContent=school.school_code;
  $('schoolDescription').textContent='Your personal welfare account and school updates for '+school.name+'.';
@@ -1523,6 +1542,7 @@ async function showDashboard(){
    $('login').classList.remove('hidden');$('dashboard').classList.add('hidden');return;
  }
  setHeaderProfile(user, user.user_metadata?.full_name || user.user_metadata?.name || user.email || 'School Administrator', 'School Administrator', user.user_metadata?.avatar_url || user.user_metadata?.picture || null);
+ setTenantFooter(school);
  $('login').classList.add('hidden');$('dashboard').classList.remove('hidden');
  resetInactivityTimer();
  $('schoolName').textContent=school.name;$('brand').textContent=school.name;$('sideSchoolName').textContent=school.name;$('sideSchoolCode').textContent=school.school_code;$('schoolDescription').textContent='Providing mutual financial support, social welfare benefits, and fully transparent monthly record-keeping for '+school.name+'.';
@@ -1743,7 +1763,7 @@ client.auth.onAuthStateChange((event,session)=>{
 client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
 })();
 </script>
-<script src="school-portal-workflows.js?v=monthly-report-selectors-visible-20261108"></script>
+<script src="school-portal-workflows.js?v=tenant-footer-dynamic-20261108"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
