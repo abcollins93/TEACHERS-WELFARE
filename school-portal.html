@@ -1638,7 +1638,8 @@ async function showDashboard(){
    $('loginError').textContent='Your teacher account could not access its active school portal. Contact your school administrator.';
    $('login').classList.remove('hidden');$('dashboard').classList.add('hidden');return;
   }
-  window.__welfareTeacherDisplayName=user.user_metadata?.full_name||user.user_metadata?.name||'';
+  // Preserve the verified teacher name resolved during sign-in; auth metadata may be empty or contain no teacher name.
+  window.__welfareTeacherDisplayName=window.__welfareTeacherDisplayName||teacherProfile.name||user.user_metadata?.full_name||user.user_metadata?.name||'';
   await renderTeacherDashboard(teacherProfile,teacherSchool);
   return;
  }
