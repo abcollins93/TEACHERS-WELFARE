@@ -1820,6 +1820,11 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
     });
     const dashboardRoot = document.getElementById('dashboard');
     const requestedId = button.dataset.target;
+    // Clear legacy workspace CSS states when navigating to ordinary sections.
+    // Those states otherwise force-hide the roster after strict navigation reveals it.
+    if(dashboardRoot && requestedId !== 'wfAdminPanel' && requestedId !== 'wfAuditPanel'){
+      dashboardRoot.classList.remove('admin-workspace-open','audit-trail-open');
+    }
     // Administrator reports are a dedicated destination: never leave them visible
     // on Dashboard, Admin Panel, or any other workspace.
     const reportsPanel = document.getElementById('wfReportsPanel');
@@ -1916,6 +1921,21 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
       ancestor.style.removeProperty('visibility');
       ancestor.removeAttribute('aria-hidden');
       ancestor = ancestor.parentElement;
+    }
+    if (requestedId === 'schoolTeachers') {
+      // The register is mounted dynamically inside this section. A previous
+      // navigation may have hidden the child panel independently of its parent.
+      const registerPanel = document.getElementById('wfTeacherRegisterPanel');
+      target.classList.remove('hidden');
+      target.style.setProperty('display','block','important');
+      target.style.setProperty('visibility','visible','important');
+      target.removeAttribute('aria-hidden');
+      if(registerPanel){
+        registerPanel.classList.remove('hidden');
+        registerPanel.style.setProperty('display','block','important');
+        registerPanel.style.setProperty('visibility','visible','important');
+        registerPanel.removeAttribute('aria-hidden');
+      }
     }
     if (requestedId === 'wfAdminPanel') {
       // A previous visit to a nested admin destination (such as Contributions
