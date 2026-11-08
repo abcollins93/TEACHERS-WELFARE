@@ -198,6 +198,19 @@ function addUI(){
  
  <section class="wf-reports-view hidden" id="wfReportsPanel"><header class="wf-reports-heading"><div><h2>Statements &amp; Reports</h2><p>Generate individual member statements or executive fund summary reports instantly.</p></div><span class="wf-reports-admin-status"><i class="fa-solid fa-shield-check"></i> Administrator access active</span></header><div class="wf-report-cards"><article class="wf-report-card"><div class="wf-report-card-icon wf-report-icon-blue"><i class="fa-solid fa-file-lines"></i></div><div class="wf-report-card-content"><h3>Individual Statement</h3><p>Generate a comprehensive, print-ready official A4 statement for the selected member account.</p><label for="wfStatementTeacher">Select Member Account</label><select id="wfStatementTeacher" aria-label="Select Member Account"></select><button id="wfStatementPdf" type="button" class="wf-report-button wf-report-button-dark"><i class="fa-solid fa-file-pdf"></i> Download Member Statement</button><p id="wfStatementMsg" class="wf-report-message" role="status" aria-live="polite"></p></div></article><article class="wf-report-card"><div class="wf-report-card-icon wf-report-icon-orange"><i class="fa-solid fa-calendar-days"></i></div><div class="wf-report-card-content"><h3>Monthly Summary Report</h3><p>Administrator access active. Select target month to generate report.</p><div class="wf-month-year-picker" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:560px;margin-bottom:13px"><div><label for="wfReportMonth">Select Month</label><select id="wfReportMonth" aria-label="Select reporting month"></select></div><div><label for="wfReportYear">Select Year</label><select id="wfReportYear" aria-label="Select reporting year"></select></div></div><button id="wfMonthlyPdf" type="button" class="wf-report-button wf-report-button-orange"><i class="fa-solid fa-file-pdf"></i> Download Monthly Summary (Admin)</button></div></article><article class="wf-report-card"><div class="wf-report-card-icon wf-report-icon-green"><i class="fa-solid fa-chart-column"></i></div><div class="wf-report-card-content"><h3>Complete Fund Summary</h3><p>Administrator access is active. You can generate the complete fund report.</p><button id="wfCompletePdf" type="button" class="wf-report-button wf-report-button-green"><i class="fa-solid fa-file-pdf"></i> Download Complete Summary (Admin)</button></div></article></div><div class="wf-report-footer"><p id="wfReportMsg" class="muted" role="status" aria-live="polite">Reports include records visible to this authenticated school administrator only.</p><button id="wfExportCsv" type="button" class="wf-report-csv"><i class="fa-solid fa-file-csv"></i> Export ledgers CSV</button></div></section>`;
  const dash=$('dashboard');if(dash)dash.appendChild(d);
+ // Populate the monthly report selectors immediately after mounting the report
+ // view. This keeps Month and Year available even if later optional setup is slow.
+ const reportMonthSelect=$('wfReportMonth'),reportYearSelect=$('wfReportYear');
+ if(reportMonthSelect&&reportYearSelect){
+   const reportMonthNow=new Date();
+   const monthNames=Array.from({length:12},(_,i)=>new Date(2000,i,1).toLocaleDateString('en-GH',{month:'long'}));
+   reportMonthSelect.replaceChildren(...monthNames.map((name,i)=>new Option(name,String(i+1).padStart(2,'0'))));
+   const reportYears=Array.from({length:11},(_,i)=>reportMonthNow.getFullYear()-i);
+   reportYearSelect.replaceChildren(...reportYears.map(year=>new Option(String(year),String(year))));
+   reportMonthSelect.disabled=false;reportYearSelect.disabled=false;
+   reportMonthSelect.value=String(reportMonthNow.getMonth()+1).padStart(2,'0');
+   reportYearSelect.value=String(reportMonthNow.getFullYear());
+ }
  // Keep audit history in its own view, outside the restricted management workspace.
  const auditPanel=$('wfAuditPanel');
  if(dash&&auditPanel){
@@ -590,7 +603,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    catch(error){msg('wfResetDataMsg',error.message||'Reset failed. No success was assumed.',true);}
  };
  loadSchoolAdmins();
- const reportMonthNow=new Date();const reportMonthSelect=$('wfReportMonth'),reportYearSelect=$('wfReportYear');const monthNames=Array.from({length:12},(_,i)=>new Date(2000,i,1).toLocaleDateString('en-GH',{month:'long'}));reportMonthSelect.replaceChildren(...monthNames.map((name,i)=>new Option(name,String(i+1).padStart(2,'0'))));const reportYears=Array.from({length:11},(_,i)=>reportMonthNow.getFullYear()-i);reportYearSelect.replaceChildren(...reportYears.map(year=>new Option(String(year),String(year))));reportMonthSelect.disabled=false;reportYearSelect.disabled=false;reportMonthSelect.value=String(reportMonthNow.getMonth()+1).padStart(2,'0');reportYearSelect.value=String(reportMonthNow.getFullYear());
+
 
  // Bind report actions as soon as report controls and school-scoped data are ready.
  // Install these BEFORE optional settings requests so slow settings cannot leave
