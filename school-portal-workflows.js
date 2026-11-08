@@ -684,6 +684,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      type:'individual',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},
      teacher,contributions:activeCons.filter(x=>String(x.teacher_id)===String(tid)),
      payouts:activePays.filter(x=>String(x.teacher_id)===String(tid)),
+     personalContributionTotal:activeCons.filter(x=>String(x.teacher_id)===String(tid)).reduce((sum,row)=>sum+Number(row.amount||0),0),
+     schoolFundBalance:activeCons.reduce((sum,row)=>sum+Number(row.amount||0),0)-activePays.reduce((sum,row)=>sum+Number(row.amount||0),0),
      academicYear:typeof getCurrentAcademicYear==='function'?getCurrentAcademicYear():'',
      standardMonthlyDues:typeof standardMonthlyDues!=='undefined'?standardMonthlyDues:0
    }));
