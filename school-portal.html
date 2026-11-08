@@ -1369,16 +1369,9 @@ async function renderTeacherDashboard(profile,school){
  if(accountMark)accountMark.className='fa-solid fa-user';
  // Teachers use the same dashboard shell and metric-card design, but the figures below
  // are calculated only from their own RLS-protected records.
- // Teachers may open Teachers & Members, but receive only a school-wide active-member count.
- const roster=$('schoolTeachers');
- if(roster){
-  roster.innerHTML='<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div><div class="eyebrow">SCHOOL MEMBERSHIP</div><h2 style="margin:4px 0 0">Teachers &amp; Members</h2></div></div><article class="panel" style="margin:18px 0 0;max-width:520px;border-left:4px solid #d6a637"><div style="display:flex;align-items:center;gap:14px"><span aria-hidden="true" style="width:48px;height:48px;display:grid;place-items:center;border-radius:14px;background:#f3e8c8;color:#8a6412;font-size:1.25rem"><i class="fa-solid fa-users"></i></span><div><div style="font-size:.78rem;font-weight:800;letter-spacing:.06em;color:var(--muted)">ACTIVE MEMBERS</div><strong id="teacherActiveMemberCount" style="display:block;font-size:2rem;line-height:1.2;color:var(--ink)">Loading…</strong></div></div></article>';
-  roster.classList.remove('hidden');
-  roster.setAttribute('aria-label','School active member total');
-  const countNode=$('teacherActiveMemberCount');
-  const {count:activeMemberCount,error:activeMemberCountError}=await client.from('teachers').select('id',{count:'exact',head:true}).eq('school_id',teacherSchool.id).eq('is_active',true);
-  if(countNode)countNode.textContent=activeMemberCountError?'Unavailable':String(activeMemberCount??0);
- }
+ // Teachers use the same dashboard shell and metric-card design, but the figures below
+ // are calculated only from their own RLS-protected records.
+ const roster=$('schoolTeachers');if(roster)roster.classList.add('hidden');
  const workflows=$('workflows');if(workflows)workflows.classList.add('hidden');
  const auditView=$('wfAuditView');if(auditView)auditView.classList.add('hidden');
  $('dashboard').classList.remove('admin-workspace-open','audit-trail-open');
@@ -1393,6 +1386,7 @@ async function renderTeacherDashboard(profile,school){
   .find(btn=>btn.querySelector('span')?.textContent.trim()==='PDF reports');
  if(adminPdfReportsNav){adminPdfReportsNav.style.display='none';adminPdfReportsNav.setAttribute('aria-hidden','true');}
  const navRules=[
+  ['schoolTeachers','Teachers & Members'],
   ['wfAdminPanel','Admin panel'],
   ['wfAuditPanel','Audit trail dashboard'],
   ['wfReportsPanel','PDF reports']
