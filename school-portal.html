@@ -1191,9 +1191,9 @@ async function renderTeacherDashboard(profile,school){
  if(metricLabels[2])metricLabels[2].innerHTML='<i class="fa-solid fa-hand-holding-heart"></i> My payouts · GHS';
  if(metricLabels[3])metricLabels[3].innerHTML='<i class="fa-solid fa-calendar-days"></i> My contributions this month · GHS';
  window.__welfareTeacherName=String(teacherProfile?.name||teacherProfile?.full_name||'My record');
- $('teacherCount').textContent='1';$('contributionTotal').textContent=money(totalC);
- $('payoutTotal').textContent=money(totalP);$('monthlyContributionTotal').textContent=money(monthC);
- $('netTotal').textContent=money(totalC-totalP);
+ $('teacherCount').textContent=String(ownMemberCount);$('contributionTotal').textContent=ce?'Unavailable':money(totalC);
+ $('payoutTotal').textContent=pe?'Unavailable':money(totalP);$('monthlyContributionTotal').textContent=ce?'Unavailable':money(monthC);
+ $('netTotal').textContent=(ce||pe)?'Unavailable':money(totalC-totalP);
  const balanceLabel=document.querySelector('#schoolOverview .metric-balance .metric-label');
  if(balanceLabel)balanceLabel.textContent='MY NET WELFARE RECORD · GHS';
  const balanceNote=document.querySelector('#schoolOverview .metric-balance .metric-note');
