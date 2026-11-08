@@ -574,7 +574,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     $('wfPayoutTotal').textContent=pr.error?'Unavailable':'GHS '+money(totalPayout);
     $('wfPayoutCurrentFund').textContent=(cr.error||pr.error)?'Unavailable':'GHS '+money(currentFund);
     $('wfPayoutActiveMembers').textContent=tr.error?'Unavailable':String(activeMembers);
-    $('wfPayRows').innerHTML=pr.error?'<tr><td colspan="6">Payout records could not be loaded. Check the school account permissions and try again.</td></tr>':rows.length?rows.map(x=>{const rawDate=String(x.date||'');const displayDate=rawDate&&/^\\d{4}-\\d{2}-\\d{2}/.test(rawDate)?new Date(rawDate.slice(0,10)+'T00:00:00').toLocaleDateString('en-GB'):(rawDate||'—');return '<tr><td class="wf-payout-reference">'+esc(x.reference||'—')+'</td><td class="wf-payout-beneficiary">'+teacherLabel(x.teacher_id)+'</td><td>'+esc(x.reason||'Welfare support')+'</td><td class="wf-payout-amount">GHS '+money(x.amount)+'</td><td>'+esc(displayDate)+'</td><td>'+reversalCell('payout',x)+'</td></tr>'}).join(''):'<tr><td colspan="6">No matching payouts.</td></tr>';
+    $('wfPayRows').innerHTML=pr.error?'<tr><td colspan="6">Payout records could not be loaded. Check the school account permissions and try again.</td></tr>':rows.length?rows.map(x=>{const rawDate=String(x.date||'');const displayDate=rawDate&&/^\d{4}-\d{2}-\d{2}/.test(rawDate)?new Date(rawDate.slice(0,10)+'T00:00:00').toLocaleDateString('en-GB'):(rawDate||'—');return '<tr><td class="wf-payout-reference">'+esc(x.reference||'—')+'</td><td class="wf-payout-beneficiary">'+teacherLabel(x.teacher_id)+'</td><td>'+esc(x.reason||'Welfare support')+'</td><td class="wf-payout-amount">GHS '+money(x.amount)+'</td><td>'+esc(displayDate)+'</td><td>'+reversalCell('payout',x)+'</td></tr>'}).join(''):'<tr><td colspan="6">No matching payouts.</td></tr>';
   };
   renderPayoutLedger();$('wfPayoutSearch').addEventListener('input',renderPayoutLedger);
   // Reload transaction data in place; keep the authenticated dashboard and
@@ -691,7 +691,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  })));
  $('wfAnnualPdf').addEventListener('click',()=>{
    const selectedYear=$('wfAnnualYear').value;
-   if(!/^\\d{4}$/.test(selectedYear||''))return msg('wfReportMsg','Choose a valid reporting year.',true);
+   if(!/^\d{4}$/.test(selectedYear||''))return msg('wfReportMsg','Choose a valid reporting year.',true);
    return runWelfarePdf($('wfAnnualPdf'),'wfReportMsg','Yearly summary PDF downloaded successfully.',()=>({
      type:'annual',year:selectedYear,school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},
      contributions:activeCons,payouts:activePays,teachers,
