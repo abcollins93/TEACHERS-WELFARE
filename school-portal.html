@@ -1120,7 +1120,7 @@ function setTenantFooter(school){
  if(copyright)copyright.textContent='© '+new Date().getFullYear()+' Teachers Welfare Fund Portal. All Rights Reserved.';
 }
 function showLoginWelcome(displayName,roleLabel,schoolName){
- const first=String(displayName||'').trim().split(/\\s+/)[0]||'there';
+ const first=String(displayName||'').trim().split(/\s+/)[0]||'there';
  let toast=document.getElementById('loginWelcomeToast');
  if(!toast){
   toast=document.createElement('div');toast.id='loginWelcomeToast';toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');
