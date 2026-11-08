@@ -1,6 +1,15 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title id="documentTitle">School Welfare Portal</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+<title id="documentTitle">School Welfare Portal</title><script>
+/* Ghana academic year: rolls over on 1 September each year. */
+window.getCurrentAcademicYear=function(){
+ const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Africa/Accra',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+ const part=name=>Number(parts.find(item=>item.type===name)?.value||0);
+ const year=part('year'),month=part('month');
+ const startYear=month>=9?year:year-1;
+ return startYear+'/'+(startYear+1);
+};
+</script><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
 document.addEventListener('click',event=>{
  const toggle=event.target.closest('.password-toggle');
  if(!toggle)return;
@@ -1658,7 +1667,7 @@ async function renderTeacherDashboard(profile,school){
     payouts:personalPayouts,
     personalContributionTotal:activePersonalContributionTotal,
     schoolFundBalance:schoolWideFundBalance,
-    academicYear:typeof getCurrentAcademicYear==='function'?getCurrentAcademicYear():''
+    academicYear:window.getCurrentAcademicYear()
    });
    statementStatus('Your personal PDF statement has been downloaded.');
   }catch(error){
@@ -2027,7 +2036,7 @@ client.auth.onAuthStateChange((event,session)=>{
 client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
 })();
 </script>
-<script src="school-portal-workflows.js?v=separate-financial-sidebar-views-20261108"></script>
+<script src="school-portal-workflows.js?v=dynamic-academic-year-20261108"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
