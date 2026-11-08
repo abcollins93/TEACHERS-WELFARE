@@ -1330,7 +1330,7 @@ async function renderTeacherDashboard(profile,school){
   $('teacherDashboardStaffId').textContent='STAFF ID · '+teacherId;
   $('teacherDashboardPhone').textContent=teacherRecord?.phone||profile.phone||'Not provided';
   $('teacherDashboardClass').textContent=teacherRecord?.class_name||profile.class_name||'Not assigned';
-  const avatar=$('teacherDashboardAvatar');avatar.textContent=String(teacherName||teacherId).trim().split(/\\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join('').toUpperCase()||'—';
+  const avatar=$('teacherDashboardAvatar');avatar.textContent=String(teacherName||teacherId).trim().split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join('').toUpperCase()||'—';
   if(teacherAvatar){const initials=avatar.textContent;const photo=document.createElement('img');photo.src=teacherAvatar;photo.alt='Profile photo of '+teacherName;photo.onerror=()=>{photo.remove();avatar.textContent=initials;};avatar.textContent='';avatar.appendChild(photo);}
  }
  if(teacherDashboardLedgers)teacherDashboardLedgers.hidden=false;
