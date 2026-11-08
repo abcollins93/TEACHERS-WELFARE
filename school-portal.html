@@ -979,7 +979,81 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
 @media(max-width:600px){#wfContributionPanel .wf-contrib-table-wrap{margin:0 -2px}}
 .dark #wfContributionPanel .wf-contrib-metric,.dark #wfContributionPanel .wf-contrib-log{background:var(--surface,#101b2d)}
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script></head><body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script><style id="shared-premium-hero-design">
+/* One unified premium hero treatment for the dashboard and Administration Panel. */
+#dashboard .portal-hero,
+#wfAdminPanel .wf-admin-intro{
+ position:relative!important;isolation:isolate!important;overflow:hidden!important;
+ box-sizing:border-box!important;
+ border:1px solid rgba(255,255,255,.13)!important;
+ border-radius:2.25rem!important;
+ padding:clamp(24px,4vw,40px)!important;
+ background:
+  radial-gradient(ellipse at 100% 100%,rgba(57,83,220,.88) 0%,rgba(39,62,160,.48) 25%,transparent 60%),
+  radial-gradient(ellipse at 88% 8%,rgba(50,91,164,.42) 0%,transparent 46%),
+  radial-gradient(ellipse at 4% 100%,rgba(214,166,55,.13) 0%,transparent 38%),
+  linear-gradient(128deg,#061329 0%,#0b1932 38%,#142344 68%,#203b91 100%)!important;
+ color:#fff!important;
+ box-shadow:0 22px 52px rgba(3,10,30,.25),inset 0 1px 0 rgba(255,255,255,.06)!important;
+}
+#dashboard .portal-hero:before,#dashboard .portal-hero:after,
+#wfAdminPanel .wf-admin-intro:before,#wfAdminPanel .wf-admin-intro:after{
+ content:""!important;position:absolute!important;z-index:-1!important;
+ display:block!important;border-radius:50%!important;pointer-events:none!important;
+}
+#dashboard .portal-hero:before,#wfAdminPanel .wf-admin-intro:before{
+ width:410px;height:410px;right:-152px;bottom:-270px;
+ border:1px solid rgba(133,153,255,.22)!important;
+ box-shadow:0 0 0 22px rgba(115,139,255,.045),0 0 0 48px rgba(115,139,255,.03),0 0 0 78px rgba(115,139,255,.018)!important;
+}
+#dashboard .portal-hero:after,#wfAdminPanel .wf-admin-intro:after{
+ width:300px;height:300px;right:-128px;top:-190px;
+ border:1px solid rgba(245,207,103,.18)!important;
+ box-shadow:0 0 0 23px rgba(245,207,103,.035),0 0 0 48px rgba(157,174,255,.025)!important;
+}
+#dashboard .portal-hero-badge,#wfAdminPanel .wf-admin-intro .wf-admin-eyebrow{
+ position:relative!important;z-index:1!important;display:inline-flex!important;
+ align-items:center!important;gap:9px!important;width:max-content;max-width:100%;
+ padding:10px 17px!important;margin:0 0 16px!important;
+ border:1px solid rgba(230,190,65,.58)!important;border-radius:999px!important;
+ background:rgba(194,151,29,.18)!important;color:#ffdc72!important;
+ font-size:.78rem!important;font-weight:850!important;letter-spacing:.075em!important;
+ line-height:1.25!important;text-transform:uppercase!important;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.07)!important;
+}
+#dashboard .portal-hero-badge i,#wfAdminPanel .wf-admin-intro .wf-admin-eyebrow i{color:#ffd34f!important}
+#dashboard .portal-hero h1,#wfAdminPanel .wf-admin-intro h2{
+ position:relative!important;z-index:1!important;display:block!important;
+ color:#fff!important;font-size:clamp(1.8rem,3.7vw,2.8rem)!important;
+ font-weight:900!important;letter-spacing:-.045em!important;line-height:1.12!important;
+ text-wrap:balance;text-shadow:0 1px 1px rgba(0,0,0,.12);
+}
+#dashboard .portal-hero p,#wfAdminPanel .wf-admin-intro> .wf-admin-intro-top p{
+ position:relative!important;z-index:1!important;max-width:820px;
+ color:#e5ebf7!important;font-size:clamp(.96rem,1.5vw,1.12rem)!important;
+ font-weight:500!important;line-height:1.72!important;
+}
+#wfAdminPanel .wf-admin-intro .wf-admin-intro-top,
+#wfAdminPanel .wf-admin-intro .wf-admin-status,
+#wfAdminPanel .wf-admin-intro .wf-admin-shortcuts{position:relative;z-index:1}
+#wfAdminPanel .wf-admin-intro .wf-admin-status{
+ background:rgba(16,185,129,.13)!important;border:1px solid rgba(52,211,153,.32)!important;
+ color:#a7f3d0!important;
+}
+#wfAdminPanel .wf-admin-intro .wf-admin-shortcuts span{
+ background:rgba(255,255,255,.07)!important;border:1px solid rgba(255,255,255,.13)!important;
+ color:#f1f5ff!important;
+}
+#wfAdminPanel .wf-admin-intro .wf-admin-shortcuts i{color:#ffdc72!important}
+@media(max-width:600px){
+ #dashboard .portal-hero,#wfAdminPanel .wf-admin-intro{border-radius:2rem!important;padding:24px 19px!important}
+ #dashboard .portal-hero:before,#wfAdminPanel .wf-admin-intro:before{right:-205px;bottom:-270px}
+ #dashboard .portal-hero:after,#wfAdminPanel .wf-admin-intro:after{right:-185px;top:-200px}
+ #dashboard .portal-hero-badge,#wfAdminPanel .wf-admin-intro .wf-admin-eyebrow{padding:9px 14px!important;font-size:.72rem!important}
+ #dashboard .portal-hero h1,#wfAdminPanel .wf-admin-intro h2{font-size:clamp(1.65rem,7vw,2.25rem)!important}
+}
+</style>
+</head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading page">
  <div class="page-loader-card">
