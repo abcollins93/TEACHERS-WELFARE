@@ -1133,6 +1133,7 @@ async function renderTeacherDashboard(profile,school){
  const auditView=$('wfAuditView');if(auditView)auditView.classList.add('hidden');
  $('dashboard').classList.remove('admin-workspace-open','audit-trail-open');
  const profileViewerNav=document.querySelector('.sidebar .navbtn[data-target="teacherProfileViewer"]');if(profileViewerNav)profileViewerNav.style.display='none';
+  const teacherOwnProfileNav=document.querySelector('.sidebar .navbtn[data-target="wfTeacherPanel"]');if(teacherOwnProfileNav){teacherOwnProfileNav.querySelector('span').textContent='Profile viewer';teacherOwnProfileNav.setAttribute('aria-label','Open your personal profile viewer');}
  // Teachers must be routed to their own single-account statement, never the
  // administrator's three-card report generator. Admin navigation remains unchanged.
  const teacherStatementNav=[...document.querySelectorAll('.sidebar .navbtn[data-target="wfReportsPanel"]')]
@@ -1828,7 +1829,7 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
     const sectionTitles = {
       schoolOverview: 'Dashboard',
       teacherProfileViewer: 'Teacher Profile',
-      wfTeacherPanel: 'Teacher Profile',
+      wfTeacherPanel: 'Profile Viewer',
       schoolTeachers: 'Teachers & Members',
       wfContributionPanel: 'Contributions',
       wfPayoutPanel: 'Welfare & Payouts',
