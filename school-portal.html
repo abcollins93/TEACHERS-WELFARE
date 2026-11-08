@@ -342,6 +342,37 @@ body{font-family:'Plus Jakarta Sans',Inter,system-ui,sans-serif;font-variant-num
  .wf-admin-pill{display:inline-flex;align-items:center;padding:5px 9px;border-radius:999px;background:rgba(120,130,145,.12);border:1px solid rgba(120,130,145,.25);font-size:.75rem;font-weight:800;color:var(--muted,#64748b)}.wf-admin-pill.active{background:rgba(22,167,121,.12);border-color:rgba(22,167,121,.35);color:#13865f}#wfAdminUsersPanel table,#wfResetDataPanel{font-size:.94rem}#wfResetDataPanel .danger{background:linear-gradient(135deg,#b42332,#d9485b);color:#fff;border:0}#wfResetDataPanel .danger:hover{filter:brightness(1.04)}#wfAdminUsersPanel button:disabled{opacity:.45;cursor:not-allowed} .wf-data-protection{margin-top:18px;padding:14px 16px;border:1px solid rgba(214,166,55,.35);border-radius:12px;background:rgba(214,166,55,.08)}.wf-data-protection>strong{display:flex;align-items:center;gap:8px;color:#a97810}.wf-data-protection p{margin:7px 0 0;font-size:.84rem;line-height:1.6}.dark .wf-data-protection{background:rgba(214,166,55,.07);border-color:rgba(214,166,55,.25)}
 </style>
 
+<style id="teacher-personal-statement-pdf">
+.teacher-statement-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:18px 0}
+.teacher-statement-summary p{margin:0;padding:13px 15px;border:1px solid var(--line);border-radius:12px;background:rgba(113,128,150,.055)}
+.teacher-statement-action{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.teacher-statement-action p{margin:0;font-size:.84rem}
+.teacher-statement-pdf{width:794px;padding:34px;background:#fff;color:#17243a;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.45}
+.teacher-statement-pdf .statement-pdf-top{padding:20px 22px;background:#0b1d3a;color:#fff;border-bottom:5px solid #d6a637;text-align:center}
+.teacher-statement-pdf .statement-pdf-brand{font-size:17px;font-weight:800;letter-spacing:1.3px;color:#f2cf72}
+.teacher-statement-pdf .statement-pdf-school{font-size:20px;font-weight:800;margin-top:7px}
+.teacher-statement-pdf .statement-pdf-meta{font-size:10px;color:#d7e1ef;margin-top:4px}
+.teacher-statement-pdf h1{text-align:center;font-size:16px;letter-spacing:.4px;margin:22px 0 4px;color:#0b1d3a}
+.teacher-statement-pdf h2{font-size:11px;color:#0b1d3a;margin:20px 0 9px;padding-bottom:6px;border-bottom:1px solid #d9e0e9;letter-spacing:.6px}
+.teacher-statement-pdf .statement-pdf-generated{text-align:center;color:#64748b;font-size:9px;margin:0 0 18px}
+.teacher-statement-pdf .statement-pdf-details{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px}
+.teacher-statement-pdf .statement-pdf-details div{padding:8px 10px;background:#f5f7fa;border:1px solid #e7ebf1;border-radius:5px;min-width:0}
+.teacher-statement-pdf .statement-pdf-details span,.teacher-statement-pdf .statement-pdf-summary span{display:block;color:#64748b;font-size:9px;margin-bottom:3px}
+.teacher-statement-pdf .statement-pdf-details strong{font-size:10px;overflow-wrap:anywhere}
+.teacher-statement-pdf .statement-pdf-summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+.teacher-statement-pdf .statement-pdf-summary div{padding:12px 10px;border:1px solid #dfe6ee;border-left:4px solid #1c9b70;border-radius:5px;background:#fbfcfe}
+.teacher-statement-pdf .statement-pdf-summary div:nth-child(2){border-left-color:#d96b83}
+.teacher-statement-pdf .statement-pdf-summary div.net{border-left-color:#3979c9}
+.teacher-statement-pdf .statement-pdf-summary strong{font-size:13px;color:#0b1d3a}
+.teacher-statement-pdf .statement-pdf-table{width:100%;border-collapse:collapse;font-size:9px;white-space:normal;margin-top:6px}
+.teacher-statement-pdf .statement-pdf-table th{background:#0b1d3a;color:#fff;padding:8px 6px;text-align:left;font-size:8px}
+.teacher-statement-pdf .statement-pdf-table td{padding:7px 6px;border-bottom:1px solid #e5eaf0;vertical-align:top;overflow-wrap:anywhere}
+.teacher-statement-pdf .statement-pdf-table tbody tr:nth-child(even){background:#f7f9fc}
+.teacher-statement-pdf .statement-pdf-table .amount{text-align:right;white-space:nowrap;font-weight:700}
+.teacher-statement-pdf .statement-pdf-table .empty{text-align:center;color:#64748b;padding:18px}
+.teacher-statement-pdf .statement-pdf-footer{display:flex;justify-content:space-between;gap:12px;margin-top:24px;padding-top:9px;border-top:1px solid #d9e0e9;color:#64748b;font-size:8px}
+@media(max-width:600px){.teacher-statement-action{align-items:flex-start;flex-direction:column}.teacher-statement-action button{width:100%}}
+</style>
 <style id="mobile-horizontal-overflow-guard">
 /* Prevent decorative elements and fixed navigation from widening the mobile viewport. */
 html, body {
@@ -1128,7 +1159,7 @@ async function renderTeacherDashboard(profile,school){
  <section class="panel teacher-workspace-panel" id="wfTeacherPanel"><div class="eyebrow">My account</div><h2>Teacher profile</h2><p class="muted">Your verified school welfare account.</p><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px"><div class="metric"><span>Full name</span><strong>${escapeHtml(teacherName)}</strong></div><div class="metric"><span>Staff ID</span><strong>${escapeHtml(teacherId)}</strong></div><div class="metric"><span>School</span><strong>${escapeHtml(school.name)}</strong></div><div class="metric"><span>Position / rank</span><strong>${escapeHtml(teacherRecord?.rank||profile.rank||'—')}</strong></div><div class="metric"><span>Class</span><strong>${escapeHtml(teacherRecord?.class_name||profile.class_name||'—')}</strong></div></div><details class="panel" style="margin-top:16px"><summary style="cursor:pointer;font-weight:800">Security settings · Change password</summary><p class="muted">Use at least 6 characters.</p><form id="teacherVoluntaryPasswordForm"><label for="teacherCurrentPassword">Current password</label><input id="teacherCurrentPassword" type="password" autocomplete="current-password" minlength="1" maxlength="128" required><label for="teacherVoluntaryNewPassword">New password</label><input id="teacherVoluntaryNewPassword" type="password" autocomplete="new-password" minlength="6" maxlength="128" required><label for="teacherVoluntaryConfirmPassword">Confirm new password</label><input id="teacherVoluntaryConfirmPassword" type="password" autocomplete="new-password" minlength="6" maxlength="128" required><p id="teacherVoluntaryPasswordMessage" class="muted" role="status" aria-live="polite"></p><button type="submit">Update my password</button></form></details></section>
  <section class="panel teacher-workspace-panel" id="wfContributionPanel"><header class="wf-teacher-contrib-header"><h2>Contributions</h2><p class="muted">Complete contribution records and financial logs.</p></header><div class="wf-teacher-contrib-metrics"><article class="wf-contrib-metric wf-contrib-green"><small>TOTAL CONTRIBUTIONS</small><strong id="teacherConTotal">GHS 0.00</strong></article><article class="wf-contrib-metric wf-contrib-red"><small>TOTAL DISBURSEMENT</small><strong id="teacherConDisbursement">GHS 0.00</strong></article><article class="wf-contrib-metric wf-contrib-blue"><small>TOTAL NET FUND</small><strong id="teacherConNet">GHS 0.00</strong></article></div><div class="wf-contrib-log"><div class="wf-contrib-log-head"><h3>Financial Records</h3></div><div class="wf-contrib-table-wrap"><table><thead><tr><th>TEACHER</th><th>MONTH / YEAR</th><th>REFERENCE</th><th>AMOUNT</th><th>DATE</th><th>ACTION</th></tr></thead><tbody id="teacherContribRows"></tbody></table></div></div><p id="teacherContributionsState" class="muted">Loading your contributions…</p><div id="teacherContributions" hidden></div></section>
  <section class="panel teacher-workspace-panel" id="wfPayoutPanel"><div class="eyebrow">Personal records</div><h2>My welfare payouts</h2><p id="teacherPayoutsState" class="muted">Loading your payouts…</p><div id="teacherPayouts"></div></section>
- <section class="panel teacher-workspace-panel" id="wfStatementPanel"><div class="eyebrow">Personal summary</div><h2>My welfare statement</h2><p class="muted">This statement contains only records linked to your teacher account. PDF report generation is restricted to school administrators.</p><div id="teacherStatementSummary"></div></section>`;
+ <section class="panel teacher-workspace-panel" id="wfStatementPanel"><div class="eyebrow">Personal financial records</div><h2>Statements &amp; Reports</h2><p class="muted">Generate a complete PDF statement of your own membership details, contributions and welfare payouts.</p><div id="teacherStatementSummary" class="teacher-statement-summary"></div><div class="teacher-statement-action"><button id="teacherStatementDownload" type="button"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i> Download PDF Statement</button><p id="teacherStatementMessage" class="muted" role="status" aria-live="polite">Your personal statement is ready to generate.</p></div></section>`;
  host.appendChild(workspace);
  document.querySelectorAll('.teacher-workspace-panel').forEach(panel=>panel.classList.add('hidden'));
  $('schoolOverview').classList.remove('hidden');
@@ -1167,6 +1198,76 @@ async function renderTeacherDashboard(profile,school){
  $('teacherPayoutsState').textContent=pe?'Could not load your payout records securely.':payouts.length?payouts.length+' record(s)':'No welfare payouts are available yet.';
  $('teacherPayouts').innerHTML=payouts.length?'<div style="overflow:auto"><table><thead><tr><th>Date</th><th>Amount</th><th>Reason</th><th>Reference</th></tr></thead><tbody>'+payouts.map(x=>'<tr><td>'+escapeHtml(date(x.date))+'</td><td>'+escapeHtml(cash(x.amount))+'</td><td>'+escapeHtml(x.reason||'—')+'</td><td>'+escapeHtml(x.reference||'—')+'</td></tr>').join('')+'</tbody></table></div>':'';
  $('teacherStatementSummary').innerHTML='<p>Contributions: <strong>'+escapeHtml(cash(totalC))+'</strong></p><p>Welfare payouts: <strong>'+escapeHtml(cash(totalP))+'</strong></p><p>Net personal record: <strong>'+escapeHtml(cash(totalC-totalP))+'</strong></p><p>Last activity: <strong>'+escapeHtml(latest?date(latest):'No records')+'</strong></p>';
+ const statementMessage=$('teacherStatementMessage');
+ const statementButton=$('teacherStatementDownload');
+ const statementStatus=(message,isError=false)=>{if(statementMessage){statementMessage.textContent=message;statementMessage.className=isError?'error':'muted';}};
+ const statementRows=(rows,type)=>rows.map(row=>({
+  type,date:row.date||'',reference:row.reference||'—',
+  description:type==='Contribution'?'Monthly dues contribution':(row.reason||'Welfare payout'),
+  amount:Number(row.amount||0)
+ })).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+ async function downloadTeacherStatement(){
+  if(!window.html2pdf)return statementStatus('The PDF service is unavailable. Check your internet connection and try again.',true);
+  statementButton.disabled=true;statementStatus('Verifying your account and preparing your statement…');
+  try{
+   const {data:{user:verifiedUser},error:authError}=await client.auth.getUser();
+   if(authError||!verifiedUser?.id)throw new Error('Your authenticated session could not be verified. Please sign in again.');
+   if(profile.auth_user_id&&String(profile.auth_user_id)!==String(verifiedUser.id))throw new Error('The signed-in account does not match this teacher profile. Please sign in again.');
+   const verifiedTeacherId=String(profile.teacher_id||profile.id||'');
+   if(!verifiedTeacherId||verifiedTeacherId!==teacherId)throw new Error('Your teacher account could not be matched securely.');
+   // These RPCs bind records to auth.uid() through teacher_accounts. Never accept a
+   // teacher ID from a form, URL, or browser storage when building this statement.
+   const [{data:ownContributions,error:contributionError},{data:ownPayouts,error:payoutError}]=await Promise.all([
+    client.rpc('get_my_teacher_contributions'),client.rpc('get_my_teacher_payouts')
+   ]);
+   if(contributionError||payoutError)throw new Error('Your financial records could not be retrieved securely. No PDF was generated.');
+   const personalContributions=(ownContributions||[]).filter(x=>String(x.teacher_id)===verifiedTeacherId&&String(x.school_id)===String(school.id));
+   const personalPayouts=(ownPayouts||[]).filter(x=>String(x.teacher_id)===verifiedTeacherId&&String(x.school_id)===String(school.id));
+   if(personalContributions.length!==(ownContributions||[]).length||personalPayouts.length!==(ownPayouts||[]).length)throw new Error('A record did not match your authenticated teacher account. Please contact your school administrator.');
+   const contributionTotal=personalContributions.reduce((sum,x)=>sum+Number(x.amount||0),0);
+   const payoutTotal=personalPayouts.reduce((sum,x)=>sum+Number(x.amount||0),0);
+   const netTotal=contributionTotal-payoutTotal;
+   const transactions=[...statementRows(personalContributions,'Contribution'),...statementRows(personalPayouts,'Welfare payout')].sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+   const generatedAt=new Date();
+   const safe=escapeHtml;
+   const dateText=value=>value?new Date(String(value).slice(0,10)+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'—';
+   const amountText=value=>'GHS '+Number(value||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
+   const rowsHtml=transactions.length?transactions.map((item,index)=>'<tr><td>'+(index+1)+'</td><td>'+safe(dateText(item.date))+'</td><td>'+safe(item.type)+'</td><td>'+safe(item.description)+'</td><td>'+safe(item.reference)+'</td><td class="amount">'+safe(amountText(item.amount))+'</td></tr>').join(''):'<tr><td colspan="6" class="empty">No financial transactions have been recorded for this account.</td></tr>';
+   const memberSince=teacherRecord?.created_at?dateText(teacherRecord.created_at):'Not available';
+   const report=document.createElement('div');
+   report.className='teacher-statement-pdf';
+   report.innerHTML='<div class="statement-pdf-top"><div class="statement-pdf-brand">TEACHERS WELFARE FUND</div><div class="statement-pdf-school">'+safe(school.name||'School Welfare')+'</div><div class="statement-pdf-meta">'+safe([school.school_code,school.district,school.region].filter(Boolean).join(' · '))+'</div></div>'+
+    '<h1>PERSONAL FINANCIAL &amp; MEMBERSHIP STATEMENT</h1><p class="statement-pdf-generated">Generated: '+safe(generatedAt.toLocaleString('en-GB'))+'</p>'+
+    '<h2>MEMBER INFORMATION</h2><div class="statement-pdf-details">'+
+    '<div><span>Full name</span><strong>'+safe(teacherRecord?.name||teacherName)+'</strong></div>'+
+    '<div><span>Staff ID</span><strong>'+safe(verifiedTeacherId)+'</strong></div>'+
+    '<div><span>Position / rank</span><strong>'+safe(teacherRecord?.rank||profile.rank||'Not provided')+'</strong></div>'+
+    '<div><span>Class / assignment</span><strong>'+safe(teacherRecord?.class_name||profile.class_name||'Not provided')+'</strong></div>'+
+    '<div><span>Contact number</span><strong>'+safe(teacherRecord?.phone||'Not provided')+'</strong></div>'+
+    '<div><span>School</span><strong>'+safe(school.name||'—')+'</strong></div>'+
+    '<div><span>Membership record created</span><strong>'+safe(memberSince)+'</strong></div>'+
+    '<div><span>Account status</span><strong>'+((teacherRecord?.is_active===false)?'Inactive':'Active / verified')+'</strong></div></div>'+
+    '<h2>FINANCIAL SUMMARY</h2><div class="statement-pdf-summary">'+
+    '<div><span>Total dues contributed</span><strong>'+safe(amountText(contributionTotal))+'</strong></div>'+
+    '<div><span>Total welfare payouts received</span><strong>'+safe(amountText(payoutTotal))+'</strong></div>'+
+    '<div class="net"><span>Net personal position</span><strong>'+safe(amountText(netTotal))+'</strong></div></div>'+
+    '<h2>INDIVIDUAL TRANSACTION LOG</h2><table class="statement-pdf-table"><thead><tr><th>No.</th><th>Date</th><th>Transaction</th><th>Description</th><th>Reference</th><th>Amount</th></tr></thead><tbody>'+rowsHtml+'</tbody></table>'+
+    '<div class="statement-pdf-footer"><span>Teachers Welfare Fund · Personal member statement</span><span>Page generated electronically</span></div>';
+   await window.html2pdf().set({
+    margin:[10,10,13,10],
+    filename:(verifiedTeacherId.replace(/[^a-z0-9_-]/gi,'_')||'teacher')+'-personal-welfare-statement.pdf',
+    image:{type:'jpeg',quality:.96},
+    html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff',letterRendering:true},
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+    pagebreak:{mode:['css','legacy']}
+   }).from(report).save();
+   statementStatus('Your personal PDF statement has been downloaded.');
+  }catch(error){
+   console.error('[Teacher statement] PDF generation failed:',error);
+   statementStatus(error?.message||'The PDF could not be generated. Please try again.',true);
+  }finally{statementButton.disabled=false;}
+ }
+ statementButton?.addEventListener('click',downloadTeacherStatement);
  try{const {data:notice}=await client.rpc('get_my_school_broadcast');if(notice?.[0]?.message){const n=document.createElement('div');n.className='panel';n.style.borderColor='#d6ad52';n.innerHTML='<strong>School notice</strong><p>'+escapeHtml(notice[0].message)+'</p>';host.insertBefore(n,workspace);}}catch(_){}
  const form=$('teacherVoluntaryPasswordForm');
  form?.addEventListener('submit',async ev=>{
