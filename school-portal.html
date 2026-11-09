@@ -1300,16 +1300,42 @@ function showLoginWelcome(displayName,roleLabel,schoolName){
  if(window.__welfareWelcomeTimer)clearTimeout(window.__welfareWelcomeTimer);
  window.__welfareWelcomeTimer=setTimeout(()=>{toast.classList.remove('wf-welcome-show');toast.classList.add('wf-welcome-hide');},5200);
 }
+// Shared teacher-record normalization keeps the individual teacher profile and
+// administrator Profile Viewer aligned with the same master teachers table fields.
+window.normalizeTeacherProfileRecord=function(record,fallback={}){
+ const source=record&&typeof record==='object'?record:{};
+ const backup=fallback&&typeof fallback==='object'?fallback:{};
+ const first=(...values)=>values.find(value=>value!==null&&value!==undefined&&String(value).trim()!=='')??'';
+ return {
+  ...backup,...source,
+  id:first(source.id,source.staff_id,backup.id,backup.teacher_id,backup.staff_id),
+  name:first(source.name,source.full_name,source.fullName,backup.name,backup.full_name,backup.fullName),
+  phone:first(source.phone,source.phone_number,source.contact_number,source.mobile_number,source.mobile,backup.phone,backup.phone_number,backup.contact_number,backup.mobile_number,backup.mobile),
+  rank:first(source.rank,source.grade,source.professional_rank,source.position,backup.rank,backup.grade,backup.professional_rank,backup.position),
+  class_name:first(source.class_name,source.className,source.class_assigned,source.classAssigned,source.assigned_class,source.subject_assigned,backup.class_name,backup.className,backup.class_assigned,backup.classAssigned,backup.assigned_class,backup.subject_assigned),
+  registration_date:first(source.registration_date,source.registered_at,source.created_at,source.createdAt,source.date_registered,backup.registration_date,backup.registered_at,backup.created_at,backup.createdAt,backup.date_registered),
+  membership_type:first(source.membership_type,source.membershipType,source.membership,source.employment_type,source.staff_type,backup.membership_type,backup.membershipType,backup.membership,backup.employment_type,backup.staff_type),
+  employer:first(source.employer,source.employer_name,backup.employer,backup.employer_name)
+ };
+};
+window.getLoggedInTeacherData=async function(profile,school){
+ const teacherId=String(profile?.teacher_id||profile?.id||'');
+ if(!teacherId||!school?.id)return {data:null,error:new Error('The verified teacher or school identity is missing.')};
+ const {data,error}=await client.from('teachers').select('*').eq('id',teacherId).eq('school_id',school.id).maybeSingle();
+ if(error)return {data:null,error};
+ return {data:data?window.normalizeTeacherProfileRecord(data,profile):window.normalizeTeacherProfileRecord(profile),error:null};
+};
 async function renderTeacherDashboard(profile,school){
  window.__welfareCurrentRole='teacher';
  const {data:{user}}=await client.auth.getUser();
  const teacherId=String(profile.teacher_id||profile.id||'');
- let teacherName=window.__welfareTeacherDisplayName||profile.name||user?.user_metadata?.full_name||teacherId;
+ let teacherName=window.__welfareTeacherDisplayName||profile.name||profile.full_name||profile.fullName||user?.user_metadata?.full_name||teacherId;
  let teacherAvatar=null,teacherRecord=null;
  try{
-  const {data,error}=await client.from('teachers').select('id,name,rank,class_name,phone,passport,created_at,is_active,registration_date,membership_type,employer').eq('id',teacherId).eq('school_id',school.id).maybeSingle();
+  const {data,error}=await window.getLoggedInTeacherData(profile,school);
   if(!error&&data){teacherRecord=data;teacherName=data.name||teacherName;teacherAvatar=data.passport||null;}
- }catch(_){}
+  else if(error)console.warn('[Teacher profile] Master teacher record lookup failed:',error.message||error);
+ }catch(profileLookupError){console.warn('[Teacher profile] Master teacher record lookup failed:',profileLookupError?.message||profileLookupError);}
  // Migrate a legacy teacher photo saved by the old browser-only uploader.
  // The RPC validates the authenticated teacher_accounts mapping and updates only
  // that teacher's passport field; no other profile or school data is changed.
@@ -1608,11 +1634,11 @@ async function renderTeacherDashboard(profile,school){
   }catch(error){console.warn('[Teacher dashboard] Ledger refresh failed:',error?.message||error);}
  },30000);
  const firstProfileValue=(...values)=>values.find(value=>value!==null&&value!==undefined&&String(value).trim()!=='')??'';
- const profilePhone=firstProfileValue(teacherRecord?.phone,teacherRecord?.phone_number,teacherRecord?.contact_number,teacherRecord?.mobile_number,teacherRecord?.mobile,profile.phone,profile.phone_number,profile.contact_number,profile.mobile_number,profile.mobile);
- const profileRank=firstProfileValue(teacherRecord?.rank,teacherRecord?.grade,teacherRecord?.professional_rank,teacherRecord?.position,profile.rank,profile.grade,profile.professional_rank,profile.position);
- const profileClass=firstProfileValue(teacherRecord?.class_name,teacherRecord?.className,teacherRecord?.assigned_class,teacherRecord?.class_assigned,teacherRecord?.subject_assigned,profile.class_name,profile.className,profile.assigned_class,profile.class_assigned,profile.subject_assigned);
- const profileRegistration=firstProfileValue(teacherRecord?.registration_date,teacherRecord?.registered_at,teacherRecord?.created_at,teacherRecord?.createdAt,profile.registration_date,profile.registered_at,profile.created_at,profile.createdAt);
- const profileMembership=firstProfileValue(teacherRecord?.membership_type,teacherRecord?.membershipType,teacherRecord?.employment_type,teacherRecord?.staff_type,profile.membership_type,profile.membershipType,profile.employment_type,profile.staff_type);
+ const profilePhone=firstProfileValue(teacherRecord?.phone,profile.phone);
+ const profileRank=firstProfileValue(teacherRecord?.rank,profile.rank);
+ const profileClass=firstProfileValue(teacherRecord?.class_name,profile.class_name);
+ const profileRegistration=firstProfileValue(teacherRecord?.registration_date,profile.registration_date);
+ const profileMembership=firstProfileValue(teacherRecord?.membership_type,profile.membership_type);
  const profileFieldRows=rows=>rows.map(([label,value,fallback='Not specified'])=>'<div class="tp-field"><small>'+escapeHtml(label)+'</small><strong>'+escapeHtml(firstProfileValue(value)||fallback)+'</strong></div>').join('');
  const profileDate=v=>{if(!v)return 'Not recorded';const d=new Date(v);return Number.isNaN(d.getTime())?String(v):d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});};
  const ownParts=String(teacherName||teacherId).trim().split(/\\s+/).filter(Boolean);
