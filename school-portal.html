@@ -1136,6 +1136,69 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
  .teacher-dashboard-table-wrap{max-width:100%}
 }
 </style>
+
+<style id="single-unified-tenant-header">
+/* One compact tenant header: school identity, drawer control and account actions share one bar. */
+header.top{
+ position:fixed!important;inset:0 0 auto 0!important;width:100%!important;height:auto!important;min-height:82px!important;
+ display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;
+ gap:16px!important;padding:12px clamp(12px,2.6vw,34px)!important;box-sizing:border-box!important;
+ z-index:5000!important;border-bottom:3px solid #d6a637!important;border-radius:0!important;
+ background:linear-gradient(110deg,#030a16 0%,#0b1d3a 65%,#18385f 100%)!important;
+ box-shadow:0 9px 26px rgba(3,10,22,.22)!important;
+}
+.top-brand-group{display:flex;align-items:center;gap:13px;min-width:0;flex:1 1 auto}
+.top-brand-copy{display:flex;flex-direction:column;justify-content:center;min-width:0;line-height:1.25}
+.top-brand-overline{display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:#e9c35b;font-size:.65rem;font-weight:850;letter-spacing:.1em}
+.top-brand-label{color:#e9c35b}
+#dashboardGreeting{color:#c8d5e7;font-size:.64rem;letter-spacing:.06em}
+.top-school-name{display:block!important;margin:3px 0 0!important;color:#fff!important;font-size:clamp(1.02rem,1.8vw,1.35rem)!important;font-weight:900!important;line-height:1.2!important;letter-spacing:-.025em!important;overflow-wrap:anywhere}
+.top-school-meta{margin-top:2px;color:#b9c7da;font-size:.7rem;line-height:1.3;overflow-wrap:anywhere}
+header.top #sectionPageTitle{margin-top:3px;color:#d5dfed;font-size:.62rem;line-height:1.2;letter-spacing:.07em}
+header.top .top-account-actions{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:10px!important;flex:0 0 auto;min-width:0}
+header.top #mobileNavToggle{
+ display:none;position:relative!important;inset:auto!important;z-index:auto!important;flex:0 0 40px!important;
+ width:40px!important;min-width:40px!important;height:40px!important;min-height:40px!important;padding:0!important;
+ align-items:center!important;justify-content:center!important;border-radius:11px!important;
+ background:rgba(255,255,255,.09)!important;color:#f2c84b!important;border:1px solid rgba(255,255,255,.18)!important;
+ box-shadow:none!important;
+}
+#dashboard .dash-layout{padding-top:0!important}
+#dashboard #schoolOverview,#dashboard #schoolTeachers,#dashboard #workflows .panel,#dashboard #wfAdminPanel{
+ scroll-margin-top:calc(var(--single-header-height,100px) + 16px)!important
+}
+body:not(:has(#login:not(.hidden))) main{padding-top:calc(var(--single-header-height,100px) + 18px)!important}
+body:has(#login:not(.hidden)) header.top{display:none!important}
+body:has(#login:not(.hidden)) main{padding-top:0!important}
+#teacherQuickProfileButton{min-height:38px;padding:8px 11px!important;border-radius:10px!important;font-size:.76rem!important}
+@media(max-width:950px){header.top #mobileNavToggle{display:inline-flex!important}}
+@media(max-width:760px){
+ header.top{gap:9px!important;padding:9px 12px!important;min-height:72px!important}
+ .top-brand-group{gap:9px}
+ .top-brand-overline{gap:7px;font-size:.58rem;letter-spacing:.07em}
+ #dashboardGreeting{font-size:.57rem}
+ .top-school-name{font-size:1rem!important;line-height:1.18!important}
+ .top-school-meta{font-size:.64rem}
+ header.top #sectionPageTitle{font-size:.56rem;margin-top:2px}
+ header.top .top-account-actions{gap:6px!important}
+ header.top #themeToggle{font-size:.68rem!important;padding:7px 8px!important;min-height:35px}
+ header.top .shield{display:none!important}
+ #teacherQuickProfileButton{width:38px;height:38px;min-width:38px;padding:0!important;font-size:0!important;display:inline-flex;align-items:center;justify-content:center}
+ #teacherQuickProfileButton i{font-size:1rem}
+}
+@media(max-width:420px){
+ header.top{padding:8px 9px!important;gap:6px!important}
+ .top-brand-group{gap:7px}
+ header.top #mobileNavToggle{flex-basis:36px!important;width:36px!important;min-width:36px!important;height:36px!important;min-height:36px!important}
+ .top-brand-label{font-size:.53rem}
+ #dashboardGreeting{font-size:.52rem}
+ .top-school-name{font-size:.9rem!important}
+ .top-school-meta{font-size:.58rem}
+ header.top .top-account-actions{gap:4px!important}
+ header.top #themeToggle{font-size:.62rem!important;padding:6px 7px!important}
+}
+</style>
+
 </head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading page">
@@ -1146,7 +1209,23 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
   <div class="page-loader-dots" aria-hidden="true"><span></span><span></span><span></span></div>
  </div>
 </div>
-<header class="top"><div><div class="eyebrow" id="sectionPageTitle">Dashboard</div><h1 id="brand">School Portal</h1></div><div class="top-account-actions" style="display:flex;align-items:center;gap:12px"><button id="themeToggle" class="secondary" type="button" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i> Theme</button><div class="shield"><i class="fa-solid fa-shield-halved"></i>Secure school administrator access</div><div id="headerProfile" class="header-profile hidden" aria-label="Signed-in profile"><button type="button" class="header-avatar" id="headerAvatar" aria-label="Change profile picture" title="Change profile picture"><i class="fa-solid fa-user" aria-hidden="true"></i><span class="header-avatar-edit" aria-hidden="true"><i class="fa-solid fa-camera"></i></span></button><input id="headerAvatarFile" type="file" accept="image/*" hidden><span id="headerAvatarStatus" class="header-avatar-status" role="status" aria-live="polite"></span><div class="header-profile-copy"><strong id="headerProfileName">Signed-in user</strong><small id="headerProfileRole">Portal account</small></div></div></div></header>
+<header class="top">
+ <div class="top-brand-group">
+  <button id="mobileNavToggle" class="secondary" type="button" aria-label="Open navigation menu" title="Open navigation menu" aria-controls="schoolSidebar" aria-expanded="false"><i class="fa-solid fa-bars" aria-hidden="true"></i></button>
+  <div class="top-brand-copy">
+   <div class="top-brand-overline"><span class="top-brand-label">TEACHERS WELFARE FUND</span><span id="dashboardGreeting">HI, ADMIN!</span></div>
+   <h1 id="schoolName" class="top-school-name"></h1>
+   <div id="schoolMeta" class="top-school-meta"></div>
+   <div class="eyebrow" id="sectionPageTitle">Dashboard</div>
+   <span id="brand" class="sr-only" aria-hidden="true">School Portal</span>
+  </div>
+ </div>
+ <div class="top-account-actions" style="display:flex;align-items:center;gap:12px">
+  <button id="themeToggle" class="secondary" type="button" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i> Theme</button>
+  <div class="shield"><i class="fa-solid fa-shield-halved"></i>Secure school administrator access</div>
+  <div id="headerProfile" class="header-profile hidden" aria-label="Signed-in profile"><button type="button" class="header-avatar" id="headerAvatar" aria-label="Change profile picture" title="Change profile picture"><i class="fa-solid fa-user" aria-hidden="true"></i><span class="header-avatar-edit" aria-hidden="true"><i class="fa-solid fa-camera"></i></span></button><input id="headerAvatarFile" type="file" accept="image/*" hidden><span id="headerAvatarStatus" class="header-avatar-status" role="status" aria-live="polite"></span><div class="header-profile-copy"><strong id="headerProfileName">Signed-in user</strong><small id="headerProfileRole">Portal account</small></div></div>
+ </div>
+</header>
 <main>
 <section id="login" class="panel narrow"><div class="gateway-brand"><div class="gateway-icon"><i class="fa-solid fa-graduation-cap"></i></div><div class="eyebrow"><span class="gateway-live-dot" aria-hidden="true"></span>Protected school gateway · Live</div><h2 id="loginSchoolName">School name</h2><div class="gateway-school-badge">Welfare Fund Portal Gateway</div></div><p class="muted" style="text-align:center;margin:0 0 24px">School gateway code: <strong id="codeLabel"></strong><br>Sign in with your registered school account.</p><p class="eyebrow" style="margin-top:0">School administrator access</p><p class="muted">Use the email invitation and password created for your school administrator account.</p>
 <form id="loginForm"><label for="email">Administrator email</label><input id="email" type="email" autocomplete="username" required><label for="password">Password</label><div class="password-field"><input id="password" type="password" autocomplete="current-password" required><button type="button" class="password-toggle" data-password-target="password" aria-label="Show password" aria-pressed="false" title="Show password"><i class="fa-solid fa-eye" aria-hidden="true"></i></button></div><p id="loginError" class="error" role="alert"></p><button id="loginBtn" type="submit"><i class="fa-solid fa-right-to-bracket"></i> &nbsp;Sign in securely</button><button id="forgotPassword" type="button" class="secondary" style="width:100%;margin-top:8px">Forgot password?</button></form>
@@ -1160,7 +1239,7 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
 <button id="teacherLoginButton" type="submit" class="secondary" style="width:100%">Secure Teacher Sign In</button><button id="teacherForgotPreview" type="button" class="secondary" style="width:100%;margin-top:8px">Forgot password?</button></form></section>
 </section>
 <section id="dashboard" class="hidden"><div class="dash-layout"><aside class="sidebar" id="schoolSidebar"><div class="sidebar-brand"><div class="sidebar-brand-mark"><i class="fa-solid fa-graduation-cap"></i></div><div class="sidebar-brand-copy"><strong id="sideSchoolName">School dashboard</strong><small>TEACHERS WELFARE FUND</small></div><button id="sidebarCollapse" class="sidebar-close" type="button" aria-label="Collapse sidebar" aria-expanded="true"><i class="fa-solid fa-xmark"></i></button></div><div class="sidebar-section-label">Main menu</div><button class="navbtn active" data-target="schoolOverview"><i class="fa-solid fa-chart-pie"></i><span>Dashboard</span></button><button class="navbtn" data-target="wfTeacherPanel"><i class="fa-solid fa-user-circle"></i><span>Teacher profile</span></button>
-<button class="navbtn" data-target="teacherProfileViewer"><i class="fa-solid fa-id-card"></i><span>Profile viewer</span></button><button class="navbtn" data-target="schoolTeachers"><i class="fa-solid fa-users"></i><span>Teachers &amp; Members</span></button><button class="navbtn" data-target="wfContributionPanel"><i class="fa-solid fa-money-bill-wave"></i><span>Contributions</span></button><button class="navbtn" data-target="wfPayoutPanel"><i class="fa-solid fa-hand-holding-heart"></i><span>Welfare &amp; Payouts</span></button><button class="navbtn" data-target="wfReportsPanel"><i class="fa-solid fa-file-invoice-dollar"></i><span>Statements &amp; Reports</span></button><div class="sidebar-section-label sidebar-admin-label">Administration</div><button class="navbtn" data-target="wfAdminPanel"><i class="fa-solid fa-user-shield"></i><span>Admin panel</span></button><button class="navbtn" data-target="wfAuditPanel"><i class="fa-solid fa-clipboard-list"></i><span>Audit trail dashboard</span></button><button type="button" class="navbtn" id="sidebarLogout"><i class="fa-solid fa-right-from-bracket"></i><span>Sign out</span></button><div class="sidebar-account"><div class="sidebar-account-mark"><i class="fa-solid fa-user-shield"></i></div><div class="sidebar-account-copy"><strong>School Administrator</strong><small id="sideSchoolCode">Verified school account</small></div></div></aside><div><div class="panel" id="schoolOverview"><div class="overview-top"><button id="mobileNavToggle" class="secondary" type="button" aria-label="Open navigation menu" title="Open navigation menu" aria-controls="schoolSidebar" aria-expanded="false"><i class="fa-solid fa-bars" aria-hidden="true"></i></button><div style="flex:1;min-width:180px"><div class="eyebrow live-status-label"><span class="live-indicator" aria-hidden="true"></span><span id="dashboardGreeting">HI, ADMIN!</span></div><h2 id="schoolName" class="overview-title"></h2><div id="schoolMeta" class="muted"></div></div></div><div class="portal-hero"><div class="portal-hero-badge"><i class="fa-solid fa-shield-heart"></i> Official Welfare Hub</div><h1>Empowering Our Educators Through Solidarity</h1><p id="schoolDescription">Providing mutual financial support, social welfare benefits, and transparent monthly record-keeping for this school.</p></div>
+<button class="navbtn" data-target="teacherProfileViewer"><i class="fa-solid fa-id-card"></i><span>Profile viewer</span></button><button class="navbtn" data-target="schoolTeachers"><i class="fa-solid fa-users"></i><span>Teachers &amp; Members</span></button><button class="navbtn" data-target="wfContributionPanel"><i class="fa-solid fa-money-bill-wave"></i><span>Contributions</span></button><button class="navbtn" data-target="wfPayoutPanel"><i class="fa-solid fa-hand-holding-heart"></i><span>Welfare &amp; Payouts</span></button><button class="navbtn" data-target="wfReportsPanel"><i class="fa-solid fa-file-invoice-dollar"></i><span>Statements &amp; Reports</span></button><div class="sidebar-section-label sidebar-admin-label">Administration</div><button class="navbtn" data-target="wfAdminPanel"><i class="fa-solid fa-user-shield"></i><span>Admin panel</span></button><button class="navbtn" data-target="wfAuditPanel"><i class="fa-solid fa-clipboard-list"></i><span>Audit trail dashboard</span></button><button type="button" class="navbtn" id="sidebarLogout"><i class="fa-solid fa-right-from-bracket"></i><span>Sign out</span></button><div class="sidebar-account"><div class="sidebar-account-mark"><i class="fa-solid fa-user-shield"></i></div><div class="sidebar-account-copy"><strong>School Administrator</strong><small id="sideSchoolCode">Verified school account</small></div></div></aside><div><div class="panel" id="schoolOverview"><div class="portal-hero"><div class="portal-hero-badge"><i class="fa-solid fa-shield-heart"></i> Official Welfare Hub</div><h1>Empowering Our Educators Through Solidarity</h1><p id="schoolDescription">Providing mutual financial support, social welfare benefits, and transparent monthly record-keeping for this school.</p></div>
 <section id="teacherDashboardProfile" class="teacher-dashboard-profile" hidden aria-label="Your teacher profile">
  <div class="teacher-dashboard-avatar" id="teacherDashboardAvatar">—</div>
  <div class="teacher-dashboard-profile-copy">
@@ -1413,7 +1492,7 @@ async function renderTeacherDashboard(profile,school){
  if($('teacherDashboardStatementButton'))$('teacherDashboardStatementButton').onclick=()=>document.getElementById('teacherStatementDownload')?.click();
  // Teacher-only shortcut: open the signed-in teacher's own fixed profile.
  // The target is always wfTeacherPanel; no roster selector is exposed to teachers.
- const overviewTop=document.querySelector('#schoolOverview .overview-top');
+ const overviewTop=document.querySelector('header.top .top-account-actions');
  if(overviewTop){
   let ownProfileButton=document.getElementById('teacherQuickProfileButton');
   if(!ownProfileButton){
@@ -1421,7 +1500,9 @@ async function renderTeacherDashboard(profile,school){
    ownProfileButton.type='button';
    ownProfileButton.id='teacherQuickProfileButton';
    ownProfileButton.className='secondary';
-   ownProfileButton.style.cssText='flex:0 0 auto;align-self:flex-start;white-space:nowrap;margin-left:auto';
+   ownProfileButton.style.cssText='flex:0 0 auto;align-self:center;white-space:nowrap';
+    ownProfileButton.setAttribute('aria-label','View my profile');
+    ownProfileButton.title='View my profile';
    ownProfileButton.innerHTML='<i class="fa-solid fa-id-card" aria-hidden="true"></i> View my profile';
    ownProfileButton.addEventListener('click',()=>{
     const ownProfileNav=document.querySelector('.sidebar .navbtn[data-target="wfTeacherPanel"]');
@@ -2876,6 +2957,28 @@ window.generateTenantWelfarePdf=async function(options){
 /* Keep the dashboard structure intact while removing the white panel frame behind its hero. */
 #schoolOverview.panel{background:transparent!important;background-color:transparent!important;border-color:transparent!important;box-shadow:none!important}
 </style>
+
+<script id="single-tenant-header-height-controller">
+(function(){
+ function updateHeaderHeight(){
+  const header=document.querySelector('header.top');
+  if(!header)return;
+  const visible=header.offsetParent!==null&&getComputedStyle(header).display!=='none';
+  if(visible)document.documentElement.style.setProperty('--single-header-height',Math.ceil(header.getBoundingClientRect().height)+'px');
+ }
+ function init(){
+  const header=document.querySelector('header.top');
+  if(!header)return;
+  if('ResizeObserver' in window)new ResizeObserver(updateHeaderHeight).observe(header);
+  const login=document.getElementById('login');
+  if(login&&'MutationObserver' in window)new MutationObserver(updateHeaderHeight).observe(login,{attributes:true,attributeFilter:['class']});
+  window.addEventListener('resize',updateHeaderHeight,{passive:true});
+  updateHeaderHeight();
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
+</script>
+
 </body></html>
 
 
