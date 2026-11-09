@@ -2841,6 +2841,22 @@ window.generateTenantWelfarePdf=async function(options){
 .wf-teacher-contrib-metrics,.wf-payout-metrics,.twf-metrics{align-items:stretch;gap:14px}
 @media(max-width:640px){.wf-contrib-metric,.wf-payout-metric,.twf-metric{min-height:98px;padding:13px}}
 </style>
+<style id="unified-solidarity-hero-design">
+/* Shared dark solidarity hero for school administrators and individual teachers */
+#schoolOverview .portal-hero{
+ position:relative;isolation:isolate;overflow:hidden;margin:18px 0 22px;padding:clamp(25px,4.5vw,42px);
+ min-height:220px;border:1px solid rgba(232,196,112,.34);border-radius:28px;
+ background:radial-gradient(ellipse at 82% 18%,rgba(73,137,205,.24),transparent 38%),radial-gradient(ellipse at 12% 100%,rgba(201,157,69,.12),transparent 36%),linear-gradient(128deg,#06152c 0%,#0b2546 48%,#12385f 100%);
+ color:#fff;box-shadow:0 18px 46px rgba(3,15,34,.22)
+}
+#schoolOverview .portal-hero:before{content:"";position:absolute;z-index:-1;width:310px;height:310px;right:-100px;top:-170px;border:1px solid rgba(225,196,130,.22);border-radius:50%;box-shadow:0 0 0 25px rgba(225,196,130,.035),0 0 0 52px rgba(225,196,130,.025),0 0 0 82px rgba(105,158,220,.025);pointer-events:none}
+#schoolOverview .portal-hero:after{content:"";position:absolute;z-index:-1;width:250px;height:250px;left:28%;bottom:-205px;border-radius:50%;background:rgba(54,117,184,.18);filter:blur(48px);pointer-events:none}
+#schoolOverview .portal-hero-badge{position:relative;display:inline-flex;align-items:center;gap:8px;padding:7px 13px;border-radius:999px;background:rgba(3,12,27,.58);border:1px solid rgba(232,196,112,.58);color:#f3d58a;font-size:.7rem;font-weight:850;letter-spacing:.12em;text-transform:uppercase}
+#schoolOverview .portal-hero-badge i{color:#f3d58a}
+#schoolOverview .portal-hero h1{position:relative;max-width:800px;margin:18px 0 11px;color:#fff;font-size:clamp(1.65rem,3.4vw,2.55rem);font-weight:900;letter-spacing:-.04em;line-height:1.12}
+#schoolOverview .portal-hero p{position:relative;max-width:850px;margin:0;color:#d5dfed;font-size:clamp(.9rem,1.5vw,1rem);font-weight:450;line-height:1.75}
+@media(max-width:600px){#schoolOverview .portal-hero{min-height:0;padding:23px 20px;border-radius:22px}#schoolOverview .portal-hero h1{font-size:clamp(1.55rem,7vw,2rem)}}
+</style>
 </body></html>
 
 
