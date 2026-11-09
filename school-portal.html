@@ -1106,6 +1106,36 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
  #dashboard .portal-hero h1,#wfAdminPanel .wf-admin-intro h2{font-size:clamp(1.65rem,7vw,2.25rem)!important}
 }
 </style>
+
+<style id="teacher-dashboard-responsive-layout-fix">
+/* Keep the teacher dashboard's metric grid separate from the ledger section. */
+#dashboard>.dash-layout,
+#dashboard>.dash-layout>div,
+#schoolOverview,
+#schoolOverview>.dashboard-metrics,
+#teacherDashboardLedgers,
+.teacher-dashboard-ledger-card,
+.teacher-dashboard-table-wrap{min-width:0;max-width:100%}
+#schoolOverview>.dashboard-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch;gap:16px}
+#schoolOverview>.dashboard-metrics>.metric{min-width:0;width:100%;height:auto;align-self:stretch}
+#teacherDashboardLedgers{display:grid;grid-template-columns:minmax(0,1fr);align-items:start}
+.teacher-dashboard-ledger-card{width:100%;height:auto;align-self:start;overflow:hidden}
+.teacher-dashboard-table-wrap{display:block;width:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.teacher-dashboard-table-wrap table{width:100%;min-width:760px;table-layout:auto}
+@media(max-width:950px){
+ #schoolOverview>.dashboard-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:560px){
+ #schoolOverview>.dashboard-metrics{grid-template-columns:minmax(0,1fr);gap:10px}
+ #schoolOverview>.dashboard-metrics>.metric{width:100%;min-width:0}
+ .teacher-dashboard-ledger-card{padding:14px}
+ .teacher-dashboard-ledger-card>header{min-width:0}
+ .teacher-dashboard-ledger-card>header>div{min-width:0;max-width:100%}
+ .teacher-dashboard-ledger-card h3,
+ .teacher-dashboard-ledger-card p{overflow-wrap:anywhere}
+ .teacher-dashboard-table-wrap{max-width:100%}
+}
+</style>
 </head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading page">
@@ -1142,6 +1172,7 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
  <button type="button" id="teacherDashboardStatementButton" class="teacher-dashboard-statement"><i class="fa-solid fa-file-pdf"></i> Download my statement</button>
 </section>
 <div class="grid dashboard-metrics"><div class="metric metric-compact"><span><i class="fa-solid fa-users"></i> Registered teachers</span><strong id="teacherCount">—</strong></div><div class="metric metric-compact"><span><i class="fa-solid fa-arrow-trend-up"></i> Contributions · GHS</span><strong id="contributionTotal">—</strong></div><div class="metric metric-compact"><span><i class="fa-solid fa-hand-holding-heart"></i> Welfare payouts · GHS</span><strong id="payoutTotal">—</strong></div><div class="metric metric-compact"><span><i class="fa-solid fa-calendar-days"></i> This month · GHS</span><strong id="monthlyContributionTotal">—</strong></div><div class="metric metric-featured metric-balance"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-vault"></i></div><div class="metric-content"><span class="metric-label">TOTAL FUND BALANCE · GHS</span><strong id="netTotal">—</strong><span class="metric-note metric-note-positive"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> After all active payouts</span></div></div><div class="metric metric-featured metric-standard"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-calendar-check"></i></div><div class="metric-content"><span class="metric-label">STANDARD MONTHLY DUES</span><strong id="standardDuesMetric">—</strong><span class="metric-note">Current school rate</span></div></div><div class="metric metric-featured metric-activity"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-clock-rotate-left"></i></div><div class="metric-content"><span class="metric-label">LAST ACTIVITY</span><strong id="lastActivity" style="font-size:1rem">—</strong><span class="metric-note">Latest recorded activity</span></div></div>
+</div>
 <section id="teacherDashboardLedgers" class="teacher-dashboard-ledgers" hidden>
  <article class="teacher-dashboard-ledger-card">
   <header><div><span class="teacher-dashboard-kicker">PERSONAL RECORDS</span><h3>Monthly Contribution Ledger</h3><p>Only your own contributions are shown here.</p></div><span class="teacher-ledger-count" id="teacherDashboardContributionState">Loading…</span></header>
