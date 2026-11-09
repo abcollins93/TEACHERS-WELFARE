@@ -491,7 +491,20 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   const recent=[...tc].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')))[0];
   const parts=String(t.name||'').trim().split(/\\s+/).filter(Boolean),initials=parts.slice(0,2).map(x=>x[0]).join('').toUpperCase()||'—';
   $('tpStatus').textContent=t.is_active===false?'Inactive':'Active';$('tpStatus').style.cssText+=';background:'+(t.is_active===false?'#fee2e2':'#dcfce7')+';color:'+(t.is_active===false?'#b91c1c':'#166534');
-  $('tpAvatar').textContent=initials;$('tpName').textContent=t.name||'—';$('tpRank').textContent=t.rank||'—';$('tpStaffId').textContent='Staff ID: '+t.id;
+  const profileAvatar=$('tpAvatar');
+  profileAvatar.textContent=initials;
+  profileAvatar.style.overflow='hidden';
+  if(t.passport){
+   const photo=document.createElement('img');
+   photo.src=t.passport;
+   photo.alt='Passport photograph of '+String(t.name||'teacher');
+   photo.loading='eager';
+   photo.decoding='async';
+   photo.style.cssText='display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit';
+   photo.onerror=()=>{photo.remove();profileAvatar.textContent=initials;};
+   profileAvatar.replaceChildren(photo);
+  }
+  $('tpName').textContent=t.name||'—';$('tpRank').textContent=t.rank||'—';$('tpStaffId').textContent='Staff ID: '+t.id;
   $('tpRegistration').textContent=profileDate(t.registration_date||t.created_at||t.date_registered);$('tpMembership').textContent=t.membership_type||t.membership||'—';
   $('tpPersonalRows').innerHTML=profileRows([['FULL NAME',t.name],['PHONE NUMBER',t.phone],['SCHOOL / INSTITUTION',school.name],['DISTRICT & REGION',[school.district,school.region].filter(Boolean).join(' · ')]]);
   $('tpProfessionalRows').innerHTML=profileRows([['Staff ID',t.id],['Professional Rank',t.rank],['Class / Subject Assigned',t.class_name],['Employer',t.employer||school.employer]]);
