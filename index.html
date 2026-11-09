@@ -1056,7 +1056,16 @@ try {
             <h3 id="profileFullName" class="text-xl font-extrabold text-slate-900 dark:text-white">--</h3>
             <p id="profileDesignation" class="text-xs font-bold text-amber-600 dark:text-amber-400 mt-1">--</p>
             <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Staff ID: <strong id="profileStaffIdDisplay" class="text-slate-700 dark:text-slate-200">--</strong></p>
-
+            <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4 text-left">
+                <div class="rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 px-3 py-2">
+                    <p class="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Phone Number</p>
+                    <p id="profileTopPhone" class="text-xs font-bold text-slate-700 dark:text-slate-200 mt-0.5">--</p>
+                </div>
+                <div class="rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 px-3 py-2">
+                    <p class="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Class / Subject</p>
+                    <p id="profileTopClass" class="text-xs font-bold text-slate-700 dark:text-slate-200 mt-0.5">--</p>
+                </div>
+            </div>
             <div class="w-full grid grid-cols-2 gap-3 mt-6 pt-6 border-t border-slate-200 dark:border-slate-800 text-left">
                 <div>
                     <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Registration Date</p>
@@ -2275,14 +2284,17 @@ async function loadCloudData() {
         if (tError) throw tError;
 
         welfareData.teachers = (teachersData || []).map(t => ({
+            // Preserve the database key for relations; expose Staff ID separately.
             id: t.id,
-            name: t.name,
-            phone: t.phone,
-            rank: t.rank,
-            className: t.class_name,
-            passport: t.passport || '',
+            staffId: t.staff_id || t.staffId || t.employee_id || t.employeeId || t.id,
+            name: t.name || t.full_name || t.fullName || t.teacher_name || t.member_name || '',
+            phone: t.phone || t.phone_number || t.contact_number || t.mobile_number || t.mobile || '',
+            rank: t.rank || t.grade || t.professional_rank || t.position || '',
+            className: t.class_name || t.className || t.assigned_class || t.class_assigned || t.subject_assigned || '',
+            passport: t.passport || t.passport_url || t.photo_url || t.avatar_url || '',
             customPassword: t.custom_password || '',
             is_active: t.is_active,
+            status: t.status,
             registrationDate: t.registration_date || t.registered_at || t.created_at || t.createdAt || null,
             membershipType: t.membership_type || t.membershipType || t.employment_type || t.staff_type || null,
             schoolName: t.school_name || t.schoolName || t.school || null,
@@ -2871,6 +2883,8 @@ function renderProfileSection() {
     const fullNameEl = byId('profileFullName');
     const designationEl = byId('profileDesignation');
     const staffIdEl = byId('profileStaffIdDisplay');
+    const topPhoneEl = byId('profileTopPhone');
+    const topClassEl = byId('profileTopClass');
     const avatarImg = byId('profileAvatarImg');
     const avatarInitials = byId('profileAvatarInitials');
     const detailName = byId('profileDetailName');
@@ -2895,7 +2909,7 @@ function renderProfileSection() {
 
     if (!teacher) {
         [fullNameEl, detailName].forEach(el => setText(el, 'No Member Selected'));
-        [designationEl, staffIdEl, detailPhone, detailSchool, detailDistrictRegion, membershipType,
+        [designationEl, staffIdEl, topPhoneEl, topClassEl, detailPhone, detailSchool, detailDistrictRegion, membershipType,
          registrationDate, employer, profStaffId, profRank, profClass, finLastDate].forEach(el => setText(el, '—'));
         setText(finTotalPaid, money(0));
         setText(finTotalPayouts, money(0));
@@ -2926,19 +2940,26 @@ function renderProfileSection() {
     const isActive = !isRemoved && teacher.is_active !== false && teacher.isActive !== false &&
         teacher.active !== false && String(teacher.status || '').toLowerCase() !== 'inactive';
 
-    setText(fullNameEl, teacher.name, 'Unnamed Teacher');
+    setText(fullNameEl, fullName, 'Unnamed Teacher');
     setText(designationEl, teacher.rank, 'Not specified');
-    setText(staffIdEl, teacher.id);
-    setText(detailName, teacher.name, 'Unnamed Teacher');
-    setText(detailPhone, teacher.phone, 'Not provided');
+    const staffId = teacher.staffId || teacher.staff_id || teacher.employee_id || teacher.id;
+    const fullName = teacher.name || teacher.full_name || teacher.fullName || teacher.teacher_name || teacher.member_name;
+    const phoneNumber = teacher.phone || teacher.phone_number || teacher.contact_number || teacher.mobile_number || teacher.mobile;
+    const assignedClass = teacher.className || teacher.class_name || teacher.assigned_class || teacher.class_assigned || teacher.subject_assigned;
+
+    setText(staffIdEl, staffId);
+    setText(topPhoneEl, phoneNumber, 'Not provided');
+    setText(topClassEl, assignedClass, 'Not assigned');
+    setText(detailName, fullName, 'Unnamed Teacher');
+    setText(detailPhone, phoneNumber, 'Not provided');
     setText(detailSchool, schoolName);
     setText(detailDistrictRegion, districtRegion);
     setText(membershipType, membership);
     setText(registrationDate, formatProfileDate(registeredOn));
     setText(employer, employerName);
-    setText(profStaffId, teacher.id);
+    setText(profStaffId, staffId);
     setText(profRank, teacher.rank, 'Not specified');
-    setText(profClass, teacher.className || teacher.class_name, 'Not assigned');
+    setText(profClass, assignedClass, 'Not assigned');
     setText(statusBadge, isActive ? 'Active' : 'Inactive');
     if (statusBadge) {
         statusBadge.className = isActive
@@ -2951,7 +2972,7 @@ function renderProfileSection() {
         if (avatarInitials) avatarInitials.classList.add('hidden');
     } else {
         if (avatarImg) { avatarImg.src = ''; avatarImg.classList.add('hidden'); }
-        if (avatarInitials) { avatarInitials.textContent = initials(teacher.name); avatarInitials.classList.remove('hidden'); }
+        if (avatarInitials) { avatarInitials.textContent = initials(fullName); avatarInitials.classList.remove('hidden'); }
     }
 
     const totalPaid = payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
