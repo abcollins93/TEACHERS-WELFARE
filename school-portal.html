@@ -1689,7 +1689,7 @@ async function renderTeacherDashboard(profile,school){
    await window.generateTenantWelfarePdf({
     type:'individual',
     school:{name:school.name,school_code:school.school_code,district:school.district,region:school.region},
-    teacher:{id:verifiedTeacherId,name:teacherRecord?.name||teacherName,phone:teacherRecord?.phone||'',rank:teacherRecord?.rank||profile.rank||'',class_name:teacherRecord?.class_name||profile.class_name||'',passport:teacherRecord?.passport||''},
+    teacher:{id:verifiedTeacherId,name:teacherRecord?.name||teacherName,phone:teacherRecord?.phone||'',rank:teacherRecord?.rank||profile.rank||'',class_name:teacherRecord?.class_name||profile.class_name||'',passport:teacherAvatar||teacherRecord?.passport||''},
     contributions:personalContributions,
     payouts:personalPayouts,
     personalContributionTotal:activePersonalContributionTotal,
@@ -2539,7 +2539,7 @@ const docId=p=>p+'-'+new Date().toISOString().replace(/\D/g,'').slice(0,14)+'-'+
 const resolveTenantPassportSource=async value=>{
  const raw=String(value||'').trim();
  if(!raw)return '';
- if(/^data:image\/(?:jpeg|png|webp|gif);base64,/i.test(raw)||/^blob:/i.test(raw)||/^https?:\/\//i.test(raw))return raw;
+ if(/^data:image\/(?:jpeg|png|webp|gif|avif);base64,/i.test(raw)||/^blob:/i.test(raw)||/^https?:\/\//i.test(raw))return raw;
  const storageMatch=raw.match(/^([^/]+)\/(.+)$/);
  if(storageMatch&&typeof client!=='undefined'&&client?.storage?.from){
   try{
