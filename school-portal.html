@@ -1598,7 +1598,7 @@ async function renderTeacherDashboard(profile,school){
  const money=n=>Number(n||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
  const metricLabels=document.querySelectorAll('#schoolOverview .dashboard-metrics .metric-compact span');
  if(metricLabels[0])metricLabels[0].innerHTML='<i class="fa-solid fa-users"></i> Registered Members';
- if(metricLabels[1])metricLabels[1].innerHTML='<i class="fa-solid fa-arrow-trend-up"></i> My contributions · GHS';
+ if(metricLabels[1])metricLabels[1].innerHTML='<i class="fa-solid fa-hand-holding-dollar text-2xl"></i> My contributions · GHS';
  if(metricLabels[2])metricLabels[2].innerHTML='<i class="fa-solid fa-hand-holding-heart"></i> My payouts · GHS';
  window.__welfareTeacherName=String(teacherName||teacherId||'My record');
  $('teacherCount').textContent=registeredMemberCountError?'Unavailable':String(schoolRegisteredMemberCount);$('contributionTotal').textContent=contributionLoadError?'Unavailable':money(totalC);
