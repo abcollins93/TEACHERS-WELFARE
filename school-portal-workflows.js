@@ -269,6 +269,9 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const roster=$('schoolTeachers'),teacherRegisterPanel=$('wfTeacherRegisterPanel');
  const ctx=school;
  let standardMonthlyDues=0;
+ const {data:initialDuesSetting,error:initialDuesError}=await client.from('system_settings').select('value').eq('school_id',ctx.id).eq('key','standard_dues').maybeSingle();
+ if(!initialDuesError&&initialDuesSetting){standardMonthlyDues=Number(initialDuesSetting.value||0);$('wfMonthlyDues').value=standardMonthlyDues;}
+ else if(initialDuesError)console.warn('[School settings] Could not load saved standard monthly dues:',initialDuesError.message);
  // Capture the monthly dues form submit before any browser-level form navigation can occur.
  const duesForm=$('wfDuesForm');
  if(duesForm){
@@ -731,8 +734,6 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  };
  $('wfBroadcastForm').onsubmit=async e=>{e.preventDefault();const value=$('wfBroadcastText').value.trim();if(!value)return msg('wfBroadcastMsg','Enter an announcement before publishing.',true);if(!confirm('Publish this announcement for this school?'))return;await saveBroadcast(value);};
  $('wfBroadcastClear').onclick=async()=>{if(!confirm('Clear this school’s current announcement?'))return;$('wfBroadcastText').value='';await saveBroadcast('');};
- const {data:duesSetting,error:duesLoadError}=await client.from('system_settings').select('value').eq('school_id',ctx.id).eq('key','standard_dues').maybeSingle();
- if(!duesLoadError && duesSetting){standardMonthlyDues=Number(duesSetting.value||0);$('wfMonthlyDues').value=standardMonthlyDues;}
 
  let auditRows=[];
  async function loadAudit(){
