@@ -1574,13 +1574,14 @@ async function renderTeacherDashboard(profile,school){
  window.__teacherTickerTimer=setInterval(refreshTeacherTicker,30000);
  document.querySelectorAll('.teacher-workspace-panel').forEach(panel=>panel.classList.add('hidden'));
  $('schoolOverview').classList.remove('hidden');
- const [{data:cs,error:ce},{data:ps,error:pe},{data:schoolPayoutData,error:spe},{data:personalContributionFeed,error:pcfe},{data:schoolFundRows,error:sfse},{data:registeredMemberCount,error:registeredMemberCountError}]=await Promise.all([
+ const [{data:cs,error:ce},{data:ps,error:pe},{data:schoolPayoutData,error:spe},{data:personalContributionFeed,error:pcfe},{data:schoolFundRows,error:sfse},{data:registeredMemberCount,error:registeredMemberCountError},{data:teacherStandardDues,error:teacherStandardDuesError}]=await Promise.all([
   client.rpc('get_my_teacher_contributions'),
   client.rpc('get_my_teacher_payouts'),
   client.rpc('get_my_school_welfare_payout_feed'),
   client.rpc('get_my_teacher_contribution_feed'),
   client.rpc('get_my_school_fund_summary'),
-  client.rpc('get_my_school_registered_member_count')
+  client.rpc('get_my_school_registered_member_count'),
+  client.rpc('get_my_teacher_school_standard_dues')
  ]);
  // Personal records remain bound to auth.uid(); school-wide payouts expose limited fields only.
  let contributionLoadError=pcfe,schoolPayoutLoadError=spe,schoolFundSummaryError=sfse;
@@ -1599,10 +1600,14 @@ async function renderTeacherDashboard(profile,school){
  if(metricLabels[0])metricLabels[0].innerHTML='<i class="fa-solid fa-users"></i> Registered Members';
  if(metricLabels[1])metricLabels[1].innerHTML='<i class="fa-solid fa-arrow-trend-up"></i> My contributions · GHS';
  if(metricLabels[2])metricLabels[2].innerHTML='<i class="fa-solid fa-hand-holding-heart"></i> My payouts · GHS';
- if(metricLabels[3])metricLabels[3].innerHTML='<i class="fa-solid fa-calendar-days"></i> My contributions this month · GHS';
+ const monthlyMetricCard=$('monthlyContributionTotal')?.closest('.metric-compact');
+ if(monthlyMetricCard){
+  monthlyMetricCard.className='metric metric-featured metric-standard';
+  monthlyMetricCard.innerHTML='<div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-calendar-check"></i></div><div class="metric-content"><span class="metric-label">STANDARD MONTHLY DUES</span><strong id="monthlyContributionTotal">—</strong><span class="metric-note">Current Rate</span></div>';
+ }
  window.__welfareTeacherName=String(teacherName||teacherId||'My record');
  $('teacherCount').textContent=registeredMemberCountError?'Unavailable':String(schoolRegisteredMemberCount);$('contributionTotal').textContent=contributionLoadError?'Unavailable':money(totalC);
- $('payoutTotal').textContent=pe?'Unavailable':money(totalP);$('monthlyContributionTotal').textContent=contributionLoadError?'Unavailable':money(monthC);
+ $('payoutTotal').textContent=pe?'Unavailable':money(totalP);$('monthlyContributionTotal').textContent=teacherStandardDuesError?'Unavailable':'GHS '+money(teacherStandardDues||0);
  $('netTotal').textContent=schoolFundSummaryError?'Unavailable':money(schoolFundBalance);
  const balanceLabel=document.querySelector('#schoolOverview .metric-balance .metric-label');
  if(balanceLabel)balanceLabel.textContent='TOTAL FUND BALANCE · GHS';
