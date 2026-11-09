@@ -389,9 +389,10 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     }catch(error){console.warn('[School Welfare] '+label+' request failed:',error?.message||error);return {data:[],error};}
   };
   const teacherQuery=fields=>loadSource('teacher roster',()=>client.from('teachers').select(fields).eq('school_id',school.id).order('name'));
- // Retry compatible projections independently: older tenants may lack one or both
- // optional profile columns. Never require is_active/passport to show the roster.
- let tr=await teacherQuery('id,name,phone,rank,class_name,is_active,passport,created_at,registration_date,membership_type,employer');
+ // Load the full master teacher record so the administrator viewer and individual
+ // teacher profile resolve identical source fields. select('*') also avoids assuming
+ // optional profile columns exist in every tenant schema.
+ let tr=await teacherQuery('*');
  if(tr.error)tr=await teacherQuery('id,name,phone,rank,class_name,is_active,passport,created_at');
  if(tr.error)tr=await teacherQuery('id,name,phone,rank,class_name,is_active,passport');
  if(tr.error)tr=await teacherQuery('id,name,phone,rank,class_name,passport');
@@ -407,7 +408,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    loadSource('payout ledger',()=>client.from('payouts').select('id,teacher_id,amount,date,reason,reference').eq('school_id',school.id).order('date',{ascending:false})),
    loadSource('transaction reversals',()=>client.from('transaction_reversals').select('transaction_type,transaction_id,reason,created_at').eq('school_id',school.id))
  ]);
- const teachers=tr.data||[];let cons=cr.data||[], pays=pr.data||[], reversals=rr.data||[];
+ const teachers=(tr.data||[]).map(t=>typeof window.normalizeTeacherProfileRecord==='function'?window.normalizeTeacherProfileRecord(t):t);let cons=cr.data||[], pays=pr.data||[], reversals=rr.data||[];
  const sourceWarnings=[];
  if(tr.error)sourceWarnings.push('Teacher register unavailable');
  if(cr.error)sourceWarnings.push('Contribution ledger unavailable');
@@ -485,7 +486,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const profileMoney=n=>'GHS '+Number(n||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
  const profileDate=v=>{if(!v)return '—';const d=new Date(v);return Number.isNaN(d.getTime())?String(v):d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});};
  const renderSelectedTeacherProfile=()=>{
-  const t=teachers.find(x=>String(x.id)===selectedProfileTeacherId);if(!t)return;
+  const sourceTeacher=teachers.find(x=>String(x.id)===selectedProfileTeacherId);if(!sourceTeacher)return;
+  const t=typeof window.normalizeTeacherProfileRecord==='function'?window.normalizeTeacherProfileRecord(sourceTeacher):sourceTeacher;
   const tc=activeCons.filter(x=>String(x.teacher_id)===String(t.id)),tp=activePays.filter(x=>String(x.teacher_id)===String(t.id));
   const dues=tc.reduce((n,x)=>n+Number(x.amount||0),0),paid=tp.reduce((n,x)=>n+Number(x.amount||0),0);
   const recent=[...tc].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')))[0];
