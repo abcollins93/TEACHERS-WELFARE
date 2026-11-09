@@ -1574,13 +1574,14 @@ async function renderTeacherDashboard(profile,school){
  window.__teacherTickerTimer=setInterval(refreshTeacherTicker,30000);
  document.querySelectorAll('.teacher-workspace-panel').forEach(panel=>panel.classList.add('hidden'));
  $('schoolOverview').classList.remove('hidden');
- const [{data:cs,error:ce},{data:ps,error:pe},{data:schoolPayoutData,error:spe},{data:personalContributionFeed,error:pcfe},{data:schoolFundRows,error:sfse},{data:registeredMemberCount,error:registeredMemberCountError}]=await Promise.all([
+ const [{data:cs,error:ce},{data:ps,error:pe},{data:schoolPayoutData,error:spe},{data:personalContributionFeed,error:pcfe},{data:schoolFundRows,error:sfse},{data:registeredMemberCount,error:registeredMemberCountError},{data:teacherStandardDues,error:teacherStandardDuesError}]=await Promise.all([
   client.rpc('get_my_teacher_contributions'),
   client.rpc('get_my_teacher_payouts'),
   client.rpc('get_my_school_welfare_payout_feed'),
   client.rpc('get_my_teacher_contribution_feed'),
   client.rpc('get_my_school_fund_summary'),
-  client.rpc('get_my_school_registered_member_count')
+  client.rpc('get_my_school_registered_member_count'),
+  client.rpc('get_my_teacher_school_standard_dues')
  ]);
  // Personal records remain bound to auth.uid(); school-wide payouts expose limited fields only.
  let contributionLoadError=pcfe,schoolPayoutLoadError=spe,schoolFundSummaryError=sfse;
@@ -1610,6 +1611,15 @@ async function renderTeacherDashboard(profile,school){
  const standardLabel=document.querySelector('#schoolOverview .metric-standard .metric-label');
  if(standardLabel)standardLabel.textContent='MY CONTRIBUTION RECORDS';
  const standardValue=$('standardDuesMetric');if(standardValue)standardValue.textContent=String(contributions.length);
+ const existingTeacherDuesCard=$('teacherStandardMonthlyDues');
+ if(existingTeacherDuesCard)existingTeacherDuesCard.remove();
+ const teacherDuesCard=document.createElement('div');
+ teacherDuesCard.id='teacherStandardMonthlyDues';
+ teacherDuesCard.className='metric metric-featured metric-standard';
+ teacherDuesCard.innerHTML='<div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-calendar-check"></i></div><div class="metric-content"><span class="metric-label">STANDARD MONTHLY DUES</span><strong id="teacherStandardMonthlyDuesAmount">—</strong><span class="metric-note">Current Rate</span></div>';
+ const existingStandardCard=$('standardDuesMetric')?.closest('.metric-standard');
+ if(existingStandardCard)existingStandardCard.insertAdjacentElement('afterend',teacherDuesCard);
+ $('teacherStandardMonthlyDuesAmount').textContent=teacherStandardDuesError?'Unavailable':'GHS '+money(teacherStandardDues||0);
  const latest=[...contributions,...payouts].map(x=>x.date).filter(Boolean).sort().reverse()[0];
  $('lastActivity').textContent=latest?new Date(latest+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'No records';
  const date=v=>v?new Date(v+'T00:00:00').toLocaleDateString('en-GB'):'—';
