@@ -268,6 +268,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  if(!workflowMountNode||!adminPanelNode)throw new Error('Admin Panel markup could not be mounted in the dashboard.');
  const roster=$('schoolTeachers'),teacherRegisterPanel=$('wfTeacherRegisterPanel');
  const ctx=school;
+ let standardMonthlyDues=0;
  // Capture the monthly dues form submit before any browser-level form navigation can occur.
  const duesForm=$('wfDuesForm');
  if(duesForm){
@@ -284,6 +285,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
          {onConflict:'school_id,key'}
        );
        if(error)throw error;
+       standardMonthlyDues=value;
        const auditOk=await audit(client,ctx,'Update monthly dues','GHS '+value.toFixed(2));
        msg('wfDuesMsg',auditOk?'Standard monthly dues updated successfully.':'Monthly dues were saved, but the audit entry could not be recorded.',!auditOk);
      }catch(error){
@@ -680,14 +682,14 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      type:'monthly',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},
      month,contributions:activeCons,payouts:activePays,teachers,
      academicYear:window.getCurrentAcademicYear(),
-     standardMonthlyDues:typeof standardMonthlyDues!=='undefined'?standardMonthlyDues:0
+     standardMonthlyDues
    }));
  });
  $('wfCompletePdf').addEventListener('click',()=>runWelfarePdf($('wfCompletePdf'),'wfReportMsg','Complete fund summary PDF downloaded successfully.',()=>({
    type:'complete',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},
    contributions:activeCons,payouts:activePays,teachers,
    academicYear:window.getCurrentAcademicYear(),
-   standardMonthlyDues:typeof standardMonthlyDues!=='undefined'?standardMonthlyDues:0
+   standardMonthlyDues
  })));
  $('wfAnnualPdf').addEventListener('click',()=>{
    const selectedYear=$('wfAnnualYear').value;
@@ -696,7 +698,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      type:'annual',year:selectedYear,school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},
      contributions:activeCons,payouts:activePays,teachers,
      academicYear:window.getCurrentAcademicYear(),
-     standardMonthlyDues:typeof standardMonthlyDues!=='undefined'?standardMonthlyDues:0
+     standardMonthlyDues
    }));
  });
  $('wfStatementPdf').addEventListener('click',()=>{
@@ -709,7 +711,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      personalContributionTotal:activeCons.filter(x=>String(x.teacher_id)===String(tid)).reduce((sum,row)=>sum+Number(row.amount||0),0),
      schoolFundBalance:activeCons.reduce((sum,row)=>sum+Number(row.amount||0),0)-activePays.reduce((sum,row)=>sum+Number(row.amount||0),0),
      academicYear:window.getCurrentAcademicYear(),
-     standardMonthlyDues:typeof standardMonthlyDues!=='undefined'?standardMonthlyDues:0
+     standardMonthlyDues
    }));
  });
 
@@ -730,7 +732,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  $('wfBroadcastForm').onsubmit=async e=>{e.preventDefault();const value=$('wfBroadcastText').value.trim();if(!value)return msg('wfBroadcastMsg','Enter an announcement before publishing.',true);if(!confirm('Publish this announcement for this school?'))return;await saveBroadcast(value);};
  $('wfBroadcastClear').onclick=async()=>{if(!confirm('Clear this school’s current announcement?'))return;$('wfBroadcastText').value='';await saveBroadcast('');};
  const {data:duesSetting,error:duesLoadError}=await client.from('system_settings').select('value').eq('school_id',ctx.id).eq('key','standard_dues').maybeSingle();
- if(!duesLoadError && duesSetting) $('wfMonthlyDues').value=Number(duesSetting.value||0);
+ if(!duesLoadError && duesSetting){standardMonthlyDues=Number(duesSetting.value||0);$('wfMonthlyDues').value=standardMonthlyDues;}
 
  let auditRows=[];
  async function loadAudit(){
