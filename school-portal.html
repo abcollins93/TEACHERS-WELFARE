@@ -1559,6 +1559,7 @@ async function renderTeacherDashboard(profile,school){
  let schoolPayoutRows=spe?[]:(schoolPayoutData||[]);
  const totalC=teacherContributionRows.filter(x=>!x.is_reversed).reduce((sum,x)=>sum+Number(x.amount||0),0);
  const totalP=payouts.reduce((sum,x)=>sum+Number(x.amount||0),0);
+ const ownMemberCount=teacherRecord?.is_active===false?0:1;
  const schoolRegisteredMemberCount=registeredMemberCountError?null:Number(registeredMemberCount||0);
  const monthKey=new Date().toISOString().slice(0,7);
  const monthC=contributions.filter(x=>String(x.date||'').slice(0,7)===monthKey).reduce((sum,x)=>sum+Number(x.amount||0),0);
