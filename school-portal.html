@@ -1612,7 +1612,20 @@ async function renderTeacherDashboard(profile,school){
  const ownParts=String(teacherName||teacherId).trim().split(/\\s+/).filter(Boolean);
  $('teacherOwnStatus').textContent=teacherRecord?.is_active===false?'Inactive':'Active';
  $('teacherOwnStatus').style.cssText+=';background:'+(teacherRecord?.is_active===false?'#fee2e2':'#dcfce7')+';color:'+(teacherRecord?.is_active===false?'#b91c1c':'#166534');
- $('teacherOwnAvatar').textContent=ownParts.slice(0,2).map(x=>x[0]).join('').toUpperCase()||'—';
+ const teacherOwnAvatar=$('teacherOwnAvatar');
+ const teacherOwnInitials=ownParts.slice(0,2).map(x=>x[0]).join('').toUpperCase()||'—';
+ teacherOwnAvatar.textContent=teacherOwnInitials;
+ teacherOwnAvatar.style.overflow='hidden';
+ if(teacherAvatar){
+  const teacherOwnPhoto=document.createElement('img');
+  teacherOwnPhoto.src=teacherAvatar;
+  teacherOwnPhoto.alt='Passport photograph of '+String(teacherName||'teacher');
+  teacherOwnPhoto.loading='eager';
+  teacherOwnPhoto.decoding='async';
+  teacherOwnPhoto.style.cssText='display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit';
+  teacherOwnPhoto.onerror=()=>{teacherOwnPhoto.remove();teacherOwnAvatar.textContent=teacherOwnInitials;};
+  teacherOwnAvatar.replaceChildren(teacherOwnPhoto);
+ }
  $('teacherOwnName').textContent=teacherName||'—';$('teacherOwnRank').textContent=teacherRecord?.rank||profile.rank||'—';$('teacherOwnStaffId').textContent='Staff ID: '+teacherId;
  $('teacherOwnRegistration').textContent=profileDate(teacherRecord?.registration_date||teacherRecord?.created_at||profile.registration_date||profile.created_at);
  $('teacherOwnMembership').textContent=teacherRecord?.membership_type||profile.membership_type||profile.membership||'—';
