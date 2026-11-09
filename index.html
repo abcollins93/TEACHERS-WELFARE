@@ -421,7 +421,31 @@ try {
     const requestedCode = (params.get('school') || '').trim().toUpperCase();
     if (!requestedCode) return;
     if (!/^[A-Z0-9-]{3,32}$/.test(requestedCode)) {
-        document.documentElement.innerHTML = '<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Invalid School Gateway</title></head><body style="font:16px system-ui;padding:32px;color:#182235"><h1>Invalid school gateway link</h1><p>Please use the school link provided by your platform administrator.</p></body>';
+        document.documentElement.innerHTML = '<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Invalid School Gateway</title></head><body style="font:16px system-ui;padding:32px;color:#182235"><h1>Invalid school gateway link</h1><p>Please use the school link provided by your platform administrator.</p><style id="unified-admin-dashboard-card-design">
+/* Consistent admin dashboard statistic cards */
+.stat-card{
+ min-width:0;min-height:116px;padding:17px 18px!important;background:#fff!important;color:#14213a!important;
+ border:1px solid #e7edf5!important;border-left:5px solid var(--admin-metric-accent,#2563eb)!important;
+ border-radius:16px!important;box-shadow:0 7px 22px rgba(15,23,42,.065)!important;
+ gap:13px
+}
+.stat-card>div:first-child{
+ flex:0 0 48px;width:48px;height:48px;display:grid;place-items:center;margin-right:0!important;
+ padding:0!important;border-radius:13px;background:var(--admin-metric-icon-bg,#eaf2ff)!important;
+ color:var(--admin-metric-accent,#2563eb)!important;box-shadow:inset 0 0 0 1px rgba(15,23,42,.035)!important
+}
+.stat-card>div:first-child i{font-size:1.25rem!important}
+.stat-card>div:last-child{min-width:0;flex:1}
+.stat-card p{color:#778196!important;font-size:.67rem!important;font-weight:800!important;letter-spacing:.055em!important;line-height:1.4!important;text-transform:uppercase}
+.stat-card h3{margin-top:6px!important;color:#182235!important;font-size:clamp(1.1rem,1.8vw,1.5rem)!important;font-weight:850!important;line-height:1.2!important;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.stat-card p:last-child{margin-top:6px!important;font-size:.72rem!important;font-weight:600!important;letter-spacing:0!important;text-transform:none!important;line-height:1.35!important}
+.stat-card:nth-child(4n+1){--admin-metric-accent:#2563eb;--admin-metric-icon-bg:#eaf2ff}
+.stat-card:nth-child(4n+2){--admin-metric-accent:#c18a16;--admin-metric-icon-bg:#fff5d9}
+.stat-card:nth-child(4n+3){--admin-metric-accent:#23945f;--admin-metric-icon-bg:#e2f7eb}
+.stat-card:nth-child(4n){--admin-metric-accent:#8055c7;--admin-metric-icon-bg:#f0e8ff}
+@media(max-width:640px){.stat-card{min-height:98px;padding:13px!important;gap:10px}}
+</style>
+</body>';
         return;
     }
     const target = new URL('school-portal.html', window.location.href);
