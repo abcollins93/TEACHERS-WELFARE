@@ -1546,10 +1546,10 @@ function showLoginWelcome(displayName,roleLabel,schoolName){
  if(!document.getElementById('loginWelcomeStyles')){
   const style=document.createElement('style');style.id='loginWelcomeStyles';
   style.textContent=`
-   @keyframes wfWelcomeEnter{0%{opacity:0;transform:translate(-50%,-18px) scale(.96);filter:blur(3px)}70%{opacity:1;transform:translate(-50%,3px) scale(1.01);filter:blur(0)}100%{opacity:1;transform:translate(-50%,0) scale(1)}}
-   @keyframes wfWelcomeExit{to{opacity:0;transform:translate(-50%,-12px) scale(.98);filter:blur(2px)}}
+   @keyframes wfWelcomeEnter{0%{opacity:0;transform:translate(-50%,calc(-50% - 18px)) scale(.96);filter:blur(3px)}70%{opacity:1;transform:translate(-50%,calc(-50% + 3px)) scale(1.01);filter:blur(0)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+   @keyframes wfWelcomeExit{to{opacity:0;transform:translate(-50%,calc(-50% - 12px)) scale(.98);filter:blur(2px)}}
    @keyframes wfWelcomeGlow{0%,100%{box-shadow:0 14px 42px rgba(2,10,25,.32),0 0 0 1px rgba(232,196,112,.12)}50%{box-shadow:0 16px 48px rgba(2,10,25,.38),0 0 24px rgba(232,196,112,.18)}}
-   #loginWelcomeToast{position:fixed;z-index:2500;top:calc(env(safe-area-inset-top,0px) + 14px);left:50%;width:min(430px,calc(100vw - 28px));overflow:hidden;border:1px solid rgba(232,196,112,.62);border-radius:19px;background:linear-gradient(125deg,#07162d 0%,#10294a 58%,#17385b 100%);color:#fff;box-shadow:0 14px 42px rgba(2,10,25,.32);font-family:inherit;pointer-events:none;opacity:0}
+   #loginWelcomeToast{position:fixed;z-index:2500;top:50%;left:50%;transform:translate(-50%,-50%);width:min(430px,calc(100vw - 28px));max-height:calc(100vh - 32px);overflow:hidden;border:1px solid rgba(232,196,112,.62);border-radius:19px;background:linear-gradient(125deg,#07162d 0%,#10294a 58%,#17385b 100%);color:#fff;box-shadow:0 14px 42px rgba(2,10,25,.32);font-family:inherit;pointer-events:none;opacity:0}
    #loginWelcomeToast .wf-welcome-inner{display:flex;align-items:center;gap:14px;padding:16px 18px 17px}
    #loginWelcomeToast .wf-welcome-emblem{display:grid;place-items:center;flex:0 0 46px;width:46px;height:46px;border:1px solid rgba(239,205,128,.72);border-radius:15px;background:linear-gradient(145deg,#f4d68d,#d6a83e);color:#10233e;font-size:20px;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 5px 16px rgba(0,0,0,.2)}
    #loginWelcomeToast .wf-welcome-copy{min-width:0;flex:1}
