@@ -1617,6 +1617,11 @@ async function renderTeacherDashboard(profile,school){
  teacherDuesCard.id='teacherStandardMonthlyDues';
  teacherDuesCard.className='metric metric-featured metric-standard';
  teacherDuesCard.innerHTML='<div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-calendar-check"></i></div><div class="metric-content"><span class="metric-label">STANDARD MONTHLY DUES</span><strong id="teacherStandardMonthlyDuesAmount">—</strong><span class="metric-note">Current Rate</span></div>';
+ teacherDuesCard.style.setProperty('--metric-accent','#db2777');
+ teacherDuesCard.style.setProperty('--metric-icon-bg','#fce7f3');
+ teacherDuesCard.style.borderLeftColor='#db2777';
+ const teacherDuesIcon=teacherDuesCard.querySelector('.metric-icon');
+ if(teacherDuesIcon){teacherDuesIcon.style.backgroundColor='#fce7f3';teacherDuesIcon.style.color='#db2777';}
  const existingStandardCard=$('standardDuesMetric')?.closest('.metric-standard');
  if(existingStandardCard)existingStandardCard.insertAdjacentElement('afterend',teacherDuesCard);
  $('teacherStandardMonthlyDuesAmount').textContent=teacherStandardDuesError?'Unavailable':'GHS '+money(teacherStandardDues||0);
