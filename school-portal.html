@@ -2780,6 +2780,55 @@ window.generateTenantWelfarePdf=async function(options){
 };
 </script>
 <style id="teacher-standard-dues-pink-accent">#schoolOverview #teacherStandardMonthlyDues{--metric-accent:#db2777;--metric-icon-bg:#fce7f3}</style>
+<style id="unified-dashboard-card-design">
+/* Unified modern metric cards: teacher and school-admin workspaces */
+#schoolOverview .dashboard-metrics{align-items:stretch}
+#schoolOverview .dashboard-metrics .metric-compact,
+#schoolOverview .dashboard-metrics .metric-featured{
+ min-width:0;min-height:116px;padding:17px 18px;background:#fff;color:#14213a;
+ border:1px solid #e7edf5;border-left:5px solid var(--metric-accent,#2563eb);
+ border-radius:16px;box-shadow:0 7px 22px rgba(15,23,42,.065);
+}
+#schoolOverview .dashboard-metrics .metric-compact{display:grid;grid-template-columns:44px minmax(0,1fr);grid-template-rows:auto auto;align-content:center;column-gap:12px;row-gap:5px}
+#schoolOverview .dashboard-metrics .metric-compact:before{content:"";grid-column:1;grid-row:1 / span 2;width:44px;height:44px;align-self:center;border-radius:12px;background:var(--metric-icon-bg,#eaf2ff);box-shadow:inset 0 0 0 1px rgba(15,23,42,.035)}
+#schoolOverview .dashboard-metrics .metric-compact:nth-child(1){--metric-accent:#2563eb;--metric-icon-bg:#eaf2ff}
+#schoolOverview .dashboard-metrics .metric-compact:nth-child(2){--metric-accent:#c18a16;--metric-icon-bg:#fff5d9}
+#schoolOverview .dashboard-metrics .metric-compact:nth-child(3){--metric-accent:#23945f;--metric-icon-bg:#e2f7eb}
+#schoolOverview .dashboard-metrics .metric-compact:nth-child(4){--metric-accent:#8055c7;--metric-icon-bg:#f0e8ff}
+#schoolOverview .dashboard-metrics .metric-compact>span{grid-column:2;grid-row:1;align-self:end;color:#778196;font-size:.67rem;font-weight:800;letter-spacing:.055em;line-height:1.4;text-transform:uppercase}
+#schoolOverview .dashboard-metrics .metric-compact>strong{grid-column:2;grid-row:2;align-self:start;margin:0;color:#182235;font-size:clamp(1.1rem,1.8vw,1.45rem);font-weight:850;line-height:1.2;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+#schoolOverview .dashboard-metrics .metric-featured{display:flex;align-items:center;gap:14px}
+#schoolOverview .dashboard-metrics .metric-icon{flex:0 0 48px;width:48px;height:48px;border-radius:13px;box-shadow:inset 0 0 0 1px rgba(15,23,42,.035)}
+#schoolOverview .metric-balance{--metric-accent:#2878d0;--metric-icon-bg:#e7f2ff}
+#schoolOverview .metric-standard{--metric-accent:#db2777;--metric-icon-bg:#fce7f3}
+#schoolOverview .metric-activity{--metric-accent:#8055c7;--metric-icon-bg:#f0e8ff}
+#schoolOverview .wf-contrib-metric,#schoolOverview .wf-payout-metric,#schoolOverview .twf-metric{
+ position:relative;display:grid;grid-template-columns:46px minmax(0,1fr);grid-template-rows:auto auto;align-content:center;align-items:center;gap:5px 13px;
+ min-width:0;min-height:112px;padding:17px 18px;background:#fff;color:#14213a;
+ border:1px solid #e7edf5;border-left:5px solid var(--metric-accent,#2563eb);border-radius:16px;
+ box-shadow:0 7px 22px rgba(15,23,42,.065)
+}
+#schoolOverview .wf-contrib-metric:before,#schoolOverview .wf-payout-metric:before,#schoolOverview .twf-metric:before{
+ content:var(--metric-glyph,"◆");grid-column:1;grid-row:1 / span 2;display:grid;place-items:center;
+ width:46px;height:46px;border-radius:13px;background:var(--metric-icon-bg,#eaf2ff);
+ color:var(--metric-accent,#2563eb);font-size:21px;font-weight:800
+}
+#schoolOverview .wf-contrib-metric small,#schoolOverview .wf-payout-metric small,#schoolOverview .twf-metric small{
+ grid-column:2;grid-row:1;align-self:end;color:#778196;font-size:.67rem;font-weight:800;letter-spacing:.055em;line-height:1.4;text-transform:uppercase
+}
+#schoolOverview .wf-contrib-metric strong,#schoolOverview .wf-payout-metric strong,#schoolOverview .twf-metric strong{
+ grid-column:2;grid-row:2;align-self:start;margin:0;color:#182235;font-size:clamp(1.1rem,1.8vw,1.45rem);font-weight:850;line-height:1.2;overflow-wrap:anywhere;font-variant-numeric:tabular-nums
+}
+#schoolOverview .wf-contrib-green,#schoolOverview .wf-payout-green,#schoolOverview .twf-metric.green{--metric-accent:#23945f;--metric-icon-bg:#e2f7eb;--metric-glyph:"↗"}
+#schoolOverview .wf-contrib-red,#schoolOverview .wf-payout-pink,#schoolOverview .twf-metric.red{--metric-accent:#db2777;--metric-icon-bg:#fce7f3;--metric-glyph:"♥"}
+#schoolOverview .wf-contrib-blue,#schoolOverview .wf-payout-blue,#schoolOverview .twf-metric.blue{--metric-accent:#2878d0;--metric-icon-bg:#e7f2ff;--metric-glyph:"▤"}
+#schoolOverview .wf-payout-purple,#schoolOverview .twf-metric.gold{--metric-accent:#8055c7;--metric-icon-bg:#f0e8ff;--metric-glyph:"★"}
+#schoolOverview .wf-teacher-contrib-metrics,#schoolOverview .wf-payout-metrics,#schoolOverview .twf-metrics{align-items:stretch;gap:14px}
+@media(max-width:640px){
+ #schoolOverview .dashboard-metrics .metric-compact,#schoolOverview .dashboard-metrics .metric-featured,
+ #schoolOverview .wf-contrib-metric,#schoolOverview .wf-payout-metric,#schoolOverview .twf-metric{min-height:98px;padding:13px}
+}
+</style>
 </body></html>
 
 
