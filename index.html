@@ -410,6 +410,13 @@ try {
     console.error("Supabase initialization error:", e);
 }
 </script>
+<style id="centered-admin-dashboard-welcome-greeting">
+#adminDashboardHero .admin-dashboard-welcome-wrap{position:relative;z-index:2;display:flex;justify-content:center;align-items:center;width:100%;margin:0 auto clamp(17px,2.5vw,26px);text-align:center}
+#adminDashboardHero .admin-dashboard-welcome{display:inline-flex;align-items:center;justify-content:center;gap:10px;margin:0;padding:10px 20px;border:1px solid rgba(232,196,112,.4);border-radius:999px;background:rgba(3,15,34,.52);color:#f3d58a;font-size:clamp(.76rem,1.2vw,.9rem);font-weight:900;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;box-shadow:0 8px 22px rgba(0,0,0,.12)}
+#adminDashboardHero .admin-dashboard-welcome-dot{display:inline-block;width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:#34d399;box-shadow:0 0 0 4px rgba(52,211,153,.13)}
+@media(max-width:600px){#adminDashboardHero .admin-dashboard-welcome-wrap{margin-bottom:15px}#adminDashboardHero .admin-dashboard-welcome{padding:9px 15px;font-size:.72rem;letter-spacing:.07em}}
+</style>
+
 </head>
 
 <body class="bg-slate-100/90 text-slate-800 dark:bg-[#030a16] dark:text-slate-100 pb-16 selection:bg-amber-400 selection:text-slate-950">
@@ -769,10 +776,7 @@ try {
                 <i class="fa-solid fa-bars"></i>
             </button>
             <div>
-                <p id="headerGreetingText" class="text-xs sm:text-sm font-black uppercase tracking-widest text-amber-600 dark:text-amber-400 flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    Hi, Guest!
-                </p>
+                
                 
                 <div class="flex items-center gap-2 relative">
                     <h2 id="pageTitle" class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
@@ -862,6 +866,7 @@ try {
         <div class="absolute -right-10 -bottom-10 w-80 h-80 bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
         <div class="absolute right-1/3 -top-20 w-60 h-60 bg-blue-500/15 rounded-full blur-2xl pointer-events-none"></div>
         
+        <div class="admin-dashboard-welcome-wrap"><p id="headerGreetingText" class="admin-dashboard-welcome"><span class="admin-dashboard-welcome-dot"></span>Hi, Guest!</p></div>
         <div class="max-w-3xl relative z-10">
             <div class="admin-hero-badge">
                 <i class="fa-solid fa-shield-heart text-amber-400"></i>
