@@ -1661,9 +1661,9 @@ async function renderTeacherDashboard(profile,school){
    const activePersonalContributionTotal=(statementContributionFeed||[]).filter(x=>!x.is_reversed).reduce((sum,x)=>sum+Number(x.amount||0),0);
    const schoolWideFundBalance=Number(statementFundRows[0].total_fund_balance||0);
    let teacherStandardMonthlyDues=0;
-   const {data:teacherDuesSetting,error:teacherDuesError}=await client.from('system_settings').select('value').eq('school_id',school.id).eq('key','standard_dues').maybeSingle();
-   if(!teacherDuesError&&teacherDuesSetting)teacherStandardMonthlyDues=Number(teacherDuesSetting.value||0);
-   else if(teacherDuesError)console.warn('[Teacher statement] Standard monthly dues setting is not readable for this account:',teacherDuesError.message);
+   const {data:teacherDuesSetting,error:teacherDuesError}=await client.rpc('get_my_teacher_school_standard_dues');
+   if(!teacherDuesError)teacherStandardMonthlyDues=Number(teacherDuesSetting||0);
+   else console.warn('[Teacher statement] Could not load this school\'s standard monthly dues:',teacherDuesError.message);
    const transactions=[...statementRows(personalContributions,'Contribution'),...statementRows(personalPayouts,'Welfare payout')].sort((a,b)=>String(a.date).localeCompare(String(b.date)));
    await window.generateTenantWelfarePdf({
     type:'individual',
