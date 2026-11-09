@@ -445,6 +445,22 @@ try {
 .stat-card:nth-child(4n){--admin-metric-accent:#8055c7;--admin-metric-icon-bg:#f0e8ff}
 @media(max-width:640px){.stat-card{min-height:98px;padding:13px!important;gap:10px}}
 </style>
+<style id="unified-admin-solidarity-hero-design">
+#adminDashboardHero{
+ position:relative;isolation:isolate;overflow:hidden;margin-bottom:1.75rem!important;padding:clamp(25px,4.5vw,42px)!important;
+ border:1px solid rgba(232,196,112,.34)!important;border-radius:28px!important;
+ background:radial-gradient(ellipse at 82% 18%,rgba(73,137,205,.24),transparent 38%),radial-gradient(ellipse at 12% 100%,rgba(201,157,69,.12),transparent 36%),linear-gradient(128deg,#06152c 0%,#0b2546 48%,#12385f 100%)!important;
+ box-shadow:0 18px 46px rgba(3,15,34,.22)!important;color:#fff!important
+}
+#adminDashboardHero:before{content:"";position:absolute;z-index:0;width:310px;height:310px;right:-100px;top:-170px;border:1px solid rgba(225,196,130,.22);border-radius:50%;box-shadow:0 0 0 25px rgba(225,196,130,.035),0 0 0 52px rgba(225,196,130,.025),0 0 0 82px rgba(105,158,220,.025);pointer-events:none}
+#adminDashboardHero:after{content:"";position:absolute;z-index:0;width:250px;height:250px;left:28%;bottom:-205px;border-radius:50%;background:rgba(54,117,184,.18);filter:blur(48px);pointer-events:none}
+#adminDashboardHero>div{position:relative;z-index:1}
+#adminDashboardHero .admin-hero-badge{display:inline-flex;align-items:center;gap:8px;padding:7px 13px;border-radius:999px;background:rgba(3,12,27,.58);border:1px solid rgba(232,196,112,.58);color:#f3d58a;font-size:11px;font-weight:850;letter-spacing:.12em;text-transform:uppercase}
+#adminDashboardHero .admin-hero-badge i{color:#f3d58a}
+#adminDashboardHero h1{max-width:800px;color:#fff!important;font-size:clamp(1.65rem,3.4vw,2.55rem)!important;font-weight:900!important;letter-spacing:-.04em!important;line-height:1.12!important}
+#adminDashboardHero p{max-width:850px;color:#d5dfed!important;font-size:clamp(.9rem,1.5vw,1rem)!important;font-weight:450!important;line-height:1.75!important}
+@media(max-width:600px){#adminDashboardHero{border-radius:22px!important;padding:23px 20px!important}#adminDashboardHero h1{font-size:clamp(1.55rem,7vw,2rem)!important}}
+</style>
 </body>';
         return;
     }
@@ -842,12 +858,12 @@ try {
      DASHBOARD
 ========================================================= -->
 <section id="section-dashboard" class="page-section active">
-    <div class="mb-8 relative overflow-hidden bg-gradient-to-br from-sdaNavy-900 via-sdaNavy-700 to-sapphire-600 rounded-[2.25rem] p-6 sm:p-10 text-white shadow-2xl border border-white/10">
+    <div id="adminDashboardHero" class="mb-8 relative overflow-hidden rounded-[2.25rem] p-6 sm:p-10 text-white">
         <div class="absolute -right-10 -bottom-10 w-80 h-80 bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
         <div class="absolute right-1/3 -top-20 w-60 h-60 bg-blue-500/15 rounded-full blur-2xl pointer-events-none"></div>
         
         <div class="max-w-3xl relative z-10">
-            <div class="inline-flex items-center gap-2 bg-amber-400/20 border border-amber-400/30 text-amber-300 text-[11px] font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider backdrop-blur-md">
+            <div class="admin-hero-badge">
                 <i class="fa-solid fa-shield-heart text-amber-400"></i>
                 Official Welfare Hub
             </div>
