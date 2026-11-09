@@ -478,6 +478,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     #teacherProfileViewer .tp-field small{display:block;color:var(--muted);font-size:.68rem;font-weight:850;letter-spacing:.06em;margin-bottom:5px}
     #teacherProfileViewer .tp-field strong{display:block;overflow-wrap:anywhere;font-size:.92rem}
     #teacherProfileViewer .tp-finance{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+    #teacherProfilePrint{background:linear-gradient(120deg,#ec4899,#db2777)!important;color:#fff!important;border:1px solid #db2777!important;border-radius:10px;box-shadow:0 6px 16px rgba(219,39,119,.22)}
+    #teacherProfilePrint:hover:not(:disabled){background:linear-gradient(120deg,#db2777,#be185d)!important;border-color:#be185d!important}
     @media(max-width:760px){#teacherProfileContent{grid-template-columns:1fr!important}#teacherProfilePrint{width:100%}}
     @media print{body *{visibility:hidden!important}#teacherProfileViewer,#teacherProfileViewer *{visibility:visible!important}#teacherProfileViewer{position:absolute;inset:0;width:100%;margin:0!important}#teacherProfilePrint,#teacherProfileSelect,#teacherProfileViewer label,#tpEditContact{display:none!important}}
    </style>`;
