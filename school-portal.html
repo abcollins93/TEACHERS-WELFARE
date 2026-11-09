@@ -2473,8 +2473,8 @@ const docId=p=>p+'-'+new Date().toISOString().replace(/\D/g,'').slice(0,14)+'-'+
 const resolveTenantPassportSource=async value=>{
  const raw=String(value||'').trim();
  if(!raw)return '';
- if(/^data:image\\/(?:jpeg|png|webp|gif);base64,/i.test(raw)||/^blob:/i.test(raw)||/^https?:\\/\\//i.test(raw))return raw;
- const storageMatch=raw.match(/^([^/]+)\\/(.+)$/);
+ if(/^data:image\/(?:jpeg|png|webp|gif);base64,/i.test(raw)||/^blob:/i.test(raw)||/^https?:\/\//i.test(raw))return raw;
+ const storageMatch=raw.match(/^([^/]+)\/(.+)$/);
  if(storageMatch&&typeof client!=='undefined'&&client?.storage?.from){
   try{
    const {data,error}=await client.storage.from(storageMatch[1]).createSignedUrl(storageMatch[2],300);
