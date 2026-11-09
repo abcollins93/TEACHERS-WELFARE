@@ -1158,6 +1158,20 @@ try {
      TEACHERS
 ========================================================= -->
 <section id="section-teachers" class="page-section">
+    <div id="teacherMemberSummary" class="hidden">
+        <div class="glass-card rounded-2xl shadow-sm overflow-hidden p-6 sm:p-8 border border-blue-100 dark:border-slate-700">
+            <div class="flex items-center gap-5">
+                <div class="w-14 h-14 rounded-2xl bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 flex items-center justify-center text-2xl">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <div>
+                    <p class="text-xs sm:text-sm font-extrabold uppercase tracking-widest text-slate-500 dark:text-slate-400">Active Members</p>
+                    <p id="teacherActiveMemberCount" class="text-4xl sm:text-5xl font-black text-slate-900 dark:text-white mt-1">0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="teacherAdminRoster">
     <div class="glass-card rounded-2xl shadow-sm overflow-hidden">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-5 sm:p-6 border-b border-slate-200/80 dark:border-slate-700/80">
             <div>
@@ -1189,6 +1203,7 @@ try {
         <div class="px-5 py-3 bg-slate-50/80 dark:bg-slate-800/40 border-t border-slate-200/80 dark:border-slate-700/80 text-xs text-slate-500 dark:text-slate-400">
             Active members are loaded from this school's registered teacher records.
         </div>
+    </div>
     </div>
 </section>
 
@@ -3095,14 +3110,9 @@ async function handleReversePayout(teacherId, payoutIndex) {
 
 function renderTeachersSection() {
     const body = document.getElementById('teachersSectionBody');
-    if (!body) return;
-
-    // The roster is sourced only from the authenticated portal's loaded teacher dataset.
-    // Require administrator access and exclude inactive/removed profiles.
-    if (!adminLoggedIn || !requireAdmin()) {
-        body.innerHTML = emptyRow(7, 'Administrator access is required to view this roster.');
-        return;
-    }
+    const adminRoster = document.getElementById('teacherAdminRoster');
+    const memberSummary = document.getElementById('teacherMemberSummary');
+    const memberCount = document.getElementById('teacherActiveMemberCount');
 
     const activeTeachers = (Array.isArray(welfareData.teachers) ? welfareData.teachers : [])
         .filter(teacher =>
@@ -3113,6 +3123,26 @@ function renderTeachersSection() {
             String(teacher.status || '').toLowerCase() !== 'inactive' &&
             !removedMembers.some(member => String(member.id) === String(teacher.id))
         );
+
+    // Regular teachers receive only an aggregate count. Clear any previously
+    // rendered roster rows before showing the summary card.
+    if (!adminLoggedIn && loggedInTeacherId) {
+        if (adminRoster) adminRoster.classList.add('hidden');
+        if (memberSummary) memberSummary.classList.remove('hidden');
+        if (memberCount) memberCount.textContent = String(activeTeachers.length);
+        if (body) body.innerHTML = '';
+        return;
+    }
+
+    if (memberSummary) memberSummary.classList.add('hidden');
+    if (adminRoster) adminRoster.classList.remove('hidden');
+    if (!body) return;
+
+    // Full roster remains administrator-only.
+    if (!adminLoggedIn || !requireAdmin()) {
+        body.innerHTML = emptyRow(7, 'Administrator access is required to view this roster.');
+        return;
+    }
 
     if (!activeTeachers.length) {
         body.innerHTML = emptyRow(7, 'No active registered members found for this school.');
@@ -4665,7 +4695,7 @@ async function renderPDFElement(element, options = {}) {
 }
 
 function showSection(section, button = null, bypassAdmin = false) {
-    if ((section === 'admin' || section === 'teachers' || section === 'audit') && !adminLoggedIn && !bypassAdmin) {
+    if ((section === 'admin' || section === 'audit' || (section === 'teachers' && !loggedInTeacherId)) && !adminLoggedIn && !bypassAdmin) {
         openAdminModal();
         showToast('Administrator login required to access restricted sections.', 'error');
         return;
@@ -4680,6 +4710,7 @@ function showSection(section, button = null, bypassAdmin = false) {
 
     target.classList.add('active');
     if (section === 'profile') renderProfileSection();
+    if (section === 'teachers') renderTeachersSection();
 
     document.querySelectorAll('.nav-button').forEach(nav => {
         nav.classList.remove('active');
