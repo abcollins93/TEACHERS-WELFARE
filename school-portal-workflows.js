@@ -113,9 +113,11 @@ function addUI(){
 #workflows button:hover:not(:disabled){filter:brightness(1.06);transform:translateY(-1px);box-shadow:0 8px 18px rgba(7,18,43,.15)}
 #workflows button.secondary{background:#f1f5f9;color:#1e293b;border-color:#e2e8f0;box-shadow:none}
 #workflows #wfBroadcastForm button[type=submit]{background:linear-gradient(120deg,#7c3aed,#4f46e5)}
-#workflows #wfInviteAdminForm button[type=submit],#workflows #wfTeacherSave,#workflows #wfContribution button[type=submit],#workflows #wfDuesForm button[type=submit]{background:#059669}
+#workflows #wfInviteAdminForm button[type=submit],#workflows #wfContribution button[type=submit],#workflows #wfDuesForm button[type=submit]{background:#059669}
 #workflows #wfPayout button[type=submit],#workflows #wfResetDataForm button[type=submit]{background:linear-gradient(120deg,#e11d48,#be123c)}
 #workflows #wfAdminAccessPanel button[type=submit],#workflows #wfSettingsPanel button[type=submit]{background:linear-gradient(120deg,#123a76,#07122b)}
+#workflows #wfTeacherSave{background:linear-gradient(120deg,#8b5cf6,#6d28d9)!important;color:#fff!important}
+#workflows #wfStatementPdf{background:linear-gradient(120deg,#ec4899,#db2777)!important;color:#fff!important}
 #workflows .wf-data-protection{border-radius:12px}
 #workflows table{width:100%;border-collapse:separate;border-spacing:0;border-radius:12px;overflow:hidden}
 #workflows th{background:#f1f5f9;color:#334155;font-weight:850}
