@@ -5232,5 +5232,19 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+
+<style id="solidarity-hero-specification-alignment">
+/* Match the official solidarity hero specification; preserve all dashboard content. */
+#adminDashboardHero{position:relative!important;isolation:isolate;overflow:hidden;margin-bottom:2rem!important;padding:1.5rem!important;border:1px solid rgba(255,255,255,.1)!important;border-radius:2.25rem!important;background:linear-gradient(135deg,#0c1b3c 0%,#183b70 56%,#2563a6 100%)!important;color:#fff!important;box-shadow:0 25px 50px -12px rgba(2,8,23,.42)!important}
+#adminDashboardHero:before{content:"";position:absolute;z-index:0;right:-2.5rem;bottom:-2.5rem;width:20rem;height:20rem;border-radius:9999px;background:rgba(245,158,11,.15);filter:blur(48px);pointer-events:none}
+#adminDashboardHero:after{content:"";position:absolute;z-index:0;right:33.333%;top:-5rem;width:15rem;height:15rem;border-radius:9999px;background:rgba(59,130,246,.15);filter:blur(40px);pointer-events:none}
+#adminDashboardHero>div{position:relative;z-index:1}
+#adminDashboardHero .admin-hero-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.375rem .875rem;border:1px solid rgba(251,191,36,.3);border-radius:9999px;background:rgba(251,191,36,.2);color:#fcd34d;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;backdrop-filter:blur(12px)}
+#adminDashboardHero .admin-hero-badge i{color:#fbbf24}
+#adminDashboardHero h1{max-width:48rem;color:#fff!important;font-size:clamp(1.875rem,3.4vw,2.25rem)!important;font-weight:900!important;letter-spacing:-.025em!important;line-height:1.15!important}
+#adminDashboardHero p{max-width:48rem;color:#e2e8f0!important;font-size:clamp(.875rem,1.5vw,1rem)!important;font-weight:500!important;line-height:1.65!important}
+@media(min-width:640px){#adminDashboardHero{padding:2.5rem!important}}
+@media(max-width:600px){#adminDashboardHero{border-radius:1.5rem!important;padding:1.5rem 1.25rem!important}}
+</style>
 </body>
 </html>
