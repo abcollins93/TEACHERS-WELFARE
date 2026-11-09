@@ -2287,7 +2287,7 @@ async function loadCloudData() {
             // Preserve the database key for relations; expose Staff ID separately.
             id: t.id,
             staffId: t.staff_id || t.staffId || t.employee_id || t.employeeId || t.id,
-            name: t.name || t.full_name || t.fullName || t.teacher_name || t.member_name || '',
+            name: [t.full_name, t.fullName, t.teacher_name, t.member_name, t.name].find(value => value && String(value).trim() && String(value).trim() !== String(t.staff_id || t.staffId || t.employee_id || t.employeeId || t.id)) || '',
             phone: t.phone || t.phone_number || t.contact_number || t.mobile_number || t.mobile || '',
             rank: t.rank || t.grade || t.professional_rank || t.position || '',
             className: t.class_name || t.className || t.assigned_class || t.class_assigned || t.subject_assigned || '',
