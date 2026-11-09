@@ -2468,6 +2468,22 @@ const date=v=>{if(!v)return '—';const d=new Date(String(v).slice(0,10)+'T00:00
 const sum=rows=>(rows||[]).reduce((a,x)=>a+Number(x.amount||0),0);
 const monthName=m=>{if(!/^\d{4}-\d{2}$/.test(m||''))return 'Selected month';const p=m.split('-').map(Number);return new Date(p[0],p[1]-1,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'});};
 const docId=p=>p+'-'+new Date().toISOString().replace(/\D/g,'').slice(0,14)+'-'+Math.random().toString(36).slice(2,7).toUpperCase();
+// Resolve the passport before PDF rendering. New profile uploads are data URLs;
+// legacy values may be absolute URLs or a bucket/path reference.
+const resolveTenantPassportSource=async value=>{
+ const raw=String(value||'').trim();
+ if(!raw)return '';
+ if(/^data:image\\/(?:jpeg|png|webp|gif);base64,/i.test(raw)||/^blob:/i.test(raw)||/^https?:\\/\\//i.test(raw))return raw;
+ const storageMatch=raw.match(/^([^/]+)\\/(.+)$/);
+ if(storageMatch&&typeof client!=='undefined'&&client?.storage?.from){
+  try{
+   const {data,error}=await client.storage.from(storageMatch[1]).createSignedUrl(storageMatch[2],300);
+   if(!error&&data?.signedUrl)return data.signedUrl;
+   console.warn('[Welfare PDF] Passport Storage reference could not be resolved:',error?.message||'No signed URL returned');
+  }catch(error){console.warn('[Welfare PDF] Passport Storage lookup failed:',error?.message||error);}
+ }
+ return '';
+};
 const rows=(data,fn,empty,n)=>data.length?data.map((x,i)=>'<tr>'+fn(x,i)+'</tr>').join(''):'<tr><td class="empty" colspan="'+n+'">'+esc(empty)+'</td></tr>';
 const style='.twf-pdf{box-sizing:border-box;background:#fff;color:#111827;font:12px/1.45 Arial,sans-serif;padding:10mm;position:relative}.twf-pdf *{box-sizing:border-box}.twf-pdf.portrait{width:190mm;min-height:277mm}.twf-pdf.landscape{width:277mm;min-height:190mm}.twf-head{display:flex;justify-content:space-between;gap:8mm;align-items:flex-start;border-bottom:2px solid #172b4d;padding-bottom:5mm;margin-bottom:5mm}.twf-head-main{flex:1;text-align:center}.twf-head h2{font-size:17px;margin:0;color:#172b4d}.twf-head h1{font-size:23px;margin:2px 0;color:#153c78}.twf-brand{font-size:11px;font-weight:800;letter-spacing:1.3px;color:#a97810}.twf-sub{font-size:10px;color:#64748b;margin-top:4px}.twf-photo{width:25mm;height:32mm;object-fit:cover;border:1px solid #cbd5e1;border-radius:5px;background:#f8fafc}.twf-meta{display:flex;justify-content:space-between;gap:8mm;margin:4mm 0;font-size:10px}.twf-box{border:1px solid #cbd5e1;border-radius:6px;padding:4mm;margin:4mm 0}.twf-box h3,.twf-section{font-size:12px;font-weight:800;text-transform:uppercase;margin:0 0 3mm;color:#172b4d}.twf-details{display:grid;grid-template-columns:1fr 1fr;gap:2mm 5mm}.twf-details p{margin:0;overflow-wrap:anywhere}.twf-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3mm;margin:5mm 0}.twf-metric{border:1px solid #dbe3ee;border-radius:6px;padding:3mm;text-align:center;break-inside:avoid}.twf-metric small{display:block;font-size:9px;font-weight:800;color:#475569;text-transform:uppercase}.twf-metric strong{display:block;font-size:15px;margin-top:2mm;color:#102b4f}.twf-metric.green{background:#ecfdf5;border-color:#a7f3d0}.twf-metric.red{background:#fff1f2;border-color:#fecdd3}.twf-metric.blue{background:#eff6ff;border-color:#bfdbfe}.twf-metric.gold{background:#fffbeb;border-color:#fde68a}.twf-section{margin:6mm 0 2mm}.twf-table{width:100%;border-collapse:collapse;font-size:9px;table-layout:auto}.twf-table thead{display:table-header-group}.twf-table th{background:#eef2f7;color:#26364d;font-weight:800;text-align:left}.twf-table th,.twf-table td{border:1px solid #cbd5e1;padding:2.2mm;vertical-align:top;overflow-wrap:anywhere}.twf-table tr{break-inside:avoid;page-break-inside:avoid}.twf-table .amount{text-align:right;white-space:nowrap;font-weight:800}.twf-table .empty{text-align:center;color:#64748b;padding:5mm}.twf-signatures{display:grid;grid-template-columns:1fr 25mm 1fr;gap:8mm;align-items:end;margin-top:10mm;break-inside:avoid}.twf-sign{text-align:center;font-size:9px}.twf-line{height:9mm;border-bottom:1px dashed #64748b;margin-bottom:2mm}.twf-qr{text-align:center;font-size:8px;color:#64748b}.twf-qr img{display:block;margin:0 auto 2mm;width:19mm;height:19mm}.twf-footer{border-top:1px solid #cbd5e1;margin-top:7mm;padding-top:2mm;text-align:center;color:#64748b;font-size:8px}.twf-finance{border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;margin-top:3mm}.twf-finance div{display:flex;justify-content:space-between;gap:5mm;padding:3mm 4mm;border-bottom:1px solid #e2e8f0}.twf-finance div:last-child{border:0;background:#f1f5f9;font-weight:900}';
 window.generateTenantWelfarePdf=async function(o){
@@ -2545,8 +2561,9 @@ window.generateTenantWelfarePdf=async function(o){
  }
  if(!['individual','monthly','annual','complete'].includes(type))throw new Error('Unknown PDF report type.');
  const individual=type==='individual',monthly=type==='monthly',annual=type==='annual',year=reportYear,orientation=individual?'portrait':'landscape',id=docId(individual?'STMT':monthly?'MON':annual?'ANN':'FUND'),schoolName=school.name||'School Welfare Tenant',schoolCode=school.school_code||'',teacherName=teacher.name||teacher.full_name||'Member',totalC=sum(cs),totalP=sum(ps),net=totalC-totalP,individualContributionTotal=Number.isFinite(Number(o.personalContributionTotal))?Number(o.personalContributionTotal):totalC,schoolFundBalance=Number.isFinite(Number(o.schoolFundBalance))?Number(o.schoolFundBalance):null,byId=new Map(ts.map(t=>[String(t.id),t]));
+ const passportSource=individual?await resolveTenantPassportSource(teacher.passport):'';
  const photoPlaceholder='<div class="twf-photo" style="display:grid;place-items:center;color:#94a3b8;font-size:9px;text-align:center">PASSPORT PHOTO</div>';
- const photoMarkup=individual?(teacher.passport?'<div data-twf-photo-frame style="width:25mm;height:32mm;flex:0 0 25mm;border:1px solid #cbd5e1;border-radius:5px;overflow:hidden;background:#f8fafc"><img data-twf-passport class="twf-photo" src="'+esc(teacher.passport)+'" alt="Member passport photo" style="display:block;width:100%;height:100%;object-fit:cover;border:0;border-radius:0"></div>':photoPlaceholder):'';
+ const photoMarkup=individual?(passportSource?'<div data-twf-photo-frame style="width:25mm;height:32mm;flex:0 0 25mm;border:1px solid #cbd5e1;border-radius:5px;overflow:hidden;background:#f8fafc"><img data-twf-passport class="twf-photo" src="'+esc(passportSource)+'" alt="Member passport photo" crossorigin="anonymous" referrerpolicy="no-referrer" style="display:block;width:100%;height:100%;object-fit:cover;border:0;border-radius:0"></div>':photoPlaceholder):'';
  const head='<div class="twf-head"><div class="twf-head-main"><h2>GHANA EDUCATION SERVICE</h2><h1>'+esc(schoolName)+'</h1><div class="twf-brand">TEACHERS WELFARE FUND</div><div class="twf-sub">'+(individual?'Official Member Contribution & Welfare Statement':monthly?'Monthly Financial Summary Report — '+esc(monthName(month)):annual?'Yearly Financial Summary Report — '+esc(year):'Complete Fund Summary Report')+'</div></div>'+photoMarkup+'</div>';
  const meta='<div class="twf-meta"><div><p><b>Document ID:</b> '+esc(id)+'</p><p><b>School code:</b> '+esc(schoolCode||'—')+'</p><p><b>'+(monthly?'Target month':annual?'Reporting year':'Academic year')+':</b> '+esc(monthly?monthName(month):annual?year:(o.academicYear||'—'))+'</p></div><div style="text-align:right"><p><b>Date issued:</b> '+esc(new Date().toLocaleDateString('en-GB'))+'</p></div></div>';
  let body='';
@@ -2573,16 +2590,19 @@ window.generateTenantWelfarePdf=async function(o){
  const host=document.createElement('div');host.className='twf-pdf '+orientation;host.style.cssText='position:fixed;left:-100000px;top:0;z-index:-1;background:#fff';host.innerHTML='<style>'+style+'</style>'+head+body+sign;document.body.appendChild(host);
   const passportImage=host.querySelector('[data-twf-passport]');
   if(passportImage){
+   // Wait for image load and decode before html2canvas captures the document.
    if(!passportImage.complete){
-    await Promise.race([
-     new Promise(resolve=>{passportImage.addEventListener('load',resolve,{once:true});passportImage.addEventListener('error',resolve,{once:true});}),
-     new Promise(resolve=>setTimeout(resolve,4000))
-    ]);
+    await new Promise(resolve=>{
+     const finish=()=>resolve();
+     passportImage.addEventListener('load',finish,{once:true});
+     passportImage.addEventListener('error',finish,{once:true});
+     setTimeout(finish,10000);
+    });
    }
    if(passportImage.complete&&passportImage.naturalWidth&&typeof passportImage.decode==='function'){
-    await Promise.race([passportImage.decode().catch(()=>{}),new Promise(resolve=>setTimeout(resolve,4000))]);
+    try{await passportImage.decode();}catch(decodeError){console.warn('[Welfare PDF] Passport image decode warning:',decodeError?.message||decodeError);}
    }
-   if(!passportImage.naturalWidth){
+   if(!passportImage.complete||!passportImage.naturalWidth){
     const frame=passportImage.closest('[data-twf-photo-frame]');
     if(frame)frame.innerHTML='<div class="twf-photo" style="display:grid;place-items:center;color:#94a3b8;font-size:9px;text-align:center;border:0">PASSPORT PHOTO</div>';
    }
