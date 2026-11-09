@@ -1199,6 +1199,161 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
 }
 </style>
 
+
+<style id="horizontal-teacher-header-layout-fix">
+/* Final horizontal header layout: identity/menu on the left, account controls on the right. */
+header.top{
+ display:flex!important;
+ flex-direction:row!important;
+ flex-wrap:nowrap!important;
+ align-items:center!important;
+ justify-content:space-between!important;
+ gap:clamp(8px,1.8vw,18px)!important;
+ width:100%!important;
+ min-width:0!important;
+ height:auto!important;
+ min-height:76px!important;
+ padding:10px clamp(10px,2.2vw,28px)!important;
+ box-sizing:border-box!important;
+}
+header.top .top-brand-group{
+ display:flex!important;
+ flex:1 1 auto!important;
+ flex-direction:row!important;
+ flex-wrap:nowrap!important;
+ align-items:center!important;
+ justify-content:flex-start!important;
+ gap:12px!important;
+ min-width:0!important;
+ width:auto!important;
+}
+header.top #mobileNavToggle{
+ display:inline-flex!important;
+ position:relative!important;
+ inset:auto!important;
+ flex:0 0 42px!important;
+ align-items:center!important;
+ justify-content:center!important;
+ width:42px!important;
+ min-width:42px!important;
+ height:42px!important;
+ min-height:42px!important;
+ margin:0!important;
+ padding:0!important;
+}
+header.top .top-brand-copy{
+ display:flex!important;
+ flex:1 1 auto!important;
+ flex-direction:column!important;
+ align-items:flex-start!important;
+ justify-content:center!important;
+ gap:2px!important;
+ min-width:0!important;
+ width:auto!important;
+ max-width:100%!important;
+}
+header.top .top-brand-overline{
+ display:flex!important;
+ flex-direction:row!important;
+ align-items:center!important;
+ flex-wrap:nowrap!important;
+ gap:8px!important;
+ min-width:0!important;
+ white-space:nowrap!important;
+}
+header.top .top-brand-label,
+header.top #dashboardGreeting{
+ white-space:nowrap!important;
+}
+header.top .top-school-name{
+ display:block!important;
+ width:100%!important;
+ max-width:100%!important;
+ margin:0!important;
+ white-space:nowrap!important;
+ overflow:hidden!important;
+ text-overflow:ellipsis!important;
+ overflow-wrap:normal!important;
+}
+header.top .top-school-meta{
+ display:block!important;
+ max-width:100%!important;
+ white-space:nowrap!important;
+ overflow:hidden!important;
+ text-overflow:ellipsis!important;
+}
+header.top .top-account-actions{
+ display:flex!important;
+ flex:0 0 auto!important;
+ flex-direction:row!important;
+ flex-wrap:nowrap!important;
+ align-items:center!important;
+ justify-content:flex-end!important;
+ gap:9px!important;
+ width:auto!important;
+ min-width:0!important;
+ margin:0!important;
+}
+header.top .top-account-actions>*{
+ flex:0 0 auto!important;
+ align-self:center!important;
+}
+header.top #themeToggle,
+header.top #teacherQuickProfileButton,
+header.top #headerAvatar{
+ flex:0 0 auto!important;
+ align-self:center!important;
+ white-space:nowrap!important;
+}
+@media(max-width:760px){
+ header.top{
+  min-height:66px!important;
+  padding:8px 10px!important;
+  gap:8px!important;
+ }
+ header.top .top-brand-group{gap:8px!important}
+ header.top #mobileNavToggle{
+  flex-basis:38px!important;width:38px!important;min-width:38px!important;
+  height:38px!important;min-height:38px!important;
+ }
+ header.top .top-brand-overline{gap:6px!important}
+ header.top .top-brand-label{font-size:.54rem!important;letter-spacing:.05em!important}
+ header.top #dashboardGreeting{font-size:.52rem!important}
+ header.top .top-school-name{font-size:.92rem!important;line-height:1.15!important}
+ header.top .top-school-meta{font-size:.57rem!important;line-height:1.15!important}
+ header.top #sectionPageTitle{font-size:.54rem!important;line-height:1.1!important;margin:0!important}
+ header.top .top-account-actions{gap:6px!important}
+ header.top #themeToggle{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  width:38px!important;min-width:38px!important;height:38px!important;min-height:38px!important;
+  padding:0!important;font-size:0!important;
+ }
+ header.top #themeToggle i{font-size:1rem!important}
+ header.top .shield{display:none!important}
+ header.top .header-profile-copy{display:none!important}
+ header.top .header-profile{padding:0!important;margin:0!important}
+ header.top .header-avatar{width:38px!important;min-width:38px!important;height:38px!important}
+ header.top #teacherQuickProfileButton{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  width:38px!important;min-width:38px!important;height:38px!important;min-height:38px!important;
+  padding:0!important;font-size:0!important;
+ }
+ header.top #teacherQuickProfileButton i{font-size:1rem!important}
+}
+@media(max-width:430px){
+ header.top{padding:7px 8px!important;gap:6px!important;min-height:62px!important}
+ header.top .top-brand-group{gap:6px!important}
+ header.top #mobileNavToggle{flex-basis:35px!important;width:35px!important;min-width:35px!important;height:35px!important;min-height:35px!important}
+ header.top .top-brand-overline{display:none!important}
+ header.top .top-school-name{font-size:.84rem!important}
+ header.top .top-school-meta{font-size:.53rem!important}
+ header.top #sectionPageTitle{font-size:.5rem!important}
+ header.top .top-account-actions{gap:4px!important}
+ header.top #themeToggle,header.top #teacherQuickProfileButton{width:35px!important;min-width:35px!important;height:35px!important;min-height:35px!important}
+ header.top .header-avatar{width:35px!important;min-width:35px!important;height:35px!important}
+}
+</style>
+
 </head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading page">
