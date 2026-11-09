@@ -1709,7 +1709,7 @@ function renderHeaderAvatar(user, displayName, photoUrl) {
  const initials=cleanName.split(/[\s@._-]+/).filter(Boolean).slice(0,2).map(part=>part.charAt(0).toUpperCase()).join('')||'U';
  let savedPhoto='';
  try { const key=headerAvatarStorageKey(user); if(key)savedPhoto=localStorage.getItem(key)||''; } catch(_){}
- const selectedPhoto=savedPhoto||photoUrl;
+ const selectedPhoto=window.__welfareCurrentRole==='teacher'?(photoUrl||savedPhoto):(savedPhoto||photoUrl);
  avatar.replaceChildren();
  if(selectedPhoto&&typeof selectedPhoto==='string'){
    const image=document.createElement('img');image.alt='';image.referrerPolicy='no-referrer';image.src=selectedPhoto;
@@ -1741,12 +1741,23 @@ function initHeaderAvatarUpload(){
      if(!/^data:image\/(png|jpeg|webp|gif|avif);base64,/i.test(dataUrl)){headerAvatarStatus('This image format is not supported. Use JPEG, PNG, WebP, GIF or AVIF.',true);finish();return;}
      const probe=new Image();
      probe.onerror=()=>{headerAvatarStatus('This image is invalid or unsupported. Please choose another image.',true);finish();};
-     probe.onload=()=>{
+     probe.onload=async()=>{
        if(!probe.naturalWidth||!probe.naturalHeight){headerAvatarStatus('The selected image could not be verified.',true);finish();return;}
-       // The active user id is supplied by the most recent profile render below.
+       // Teacher photos are saved against the authenticated teacher_accounts mapping.
+       // Administrator profile photos remain local to the current browser.
        const activeUser=window.__welfareHeaderAvatarUser;
        const key=headerAvatarStorageKey(activeUser);
        if(!key){headerAvatarStatus('Your account could not be verified. Sign in again before changing the photo.',true);finish();return;}
+       if(window.__welfareCurrentRole==='teacher'){
+         try{
+           const {data,error}=await client.rpc('save_my_teacher_passport',{p_passport:dataUrl});
+           if(error||data!==true){headerAvatarStatus(error?.message||'The photo could not be saved to your teacher account. Please try again.',true);finish();return;}
+           renderHeaderAvatar(activeUser,document.getElementById('headerProfileName')?.textContent||activeUser.email,dataUrl);
+           headerAvatarStatus('Profile photo saved to your school account.');finish();return;
+         }catch(uploadError){
+           headerAvatarStatus(uploadError?.message||'The photo could not be saved. Please try again.',true);finish();return;
+         }
+       }
        try{localStorage.setItem(key,dataUrl);}
        catch(_){headerAvatarStatus('Could not save this photo on this device. Free some browser storage and try again.',true);finish();return;}
        renderHeaderAvatar(activeUser,document.getElementById('headerProfileName')?.textContent||activeUser.email,dataUrl);
