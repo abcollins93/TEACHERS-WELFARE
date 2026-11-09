@@ -631,7 +631,7 @@ try {
                     <span class="sidebar-text">Teacher Profile</span>
                 </button>
 
-                <button onclick="showSection('teachers',this)"
+                <button onclick="openTeachersMembersSection(this)"
                         class="nav-button w-full flex items-center rounded-xl px-3.5 py-3 text-sm font-semibold">
                     <i class="fa-solid fa-users w-6 text-center mr-3 text-blue-400"></i>
                     <span class="sidebar-text">Teachers & Members</span>
@@ -3114,31 +3114,52 @@ function renderTeachersSection() {
     const memberSummary = document.getElementById('teacherMemberSummary');
     const memberCount = document.getElementById('teacherActiveMemberCount');
 
-    const activeTeachers = (Array.isArray(welfareData.teachers) ? welfareData.teachers : [])
+    const removedIds = new Set(
+        (Array.isArray(removedMembers) ? removedMembers : [])
+            .filter(Boolean)
+            .map(member => String(member.id))
+    );
+    const activeTeachers = (Array.isArray(welfareData?.teachers) ? welfareData.teachers : [])
         .filter(teacher =>
             teacher &&
             teacher.is_active !== false &&
             teacher.isActive !== false &&
             teacher.active !== false &&
             String(teacher.status || '').toLowerCase() !== 'inactive' &&
-            !removedMembers.some(member => String(member.id) === String(teacher.id))
+            !removedIds.has(String(teacher.id))
         );
 
-    // Regular teachers receive only an aggregate count. Clear any previously
-    // rendered roster rows before showing the summary card.
-    if (!adminLoggedIn && loggedInTeacherId) {
-        if (adminRoster) adminRoster.classList.add('hidden');
-        if (memberSummary) memberSummary.classList.remove('hidden');
+    // Teachers see an aggregate only. Explicit display styles make the
+    // role-specific view reliable even if utility CSS is cached or overridden.
+    if (!adminLoggedIn && Boolean(loggedInTeacherId)) {
+        if (adminRoster) {
+            adminRoster.classList.add('hidden');
+            adminRoster.style.display = 'none';
+            adminRoster.setAttribute('aria-hidden', 'true');
+        }
+        if (memberSummary) {
+            memberSummary.classList.remove('hidden');
+            memberSummary.style.display = 'block';
+            memberSummary.setAttribute('aria-hidden', 'false');
+        }
         if (memberCount) memberCount.textContent = String(activeTeachers.length);
-        if (body) body.innerHTML = '';
+        if (body) body.replaceChildren();
         return;
     }
 
-    if (memberSummary) memberSummary.classList.add('hidden');
-    if (adminRoster) adminRoster.classList.remove('hidden');
+    if (memberSummary) {
+        memberSummary.classList.add('hidden');
+        memberSummary.style.display = 'none';
+        memberSummary.setAttribute('aria-hidden', 'true');
+    }
+    if (adminRoster) {
+        adminRoster.classList.remove('hidden');
+        adminRoster.style.display = '';
+        adminRoster.setAttribute('aria-hidden', 'false');
+    }
     if (!body) return;
 
-    // Full roster remains administrator-only.
+    // Full roster and its controls remain administrator-only.
     if (!adminLoggedIn || !requireAdmin()) {
         body.innerHTML = emptyRow(7, 'Administrator access is required to view this roster.');
         return;
@@ -4695,7 +4716,8 @@ async function renderPDFElement(element, options = {}) {
 }
 
 function showSection(section, button = null, bypassAdmin = false) {
-    if ((section === 'admin' || section === 'audit' || (section === 'teachers' && !loggedInTeacherId)) && !adminLoggedIn && !bypassAdmin) {
+    const hasTeacherSession = Boolean(loggedInTeacherId);
+    if ((section === 'admin' || section === 'audit' || (section === 'teachers' && !hasTeacherSession)) && !adminLoggedIn && !bypassAdmin) {
         openAdminModal();
         showToast('Administrator login required to access restricted sections.', 'error');
         return;
@@ -4751,6 +4773,17 @@ function showSection(section, button = null, bypassAdmin = false) {
     }
 
     closeMobileSidebar();
+}
+
+function openTeachersMembersSection(button) {
+    // This tab is available to a signed-in teacher or an administrator.
+    if (!adminLoggedIn && !loggedInTeacherId) {
+        openAdminModal();
+        showToast('Please sign in before opening Teachers & Members.', 'error');
+        return;
+    }
+    showSection('teachers', button, true);
+    renderTeachersSection();
 }
 
 function toggleSidebar() {
