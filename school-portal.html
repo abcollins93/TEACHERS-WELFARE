@@ -1310,6 +1310,21 @@ async function renderTeacherDashboard(profile,school){
   const {data,error}=await client.from('teachers').select('id,name,rank,class_name,phone,passport,created_at,is_active,registration_date,membership_type,employer').eq('id',teacherId).eq('school_id',school.id).maybeSingle();
   if(!error&&data){teacherRecord=data;teacherName=data.name||teacherName;teacherAvatar=data.passport||null;}
  }catch(_){}
+ // Migrate a legacy teacher photo saved by the old browser-only uploader.
+ // The RPC validates the authenticated teacher_accounts mapping and updates only
+ // that teacher's passport field; no other profile or school data is changed.
+ if(!teacherAvatar&&user?.id){
+  try{
+   const legacyPhoto=localStorage.getItem(headerAvatarStorageKey(user))||'';
+   if(/^data:image\/(png|jpeg|webp|gif|avif);base64,/i.test(legacyPhoto)&&legacyPhoto.length<=1450000){
+    const {data:migrated,error:migrationError}=await client.rpc('save_my_teacher_passport',{p_passport:legacyPhoto});
+    if(!migrationError&&migrated===true){
+     teacherAvatar=legacyPhoto;
+     if(teacherRecord)teacherRecord.passport=legacyPhoto;
+    }
+   }
+  }catch(_){}
+ }
  window.__welfareTeacherDisplayName=teacherName;
  $('login').classList.add('hidden');
  $('dashboard').classList.remove('hidden');
