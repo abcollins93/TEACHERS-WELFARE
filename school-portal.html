@@ -1713,6 +1713,24 @@ async function renderTeacherDashboard(profile,school){
 
 const HEADER_AVATAR_MAX_BYTES = 1024 * 1024;
 function headerAvatarStorageKey(user) { return user?.id ? 'welfare-profile-photo:' + user.id : ''; }
+const ADMIN_AVATAR_BUCKET='profile-photos';
+const ADMIN_AVATAR_PATH=user=>user?.id?String(user.id)+'/profile-photo':'';
+async function loadAdminProfilePhoto(user){
+ const objectPath=ADMIN_AVATAR_PATH(user);if(!objectPath)return null;
+ const bucket=client.storage.from(ADMIN_AVATAR_BUCKET);
+ try{
+  const legacyKey=headerAvatarStorageKey(user);let legacy='';
+  try{legacy=localStorage.getItem(legacyKey)||'';}catch(_){}
+  if(legacy&&/^data:image\/(png|jpeg|webp|gif|avif);base64,/i.test(legacy)&&legacy.length<=1450000){
+   try{const blob=await (await fetch(legacy)).blob();const {error}=await bucket.upload(objectPath,blob,{upsert:true,contentType:blob.type||'image/jpeg',cacheControl:'3600'});if(!error){try{localStorage.removeItem(legacyKey);}catch(_){}}}
+   catch(migrationError){console.warn('[Profile photo] Legacy migration deferred:',migrationError?.message||migrationError);}
+  }
+  const {data,error}=await bucket.createSignedUrl(objectPath,3600);
+  if(!error&&data?.signedUrl)return data.signedUrl;
+  if(error&&error.statusCode!=='404')console.warn('[Profile photo] Could not load saved administrator photo:',error.message);
+ }catch(error){console.warn('[Profile photo] Storage lookup failed:',error?.message||error);}
+ return null;
+}
 function headerAvatarStatus(message, isError=false) {
  const status=document.getElementById('headerAvatarStatus');
  if(status){status.textContent=message||'';status.style.background=isError?'#8f1d24':'#10233d';}
@@ -1724,7 +1742,7 @@ function renderHeaderAvatar(user, displayName, photoUrl) {
  const initials=cleanName.split(/[\s@._-]+/).filter(Boolean).slice(0,2).map(part=>part.charAt(0).toUpperCase()).join('')||'U';
  let savedPhoto='';
  try { const key=headerAvatarStorageKey(user); if(key)savedPhoto=localStorage.getItem(key)||''; } catch(_){}
- const selectedPhoto=window.__welfareCurrentRole==='teacher'?(photoUrl||savedPhoto):(savedPhoto||photoUrl);
+ const selectedPhoto=window.__welfareCurrentRole==='teacher'?(photoUrl||savedPhoto):photoUrl;
  avatar.replaceChildren();
  if(selectedPhoto&&typeof selectedPhoto==='string'){
    const image=document.createElement('img');image.alt='';image.referrerPolicy='no-referrer';image.src=selectedPhoto;
@@ -1773,10 +1791,14 @@ function initHeaderAvatarUpload(){
            headerAvatarStatus(uploadError?.message||'The photo could not be saved. Please try again.',true);finish();return;
          }
        }
-       try{localStorage.setItem(key,dataUrl);}
-       catch(_){headerAvatarStatus('Could not save this photo on this device. Free some browser storage and try again.',true);finish();return;}
-       renderHeaderAvatar(activeUser,document.getElementById('headerProfileName')?.textContent||activeUser.email,dataUrl);
-       headerAvatarStatus('Profile picture saved on this device.');finish();
+       try{
+          const {error:uploadError}=await client.storage.from(ADMIN_AVATAR_BUCKET).upload(ADMIN_AVATAR_PATH(activeUser),file,{upsert:true,contentType:file.type,cacheControl:'3600'});
+          if(uploadError){headerAvatarStatus(uploadError.message||'The profile photo could not be saved. Please try again.',true);finish();return;}
+          const {data:signed,error:signedError}=await client.storage.from(ADMIN_AVATAR_BUCKET).createSignedUrl(ADMIN_AVATAR_PATH(activeUser),3600);
+          if(signedError||!signed?.signedUrl){headerAvatarStatus(signedError?.message||'Photo saved, but could not be displayed yet. Refresh the page.',true);finish();return;}
+          renderHeaderAvatar(activeUser,document.getElementById('headerProfileName')?.textContent||activeUser.email,signed.signedUrl);
+          headerAvatarStatus('Profile picture saved securely to your account and available across devices.');finish();
+        }catch(uploadError){headerAvatarStatus(uploadError?.message||'The profile photo could not be saved. Please try again.',true);finish();}
      };
      probe.src=dataUrl;
    };
@@ -1790,6 +1812,11 @@ function setHeaderProfile(user, displayName, roleLabel, photoUrl) {
  name.textContent=cleanName;role.textContent=roleLabel||'Portal account';
  window.__welfareHeaderAvatarUser=user||null;
  renderHeaderAvatar(user,cleanName,photoUrl);
+  if(roleLabel!=='Teacher'&&user?.id){
+   loadAdminProfilePhoto(user).then(savedUrl=>{
+    if(window.__welfareHeaderAvatarUser?.id===user.id&&window.__welfareCurrentRole!=='teacher')renderHeaderAvatar(user,cleanName,savedUrl||photoUrl);
+   });
+  }
  shell.classList.remove('hidden');shell.setAttribute('aria-label',cleanName+', '+(roleLabel||'Portal account'));
  initHeaderAvatarUpload();
 }
