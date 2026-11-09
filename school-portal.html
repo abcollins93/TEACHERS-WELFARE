@@ -1607,8 +1607,14 @@ async function renderTeacherDashboard(profile,school){
    renderTeacherDashboardLedgers();
   }catch(error){console.warn('[Teacher dashboard] Ledger refresh failed:',error?.message||error);}
  },30000);
- const profileFieldRows=rows=>rows.map(([label,value])=>'<div class="tp-field"><small>'+escapeHtml(label)+'</small><strong>'+escapeHtml(value||'—')+'</strong></div>').join('');
- const profileDate=v=>{if(!v)return '—';const d=new Date(v);return Number.isNaN(d.getTime())?String(v):d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});};
+ const firstProfileValue=(...values)=>values.find(value=>value!==null&&value!==undefined&&String(value).trim()!=='')??'';
+ const profilePhone=firstProfileValue(teacherRecord?.phone,teacherRecord?.phone_number,teacherRecord?.contact_number,teacherRecord?.mobile_number,teacherRecord?.mobile,profile.phone,profile.phone_number,profile.contact_number,profile.mobile_number,profile.mobile);
+ const profileRank=firstProfileValue(teacherRecord?.rank,teacherRecord?.grade,teacherRecord?.professional_rank,teacherRecord?.position,profile.rank,profile.grade,profile.professional_rank,profile.position);
+ const profileClass=firstProfileValue(teacherRecord?.class_name,teacherRecord?.className,teacherRecord?.assigned_class,teacherRecord?.class_assigned,teacherRecord?.subject_assigned,profile.class_name,profile.className,profile.assigned_class,profile.class_assigned,profile.subject_assigned);
+ const profileRegistration=firstProfileValue(teacherRecord?.registration_date,teacherRecord?.registered_at,teacherRecord?.created_at,teacherRecord?.createdAt,profile.registration_date,profile.registered_at,profile.created_at,profile.createdAt);
+ const profileMembership=firstProfileValue(teacherRecord?.membership_type,teacherRecord?.membershipType,teacherRecord?.employment_type,teacherRecord?.staff_type,profile.membership_type,profile.membershipType,profile.employment_type,profile.staff_type);
+ const profileFieldRows=rows=>rows.map(([label,value,fallback='Not specified'])=>'<div class="tp-field"><small>'+escapeHtml(label)+'</small><strong>'+escapeHtml(firstProfileValue(value)||fallback)+'</strong></div>').join('');
+ const profileDate=v=>{if(!v)return 'Not recorded';const d=new Date(v);return Number.isNaN(d.getTime())?String(v):d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});};
  const ownParts=String(teacherName||teacherId).trim().split(/\\s+/).filter(Boolean);
  $('teacherOwnStatus').textContent=teacherRecord?.is_active===false?'Inactive':'Active';
  $('teacherOwnStatus').style.cssText+=';background:'+(teacherRecord?.is_active===false?'#fee2e2':'#dcfce7')+';color:'+(teacherRecord?.is_active===false?'#b91c1c':'#166534');
@@ -1626,11 +1632,11 @@ async function renderTeacherDashboard(profile,school){
   teacherOwnPhoto.onerror=()=>{teacherOwnPhoto.remove();teacherOwnAvatar.textContent=teacherOwnInitials;};
   teacherOwnAvatar.replaceChildren(teacherOwnPhoto);
  }
- $('teacherOwnName').textContent=teacherName||'—';$('teacherOwnRank').textContent=teacherRecord?.rank||profile.rank||'—';$('teacherOwnStaffId').textContent='Staff ID: '+teacherId;
- $('teacherOwnRegistration').textContent=profileDate(teacherRecord?.registration_date||teacherRecord?.created_at||profile.registration_date||profile.created_at);
- $('teacherOwnMembership').textContent=teacherRecord?.membership_type||profile.membership_type||profile.membership||'—';
- $('teacherOwnPersonalRows').innerHTML=profileFieldRows([['FULL NAME',teacherName],['PHONE NUMBER',teacherRecord?.phone||profile.phone],['SCHOOL / INSTITUTION',school.name],['DISTRICT & REGION',[school.district,school.region].filter(Boolean).join(' · ')]]);
- $('teacherOwnProfessionalRows').innerHTML=profileFieldRows([['Staff ID',teacherId],['Professional Rank',teacherRecord?.rank||profile.rank],['Class / Subject Assigned',teacherRecord?.class_name||profile.class_name],['Employer',teacherRecord?.employer||profile.employer||school.name]]);
+ $('teacherOwnName').textContent=teacherName||'Unnamed Teacher';$('teacherOwnRank').textContent=profileRank||'Not specified';$('teacherOwnStaffId').textContent='Staff ID: '+teacherId;
+ $('teacherOwnRegistration').textContent=profileDate(profileRegistration);
+ $('teacherOwnMembership').textContent=profileMembership||'Not specified';
+ $('teacherOwnPersonalRows').innerHTML=profileFieldRows([['FULL NAME',teacherName,'Unnamed Teacher'],['PHONE NUMBER',profilePhone,'Not provided'],['SCHOOL / INSTITUTION',school.name],['DISTRICT & REGION',[school.district,school.region].filter(Boolean).join(' · ')]]);
+ $('teacherOwnProfessionalRows').innerHTML=profileFieldRows([['Staff ID',teacherId],['Professional Rank',profileRank],['Class / Subject Assigned',profileClass,'Not assigned'],['Employer',firstProfileValue(teacherRecord?.employer,teacherRecord?.employer_name,profile.employer,profile.employer_name,school.name)]]);
  $('teacherOwnFinanceRows').innerHTML=[
   '<div class="tp-finance"><span>Total Dues Contributed</span><strong style="color:#15803d">'+escapeHtml(cash(totalC))+'</strong></div>',
   '<div class="tp-finance"><span>Total Welfare Payouts Received</span><strong style="color:#dc2626">'+escapeHtml(cash(totalP))+'</strong></div>',
