@@ -2802,32 +2802,44 @@ window.generateTenantWelfarePdf=async function(options){
 #schoolOverview .metric-balance{--metric-accent:#2878d0;--metric-icon-bg:#e7f2ff}
 #schoolOverview .metric-standard{--metric-accent:#db2777;--metric-icon-bg:#fce7f3}
 #schoolOverview .metric-activity{--metric-accent:#8055c7;--metric-icon-bg:#f0e8ff}
-#schoolOverview .wf-contrib-metric,#schoolOverview .wf-payout-metric,#schoolOverview .twf-metric{
+ .wf-contrib-metric, .wf-payout-metric, .twf-metric{
  position:relative;display:grid;grid-template-columns:46px minmax(0,1fr);grid-template-rows:auto auto;align-content:center;align-items:center;gap:5px 13px;
  min-width:0;min-height:112px;padding:17px 18px;background:#fff;color:#14213a;
  border:1px solid #e7edf5;border-left:5px solid var(--metric-accent,#2563eb);border-radius:16px;
  box-shadow:0 7px 22px rgba(15,23,42,.065)
 }
-#schoolOverview .wf-contrib-metric:before,#schoolOverview .wf-payout-metric:before,#schoolOverview .twf-metric:before{
+ .wf-contrib-metric:before, .wf-payout-metric:before, .twf-metric:before{
  content:var(--metric-glyph,"◆");grid-column:1;grid-row:1 / span 2;display:grid;place-items:center;
  width:46px;height:46px;border-radius:13px;background:var(--metric-icon-bg,#eaf2ff);
  color:var(--metric-accent,#2563eb);font-size:21px;font-weight:800
 }
-#schoolOverview .wf-contrib-metric small,#schoolOverview .wf-payout-metric small,#schoolOverview .twf-metric small{
+ .wf-contrib-metric small, .wf-payout-metric small, .twf-metric small{
  grid-column:2;grid-row:1;align-self:end;color:#778196;font-size:.67rem;font-weight:800;letter-spacing:.055em;line-height:1.4;text-transform:uppercase
 }
-#schoolOverview .wf-contrib-metric strong,#schoolOverview .wf-payout-metric strong,#schoolOverview .twf-metric strong{
+ .wf-contrib-metric strong, .wf-payout-metric strong, .twf-metric strong{
  grid-column:2;grid-row:2;align-self:start;margin:0;color:#182235;font-size:clamp(1.1rem,1.8vw,1.45rem);font-weight:850;line-height:1.2;overflow-wrap:anywhere;font-variant-numeric:tabular-nums
 }
-#schoolOverview .wf-contrib-green,#schoolOverview .wf-payout-green,#schoolOverview .twf-metric.green{--metric-accent:#23945f;--metric-icon-bg:#e2f7eb;--metric-glyph:"↗"}
-#schoolOverview .wf-contrib-red,#schoolOverview .wf-payout-pink,#schoolOverview .twf-metric.red{--metric-accent:#db2777;--metric-icon-bg:#fce7f3;--metric-glyph:"♥"}
-#schoolOverview .wf-contrib-blue,#schoolOverview .wf-payout-blue,#schoolOverview .twf-metric.blue{--metric-accent:#2878d0;--metric-icon-bg:#e7f2ff;--metric-glyph:"▤"}
-#schoolOverview .wf-payout-purple,#schoolOverview .twf-metric.gold{--metric-accent:#8055c7;--metric-icon-bg:#f0e8ff;--metric-glyph:"★"}
-#schoolOverview .wf-teacher-contrib-metrics,#schoolOverview .wf-payout-metrics,#schoolOverview .twf-metrics{align-items:stretch;gap:14px}
+#schoolOverview .wf-contrib-green,#schoolOverview .wf-payout-green, .twf-metric.green{--metric-accent:#23945f;--metric-icon-bg:#e2f7eb;--metric-glyph:"↗"}
+#schoolOverview .wf-contrib-red,#schoolOverview .wf-payout-pink, .twf-metric.red{--metric-accent:#db2777;--metric-icon-bg:#fce7f3;--metric-glyph:"♥"}
+#schoolOverview .wf-contrib-blue,#schoolOverview .wf-payout-blue, .twf-metric.blue{--metric-accent:#2878d0;--metric-icon-bg:#e7f2ff;--metric-glyph:"▤"}
+#schoolOverview .wf-payout-purple, .twf-metric.gold{--metric-accent:#8055c7;--metric-icon-bg:#f0e8ff;--metric-glyph:"★"}
+ .wf-teacher-contrib-metrics, .wf-payout-metrics, .twf-metrics{align-items:stretch;gap:14px}
 @media(max-width:640px){
  #schoolOverview .dashboard-metrics .metric-compact,#schoolOverview .dashboard-metrics .metric-featured,
- #schoolOverview .wf-contrib-metric,#schoolOverview .wf-payout-metric,#schoolOverview .twf-metric{min-height:98px;padding:13px}
+  .wf-contrib-metric, .wf-payout-metric, .twf-metric{min-height:98px;padding:13px}
 }
+
+/* Teacher workspace panels are mounted outside the overview container. */
+.wf-contrib-metric,.wf-payout-metric,.twf-metric{position:relative;display:grid;grid-template-columns:46px minmax(0,1fr);grid-template-rows:auto auto;align-content:center;align-items:center;gap:5px 13px;min-width:0;min-height:112px;padding:17px 18px;background:#fff;color:#14213a;border:1px solid #e7edf5;border-left:5px solid var(--metric-accent,#2563eb);border-radius:16px;box-shadow:0 7px 22px rgba(15,23,42,.065)}
+.wf-contrib-metric:before,.wf-payout-metric:before,.twf-metric:before{content:var(--metric-glyph,"◆");grid-column:1;grid-row:1 / span 2;display:grid;place-items:center;width:46px;height:46px;border-radius:13px;background:var(--metric-icon-bg,#eaf2ff);color:var(--metric-accent,#2563eb);font-size:21px;font-weight:800}
+.wf-contrib-metric small,.wf-payout-metric small,.twf-metric small{grid-column:2;grid-row:1;align-self:end;color:#778196;font-size:.67rem;font-weight:800;letter-spacing:.055em;line-height:1.4;text-transform:uppercase}
+.wf-contrib-metric strong,.wf-payout-metric strong,.twf-metric strong{grid-column:2;grid-row:2;align-self:start;margin:0;color:#182235;font-size:clamp(1.1rem,1.8vw,1.45rem);font-weight:850;line-height:1.2;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.wf-contrib-green,.wf-payout-green,.twf-metric.green{--metric-accent:#23945f;--metric-icon-bg:#e2f7eb;--metric-glyph:"↗"}
+.wf-contrib-red,.wf-payout-pink,.twf-metric.red{--metric-accent:#db2777;--metric-icon-bg:#fce7f3;--metric-glyph:"♥"}
+.wf-contrib-blue,.wf-payout-blue,.twf-metric.blue{--metric-accent:#2878d0;--metric-icon-bg:#e7f2ff;--metric-glyph:"▤"}
+.wf-payout-purple,.twf-metric.gold{--metric-accent:#8055c7;--metric-icon-bg:#f0e8ff;--metric-glyph:"★"}
+.wf-teacher-contrib-metrics,.wf-payout-metrics,.twf-metrics{align-items:stretch;gap:14px}
+@media(max-width:640px){.wf-contrib-metric,.wf-payout-metric,.twf-metric{min-height:98px;padding:13px}}
 </style>
 </body></html>
 
