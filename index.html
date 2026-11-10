@@ -5170,7 +5170,7 @@ async function masterLoadSchools() {
     const schools = data || [];
     document.getElementById('masterSchoolCount').textContent = schools.length;
     document.getElementById('masterActiveCount').textContent = schools.filter(x => x.status === 'active').length;
-    document.getElementById('masterSuspendedCount').textContent = schools.filter(x => x.status === 'suspended').length;
+    document.getElementById().textContent = schools.filter(x => x.status === 'suspended').length;
     if (!schools.length) { rows.innerHTML = '<tr><td colspan="6" class="p-5 text-slate-500">No schools registered yet.</td></tr>'; return; }
     rows.innerHTML = schools.map(s => `<tr class="border-t border-slate-100 dark:border-slate-800">
       <td class="p-3 font-bold">${masterEscape(s.name)}</td><td class="p-3 font-mono">${masterEscape(s.school_code)}</td>
