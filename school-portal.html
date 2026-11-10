@@ -2087,6 +2087,7 @@ async function renderTeacherDashboard(profile,school){
   form.reset();say('Password updated successfully. Use your new password next time you sign in.');
  });
  showLoginWelcome(teacherName,'Teacher',school.name);
+ window.finishTenantSkeletons?.();
  resetInactivityTimer();
 }
 
@@ -2211,12 +2212,14 @@ async function waitForSchoolWorkflows(timeoutMs=10000){
 async function showDashboard(){
  const {data:{user},error:userErr}=await client.auth.getUser();
  if(userErr||!user){$('login').classList.remove('hidden');$('dashboard').classList.add('hidden');return;}
+ window.startTenantSkeletons?.();
  const {data:teacherProfiles,error:teacherProfileError}=await client.rpc('get_my_teacher_profile');
  const teacherProfile=Array.isArray(teacherProfiles)?teacherProfiles[0]:teacherProfiles;
  // The active teacher_accounts mapping is authoritative; never trust editable user metadata as a permission grant.
  if(!teacherProfileError&&teacherProfile?.school_id){
   const {data:teacherSchool,error:teacherSchoolError}=await client.from('schools').select('id,name,school_code,school_type,region,district,status').eq('id',teacherProfile.school_id).maybeSingle();
   if(teacherSchoolError||!teacherSchool||teacherSchool.status!=='active'){
+   window.finishTenantSkeletons?.();
    $('loginError').textContent='Your teacher account could not access its active school portal. Contact your school administrator.';
    $('login').classList.remove('hidden');$('dashboard').classList.add('hidden');return;
   }
@@ -2247,7 +2250,6 @@ async function showDashboard(){
  setHeaderProfile(user, user.user_metadata?.full_name || user.user_metadata?.name || user.email || 'School Administrator', 'School Administrator', user.user_metadata?.avatar_url || user.user_metadata?.picture || null);
  setTenantFooter(school);
  $('login').classList.add('hidden');$('dashboard').classList.remove('hidden');
- window.startTenantSkeletons?.();
  resetInactivityTimer();
  $('schoolName').textContent=school.name;$('brand').textContent=school.name;$('sideSchoolName').textContent=school.name;$('sideSchoolCode').textContent=school.school_code;$('schoolDescription').textContent='Providing mutual financial support, social welfare benefits, and fully transparent monthly record-keeping for '+school.name+'.';
  $('schoolMeta').textContent=[school.school_code,school.school_type,school.district,school.region].filter(Boolean).join(' · ');
