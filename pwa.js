@@ -59,6 +59,12 @@
          if(value&&value!=='School gateway unavailable'&&value!=='Loading...'){
            tenantName=value;
            injectTenantManifest();
+           var labelNode=installButton&&installButton.querySelector('.welfare-pwa-install-label');
+           if(labelNode){
+             var buttonLabel='Install '+safeTenantLabel()+' Portal';
+             labelNode.textContent=buttonLabel;
+             installButton.setAttribute('aria-label',buttonLabel);
+           }
          }
        };
        update();
@@ -85,9 +91,22 @@
    installButton=document.createElement('button');
    installButton.type='button';
    installButton.id='welfarePwaInstall';
-   installButton.innerHTML='<span aria-hidden="true">＋</span> Install '+safeTenantLabel()+' Portal';
-   installButton.setAttribute('aria-label','Install Welfare Portal for '+safeTenantLabel());
-   installButton.style.cssText='position:fixed;z-index:1400;right:16px;bottom:calc(76px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:8px;padding:11px 15px;border:1px solid rgba(255,230,160,.7);border-radius:999px;background:linear-gradient(135deg,#f4d98b,#c18b24);color:#0b1d3a;font:800 12px/1.2 system-ui,sans-serif;box-shadow:0 8px 24px rgba(3,10,22,.25);cursor:pointer';
+   installButton.style.cssText='position:relative;z-index:2;display:inline-flex;align-items:center;justify-content:center;flex:0 1 auto;gap:9px;box-sizing:border-box;width:max-content;max-width:100%;min-width:0;margin:14px 0 20px;padding:12px 18px;border:1px solid rgba(255,230,160,.78);border-radius:14px;background:linear-gradient(135deg,#f4d98b,#c18b24);color:#0b1d3a;font:800 13px/1.4 system-ui,sans-serif;white-space:normal;overflow-wrap:anywhere;word-break:normal;text-align:center;box-shadow:0 8px 24px rgba(3,10,22,.16);cursor:pointer';
+   var installIcon=document.createElement('span');
+   installIcon.setAttribute('aria-hidden','true');
+   installIcon.textContent='＋';
+   installIcon.style.cssText='flex:0 0 auto;font-size:18px;line-height:1';
+   var installLabel=document.createElement('span');
+   installLabel.className='welfare-pwa-install-label';
+   installLabel.style.cssText='min-width:0;white-space:normal;overflow-wrap:anywhere';
+   installButton.appendChild(installIcon);
+   installButton.appendChild(installLabel);
+   function refreshInstallButtonLabel(){
+     var label='Install '+safeTenantLabel()+' Portal';
+     installLabel.textContent=label;
+     installButton.setAttribute('aria-label',label);
+   }
+   refreshInstallButtonLabel();
    installButton.addEventListener('click',async function(){
      if(deferredPrompt){
        deferredPrompt.prompt();
@@ -98,7 +117,23 @@
        window.alert('To install this school portal, open your browser menu and choose “Add to Home screen” or “Install app”.');
      }
    });
-   document.body.appendChild(installButton);
+   var hero=document.querySelector('#schoolOverview .portal-hero');
+   var loginPanel=document.getElementById('login');
+   if(hero&&hero.parentNode){
+     hero.insertAdjacentElement('afterend',installButton);
+     installButton.style.display='none';
+     var dashboard=document.getElementById('dashboard');
+     if(dashboard&&!dashboard.classList.contains('hidden'))installButton.style.display='inline-flex';
+     if(dashboard){
+       new MutationObserver(function(){
+         installButton.style.display=dashboard.classList.contains('hidden')?'none':'inline-flex';
+       }).observe(dashboard,{attributes:true,attributeFilter:['class']});
+     }
+   }else if(loginPanel&&loginPanel.parentNode){
+     loginPanel.insertAdjacentElement('afterend',installButton);
+   }else{
+     document.body.appendChild(installButton);
+   }
  }
  window.addEventListener('beforeinstallprompt',function(event){
    event.preventDefault();deferredPrompt=event;addInstallButton();
