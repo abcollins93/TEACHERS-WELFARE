@@ -2245,6 +2245,7 @@ async function showDashboard(){
    $('loginError').textContent=error
     ? 'Your credentials were accepted, but the school access check failed. The administrator account may not be linked to this school, or its database access policy needs correction. Please contact the platform administrator. ('+String(error.code||'access-check')+')'
     : 'Your credentials were accepted, but this administrator account cannot access an active school matching gateway code '+code+'. Check the school assignment and gateway link.';
+   window.finishTenantSkeletons?.();
    $('login').classList.remove('hidden');$('dashboard').classList.add('hidden');return;
  }
  setHeaderProfile(user, user.user_metadata?.full_name || user.user_metadata?.name || user.email || 'School Administrator', 'School Administrator', user.user_metadata?.avatar_url || user.user_metadata?.picture || null);
