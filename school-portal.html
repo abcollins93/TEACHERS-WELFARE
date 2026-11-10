@@ -3043,6 +3043,7 @@ window.generateTenantWelfarePdf=async function(o){
  const qr='twfqr'+id;
  const sign='<div class="twf-signatures"><div class="twf-sign"><div class="twf-line"></div><b>Welfare Financial Secretary</b><br>Signature &amp; Date</div><div class="twf-qr"><div id="'+qr+'"></div>Document reference</div><div class="twf-sign"><div class="twf-line"></div><b>Headteacher / Patron</b><br>'+esc(schoolName)+'</div></div><div class="twf-footer">'+esc(schoolName)+' Teachers Welfare Fund · '+(individual?'Official Member Statement':monthly?'Monthly Summary Report':annual?'Yearly Summary Report':'Complete Financial Summary')+' · Generated electronically</div>';
  const host=document.createElement('div');host.className='twf-pdf '+orientation;host.style.cssText='position:fixed;left:-100000px;top:0;z-index:-1;background:#fff';host.innerHTML='<style>'+style+'</style>'+head+body+sign;document.body.appendChild(host);
+ let pdfBlob;
  try{
   const qrNode=host.querySelector('#'+qr);
   if(window.QRCode&&qrNode)new window.QRCode(qrNode,{text:'TWF DOCUMENT '+id+' | SCHOOL '+schoolCode,width:76,height:76,colorDark:'#030a16',colorLight:'#ffffff',correctLevel:window.QRCode.CorrectLevel.M});
@@ -3136,9 +3137,9 @@ window.generateTenantWelfarePdf=async function(o){
   host.style.position='relative';host.style.left='auto';host.style.top='auto';
   const safeCode=String(schoolCode||schoolName).replace(/[^a-z0-9_-]/gi,'_')||'school';
   const filename=safeCode+'-'+(individual?'member-'+String(teacher.id||'statement').replace(/[^a-z0-9_-]/gi,'_')+'-statement':monthly?month+'-monthly-summary':annual?year+'-yearly-summary':'complete-fund-summary')+'.pdf';
-  await window.html2pdf().set({margin:[8,8,8,8],filename,image:{type:'jpeg',quality:.97},html2canvas:{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0,windowWidth:individual?794:1120},jsPDF:{unit:'mm',format:'a4',orientation,compress:true},pagebreak:{mode:['css','legacy'],avoid:['tr','.twf-metric','.twf-signatures']}}).from(host).save();
+  pdfBlob=await window.html2pdf().set({margin:[8,8,8,8],filename,image:{type:'jpeg',quality:.97},html2canvas:{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0,windowWidth:individual?794:1120},jsPDF:{unit:'mm',format:'a4',orientation,compress:true},pagebreak:{mode:['css','legacy'],avoid:['tr','.twf-metric','.twf-signatures']}}).from(host).outputPdf('blob');
  }finally{host.remove();}
- return {documentId:id};
+ return {documentId:id,blob:pdfBlob,filename};
 };
 window.downloadWelfareBlob=function(blob,fileName,statusNode,successText){
  if(!(blob instanceof Blob))throw new Error('The generated file is unavailable.');
