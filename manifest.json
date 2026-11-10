@@ -1,0 +1,21 @@
+{
+  "id": "./",
+  "name": "Teachers Welfare Portal",
+  "short_name": "Welfare Portal",
+  "description": "Teachers Welfare Fund school and member portal.",
+  "lang": "en-GH",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#0b1d3a",
+  "background_color": "#071328",
+  "icons": [
+    {
+      "src": "./icons/welfare-portal.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
