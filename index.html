@@ -435,23 +435,24 @@ try {
 .dark #adminPanelQuickActions{background:linear-gradient(135deg,#0f1f37,#0a172b);border-color:rgba(214,166,55,.25)}
 .admin-panel-quick-heading{display:flex;align-items:center;gap:9px;margin:0 0 12px;color:#334155;font-size:.72rem;font-weight:900;letter-spacing:.09em;text-transform:uppercase}
 .dark .admin-panel-quick-heading{color:#e2e8f0}
-.admin-panel-quick-arrow{display:grid;place-items:center;width:27px;height:27px;border-radius:9px;background:#fff1c9;color:#a8750b;box-shadow:inset 0 0 0 1px rgba(214,166,55,.2)}
+.admin-panel-quick-arrow{display:grid;place-items:center;width:27px;height:27px;border-radius:9px;background:#fff1c9;color:#a8750b;box-shadow:inset 0 1px rgba(214,166,55,.2)}
 .dark .admin-panel-quick-arrow{background:rgba(214,166,55,.16);color:#f3d58a}
 .admin-panel-quick-hint{margin-left:auto;color:#94a3b8;font-size:.65rem;font-weight:700;letter-spacing:0;text-transform:none}
-.admin-panel-quick-pills{display:flex;flex-wrap:wrap;gap:9px}
-.admin-panel-quick-pill{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:41px;padding:9px 13px;border:1px solid #e2e8f0;border-radius:999px;background:#fff;color:#1e3554;font-size:.73rem;font-weight:800;text-decoration:none;box-shadow:0 3px 9px rgba(15,23,42,.04);transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease}
+.admin-panel-quick-pills{display:flex;flex-wrap:nowrap;gap:9px;overflow-x:auto;overflow-y:hidden;padding:2px 2px 8px;scrollbar-width:thin;scrollbar-color:rgba(184,135,32,.55) transparent;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.admin-panel-quick-pill{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:41px;flex:0 0 auto;white-space:nowrap;padding:9px 14px;border:1px solid #e2e8f0;border-radius:999px;background:#fff;color:#1e3554;font-size:.73rem;font-weight:800;text-decoration:none;box-shadow:0 3px 9px rgba(15,23,42,.04);transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease}
 .admin-panel-quick-pill>i:first-child{color:#b88720}
 .admin-panel-quick-pill:hover{transform:translateY(-2px);border-color:#d6a637;background:#fffbef;box-shadow:0 7px 15px rgba(15,23,42,.08)}
 .admin-panel-quick-pill:focus-visible{outline:3px solid rgba(214,166,55,.35);outline-offset:2px}
-.admin-panel-pill-arrow{font-size:.58rem;color:#94a3b8}
+.admin-panel-quick-pill.is-active{border-color:#d6a637;background:#fff5d9;color:#805b0a;box-shadow:inset 0 0 0 1px rgba(214,166,55,.22),0 5px 12px rgba(15,23,42,.07)}
+.admin-panel-quick-pill.is-active:after{content:"";width:6px;height:6px;border-radius:50%;background:#d6a637;box-shadow:0 0 0 3px rgba(214,166,55,.15)}
 .dark .admin-panel-quick-pill{background:#172943;border-color:#334155;color:#e2e8f0}
-.dark .admin-panel-quick-pill:hover{background:#243956;border-color:#d6a637}
+.dark .admin-panel-quick-pill:hover,.dark .admin-panel-quick-pill.is-active{background:#243956;border-color:#d6a637;color:#ffe4a3}
 .admin-panel-quick-pill-danger{border-color:#fecaca;color:#b91c1c;background:#fff7f7}
 .admin-panel-quick-pill-danger>i:first-child{color:#dc2626}
-.admin-panel-quick-pill-danger:hover{border-color:#ef4444;background:#fff1f2}
+.admin-panel-quick-pill-danger:hover,.admin-panel-quick-pill-danger.is-active{border-color:#ef4444;background:#fff1f2}
 .dark .admin-panel-quick-pill-danger{background:rgba(127,29,29,.2);border-color:#7f1d1d;color:#fda4af}
-@media(max-width:640px){#adminPanelQuickActions{padding:13px;border-radius:17px}.admin-panel-quick-pills{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.admin-panel-quick-pill{padding:9px 8px;font-size:.67rem;gap:6px;min-width:0}.admin-panel-quick-hint{font-size:.6rem}}
-@media(max-width:380px){.admin-panel-quick-pills{grid-template-columns:1fr}.admin-panel-quick-pill{justify-content:flex-start;padding-left:13px}}
+#admin-broadcast-box,#admin-settings-box,#admin-access-recovery-box,#admin-register-admin-box,#admin-reset-box{scroll-margin-top:112px}
+@media(max-width:640px){#adminPanelQuickActions{padding:13px;border-radius:17px}.admin-panel-quick-pills{gap:8px}.admin-panel-quick-pill{padding:9px 12px;font-size:.68rem}.admin-panel-quick-hint{font-size:.6rem}}
 </style>
 
 <style id="profile-section-top-accents">
@@ -1585,15 +1586,12 @@ try {
             <span>Quick Admin Actions</span>
             <span class="admin-panel-quick-hint">Jump to a task</span>
         </div>
-        <div class="admin-panel-quick-pills">
-            <a class="admin-panel-quick-pill" href="#admin-broadcast-box"><i class="fa-solid fa-bullhorn"></i> School Announcement <i class="fa-solid fa-arrow-up-right-from-square admin-panel-pill-arrow"></i></a>
-            <a class="admin-panel-quick-pill" href="#admin-settings-box"><i class="fa-solid fa-coins"></i> Dues Settings <i class="fa-solid fa-arrow-up-right-from-square admin-panel-pill-arrow"></i></a>
-            <a class="admin-panel-quick-pill" href="#admin-users-box"><i class="fa-solid fa-user-shield"></i> Admin Accounts <i class="fa-solid fa-arrow-up-right-from-square admin-panel-pill-arrow"></i></a>
-            <a class="admin-panel-quick-pill" href="#admin-staff-box"><i class="fa-solid fa-user-plus"></i> Register Staff <i class="fa-solid fa-arrow-up-right-from-square admin-panel-pill-arrow"></i></a>
-            <a class="admin-panel-quick-pill" href="#admin-payment-box"><i class="fa-solid fa-money-bill-wave"></i> Record Dues <i class="fa-solid fa-arrow-up-right-from-square admin-panel-pill-arrow"></i></a>
-            <a class="admin-panel-quick-pill" href="#admin-withdrawal-box"><i class="fa-solid fa-hand-holding-dollar"></i> Welfare Payout <i class="fa-solid fa-arrow-up-right-from-square admin-panel-pill-arrow"></i></a>
-            <a class="admin-panel-quick-pill" href="#admin-roster-box"><i class="fa-solid fa-users"></i> Member Roster <i class="fa-solid fa-arrow-up-right-from-square admin-panel-pill-arrow"></i></a>
-            <a class="admin-panel-quick-pill admin-panel-quick-pill-danger" href="#admin-reset-box"><i class="fa-solid fa-rotate-left"></i> Reset Options <i class="fa-solid fa-arrow-up-right-from-square admin-panel-pill-arrow"></i></a>
+        <div class="admin-panel-quick-pills" role="list">
+            <a class="admin-panel-quick-pill" role="listitem" href="#admin-broadcast-box" data-admin-quick-target="admin-broadcast-box"><i class="fa-solid fa-bullhorn"></i> School Announcement</a>
+            <a class="admin-panel-quick-pill" role="listitem" href="#admin-settings-box" data-admin-quick-target="admin-settings-box"><i class="fa-solid fa-coins"></i> School Settings · Monthly Dues</a>
+            <a class="admin-panel-quick-pill" role="listitem" href="#admin-access-recovery-box" data-admin-quick-target="admin-access-recovery-box"><i class="fa-solid fa-key"></i> Administrator Access &amp; Recovery</a>
+            <a class="admin-panel-quick-pill" role="listitem" href="#admin-register-admin-box" data-admin-quick-target="admin-register-admin-box"><i class="fa-solid fa-user-plus"></i> Register &amp; Manage Administrators</a>
+            <a class="admin-panel-quick-pill admin-panel-quick-pill-danger" role="listitem" href="#admin-reset-box" data-admin-quick-target="admin-reset-box"><i class="fa-solid fa-triangle-exclamation"></i> Reset School's Welfare Data</a>
         </div>
     </nav>
 
@@ -1653,7 +1651,7 @@ try {
                 Admin User Registration & Recovery Settings
             </h3>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                <div id="admin-register-admin-box" class="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 scroll-mt-28">
                     <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
                         <i class="fa-solid fa-user-plus text-emerald-500"></i> Register New Administrator
                     </h4>
@@ -1690,7 +1688,7 @@ try {
                     </form>
                 </div>
 
-                <div class="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                <div id="admin-access-recovery-box" class="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 scroll-mt-28">
                     <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
                         <i class="fa-solid fa-key text-amber-500"></i> Change Admin Password
                     </h4>
@@ -1868,6 +1866,29 @@ try {
             </div>
         </div>
     </div>
+<script id="admin-panel-quick-actions-behaviour">
+(function(){
+ const nav=document.getElementById('adminPanelQuickActions');
+ if(!nav||nav.dataset.bound==='true')return;
+ nav.dataset.bound='true';
+ const links=Array.from(nav.querySelectorAll('[data-admin-quick-target]'));
+ links.forEach(function(link){
+  link.addEventListener('click',function(event){
+   const target=document.getElementById(link.dataset.adminQuickTarget);
+   if(!target)return;
+   event.preventDefault();
+   links.forEach(function(item){
+    const active=item===link;
+    item.classList.toggle('is-active',active);
+    if(active)item.setAttribute('aria-current','location');else item.removeAttribute('aria-current');
+   });
+   target.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+   if(history.replaceState)history.replaceState(null,'','#'+target.id);
+  });
+ });
+})();
+</script>
+
 </section>
 
 <!-- =========================================================
