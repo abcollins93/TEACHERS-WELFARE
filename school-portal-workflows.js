@@ -16,9 +16,12 @@ const rankOptionsMarkup=()=>'<option value="">Select Rank / Grade</option>'+RANK
 const csvCell=v=>{let s=String(v??'');if(/^[\s]*[=+@\-\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';};
 const downloadWorkflowBlob=(blob,fileName,statusId,successText,viewLabel,previewWindow)=>{
  if(!(blob instanceof Blob))throw new Error('The generated file is unavailable.');
- const url=window.URL.createObjectURL(blob),link=document.createElement('a');
+ const isPdf=/\\.pdf$/i.test(String(fileName||''))||/pdf/i.test(String(viewLabel||''))||/PDF/i.test(String(successText||''));
+ const filename=isPdf?(String(fileName||'Welfare_Statement_Report').replace(/\\.pdf$/i,'')||'Welfare_Statement_Report')+'.pdf':String(fileName||'download');
+ const downloadBlob=isPdf&&blob.type!=='application/pdf'?new Blob([blob],{type:'application/pdf'}):blob;
+ const url=window.URL.createObjectURL(downloadBlob),link=document.createElement('a');
  link.href=url;
- link.setAttribute('download',fileName);
+ link.setAttribute('download',filename);
  document.body.appendChild(link);
  link.click();
  document.body.removeChild(link);
