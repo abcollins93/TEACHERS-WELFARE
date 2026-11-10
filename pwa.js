@@ -8,7 +8,7 @@
  var manifestUrl='';
  var isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
  function safeTenantLabel(){
-   return (tenantName||schoolCode||'School').replace(/[\\u0000-\\u001f]/g,' ').trim().slice(0,90)||'School';
+   return (tenantName||schoolCode||'School').replace(/[\u0000-\u001f]/g,' ').trim()||'School';
  }
  function toBase64Utf8(value){
    var bytes=new TextEncoder().encode(value);
@@ -18,7 +18,7 @@
  }
  function injectTenantManifest(){
    var label=safeTenantLabel();
-   var shortLabel=('Welfare '+(schoolCode||label)).replace(/\\s+/g,' ').slice(0,20);
+   var shortLabel=('Welfare '+(schoolCode||label)).replace(/\s+/g,' ').slice(0,20);
    var manifest={
      id:window.location.href,
      name:'Welfare - '+label,
