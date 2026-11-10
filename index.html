@@ -417,6 +417,15 @@ try {
 @media(max-width:600px){#adminDashboardHero .admin-dashboard-welcome-wrap{margin-bottom:15px}#adminDashboardHero .admin-dashboard-welcome{padding:9px 15px;font-size:.72rem;letter-spacing:.07em}}
 </style>
 
+
+<style id="profile-section-top-accents">
+#section-profile .profile-accent-card{position:relative;isolation:isolate;}
+#section-profile .profile-accent-card:before{content:"";position:absolute;z-index:2;top:0;left:0;right:0;height:5px;border-top-left-radius:inherit;border-top-right-radius:inherit;pointer-events:none;}
+#section-profile .profile-accent-green:before{background:#22a06b}
+#section-profile .profile-accent-blue:before{background:#3b82f6}
+#section-profile .profile-accent-gold:before{background:#d6a637}
+#section-profile .profile-accent-purple:before{background:#8b5cf6}
+</style>
 </head>
 
 <body class="bg-slate-100/90 text-slate-800 dark:bg-[#030a16] dark:text-slate-100 pb-16 selection:bg-amber-400 selection:text-slate-950">
@@ -1088,7 +1097,7 @@ try {
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <!-- Profile Summary Card -->
-        <div class="glass-card rounded-2xl p-6 shadow-sm flex flex-col items-center text-center relative overflow-hidden border-t-4 border-t-emerald-500">
+        <div class="glass-card profile-accent-card profile-accent-green rounded-2xl p-6 shadow-sm flex flex-col items-center text-center relative overflow-hidden border-t-4 border-t-emerald-500">
             <div class="absolute top-0 right-0 p-4">
                 <span id="profileStatusBadge" class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] font-extrabold border border-emerald-200">Active</span>
             </div>
@@ -1124,7 +1133,7 @@ try {
         </div>
 
         <!-- Personal & Contact Details -->
-        <div class="glass-card rounded-2xl p-6 shadow-sm border-t-4 border-t-blue-500 lg:col-span-2">
+        <div class="glass-card profile-accent-card profile-accent-blue rounded-2xl p-6 shadow-sm border-t-4 border-t-blue-500 lg:col-span-2">
             <h3 class="font-extrabold text-base mb-4 text-slate-900 dark:text-white flex items-center gap-2">
                 <i class="fa-solid fa-address-card text-blue-500"></i> Personal & Contact Information
             </h3>
@@ -1158,7 +1167,7 @@ try {
 
     <!-- Professional & Welfare Financial Overview -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="glass-card rounded-2xl p-6 shadow-sm border-t-4 border-t-amber-500">
+        <div class="glass-card profile-accent-card profile-accent-gold rounded-2xl p-6 shadow-sm border-t-4 border-t-amber-500">
             <h3 class="font-extrabold text-base mb-4 text-slate-900 dark:text-white flex items-center gap-2">
                 <i class="fa-solid fa-briefcase text-amber-500"></i> Professional & Employment Details
             </h3>
@@ -1182,7 +1191,7 @@ try {
             </div>
         </div>
 
-        <div class="glass-card rounded-2xl p-6 shadow-sm border-t-4 border-t-purple-500">
+        <div class="glass-card profile-accent-card profile-accent-purple rounded-2xl p-6 shadow-sm border-t-4 border-t-purple-500">
             <h3 class="font-extrabold text-base mb-4 text-slate-900 dark:text-white flex items-center gap-2">
                 <i class="fa-solid fa-vault text-purple-500"></i> Welfare Membership & Financial Summary
             </h3>
