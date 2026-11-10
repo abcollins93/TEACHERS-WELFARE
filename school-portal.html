@@ -2247,6 +2247,7 @@ async function showDashboard(){
  setHeaderProfile(user, user.user_metadata?.full_name || user.user_metadata?.name || user.email || 'School Administrator', 'School Administrator', user.user_metadata?.avatar_url || user.user_metadata?.picture || null);
  setTenantFooter(school);
  $('login').classList.add('hidden');$('dashboard').classList.remove('hidden');
+ window.startTenantSkeletons?.();
  resetInactivityTimer();
  $('schoolName').textContent=school.name;$('brand').textContent=school.name;$('sideSchoolName').textContent=school.name;$('sideSchoolCode').textContent=school.school_code;$('schoolDescription').textContent='Providing mutual financial support, social welfare benefits, and fully transparent monthly record-keeping for '+school.name+'.';
  $('schoolMeta').textContent=[school.school_code,school.school_type,school.district,school.region].filter(Boolean).join(' · ');
@@ -2257,7 +2258,7 @@ async function showDashboard(){
   client.from('transaction_reversals').select('transaction_type,transaction_id').eq('school_id',school.id)
  ]);
  const err=[teachersRes.error,contribRes.error,payoutsRes.error,reversalsRes.error].find(Boolean);
- if(err){console.warn('School records could not be loaded:',err);return;}
+ if(err){window.finishTenantSkeletons?.();console.warn('School records could not be loaded:',err);return;}
  const teachers=teachersRes.data||[], contributions=contribRes.data||[], payouts=payoutsRes.data||[], reversals=reversalsRes.data||[];
  const reversedContributions=new Set(reversals.filter(r=>r.transaction_type==='contribution').map(r=>String(r.transaction_id)));
  const reversedPayouts=new Set(reversals.filter(r=>r.transaction_type==='payout').map(r=>String(r.transaction_id)));
@@ -2283,6 +2284,7 @@ try {
     // warning panel that users can mistake for lost data. Details remain in console.
     console.error('[School Welfare] Workflow initialization deferred/failed:',workflowError?.message||workflowError);
   }
+  window.finishTenantSkeletons?.();
   const duesMetric=$('standardDuesMetric'),duesInput=$('wfMonthlyDues');if(duesMetric&&duesInput){const updateDues=()=>{duesMetric.textContent='GHS '+money(duesInput.value||0);};updateDues();duesInput.addEventListener('input',updateDues);}
  const schoolPdfButton=$('downloadSchoolPdf');
  if(schoolPdfButton)schoolPdfButton.onclick=()=>{
@@ -3221,5 +3223,20 @@ body:has(#login:not(.hidden)) main{
   #wfTeacherPanel .teacher-profile-accent{border-top-left-radius:17px!important;border-top-right-radius:17px!important}
 }
 </style>
+
+<style id="tenant-skeleton-loading-styles">
+.welfare-skeleton{display:inline-block!important;min-width:5.5rem;min-height:1em;border-radius:7px!important;color:transparent!important;background:linear-gradient(100deg,rgba(148,163,184,.16) 20%,rgba(148,163,184,.34) 40%,rgba(148,163,184,.16) 60%)!important;background-size:200% 100%!important;animation:welfareSkeletonPulse 1.25s ease-in-out infinite!important;pointer-events:none!important;user-select:none!important}
+.welfare-skeleton.welfare-skeleton-wide{min-width:9rem;min-height:1.1em}
+@keyframes welfareSkeletonPulse{0%{background-position:100% 0;opacity:.72}100%{background-position:-100% 0;opacity:1}}
+@media(prefers-reduced-motion:reduce){.welfare-skeleton{animation:none!important;background-position:50% 0!important}}
+</style>
+
+<script id="tenant-skeleton-loading">
+(function(){
+ const ids=['teacherCount','contributionTotal','payoutTotal','monthlyContributionTotal','netTotal','standardDuesMetric','lastActivity','teacherDashboardName','teacherDashboardPhone','teacherDashboardClass','teacherOwnName','teacherOwnRank','teacherOwnStaffId','teacherOwnRegistration','teacherOwnMembership'];
+ window.startTenantSkeletons=function(){ids.forEach(id=>{const el=document.getElementById(id);if(el){el.classList.add('welfare-skeleton');if(/Name|lastActivity/i.test(id))el.classList.add('welfare-skeleton-wide');}});};
+ window.finishTenantSkeletons=function(){ids.forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('welfare-skeleton','welfare-skeleton-wide');});};
+})();
+</script>
 </body>
 </html>
