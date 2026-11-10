@@ -1,9 +1,42 @@
 (function(){
  'use strict';
+ var pageUrl=new URL(window.location.href);
+ var params=pageUrl.searchParams;
+ var schoolCode=(params.get('school')||params.get('c')||'').trim().toUpperCase();
+ var tenantLaunchUrl=null;
+ if(/^[A-Z0-9-]{2,32}$/.test(schoolCode)){
+   tenantLaunchUrl=new URL('./school-portal.html',pageUrl);
+   tenantLaunchUrl.searchParams.set('school',schoolCode);
+ }else if(/(?:^|\/)g\.html$/i.test(pageUrl.pathname)){
+   tenantLaunchUrl=new URL('./index.html',pageUrl);
+ }else{
+   tenantLaunchUrl=pageUrl;
+ }
+ var appScope=new URL('./',pageUrl);
+ var manifest={
+   id:tenantLaunchUrl.pathname+tenantLaunchUrl.search,
+   name:'Teachers Welfare Portal',
+   short_name:'Welfare Portal',
+   description:'Teachers Welfare Fund school and member portal.',
+   lang:'en-GH',
+   start_url:tenantLaunchUrl.href,
+   scope:appScope.href,
+   display:'standalone',
+   orientation:'any',
+   theme_color:'#0b1d3a',
+   background_color:'#071328',
+   icons:[{src:new URL('./icons/welfare-portal.svg',pageUrl).href,sizes:'any',type:'image/svg+xml',purpose:'any maskable'}]
+ };
+ var manifestUrl=URL.createObjectURL(new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'}));
+ var manifestLink=document.querySelector('link[rel="manifest"]');
+ if(!manifestLink){manifestLink=document.createElement('link');manifestLink.rel='manifest';document.head.appendChild(manifestLink);}
+ manifestLink.href=manifestUrl;
+ window.addEventListener('pagehide',function(){URL.revokeObjectURL(manifestUrl);},{once:true});
  var isSecure=location.protocol==='https:'||location.hostname==='localhost';
  if(!isSecure||!('serviceWorker' in navigator))return;
  window.addEventListener('load',function(){
-   navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(function(error){
+   var swUrl=new URL('./sw.js',pageUrl);
+   navigator.serviceWorker.register(swUrl.href,{scope:appScope.href,updateViaCache:'none'}).catch(function(error){
      console.warn('[Welfare Portal PWA] Service worker registration failed:',error);
    });
  });
