@@ -3181,6 +3181,25 @@ window.generateTenantWelfarePdf=async function(options){
 })();
 </script>
 
+
+
+<style id="global-portal-content-spacing-final">
+/* One shared content offset for every authenticated tenant workspace view. */
+body:not(:has(#login:not(.hidden))) main{
+  margin-top:0!important;
+  padding-top:calc(var(--app-header-height,106px) + var(--dashboard-menu-height,68px) + 18px)!important;
+}
+/* The main wrapper owns the header clearance; prevent nested dashboard spacers adding a second gap. */
+body:not(:has(#login:not(.hidden))) #dashboard .dash-layout,
+body:not(:has(#login:not(.hidden))) #schoolOverview{
+  padding-top:0!important;
+}
+/* Keep the sign-in gateway independent of authenticated header spacing. */
+body:has(#login:not(.hidden)) main{
+  margin-top:0!important;
+  padding-top:0!important;
+}
+</style>
 </body></html>
 
 
