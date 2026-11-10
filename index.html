@@ -418,6 +418,30 @@ try {
 </style>
 
 
+<style id="admin-panel-quick-actions-styles">
+#adminPanelQuickActions{position:relative;z-index:2;margin:-5px 0 24px;padding:15px 17px;border:1px solid rgba(214,166,55,.22);border-radius:20px;background:linear-gradient(135deg,#fff 0%,#f7f9fc 100%);box-shadow:0 9px 25px rgba(15,23,42,.06)}
+.dark #adminPanelQuickActions{background:linear-gradient(135deg,#0f1f37,#0a172b);border-color:rgba(214,166,55,.25)}
+.admin-panel-quick-heading{display:flex;align-items:center;gap:9px;margin:0 0 12px;color:#334155;font-size:.72rem;font-weight:900;letter-spacing:.09em;text-transform:uppercase}
+.dark .admin-panel-quick-heading{color:#e2e8f0}
+.admin-panel-quick-arrow{display:grid;place-items:center;width:27px;height:27px;border-radius:9px;background:#fff1c9;color:#a8750b;box-shadow:inset 0 0 0 1px rgba(214,166,55,.2)}
+.dark .admin-panel-quick-arrow{background:rgba(214,166,55,.16);color:#f3d58a}
+.admin-panel-quick-hint{margin-left:auto;color:#94a3b8;font-size:.65rem;font-weight:700;letter-spacing:0;text-transform:none}
+.admin-panel-quick-pills{display:flex;flex-wrap:wrap;gap:9px}
+.admin-panel-quick-pill{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:41px;padding:9px 13px;border:1px solid #e2e8f0;border-radius:999px;background:#fff;color:#1e3554;font-size:.73rem;font-weight:800;text-decoration:none;box-shadow:0 3px 9px rgba(15,23,42,.04);transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease}
+.admin-panel-quick-pill>i:first-child{color:#b88720}
+.admin-panel-quick-pill:hover{transform:translateY(-2px);border-color:#d6a637;background:#fffbef;box-shadow:0 7px 15px rgba(15,23,42,.08)}
+.admin-panel-quick-pill:focus-visible{outline:3px solid rgba(214,166,55,.35);outline-offset:2px}
+.admin-panel-pill-arrow{font-size:.58rem;color:#94a3b8}
+.dark .admin-panel-quick-pill{background:#172943;border-color:#334155;color:#e2e8f0}
+.dark .admin-panel-quick-pill:hover{background:#243956;border-color:#d6a637}
+.admin-panel-quick-pill-danger{border-color:#fecaca;color:#b91c1c;background:#fff7f7}
+.admin-panel-quick-pill-danger>i:first-child{color:#dc2626}
+.admin-panel-quick-pill-danger:hover{border-color:#ef4444;background:#fff1f2}
+.dark .admin-panel-quick-pill-danger{background:rgba(127,29,29,.2);border-color:#7f1d1d;color:#fda4af}
+@media(max-width:640px){#adminPanelQuickActions{padding:13px;border-radius:17px}.admin-panel-quick-pills{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.admin-panel-quick-pill{padding:9px 8px;font-size:.67rem;gap:6px;min-width:0}.admin-panel-quick-hint{font-size:.6rem}}
+@media(max-width:380px){.admin-panel-quick-pills{grid-template-columns:1fr}.admin-panel-quick-pill{justify-content:flex-start;padding-left:13px}}
+</style>
+
 <style id="profile-section-top-accents">
 /* Reliable visible accent strips for the administrator's four profile cards.
    Use an overlay strip rather than relying only on border utilities, which can
@@ -1542,6 +1566,24 @@ try {
             </div>
         </div>
     </div>
+
+    <nav id="adminPanelQuickActions" aria-label="Administration quick actions">
+        <div class="admin-panel-quick-heading">
+            <span class="admin-panel-quick-arrow"><i class="fa-solid fa-arrow-right"></i></span>
+            <span>Quick Admin Actions</span>
+            <span class="admin-panel-quick-hint">Jump to a task</span>
+        </div>
+        <div class="admin-panel-quick-pills">
+            <a class="admin-panel-quick-pill" href="#admin-broadcast-box"><i class="fa-solid fa-bullhorn"></i> School Announcement <i class="fa-solid fa-arrow-up-right-from-square admin-panel-pill-arrow"></i></a>
+            <a class="admin-panel-quick-pill" href="#admin-settings-box"><i class="fa-solid fa-coins"></i> Dues Settings <i class="fa-solid fa-arrow-up-right-from-square admin-panel-pill-arrow"></i></a>
+            <a class="admin-panel-quick-pill" href="#admin-users-box"><i class="fa-solid fa-user-shield"></i> Admin Accounts <i class="fa-solid fa-arrow-up-right-from-square admin-panel-pill-arrow"></i></a>
+            <a class="admin-panel-quick-pill" href="#admin-staff-box"><i class="fa-solid fa-user-plus"></i> Register Staff <i class="fa-solid fa-arrow-up-right-from-square admin-panel-pill-arrow"></i></a>
+            <a class="admin-panel-quick-pill" href="#admin-payment-box"><i class="fa-solid fa-money-bill-wave"></i> Record Dues <i class="fa-solid fa-arrow-up-right-from-square admin-panel-pill-arrow"></i></a>
+            <a class="admin-panel-quick-pill" href="#admin-withdrawal-box"><i class="fa-solid fa-hand-holding-dollar"></i> Welfare Payout <i class="fa-solid fa-arrow-up-right-from-square admin-panel-pill-arrow"></i></a>
+            <a class="admin-panel-quick-pill" href="#admin-roster-box"><i class="fa-solid fa-users"></i> Member Roster <i class="fa-solid fa-arrow-up-right-from-square admin-panel-pill-arrow"></i></a>
+            <a class="admin-panel-quick-pill admin-panel-quick-pill-danger" href="#admin-reset-box"><i class="fa-solid fa-rotate-left"></i> Reset Options <i class="fa-solid fa-arrow-up-right-from-square admin-panel-pill-arrow"></i></a>
+        </div>
+    </nav>
 
     <div class="space-y-6">
         <div id="admin-broadcast-box" class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 scroll-mt-24">
