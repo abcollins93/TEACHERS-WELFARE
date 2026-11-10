@@ -1361,6 +1361,26 @@ header.top #headerAvatar{
 @media(max-width:600px){.dashboard-welcome-greeting{margin:13px auto 11px;padding:0 10px}.dashboard-welcome-greeting #dashboardGreeting{padding:9px 15px;font-size:.72rem;letter-spacing:.06em}}
 </style>
 
+
+<style id="dashboard-metric-icon-alignment-fix">
+/* One real icon tile per dashboard metric; keep icon and copy side by side. */
+#schoolOverview .dashboard-metrics .metric-compact{display:flex;align-items:center;justify-content:flex-start;gap:12px;min-width:0;padding:17px 18px;border-left:5px solid var(--metric-accent,#2563eb)}
+#schoolOverview .dashboard-metrics .metric-compact:before{content:none!important;display:none!important}
+#schoolOverview .dashboard-metrics .metric-compact .metric-icon{display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;margin:0;border-radius:12px;background:var(--metric-icon-bg,#eaf2ff);color:var(--metric-accent,#2563eb);font-size:1.15rem;box-shadow:inset 0 0 0 1px rgba(15,23,42,.035)}
+#schoolOverview .dashboard-metrics .metric-compact .metric-content{display:flex;flex:1 1 auto;flex-direction:column;justify-content:center;min-width:0;gap:5px}
+#schoolOverview .dashboard-metrics .metric-compact .metric-label{display:block;margin:0;color:#778196;font-size:.67rem;font-weight:800;letter-spacing:.045em;line-height:1.35;text-transform:uppercase}
+#schoolOverview .dashboard-metrics .metric-compact .metric-content strong{display:block;margin:0;color:#182235;font-size:clamp(1.05rem,1.8vw,1.45rem);font-weight:850;line-height:1.2;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+#schoolOverview .dashboard-metrics .metric-compact:nth-child(1){--metric-accent:#2563eb;--metric-icon-bg:#eaf2ff}
+#schoolOverview .dashboard-metrics .metric-compact:nth-child(2){--metric-accent:#c18a16;--metric-icon-bg:#fff5d9}
+#schoolOverview .dashboard-metrics .metric-compact:nth-child(3){--metric-accent:#23945f;--metric-icon-bg:#e2f7eb}
+#schoolOverview .dashboard-metrics .metric-compact:nth-child(4){--metric-accent:#23945f;--metric-icon-bg:#e2f7eb}
+#schoolOverview .dashboard-metrics .metric-standard{--metric-accent:#23945f;--metric-icon-bg:#e2f7eb}
+#schoolOverview .dashboard-metrics .metric-activity{--metric-accent:#8055c7;--metric-icon-bg:#f0e8ff}
+#schoolOverview .dashboard-metrics #teacherStandardMonthlyDues{--metric-accent:#23945f!important;--metric-icon-bg:#e2f7eb!important;border-left-color:#23945f!important}
+#schoolOverview .dashboard-metrics #teacherStandardMonthlyDues .metric-icon{background:#e2f7eb!important;color:#23945f!important}
+@media(max-width:560px){#schoolOverview .dashboard-metrics .metric-compact{gap:9px;padding:13px 10px}#schoolOverview .dashboard-metrics .metric-compact .metric-icon{flex-basis:38px;width:38px;height:38px;font-size:1rem}#schoolOverview .dashboard-metrics .metric-compact .metric-label{font-size:.61rem;letter-spacing:.02em}#schoolOverview .dashboard-metrics .metric-compact .metric-content strong{font-size:1.05rem}}
+.dark #schoolOverview .dashboard-metrics .metric-compact .metric-content strong{color:#f1f5fb}
+</style>
 </head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading page">
@@ -1413,7 +1433,7 @@ header.top #headerAvatar{
  </div>
  <button type="button" id="teacherDashboardStatementButton" class="teacher-dashboard-statement"><i class="fa-solid fa-file-pdf"></i> Download my statement</button>
 </section>
-<div class="grid dashboard-metrics"><div class="metric metric-compact"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-users text-2xl"></i></div><div class="metric-content"><span class="metric-label">Registered Members</span><strong id="teacherCount">—</strong></div></div><div class="metric metric-compact"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-arrow-trend-up"></i></div><div class="metric-content"><span class="metric-label">My Contributions · GHS</span><strong id="contributionTotal">—</strong></div></div><div class="metric metric-compact"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-hand-holding-heart text-2xl"></i></div><div class="metric-content"><span class="metric-label">My Payouts · GHS</span><strong id="payoutTotal">—</strong></div></div><div class="metric metric-compact"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-calendar-days text-2xl"></i></div><div class="metric-content"><span class="metric-label">Contributions This Month · GHS</span><strong id="monthlyContributionTotal">—</strong></div></div><div class="metric metric-featured metric-balance"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-vault"></i></div><div class="metric-content"><span class="metric-label">TOTAL FUND BALANCE · GHS</span><strong id="netTotal">—</strong><span class="metric-note metric-note-positive"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> After all active payouts</span></div></div><div class="metric metric-featured metric-standard"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-calendar-check"></i></div><div class="metric-content"><span class="metric-label">STANDARD MONTHLY DUES</span><strong id="standardDuesMetric">—</strong><span class="metric-note">Current school rate</span></div></div><div class="metric metric-featured metric-activity"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-clock-rotate-left"></i></div><div class="metric-content"><span class="metric-label">LAST ACTIVITY</span><strong id="lastActivity" style="font-size:1rem">—</strong><span class="metric-note">Latest recorded activity</span></div></div>
+<div class="grid dashboard-metrics"><div class="metric metric-compact"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-users text-2xl"></i></div><div class="metric-content"><span class="metric-label">Registered Members</span><strong id="teacherCount">—</strong></div></div><div class="metric metric-compact"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-arrow-trend-up"></i></div><div class="metric-content"><span class="metric-label">My Contributions · GHS</span><strong id="contributionTotal">—</strong></div></div><div class="metric metric-compact"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-hand-holding-heart text-2xl"></i></div><div class="metric-content"><span class="metric-label">My Payouts · GHS</span><strong id="payoutTotal">—</strong></div></div><div class="metric metric-compact"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-calendar-days text-2xl"></i></div><div class="metric-content"><span class="metric-label">Contributions This Month · GHS</span><strong id="monthlyContributionTotal">—</strong></div></div><div class="metric metric-featured metric-balance"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-vault"></i></div><div class="metric-content"><span class="metric-label">TOTAL FUND BALANCE · GHS</span><strong id="netTotal">—</strong><span class="metric-note metric-note-positive"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> After all active payouts</span></div></div><div class="metric metric-featured metric-standard"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-list-check"></i></div><div class="metric-content"><span class="metric-label">STANDARD MONTHLY DUES</span><strong id="standardDuesMetric">—</strong><span class="metric-note">Current school rate</span></div></div><div class="metric metric-featured metric-activity"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-clock-rotate-left"></i></div><div class="metric-content"><span class="metric-label">LAST ACTIVITY</span><strong id="lastActivity" style="font-size:1rem">—</strong><span class="metric-note">Latest recorded activity</span></div></div>
 </div>
 <section id="teacherDashboardLedgers" class="teacher-dashboard-ledgers" hidden>
  <article class="teacher-dashboard-ledger-card">
@@ -1861,11 +1881,11 @@ async function renderTeacherDashboard(profile,school){
  teacherDuesCard.id='teacherStandardMonthlyDues';
  teacherDuesCard.className='metric metric-featured metric-standard';
  teacherDuesCard.innerHTML='<div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-calendar-check"></i></div><div class="metric-content"><span class="metric-label">STANDARD MONTHLY DUES</span><strong id="teacherStandardMonthlyDuesAmount">—</strong><span class="metric-note">Current Rate</span></div>';
- teacherDuesCard.style.setProperty('--metric-accent','#db2777');
- teacherDuesCard.style.setProperty('--metric-icon-bg','#fce7f3');
- teacherDuesCard.style.borderLeftColor='#db2777';
+ teacherDuesCard.style.setProperty('--metric-accent','#23945f');
+ teacherDuesCard.style.setProperty('--metric-icon-bg','#e2f7eb');
+ teacherDuesCard.style.borderLeftColor='#23945f';
  const teacherDuesIcon=teacherDuesCard.querySelector('.metric-icon');
- if(teacherDuesIcon){teacherDuesIcon.style.backgroundColor='#fce7f3';teacherDuesIcon.style.color='#db2777';}
+ if(teacherDuesIcon){teacherDuesIcon.style.backgroundColor='#e2f7eb';teacherDuesIcon.style.color='#23945f';}
  const existingStandardCard=$('standardDuesMetric')?.closest('.metric-standard');
  if(existingStandardCard)existingStandardCard.insertAdjacentElement('afterend',teacherDuesCard);
  $('teacherStandardMonthlyDuesAmount').textContent=teacherStandardDuesError?'Unavailable':'GHS '+money(teacherStandardDues||0);
