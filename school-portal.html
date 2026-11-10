@@ -1884,6 +1884,8 @@ async function renderTeacherDashboard(profile,school){
    #teacherLiveTicker .ticker-group{display:flex;flex:0 0 auto;align-items:center;gap:38px;padding-right:38px;white-space:nowrap}
    #teacherLiveTicker .ticker-item{display:inline-flex;align-items:center;gap:10px;color:#f7f9fd;font-size:.8rem}
    #teacherLiveTicker .ticker-item b{padding:5px 8px;border-radius:7px;background:rgba(214,166,55,.13);border:1px solid rgba(214,166,55,.22);color:#ffdf91;font-size:.59rem;letter-spacing:.09em}
+   #teacherLiveTicker .ticker-item-dues{padding:6px 10px;border:1px solid rgba(255,220,139,.42);border-radius:999px;background:rgba(214,166,55,.13)}
+   #teacherLiveTicker .ticker-item-dues b{background:rgba(214,166,55,.2);border-color:rgba(255,220,139,.35);color:#ffdb85}
    #teacherLiveTicker .ticker-time{color:#9fb2ca;font-size:.66rem}
    #teacherLiveTicker .ticker-control{position:relative;z-index:2;flex:0 0 24px;width:24px;height:24px;min-width:24px;min-height:24px;padding:0!important;display:grid;place-items:center;border:1px solid rgba(255,255,255,.2);border-radius:50%;background:rgba(255,255,255,.07);color:#f7df9e;font-size:.58rem;line-height:1;box-shadow:none}
    #teacherLiveTicker .ticker-control i{font-size:.58rem;line-height:1}
@@ -1914,9 +1916,10 @@ async function renderTeacherDashboard(profile,school){
   if(feedError){console.warn('[Teacher live ticker] Feed unavailable:',feedError.message);return;}
   const rows=Array.isArray(feed)?feed:[];
   const items=rows.length?rows.map(item=>{
-   const label=item.feed_type==='announcement'?'SCHOOL ANNOUNCEMENT':'YOUR ACCOUNT ACTIVITY';
+   const label=item.feed_type==='dues_reminder'?'MONTHLY DUES REMINDER':item.feed_type==='announcement'?'SCHOOL ANNOUNCEMENT':'YOUR ACCOUNT ACTIVITY';
+   const itemClass=item.feed_type==='dues_reminder'?'ticker-item ticker-item-dues':'ticker-item';
    const time=item.published_at?new Date(item.published_at).toLocaleString('en-GH',{dateStyle:'medium',timeStyle:'short'}):'';
-   return '<span class="ticker-item"><b>'+label+'</b><span>'+escapeHtml(item.message||'')+'</span><time class="ticker-time">'+escapeHtml(time)+'</time></span>';
+   return '<span class="'+itemClass+'"><b>'+label+'</b><span>'+escapeHtml(item.message||'')+'</span><time class="ticker-time">'+escapeHtml(time)+'</time></span>';
   }).join(''):'<span class="ticker-item"><b>WELCOME</b><span>No announcements or recent account activity yet.</span></span>';
   const primary=document.getElementById('teacherTickerItems'),clone=document.getElementById('teacherTickerItemsClone');
   if(primary&&clone){primary.innerHTML=items;clone.innerHTML=items;}
