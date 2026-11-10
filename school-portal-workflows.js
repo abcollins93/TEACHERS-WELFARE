@@ -14,7 +14,7 @@ const RANK_OPTIONS=[
 ];
 const rankOptionsMarkup=()=>'<option value="">Select Rank / Grade</option>'+RANK_OPTIONS.map(rank=>'<option value="'+esc(rank)+'">'+esc(rank)+'</option>').join('');
 const csvCell=v=>{let s=String(v??'');if(/^[\s]*[=+@\-\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';};
-const downloadWorkflowBlob=(blob,fileName,statusId,successText,viewLabel)=>{
+const downloadWorkflowBlob=(blob,fileName,statusId,successText,viewLabel,previewWindow)=>{
  if(!(blob instanceof Blob))throw new Error('The generated file is unavailable.');
  const url=window.URL.createObjectURL(blob),link=document.createElement('a');
  link.href=url;
@@ -22,6 +22,7 @@ const downloadWorkflowBlob=(blob,fileName,statusId,successText,viewLabel)=>{
  document.body.appendChild(link);
  link.click();
  document.body.removeChild(link);
+ if(previewWindow&&!previewWindow.closed){try{previewWindow.location.href=url;}catch(openError){console.warn('[School Welfare PDF] Preview tab could not be navigated:',openError);}}
  const status=$(statusId);
  if(status){
    status.textContent=successText;
@@ -802,12 +803,15 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const runWelfarePdf=async(button,statusId,successText,buildOptions)=>{
    if(button.disabled)return;
    button.disabled=true;
+   const previewWindow=window.open('about:blank','_blank');
+   if(previewWindow){try{previewWindow.document.title='Preparing welfare report';previewWindow.document.body.textContent='Preparing your PDF report…';}catch(_){}}
    msg(statusId,'Preparing PDF…');
    try{
      if(typeof window.generateTenantWelfarePdf!=='function')throw new Error('The PDF generator is unavailable. Reload the portal and try again.');
      const generated=await window.generateTenantWelfarePdf(buildOptions());
-     downloadWorkflowBlob(generated.blob,generated.filename,statusId,successText,'Tap here to view downloaded PDF');
+     downloadWorkflowBlob(generated.blob,generated.filename,statusId,successText,'Tap here to view downloaded PDF',previewWindow);
    }catch(error){
+     if(previewWindow&&!previewWindow.closed)previewWindow.close();
      console.error('[School Welfare PDF]',error);
      msg(statusId,error?.message||'The PDF could not be generated. Check your connection and try again.',true);
    }finally{button.disabled=false;}
