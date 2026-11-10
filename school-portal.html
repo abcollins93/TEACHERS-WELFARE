@@ -578,12 +578,13 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
 <style id="mobile-drawer-stacking-fix">
 /* Mobile navigation drawer must overlay both fixed header rows and page content. */
 @media(max-width:950px){
-  #mobile-nav-overlay{z-index:9998!important}
+  /* Drawer and backdrop must cover the fixed header; keep the toggle reachable. */
+  #mobile-nav-overlay{z-index:10001!important}
   #dashboard .sidebar,
-  #dashboard .sidebar.is-mobile-open{z-index:9999!important}
-  #mobileNavToggle{z-index:9997!important}
+  #dashboard .sidebar.is-mobile-open{z-index:10002!important}
   header.top{z-index:1000!important}
   #dashboard .overview-top{z-index:990!important}
+  #mobileNavToggle{z-index:10003!important}
 }
 </style>
 
@@ -1727,14 +1728,29 @@ try{applyTheme(localStorage.getItem('welfare-theme')==='dark');}catch(_){}
 $('themeToggle').addEventListener('click',()=>{const dark=!document.documentElement.classList.contains('dark');applyTheme(dark);try{localStorage.setItem('welfare-theme',dark?'dark':'light');}catch(_){} });
 const sidebar=$('sidebarCollapse')?.closest('.sidebar');
 const mobileNavOverlay=$('mobile-nav-overlay');
-function closeMobileNav(){sidebar?.classList.remove('is-mobile-open');mobileNavOverlay?.classList.remove('is-open');mobileNavOverlay?.setAttribute('aria-hidden','true');$('mobileNavToggle')?.setAttribute('aria-expanded','false');}
-$('mobileNavToggle')?.addEventListener('click',()=>{
+function closeMobileNav(){
+ sidebar?.classList.remove('is-mobile-open');
+ mobileNavOverlay?.classList.remove('is-open');
+ mobileNavOverlay?.setAttribute('aria-hidden','true');
+ mobileNavOverlay?.style.setProperty('pointer-events','none');
+ $('mobileNavToggle')?.setAttribute('aria-expanded','false');
+ $('mobileNavToggle')?.setAttribute('aria-label','Open navigation menu');
+}
+function openMobileNav(){
  if(!sidebar)return;
  sidebar.classList.add('is-mobile-open');
  mobileNavOverlay?.classList.add('is-open');
  mobileNavOverlay?.setAttribute('aria-hidden','false');
+ mobileNavOverlay?.style.removeProperty('pointer-events');
  $('mobileNavToggle')?.setAttribute('aria-expanded','true');
+ $('mobileNavToggle')?.setAttribute('aria-label','Close navigation menu');
+}
+$('mobileNavToggle')?.addEventListener('click',()=>{
+ if(!sidebar)return;
+ if(sidebar.classList.contains('is-mobile-open')) closeMobileNav();
+ else openMobileNav();
 });
+mobileNavOverlay?.addEventListener('click',closeMobileNav);
 $('sidebarCollapse')?.addEventListener('click',()=>{
  if(!sidebar)return;
  if(window.matchMedia('(max-width: 950px)').matches){
@@ -2700,18 +2716,8 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
     if (!control || control.matches('.navbtn[data-target]')) return;
     if (control.matches('a, [role="link"], #sidebarLogout, .sidebar-account-out')) closeSidebar();
   });
-  const mobileToggle = document.getElementById('mobileNavToggle');
-  if (mobileToggle) mobileToggle.addEventListener('click', function(){
-    const sidebar = document.getElementById('schoolSidebar');
-    const overlay = document.getElementById('mobile-nav-overlay');
-    if (sidebar) sidebar.style.removeProperty('transform');
-    if (overlay) {
-      overlay.style.removeProperty('opacity');
-      overlay.style.removeProperty('visibility');
-      overlay.style.removeProperty('pointer-events');
-      overlay.setAttribute('aria-hidden', 'false');
-    }
-  });
+  // The primary navigation handler above owns open/close state. Avoid a
+  // second click listener that could reopen the backdrop after it is closed.
   document.addEventListener('click', function(event){
     const button = event.target.closest('.navbtn[data-target]');
     if (!button) return;
