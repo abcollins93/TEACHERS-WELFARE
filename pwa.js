@@ -8,7 +8,7 @@
  var manifestUrl='';
  var isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
  function safeTenantLabel(){
-   return (tenantName||schoolCode||'School').replace(/[\u0000-\u001f]/g,' ').trim()||'School';
+   return (tenantName||schoolCode||'School').replace(/[\x00-\x1F\x7F]/g,' ').replace(/\s+/g,' ').trim()||'School';
  }
  function toBase64Utf8(value){
    var bytes=new TextEncoder().encode(value);
@@ -91,7 +91,7 @@
    installButton=document.createElement('button');
    installButton.type='button';
    installButton.id='welfarePwaInstall';
-   installButton.style.cssText='position:relative;z-index:2;display:inline-flex;align-items:center;justify-content:center;flex:0 1 auto;gap:9px;box-sizing:border-box;width:max-content;max-width:100%;min-width:0;margin:14px 0 20px;padding:12px 18px;border:1px solid rgba(255,230,160,.78);border-radius:14px;background:linear-gradient(135deg,#f4d98b,#c18b24);color:#0b1d3a;font:800 13px/1.4 system-ui,sans-serif;white-space:normal;overflow-wrap:anywhere;word-break:normal;text-align:center;box-shadow:0 8px 24px rgba(3,10,22,.16);cursor:pointer';
+   installButton.style.cssText='position:relative;z-index:2;display:inline-flex;align-items:center;justify-content:center;flex:0 1 auto;gap:9px;box-sizing:border-box;width:fit-content;max-width:calc(100% - 24px);min-width:0;margin:14px 0 20px;padding:12px 18px;border:1px solid rgba(255,230,160,.78);border-radius:14px;background:linear-gradient(135deg,#f4d98b,#c18b24);color:#0b1d3a;font:800 13px/1.4 system-ui,sans-serif;white-space:normal;overflow-wrap:anywhere;word-break:normal;text-align:center;box-shadow:0 8px 24px rgba(3,10,22,.16);cursor:pointer';
    var installIcon=document.createElement('span');
    installIcon.setAttribute('aria-hidden','true');
    installIcon.textContent='＋';
