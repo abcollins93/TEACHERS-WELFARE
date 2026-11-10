@@ -18,12 +18,12 @@
  }
  function injectTenantManifest(){
    var label=safeTenantLabel();
-   var shortLabel=('Welfare '+(schoolCode||label)).replace(/\s+/g,' ').slice(0,20);
+   var shortLabel='Welfare';
    var manifest={
      id:window.location.href,
-     name:'Welfare - '+label,
+     name:'Welfare Portal',
      short_name:shortLabel,
-     description:'Teachers Welfare Fund portal for '+label+'.',
+     description:'School welfare portal for '+label+'.',
      lang:'en-GH',
      start_url:window.location.href,
      scope:new URL('./',pageUrl).href,
@@ -41,7 +41,7 @@
    manifestLink.href=dataUri;
    var appleTitle=document.querySelector('meta[name="apple-mobile-web-app-title"]');
    if(appleTitle)appleTitle.content=shortLabel;
-   document.title='Welfare - '+label+' | Teachers Welfare Fund';
+   document.title=label+' | Welfare Portal';
  }
  window.updateWelfarePwaTenant=function(name,code){
    if(code)schoolCode=String(code).trim().toUpperCase();
