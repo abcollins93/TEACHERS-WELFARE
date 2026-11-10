@@ -1394,6 +1394,19 @@ header.top #headerAvatar{
 @media(prefers-reduced-motion:reduce){#schoolOverview .portal-hero .dashboard-welcome-greeting #dashboardGreeting:before{animation:none}}
 @media(max-width:600px){#schoolOverview{padding-top:16px!important}#schoolOverview .portal-hero{padding:20px 16px}#schoolOverview .portal-hero .dashboard-welcome-greeting{margin-bottom:13px}#schoolOverview .portal-hero .dashboard-welcome-greeting #dashboardGreeting{padding:7px 12px;font-size:.7rem;letter-spacing:.055em}}
 </style>
+
+<style id="mobile-header-school-identity-cleanup">
+/* On phones, keep the school/hub name as the only text identity in the top header.
+   Full school code, type, district and region remain available in the sidebar account drawer. */
+@media(max-width:760px){
+ header.top .top-brand-overline,
+ header.top .top-school-meta,
+ header.top #sectionPageTitle{display:none!important}
+ header.top .top-school-name{display:block!important;max-width:100%!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+}
+/* Let the account details wrap inside the navigation drawer instead of truncating them. */
+#schoolSidebar .sidebar-account-copy small#sideSchoolCode{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere!important;line-height:1.45!important}
+</style>
 </head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading page">
@@ -1665,7 +1678,7 @@ async function renderTeacherDashboard(profile,school){
  $('teacherDashboard')?.classList.add('hidden');
  setTenantFooter(school);
  $('schoolName').textContent=school.name;$('brand').textContent=school.name;
- $('sideSchoolName').textContent=school.name;$('sideSchoolCode').textContent=school.school_code;
+ $('sideSchoolName').textContent=school.name;$('sideSchoolCode').textContent=[school.school_code,school.school_type,school.district,school.region].filter(Boolean).join(' · ');
  $('schoolDescription').textContent='Your personal welfare account and school updates for '+school.name+'.';
  $('schoolMeta').textContent=[school.school_code,school.school_type,school.district,school.region].filter(Boolean).join(' · ');
  const firstName=String(teacherName||teacherId).trim().split(/\s+/)[0]||'Teacher';
@@ -2252,7 +2265,7 @@ async function showDashboard(){
  setTenantFooter(school);
  $('login').classList.add('hidden');$('dashboard').classList.remove('hidden');
  resetInactivityTimer();
- $('schoolName').textContent=school.name;$('brand').textContent=school.name;$('sideSchoolName').textContent=school.name;$('sideSchoolCode').textContent=school.school_code;$('schoolDescription').textContent='Providing mutual financial support, social welfare benefits, and fully transparent monthly record-keeping for '+school.name+'.';
+ $('schoolName').textContent=school.name;$('brand').textContent=school.name;$('sideSchoolName').textContent=school.name;$('sideSchoolCode').textContent=[school.school_code,school.school_type,school.district,school.region].filter(Boolean).join(' · ');$('schoolDescription').textContent='Providing mutual financial support, social welfare benefits, and fully transparent monthly record-keeping for '+school.name+'.';
  $('schoolMeta').textContent=[school.school_code,school.school_type,school.district,school.region].filter(Boolean).join(' · ');
  const [teachersRes,contribRes,payoutsRes,reversalsRes]=await Promise.all([
   client.from('teachers').select('id,name,phone,rank,class_name').eq('school_id',school.id).order('name'),
