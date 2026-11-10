@@ -246,7 +246,15 @@ function addUI(){
    <a class="wf-admin-quick-pill wf-admin-quick-pill-danger" href="#wfResetDataPanel" data-wf-admin-target="wfResetDataPanel"><i class="fa-solid fa-triangle-exclamation"></i> Reset School's Welfare Data</a>
   </div>
  </nav>
- <div class="panel" id="wfBroadcastPanel"><h3>School announcement</h3><p class="muted">Publish a school-scoped message for the portal. The message is stored with this school’s settings.</p><form id="wfBroadcastForm"><label for="wfBroadcastText">Announcement message</label><textarea id="wfBroadcastText" maxlength="500" rows="3" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;font:inherit" placeholder="Enter an important welfare fund announcement"></textarea><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="submit">Publish announcement</button><button id="wfBroadcastClear" class="secondary" type="button">Clear announcement</button></div></form><p id="wfBroadcastMsg" class="muted" role="status"></p></div>
+ <div class="panel" id="wfBroadcastPanel"><h3>School announcement</h3><p class="muted">Publish a school-scoped message for the portal. The message is stored with this school’s settings.</p><form id="wfBroadcastForm"><label for="wfBroadcastText">Announcement message</label><textarea id="wfBroadcastText" maxlength="500" rows="3" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;font:inherit" placeholder="Enter an important welfare fund announcement"></textarea><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="submit">Publish announcement</button><button id="wfBroadcastClear" class="secondary" type="button">Clear announcement</button></div></form><p id="wfBroadcastMsg" class="muted" role="status"></p>
+ <div class="wf-dues-reminder-control" style="margin-top:16px;padding:14px 15px;border:1px solid rgba(214,166,55,.28);border-radius:13px;background:rgba(214,166,55,.055)">
+  <label for="wfAutomatedDuesReminderToggle" style="display:flex;align-items:center;gap:10px;margin:0 0 6px;font-weight:850">
+   <input id="wfAutomatedDuesReminderToggle" type="checkbox" role="switch" aria-describedby="wfDuesReminderHelp" style="width:20px!important;height:20px;min-height:20px;padding:0!important;flex:0 0 20px;accent-color:#059669">
+   <span>Automated monthly dues reminder</span>
+  </label>
+  <p id="wfDuesReminderHelp" class="muted" style="margin:0;font-size:.82rem">When enabled, members whose recorded contributions are below this school’s standard dues for the current month will see a gentle, personal reminder in the bottom ticker.</p>
+  <p id="wfDuesReminderMsg" class="muted" role="status" aria-live="polite" style="margin:8px 0 0">Loading reminder setting…</p>
+ </div></div>
  <div class="panel" id="wfSettingsPanel"><h3>School settings · Monthly dues</h3><p class="muted">Set the standard monthly contribution for this school. This setting is scoped to the current school account.</p><form id="wfDuesForm" class="grid"><div><label for="wfMonthlyDues">Standard monthly dues (GHS)</label><input id="wfMonthlyDues" type="number" min="0" step=".01" required></div><div style="align-self:end"><button>Save monthly dues</button></div></form><p id="wfDuesMsg" class="muted"></p></div>
  <div class="panel" id="wfAdminAccessPanel"><h3>Administrator access &amp; recovery</h3><p class="muted">Change the password for the administrator currently signed in. New administrator invitations remain managed through the secure platform onboarding process; use <strong>Forgot password?</strong> on the school sign-in page for account recovery.</p><form id="wfChangePasswordForm" class="grid"><div><label for="wfCurrentAdminPassword">Current password</label><input id="wfCurrentAdminPassword" type="password" autocomplete="current-password" required></div><div><label for="wfNewAdminPassword">New password</label><input id="wfNewAdminPassword" type="password" autocomplete="new-password" minlength="10" maxlength="128" required><small class="muted">Use at least 10 characters.</small></div><div><label for="wfConfirmAdminPassword">Confirm new password</label><input id="wfConfirmAdminPassword" type="password" autocomplete="new-password" minlength="10" maxlength="128" required></div><div style="align-self:end"><button type="submit"><i class="fa-solid fa-key"></i> Update my password</button></div></form><p id="wfPasswordMsg" class="muted" role="status" aria-live="polite"></p><div class="wf-data-protection"><strong><i class="fa-solid fa-lock"></i> Account security</strong><p class="muted">Administrator access is linked to this school. Account invitations and deactivation are verified server-side.</p></div></div>
  <div class="panel" id="wfAdminUsersPanel"><h3>Register &amp; manage administrators</h3><p class="muted">Invite a new administrator by email. They must accept the invitation and set their own password. A school can have up to 10 active administrators.</p><form id="wfInviteAdminForm" class="grid"><div><label for="wfInviteAdminName">Full name / title</label><input id="wfInviteAdminName" maxlength="120" required placeholder="e.g. Welfare Secretary"></div><div><label for="wfInviteAdminUsername">Admin username</label><input id="wfInviteAdminUsername" maxlength="40" minlength="3" pattern="[A-Za-z0-9._-]{3,40}" required placeholder="e.g. welfare.secretary"></div><div><label for="wfInviteAdminEmail">Email address</label><input id="wfInviteAdminEmail" type="email" maxlength="254" required placeholder="name@example.com"></div><div style="align-self:end"><button type="submit"><i class="fa-solid fa-user-plus"></i> Send administrator invitation</button></div></form><p id="wfAdminUsersMsg" class="muted" role="status" aria-live="polite"></p><div style="overflow:auto"><table><thead><tr><th>Username</th><th>Name / Title</th><th>Status</th><th>Action</th></tr></thead><tbody id="wfAdminUsersRows"><tr><td colspan="4">Loading administrators…</td></tr></tbody></table></div><p class="muted">Deactivation removes this school’s portal access but does not delete the person’s Supabase identity.</p></div>
@@ -825,6 +833,30 @@ window.initSchoolWorkflows=async function(client,school,refresh){
 
  const {data:broadcastSetting,error:broadcastLoadError}=await client.from('system_settings').select('value').eq('school_id',ctx.id).eq('key','broadcast_message').maybeSingle();
  if(!broadcastLoadError&&broadcastSetting)$('wfBroadcastText').value=String(broadcastSetting.value||'');
+ const {data:duesReminderSetting,error:duesReminderLoadError}=await client.from('system_settings').select('value').eq('school_id',ctx.id).eq('key','automated_dues_reminder').maybeSingle();
+ const duesReminderToggle=$('wfAutomatedDuesReminderToggle');
+ if(duesReminderToggle&&!duesReminderLoadError)duesReminderToggle.checked=String(duesReminderSetting?.value||'false').toLowerCase()==='true';
+ if(duesReminderLoadError)msg('wfDuesReminderMsg','The reminder setting could not be loaded. Check school settings permissions.',true);
+ if(duesReminderToggle){
+   duesReminderToggle.addEventListener('change',async()=>{
+     const enabled=duesReminderToggle.checked;
+     duesReminderToggle.disabled=true;
+     msg('wfDuesReminderMsg',enabled?'Enabling automated dues reminders…':'Disabling automated dues reminders…');
+     try{
+       const {error}=await client.from('system_settings').upsert(
+         {school_id:ctx.id,key:'automated_dues_reminder',value:String(enabled)},
+         {onConflict:'school_id,key'}
+       );
+       if(error)throw error;
+       const auditOk=await audit(client,ctx,enabled?'Enable automated dues reminders':'Disable automated dues reminders',enabled?'Members with unpaid current-month dues will see a personal ticker reminder.':'Personal monthly dues reminders have been disabled.');
+       msg('wfDuesReminderMsg',auditOk?(enabled?'Automated monthly dues reminders are now active for this school.':'Automated monthly dues reminders are now off.'):'Reminder setting saved, but the audit entry could not be recorded.',!auditOk);
+     }catch(error){
+       console.error('[School settings] Automated dues reminder update failed:',error);
+       duesReminderToggle.checked=!enabled;
+       msg('wfDuesReminderMsg','The reminder setting could not be saved. No change was made.',true);
+     }finally{duesReminderToggle.disabled=false;}
+   });
+ }
  const saveBroadcast=async value=>{
    msg('wfBroadcastMsg','Saving announcement…');
    const {error}=await client.from('system_settings').upsert({school_id:ctx.id,key:'broadcast_message',value},{onConflict:'school_id,key'});
