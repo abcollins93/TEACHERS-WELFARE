@@ -452,6 +452,26 @@ try {
   #section-profile .profile-accent-card::before{border-top-left-radius:1rem;border-top-right-radius:1rem}
 }
 </style>
+<style id="admin-hero-quick-actions-styles">
+#adminHeroQuickActions{position:relative;z-index:2;padding:15px 17px;border:1px solid rgba(214,166,55,.2);border-radius:20px;background:linear-gradient(135deg,rgba(255,255,255,.92),rgba(248,250,253,.96));box-shadow:0 8px 24px rgba(15,23,42,.055)}
+.dark #adminHeroQuickActions{background:linear-gradient(135deg,rgba(15,31,55,.96),rgba(10,23,43,.98));border-color:rgba(214,166,55,.24)}
+.admin-quick-actions-heading{display:flex;align-items:center;gap:9px;margin:0 0 12px;color:#334155;font-size:.72rem;font-weight:900;letter-spacing:.09em;text-transform:uppercase}
+.dark .admin-quick-actions-heading{color:#e2e8f0}
+.admin-quick-actions-arrow{display:grid;place-items:center;width:25px;height:25px;border-radius:8px;background:#fff3d1;color:#a8750b}
+.dark .admin-quick-actions-arrow{background:rgba(214,166,55,.16);color:#f3d58a}
+.admin-quick-actions-hint{margin-left:auto;color:#94a3b8;font-size:.65rem;font-weight:700;letter-spacing:0;text-transform:none}
+.admin-quick-actions-pills{display:flex;flex-wrap:wrap;gap:9px}
+.admin-quick-pill{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:42px;padding:9px 13px;border:1px solid #e2e8f0;border-radius:999px;background:#fff;color:#1e3554;font-size:.75rem;font-weight:800;box-shadow:0 3px 9px rgba(15,23,42,.045);transition:transform .18s,border-color .18s,background .18s,box-shadow .18s}
+.admin-quick-pill>i:first-child{color:#b88924;font-size:.85rem}
+.admin-quick-pill-end{color:#94a3b8;font-size:.62rem;opacity:.75}
+.admin-quick-pill:hover{transform:translateY(-2px);border-color:rgba(214,166,55,.65);background:#fffaf0;box-shadow:0 7px 16px rgba(15,23,42,.09)}
+.admin-quick-pill:focus-visible{outline:3px solid rgba(214,166,55,.35);outline-offset:2px}
+.dark .admin-quick-pill{background:#132944;border-color:#29415e;color:#e6edf7}
+.dark .admin-quick-pill:hover{background:#1a3658;border-color:#c69b3d}
+@media(max-width:640px){#adminHeroQuickActions{padding:13px;border-radius:17px}.admin-quick-actions-pills{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.admin-quick-pill{justify-content:flex-start;min-width:0;padding:10px 11px;font-size:.68rem;gap:7px}.admin-quick-pill span{overflow-wrap:anywhere}.admin-quick-pill-end{margin-left:auto;font-size:.55rem}}
+@media(max-width:380px){.admin-quick-actions-pills{grid-template-columns:1fr}.admin-quick-pill{justify-content:flex-start}}
+@media(prefers-reduced-motion:reduce){.admin-quick-pill{transition:none}}
+</style>
 </head>
 
 <body class="bg-slate-100/90 text-slate-800 dark:bg-[#030a16] dark:text-slate-100 pb-16 selection:bg-amber-400 selection:text-slate-950">
@@ -930,6 +950,31 @@ try {
             </p>
         </div>
     </div>
+
+    <nav id="adminHeroQuickActions" aria-label="Administrator quick actions" class="admin-hero-quick-actions mb-7" role="navigation">
+        <div class="admin-quick-actions-heading">
+            <span class="admin-quick-actions-arrow"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></span>
+            <span>Quick actions</span>
+            <span class="admin-quick-actions-hint">Jump to a task</span>
+        </div>
+        <div class="admin-quick-actions-pills">
+            <button type="button" class="admin-quick-pill" onclick="openTeachersMembersSection()" aria-label="Open Teachers and Members">
+                <i class="fa-solid fa-user-plus" aria-hidden="true"></i><span>Teachers &amp; Members</span><i class="fa-solid fa-arrow-up-right-from-square admin-quick-pill-end" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="admin-quick-pill" onclick="showSection('payments',null)" aria-label="Open Contributions">
+                <i class="fa-solid fa-money-check-dollar" aria-hidden="true"></i><span>Contributions</span><i class="fa-solid fa-arrow-up-right-from-square admin-quick-pill-end" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="admin-quick-pill" onclick="showSection('welfare',null)" aria-label="Open Welfare and Payouts">
+                <i class="fa-solid fa-hand-holding-heart" aria-hidden="true"></i><span>Welfare &amp; Payouts</span><i class="fa-solid fa-arrow-up-right-from-square admin-quick-pill-end" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="admin-quick-pill" onclick="showSection('statements',null)" aria-label="Open Statements and Reports">
+                <i class="fa-solid fa-file-invoice-dollar" aria-hidden="true"></i><span>Statements &amp; Reports</span><i class="fa-solid fa-arrow-up-right-from-square admin-quick-pill-end" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="admin-quick-pill" onclick="requestAdminSection()" aria-label="Open Administration Panel">
+                <i class="fa-solid fa-sliders" aria-hidden="true"></i><span>Admin Settings</span><i class="fa-solid fa-arrow-up-right-from-square admin-quick-pill-end" aria-hidden="true"></i>
+            </button>
+        </div>
+    </nav>
 
     <div id="memberTickerBanner" class="mb-6 bg-sdaNavy-900/90 dark:bg-[#071328]/90 backdrop-blur-md border border-amber-500/30 rounded-2xl text-white text-xs py-3 px-4 shadow-lg overflow-hidden hidden">
         <div class="overflow-hidden whitespace-nowrap relative w-full">
