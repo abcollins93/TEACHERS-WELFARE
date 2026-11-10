@@ -50,21 +50,23 @@
  };
  injectTenantManifest();
  if(typeof MutationObserver!=='undefined'){
-   var observeSchoolName=function(){
-     var node=document.getElementById('schoolName')||document.getElementById('loginSchoolName');
-     if(!node)return;
-     var update=function(){
-       var value=(node.textContent||'').trim();
-       if(value&&value!=='School gateway unavailable'&&value!=='Loading...'){
-         tenantName=value;
-         injectTenantManifest();
-       }
-     };
-     update();
-     new MutationObserver(update).observe(node,{childList:true,characterData:true,subtree:true});
+   var observeSchoolIdentity=function(){
+     ['schoolName','loginSchoolName'].forEach(function(id){
+       var node=document.getElementById(id);
+       if(!node)return;
+       var update=function(){
+         var value=(node.textContent||'').trim();
+         if(value&&value!=='School gateway unavailable'&&value!=='Loading...'){
+           tenantName=value;
+           injectTenantManifest();
+         }
+       };
+       update();
+       new MutationObserver(update).observe(node,{childList:true,characterData:true,subtree:true});
+     });
    };
-   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',observeSchoolName,{once:true});
-   else observeSchoolName();
+   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',observeSchoolIdentity,{once:true});
+   else observeSchoolIdentity();
  }
  var isSecure=location.protocol==='https:'||location.hostname==='localhost';
  if(isSecure&&'serviceWorker' in navigator){
