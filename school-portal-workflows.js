@@ -213,8 +213,39 @@ function addUI(){
 #wfAdminPanel .wf-admin-intro p{max-width:48rem;color:#e2e8f0!important;font-size:clamp(.875rem,1.5vw,1rem)!important;font-weight:500!important;line-height:1.65!important}
 @media(min-width:640px){#wfAdminPanel .wf-admin-intro{padding:2.5rem!important}}
 @media(max-width:640px){#wfAdminPanel .wf-admin-intro{border-radius:1.5rem!important;padding:1.5rem 1.25rem!important}}
+
+/* Compact, horizontally scrollable Administration Panel quick actions. */
+#wfAdminPanel .wf-admin-quick-actions{margin:0 0 18px;padding:14px 15px;border:1px solid rgba(214,166,55,.24);border-radius:18px;background:linear-gradient(135deg,#fff 0%,#f7f9fc 100%);box-shadow:0 9px 24px rgba(15,23,42,.06)}
+.dark #wfAdminPanel .wf-admin-quick-actions{background:linear-gradient(135deg,#0f1f37,#0a172b);border-color:rgba(214,166,55,.25)}
+#wfAdminPanel .wf-admin-quick-heading{display:flex;align-items:center;gap:9px;margin:0 0 11px;color:#334155;font-size:.72rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.dark #wfAdminPanel .wf-admin-quick-heading{color:#e2e8f0}
+#wfAdminPanel .wf-admin-quick-heading i{display:grid;place-items:center;width:27px;height:27px;border-radius:9px;background:#fff1c9;color:#a8750b}
+#wfAdminPanel .wf-admin-quick-hint{margin-left:auto;color:#94a3b8;font-size:.65rem;font-weight:700;letter-spacing:0;text-transform:none}
+#wfAdminPanel .wf-admin-quick-pills{display:flex;flex-wrap:nowrap;gap:9px;overflow-x:auto;overflow-y:hidden;padding:2px 2px 8px;scrollbar-width:thin;scrollbar-color:rgba(184,135,32,.55) transparent;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+#wfAdminPanel .wf-admin-quick-pill{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:41px;flex:0 0 auto;white-space:nowrap;padding:9px 13px;border:1px solid #e2e8f0;border-radius:999px;background:#fff;color:#1e3554;font-size:.72rem;font-weight:800;text-decoration:none;box-shadow:0 3px 9px rgba(15,23,42,.04);transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease}
+#wfAdminPanel .wf-admin-quick-pill>i{color:#b88720}
+#wfAdminPanel .wf-admin-quick-pill:hover,#wfAdminPanel .wf-admin-quick-pill.is-active{border-color:#d6a637;background:#fff5d9;color:#805b0a;box-shadow:0 5px 12px rgba(15,23,42,.07)}
+#wfAdminPanel .wf-admin-quick-pill:focus-visible{outline:3px solid rgba(214,166,55,.35);outline-offset:2px}
+.dark #wfAdminPanel .wf-admin-quick-pill{background:#172943;border-color:#334155;color:#e2e8f0}
+.dark #wfAdminPanel .wf-admin-quick-pill:hover,.dark #wfAdminPanel .wf-admin-quick-pill.is-active{background:#243956;border-color:#d6a637;color:#ffe4a3}
+#wfAdminPanel .wf-admin-quick-pill-danger{border-color:#fecaca;color:#b91c1c;background:#fff7f7}
+#wfAdminPanel .wf-admin-quick-pill-danger>i{color:#dc2626}
+#wfAdminPanel .wf-admin-quick-pill-danger:hover,#wfAdminPanel .wf-admin-quick-pill-danger.is-active{border-color:#ef4444;background:#fff1f2;color:#b91c1c}
+#wfBroadcastPanel,#wfSettingsPanel,#wfAdminAccessPanel,#wfAdminUsersPanel,#wfResetDataPanel{scroll-margin-top:calc(var(--unified-header-height,140px) + 18px)}
+@media(max-width:640px){#wfAdminPanel .wf-admin-quick-actions{padding:12px;border-radius:16px}#wfAdminPanel .wf-admin-quick-pills{gap:8px}#wfAdminPanel .wf-admin-quick-pill{font-size:.67rem;padding:9px 11px}#wfAdminPanel .wf-admin-quick-hint{font-size:.6rem}}
+
 </style>
  <section class="wf-admin-hub" id="wfAdminPanel"><div class="panel wf-admin-intro"><div class="wf-admin-intro-top"><div><div class="wf-admin-eyebrow"><i class="fa-solid fa-shield-heart"></i> Official Welfare Hub</div><h2>Empowering Our Educators Through Solidarity <span class="wf-restricted-badge"><i class="fa-solid fa-lock"></i> Restricted Access</span></h2><p>Providing mutual financial support, social welfare benefits, and transparent record-keeping through a secure, organised school workspace.</p></div><span class="wf-admin-status"><i class="fa-solid fa-circle-check"></i> Admin mode active</span></div><div class="wf-admin-shortcuts"><span><i class="fa-solid fa-users"></i> Members</span><span><i class="fa-solid fa-coins"></i> Contributions</span><span><i class="fa-solid fa-hand-holding-heart"></i> Welfare</span></div></div>
+ <nav class="wf-admin-quick-actions" aria-label="Administration quick actions">
+  <div class="wf-admin-quick-heading"><i class="fa-solid fa-arrow-right"></i><span>Quick Admin Actions</span><span class="wf-admin-quick-hint">Jump to a task</span></div>
+  <div class="wf-admin-quick-pills">
+   <a class="wf-admin-quick-pill" href="#wfBroadcastPanel" data-wf-admin-target="wfBroadcastPanel"><i class="fa-solid fa-bullhorn"></i> School Announcement</a>
+   <a class="wf-admin-quick-pill" href="#wfSettingsPanel" data-wf-admin-target="wfSettingsPanel"><i class="fa-solid fa-coins"></i> School Settings · Monthly Dues</a>
+   <a class="wf-admin-quick-pill" href="#wfAdminAccessPanel" data-wf-admin-target="wfAdminAccessPanel"><i class="fa-solid fa-key"></i> Administrator Access &amp; Recovery</a>
+   <a class="wf-admin-quick-pill" href="#wfAdminUsersPanel" data-wf-admin-target="wfAdminUsersPanel"><i class="fa-solid fa-user-plus"></i> Register &amp; Manage Administrators</a>
+   <a class="wf-admin-quick-pill wf-admin-quick-pill-danger" href="#wfResetDataPanel" data-wf-admin-target="wfResetDataPanel"><i class="fa-solid fa-triangle-exclamation"></i> Reset School's Welfare Data</a>
+  </div>
+ </nav>
  <div class="panel" id="wfBroadcastPanel"><h3>School announcement</h3><p class="muted">Publish a school-scoped message for the portal. The message is stored with this school’s settings.</p><form id="wfBroadcastForm"><label for="wfBroadcastText">Announcement message</label><textarea id="wfBroadcastText" maxlength="500" rows="3" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;font:inherit" placeholder="Enter an important welfare fund announcement"></textarea><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="submit">Publish announcement</button><button id="wfBroadcastClear" class="secondary" type="button">Clear announcement</button></div></form><p id="wfBroadcastMsg" class="muted" role="status"></p></div>
  <div class="panel" id="wfSettingsPanel"><h3>School settings · Monthly dues</h3><p class="muted">Set the standard monthly contribution for this school. This setting is scoped to the current school account.</p><form id="wfDuesForm" class="grid"><div><label for="wfMonthlyDues">Standard monthly dues (GHS)</label><input id="wfMonthlyDues" type="number" min="0" step=".01" required></div><div style="align-self:end"><button>Save monthly dues</button></div></form><p id="wfDuesMsg" class="muted"></p></div>
  <div class="panel" id="wfAdminAccessPanel"><h3>Administrator access &amp; recovery</h3><p class="muted">Change the password for the administrator currently signed in. New administrator invitations remain managed through the secure platform onboarding process; use <strong>Forgot password?</strong> on the school sign-in page for account recovery.</p><form id="wfChangePasswordForm" class="grid"><div><label for="wfCurrentAdminPassword">Current password</label><input id="wfCurrentAdminPassword" type="password" autocomplete="current-password" required></div><div><label for="wfNewAdminPassword">New password</label><input id="wfNewAdminPassword" type="password" autocomplete="new-password" minlength="10" maxlength="128" required><small class="muted">Use at least 10 characters.</small></div><div><label for="wfConfirmAdminPassword">Confirm new password</label><input id="wfConfirmAdminPassword" type="password" autocomplete="new-password" minlength="10" maxlength="128" required></div><div style="align-self:end"><button type="submit"><i class="fa-solid fa-key"></i> Update my password</button></div></form><p id="wfPasswordMsg" class="muted" role="status" aria-live="polite"></p><div class="wf-data-protection"><strong><i class="fa-solid fa-lock"></i> Account security</strong><p class="muted">Administrator access is linked to this school. Account invitations and deactivation are verified server-side.</p></div></div>
@@ -239,6 +270,27 @@ function addUI(){
  if(contributionWorkspace)d.appendChild(contributionWorkspace);
  if(payoutWorkspace)d.appendChild(payoutWorkspace);
  const dash=$('dashboard');if(dash)dash.appendChild(d);
+
+ // Bind the Admin Panel quick-action navigation after its workflow markup is mounted.
+ const adminQuickNav=d.querySelector('.wf-admin-quick-actions');
+ if(adminQuickNav&&!adminQuickNav.dataset.bound){
+  adminQuickNav.dataset.bound='true';
+  adminQuickNav.querySelectorAll('[data-wf-admin-target]').forEach(function(link){
+   link.addEventListener('click',function(event){
+    const target=d.querySelector('#'+link.dataset.wfAdminTarget);
+    if(!target)return;
+    event.preventDefault();
+    adminQuickNav.querySelectorAll('[data-wf-admin-target]').forEach(function(item){
+     const active=item===link;
+     item.classList.toggle('is-active',active);
+     if(active)item.setAttribute('aria-current','location');else item.removeAttribute('aria-current');
+    });
+    target.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+    if(history.replaceState)history.replaceState(null,'','#'+target.id);
+   });
+  });
+ }
+
  // Guard the contribution form before the rest of workflow initialization runs.
  // If an earlier optional setup step fails, the browser must never submit the form
  // natively (which reloads the portal and can send the admin back to the gateway).
