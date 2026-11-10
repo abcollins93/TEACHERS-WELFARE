@@ -3768,13 +3768,23 @@ function downloadAuditTrailReport() {
         csvContent += `${id},${time},${actor},${cat},${act},${details},${prev},${next},${status}\n`;
     });
 
-    const encodedUri = encodeURI(csvContent);
+    const csvBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const csvUrl = window.URL.createObjectURL(csvBlob);
     const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
+    link.href = csvUrl;
     link.setAttribute('download', `Ntonso_SDA_Audit_Trail_Report_${todayISO()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    const csvFallback = document.createElement('a');
+    csvFallback.href = csvUrl;
+    csvFallback.target = '_blank';
+    csvFallback.rel = 'noopener';
+    csvFallback.textContent = 'Tap here to open the CSV file';
+    csvFallback.style.cssText = 'display:inline-block;margin:8px 0;padding:9px 13px;border-radius:9px;background:#eaf2ff;color:#12376b;font-weight:800;text-decoration:underline';
+    const toastNode = document.getElementById('toast');
+    (toastNode && toastNode.parentNode ? toastNode.parentNode : document.body).insertBefore(csvFallback, toastNode ? toastNode.nextSibling : null);
+    setTimeout(() => window.URL.revokeObjectURL(csvUrl), 10 * 60 * 1000);
 
     logAdminAction('CONFIG', 'EXPORT_AUDIT_CSV', 'Downloaded complete system audit trail CSV report', '-', 'Exported CSV');
     showToast('Audit trail CSV report downloaded successfully.', 'success');
@@ -4952,7 +4962,23 @@ async function renderPDFElement(element, options = {}) {
             }
         };
 
-        await html2pdf().set(pdfOptions).from(element).save();
+        const pdfBlob=await html2pdf().set(pdfOptions).from(element).outputPdf('blob');
+        const pdfUrl=window.URL.createObjectURL(pdfBlob);
+        const downloadLink=document.createElement('a');
+        downloadLink.href=pdfUrl;
+        downloadLink.setAttribute('download',pdfOptions.filename);
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        const fallbackLink=document.createElement('a');
+        fallbackLink.href=pdfUrl;
+        fallbackLink.target='_blank';
+        fallbackLink.rel='noopener';
+        fallbackLink.textContent='Tap here to view downloaded PDF';
+        fallbackLink.style.cssText='display:inline-block;margin:8px 0;padding:9px 13px;border-radius:9px;background:#eaf2ff;color:#12376b;font-weight:800;text-decoration:underline;position:relative;z-index:10000';
+        const toast=document.getElementById('toast');
+        (toast&&toast.parentNode?toast.parentNode:document.body).insertBefore(fallbackLink,toast?toast.nextSibling:null);
+        setTimeout(()=>window.URL.revokeObjectURL(pdfUrl),10*60*1000);
     } finally {
         element.style.position = originalStyle.position;
         element.style.left = originalStyle.left;
