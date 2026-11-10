@@ -2147,7 +2147,8 @@ async function renderTeacherDashboard(profile,school){
     academicYear:window.getCurrentAcademicYear()
    });
    const pdfBlob=generatedStatement?.blob;
-   const filename=String(generatedStatement?.filename||'teacher-statement.pdf');
+   const rawFilename=String(generatedStatement?.filename||'Welfare_Statement_Report.pdf');
+   const filename=(rawFilename.replace(/\\.pdf$/i,'')||'Welfare_Statement_Report')+'.pdf';
    if(!(pdfBlob instanceof Blob))throw new Error('The generated personal statement PDF is unavailable.');
    window.downloadWelfareBlob(pdfBlob,filename,statementMessage,'Your personal PDF statement is ready.',previewWindow);
   }catch(error){
@@ -3059,7 +3060,8 @@ window.generateTenantWelfarePdf=async function(o){
   host.style.position='relative';host.style.left='auto';host.style.top='auto';
   const safeCode=String(schoolCode||schoolName).replace(/[^a-z0-9_-]/gi,'_')||'school';
   filename=safeCode+'-'+(individual?'member-'+String(teacher.id||'statement').replace(/[^a-z0-9_-]/gi,'_')+'-statement':monthly?month+'-monthly-summary':annual?year+'-yearly-summary':'complete-fund-summary')+'.pdf';
-  pdfBlob=await window.html2pdf().set({margin:[8,8,8,8],filename,image:{type:'jpeg',quality:.97},html2canvas:{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0,windowWidth:individual?794:1120},jsPDF:{unit:'mm',format:'a4',orientation,compress:true},pagebreak:{mode:['css','legacy'],avoid:['tr','.twf-metric','.twf-signatures']}}).from(host).outputPdf('blob');
+  const pdfResponse=await window.html2pdf().set({margin:[8,8,8,8],filename,image:{type:'jpeg',quality:.97},html2canvas:{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0,windowWidth:individual?794:1120},jsPDF:{unit:'mm',format:'a4',orientation,compress:true},pagebreak:{mode:['css','legacy'],avoid:['tr','.twf-metric','.twf-signatures']}}).from(host).outputPdf('blob');
+  pdfBlob=new Blob([pdfResponse],{type:'application/pdf'});
  }finally{host.remove();}
  return {documentId:id,blob:pdfBlob,filename};
 };
@@ -3145,16 +3147,19 @@ window.generateTenantWelfarePdf=async function(o){
   host.style.position='relative';host.style.left='auto';host.style.top='auto';
   const safeCode=String(schoolCode||schoolName).replace(/[^a-z0-9_-]/gi,'_')||'school';
   filename=safeCode+'-'+(individual?'member-'+String(teacher.id||'statement').replace(/[^a-z0-9_-]/gi,'_')+'-statement':monthly?month+'-monthly-summary':annual?year+'-yearly-summary':'complete-fund-summary')+'.pdf';
-  pdfBlob=await window.html2pdf().set({margin:[8,8,8,8],filename,image:{type:'jpeg',quality:.97},html2canvas:{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0,windowWidth:individual?794:1120},jsPDF:{unit:'mm',format:'a4',orientation,compress:true},pagebreak:{mode:['css','legacy'],avoid:['tr','.twf-metric','.twf-signatures']}}).from(host).outputPdf('blob');
+  const pdfResponse=await window.html2pdf().set({margin:[8,8,8,8],filename,image:{type:'jpeg',quality:.97},html2canvas:{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0,windowWidth:individual?794:1120},jsPDF:{unit:'mm',format:'a4',orientation,compress:true},pagebreak:{mode:['css','legacy'],avoid:['tr','.twf-metric','.twf-signatures']}}).from(host).outputPdf('blob');
+  pdfBlob=new Blob([pdfResponse],{type:'application/pdf'});
  }finally{host.remove();}
  return {documentId:id,blob:pdfBlob,filename};
 };
 window.downloadWelfareBlob=function(blob,fileName,statusNode,successText,previewWindow){
  if(!(blob instanceof Blob))throw new Error('The generated file is unavailable.');
- const url=window.URL.createObjectURL(blob);
+ const filename=(String(fileName||'Welfare_Statement_Report').replace(/\\.pdf$/i,'')||'Welfare_Statement_Report')+'.pdf';
+ const pdfBlob=blob.type==='application/pdf'?blob:new Blob([blob],{type:'application/pdf'});
+ const url=window.URL.createObjectURL(pdfBlob);
  const link=document.createElement('a');
  link.href=url;
- link.setAttribute('download',fileName);
+ link.setAttribute('download',filename);
  link.style.cssText='display:inline-block;margin:8px 0;padding:9px 13px;border-radius:9px;background:#eaf2ff;color:#12376b;font-weight:800;text-decoration:underline;overflow-wrap:anywhere';
  link.textContent='Tap here to view downloaded PDF';
  link.target='_blank';
