@@ -4641,8 +4641,7 @@ async function downloadPDF() {
     if (typeof QRCode !== 'undefined') {
         new QRCode(qrContainer, {
             text: `NTONSO SDA PRIMARY A - WELFARE STATEMENT\nName: ${teacher.name}\nStaff ID: ${teacher.id}\nDoc: ${document.getElementById('pdfDocId').textContent}`,
-            width: 64,
-            height: 64,
+            width:192,height:192,
             colorDark: "#030a16",
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.H
@@ -4737,8 +4736,7 @@ async function downloadMonthlySummaryPDF() {
     if (typeof QRCode !== 'undefined') {
         new QRCode(monthlyQrContainer, {
             text: `NTONSO SDA PRIMARY A - MONTHLY SUMMARY\nMonth: ${monthFormattedName}\nDoc: ${document.getElementById('monthlyReportId').textContent}`,
-            width: 64,
-            height: 64,
+            width:192,height:192,
             colorDark: "#030a16",
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.H
@@ -4852,8 +4850,7 @@ async function downloadFundSummaryPDF() {
     if (typeof QRCode !== 'undefined') {
         new QRCode(summaryQrContainer, {
             text: `NTONSO SDA PRIMARY A - COMPLETE FUND SUMMARY\nTotal Fund: ${money(netFund)}\nDoc: ${document.getElementById('summaryReportId').textContent}`,
-            width: 64,
-            height: 64,
+            width:192,height:192,
             colorDark: "#030a16",
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.H
@@ -4939,9 +4936,9 @@ async function renderPDFElement(element, options = {}) {
         const pdfOptions = {
             margin: [8, 8, 8, 8],
             filename: options.filename || 'welfare-report.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
+            image: { type: 'jpeg', quality:0.99 },
             html2canvas: {
-                scale: 2,
+                scale:3,
                 useCORS: true,
                 allowTaint: false,
                 backgroundColor: '#ffffff',
