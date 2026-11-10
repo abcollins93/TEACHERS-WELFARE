@@ -29,8 +29,12 @@ self.addEventListener('install',event=>{
    const cdnCache=await caches.open('twf-pwa-cdn-v1');
    await Promise.allSettled(CDN_ASSETS.map(async url=>{
      const request=new Request(url,{mode:'no-cors'});
-     const response=await fetch(request);
-     if(response&&(response.ok||response.type==='opaque'))await cdnCache.put(request,response);
+     const controller=new AbortController();
+     const timeout=setTimeout(()=>controller.abort(),4000);
+     try{
+       const response=await fetch(request,{signal:controller.signal});
+       if(response&&(response.ok||response.type==='opaque'))await cdnCache.put(request,response);
+     }finally{clearTimeout(timeout);}
    }));
    await self.skipWaiting();
  })());
