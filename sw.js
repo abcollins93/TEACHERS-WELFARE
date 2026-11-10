@@ -12,10 +12,26 @@ const SHELL_ASSETS=[
  './school-portal-workflows.js',
  './icons/welfare-portal.svg'
 ];
+const CDN_ASSETS=[
+ 'https://cdn.tailwindcss.com',
+ 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+ 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css',
+ 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',
+ 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',
+ 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
+ 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap',
+ 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'
+];
 self.addEventListener('install',event=>{
  event.waitUntil((async()=>{
    const cache=await caches.open(CACHE_VERSION);
    await cache.addAll(SHELL_ASSETS.map(path=>new Request(new URL(path,self.registration.scope),{cache:'reload'})));
+   const cdnCache=await caches.open('twf-pwa-cdn-v1');
+   await Promise.allSettled(CDN_ASSETS.map(async url=>{
+     const request=new Request(url,{mode:'no-cors'});
+     const response=await fetch(request);
+     if(response&&(response.ok||response.type==='opaque'))await cdnCache.put(request,response);
+   }));
    await self.skipWaiting();
  })());
 });
