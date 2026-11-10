@@ -1389,6 +1389,9 @@ header.top #headerAvatar{
 #schoolOverview .portal-hero .dashboard-welcome-greeting{display:flex;justify-content:flex-start;align-items:center;width:100%;margin:0 0 16px;padding:0;box-sizing:border-box;text-align:left}
 #schoolOverview .portal-hero .dashboard-welcome-greeting #dashboardGreeting{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:8px 15px;border:1px solid rgba(245,212,125,.34);border-radius:999px;background:rgba(255,255,255,.09);color:#f5d987;font-size:clamp(.72rem,1.1vw,.84rem);font-weight:850;letter-spacing:.085em;text-transform:uppercase;line-height:1.3;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
 #schoolOverview .portal-hero .dashboard-welcome-greeting #dashboardGreeting:before{content:"";display:inline-block;width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:#34d399;box-shadow:0 0 0 4px rgba(52,211,153,.12)}
+@keyframes dashboardGreetingLivePulse{0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 0 4px rgba(52,211,153,.12),0 0 8px rgba(52,211,153,.18)}50%{opacity:.72;transform:scale(.88);box-shadow:0 0 0 7px rgba(52,211,153,.04),0 0 12px rgba(52,211,153,.3)}}
+#schoolOverview .portal-hero .dashboard-welcome-greeting #dashboardGreeting:before{animation:dashboardGreetingLivePulse 2s ease-in-out infinite}
+@media(prefers-reduced-motion:reduce){#schoolOverview .portal-hero .dashboard-welcome-greeting #dashboardGreeting:before{animation:none}}
 @media(max-width:600px){#schoolOverview{padding-top:16px!important}#schoolOverview .portal-hero{padding:20px 16px}#schoolOverview .portal-hero .dashboard-welcome-greeting{margin-bottom:13px}#schoolOverview .portal-hero .dashboard-welcome-greeting #dashboardGreeting{padding:7px 12px;font-size:.7rem;letter-spacing:.055em}}
 </style>
 </head><body>
