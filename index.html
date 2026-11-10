@@ -503,6 +503,21 @@ try {
 #adminDashboardHero p{max-width:850px;color:#d5dfed!important;font-size:clamp(.9rem,1.5vw,1rem)!important;font-weight:450!important;line-height:1.75!important}
 @media(max-width:600px){#adminDashboardHero{border-radius:22px!important;padding:23px 20px!important}#adminDashboardHero h1{font-size:clamp(1.55rem,7vw,2rem)!important}}
 </style>
+
+<style id="welfare-skeleton-loading-styles">
+.welfare-skeleton{display:inline-block!important;min-width:5.5rem;min-height:1em;border-radius:7px!important;color:transparent!important;background:linear-gradient(100deg,rgba(148,163,184,.16) 20%,rgba(148,163,184,.34) 40%,rgba(148,163,184,.16) 60%)!important;background-size:200% 100%!important;animation:welfareSkeletonPulse 1.25s ease-in-out infinite!important;pointer-events:none!important;user-select:none!important}
+.welfare-skeleton.welfare-skeleton-wide{min-width:9rem;min-height:1.1em}
+@keyframes welfareSkeletonPulse{0%{background-position:100% 0;opacity:.72}100%{background-position:-100% 0;opacity:1}}
+@media(prefers-reduced-motion:reduce){.welfare-skeleton{animation:none!important;background-position:50% 0!important}}
+</style>
+
+<script id="welfare-main-skeleton-loading">
+(function(){
+ const ids=["statTotalFund","statMemberTotal","statMemberContribCount","statMonthlyRate","statLastPayment","statLastMonthName","currentTeacherName","currentTeacherGrade","currentTeacherStaffId","currentTeacherPhone","currentTeacherClass","profileFullName","profileDesignation","profileStaffIdDisplay","profileTopPhone","profileTopClass","profileRegDate","profileMembershipType","profileDetailName","profileDetailPhone","profileDetailSchool","profileDetailDistrictRegion","profileProfStaffId","profileProfRank","profileProfClass","profileEmployer","profileFinTotalPaid","profileFinTotalPayouts","profileFinCount","profileFinLastDate","masterSchoolCount","masterActiveCount","masterSuspendedCount"];
+ window.startWelfareMainSkeletons=function(){ids.forEach(id=>{const el=document.getElementById(id);if(el){el.classList.add('welfare-skeleton');if(/Name|School|District|Employer|Rank|LastPayment/i.test(id))el.classList.add('welfare-skeleton-wide');}});};
+ window.finishWelfareMainSkeletons=function(){ids.forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('welfare-skeleton','welfare-skeleton-wide');});};
+})();
+</script>
 </body>';
         return;
     }
@@ -2590,12 +2605,14 @@ async function restoreSessionState() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    window.startWelfareMainSkeletons?.();
     populateRankSelects();
     initializeDates();
     applySavedTheme();
     await restoreSessionState();
     renderAll();
     updateAdminInterface();
+    window.finishWelfareMainSkeletons?.();
 });
 
 function todayISO() {
