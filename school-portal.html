@@ -1170,7 +1170,7 @@ header.top #mobileNavToggle{
 body:not(:has(#login:not(.hidden))) main{padding-top:calc(var(--single-header-height,100px) + 18px)!important}
 body:has(#login:not(.hidden)) header.top{display:none!important}
 body:has(#login:not(.hidden)) main{padding-top:0!important}
-#teacherQuickProfileButton{min-height:38px;padding:8px 11px!important;border-radius:10px!important;font-size:.76rem!important}
+
 @media(max-width:950px){header.top #mobileNavToggle{display:inline-flex!important}}
 @media(max-width:760px){
  header.top{gap:9px!important;padding:9px 12px!important;min-height:72px!important}
@@ -1183,8 +1183,8 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
  header.top .top-account-actions{gap:6px!important}
  header.top #themeToggle{font-size:.68rem!important;padding:7px 8px!important;min-height:35px}
  header.top .shield{display:none!important}
- #teacherQuickProfileButton{width:38px;height:38px;min-width:38px;padding:0!important;font-size:0!important;display:inline-flex;align-items:center;justify-content:center}
- #teacherQuickProfileButton i{font-size:1rem}
+ 
+ 
 }
 @media(max-width:420px){
  header.top{padding:8px 9px!important;gap:6px!important}
@@ -1288,8 +1288,8 @@ header.top .top-account-actions{
  flex-direction:row!important;
  flex-wrap:nowrap!important;
  align-items:center!important;
- justify-content:flex-end!important;
- gap:9px!important;
+ justify-content:space-between!important;
+ gap:clamp(8px,1.2vw,16px)!important;
  width:auto!important;
  min-width:0!important;
  margin:0!important;
@@ -1299,7 +1299,6 @@ header.top .top-account-actions>*{
  align-self:center!important;
 }
 header.top #themeToggle,
-header.top #teacherQuickProfileButton,
 header.top #headerAvatar{
  flex:0 0 auto!important;
  align-self:center!important;
@@ -1333,12 +1332,8 @@ header.top #headerAvatar{
  header.top .header-profile-copy{display:none!important}
  header.top .header-profile{padding:0!important;margin:0!important}
  header.top .header-avatar{width:38px!important;min-width:38px!important;height:38px!important}
- header.top #teacherQuickProfileButton{
-  display:inline-flex!important;align-items:center!important;justify-content:center!important;
-  width:38px!important;min-width:38px!important;height:38px!important;min-height:38px!important;
-  padding:0!important;font-size:0!important;
- }
- header.top #teacherQuickProfileButton i{font-size:1rem!important}
+ header.top 
+ header.top 
 }
 @media(max-width:430px){
  header.top{padding:7px 8px!important;gap:6px!important;min-height:62px!important}
@@ -1349,7 +1344,7 @@ header.top #headerAvatar{
  header.top .top-school-meta{font-size:.53rem!important}
  header.top #sectionPageTitle{font-size:.5rem!important}
  header.top .top-account-actions{gap:4px!important}
- header.top #themeToggle,header.top #teacherQuickProfileButton{width:35px!important;min-width:35px!important;height:35px!important;min-height:35px!important}
+ header.top #themeToggle,header.top 
  header.top .header-avatar{width:35px!important;min-width:35px!important;height:35px!important}
 }
 </style>
@@ -1764,28 +1759,7 @@ async function renderTeacherDashboard(profile,school){
  }
  if(teacherDashboardLedgers)teacherDashboardLedgers.hidden=false;
  if($('teacherDashboardStatementButton'))$('teacherDashboardStatementButton').onclick=()=>document.getElementById('teacherStatementDownload')?.click();
- // Teacher-only shortcut: open the signed-in teacher's own fixed profile.
- // The target is always wfTeacherPanel; no roster selector is exposed to teachers.
- const overviewTop=document.querySelector('header.top .top-account-actions');
- if(overviewTop){
-  let ownProfileButton=document.getElementById('teacherQuickProfileButton');
-  if(!ownProfileButton){
-   ownProfileButton=document.createElement('button');
-   ownProfileButton.type='button';
-   ownProfileButton.id='teacherQuickProfileButton';
-   ownProfileButton.className='secondary';
-   ownProfileButton.style.cssText='flex:0 0 auto;align-self:center;white-space:nowrap';
-    ownProfileButton.setAttribute('aria-label','View my profile');
-    ownProfileButton.title='View my profile';
-   ownProfileButton.innerHTML='<i class="fa-solid fa-id-card" aria-hidden="true"></i> View my profile';
-   ownProfileButton.addEventListener('click',()=>{
-    const ownProfileNav=document.querySelector('.sidebar .navbtn[data-target="wfTeacherPanel"]');
-    if(ownProfileNav)ownProfileNav.click();
-   });
-   overviewTop.appendChild(ownProfileButton);
-  }
- }
- const accountTitle=document.querySelector('.sidebar-account-copy strong');
+  const accountTitle=document.querySelector('.sidebar-account-copy strong');
  if(accountTitle)accountTitle.textContent='Teacher account';
  const accountMark=document.querySelector('.sidebar-account-mark i');
  if(accountMark)accountMark.className='fa-solid fa-user';
