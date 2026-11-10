@@ -916,14 +916,18 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    const filtered=auditRows.filter(x=>(!cat||x.category===cat)&&[x.time_string,x.actor_name,x.action,x.details,x.status,x.category].some(v=>String(v||'').toLowerCase().includes(q)));
    const rows=[['Time','Actor','Category','Action','Details','Status'],...filtered.map(x=>[x.time_string||'',x.actor_name||'',x.category||'',x.action||'',x.details||'',x.status||''])];
     const csv=rows.map(row=>row.map(csvCell).join(',')).join('\r\n');
+    const schoolCode=String(ctx.school_code||'school').replace(/[^a-z0-9_-]/gi,'_');
+    const filename='Welfare_Audit_History_'+schoolCode+'_'+new Date().toISOString().split('T')[0]+'.csv';
     const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
-   downloadWorkflowBlob(blob,(ctx.school_code||'school')+'-audit-history.csv','wfAuditMsg','Audit CSV prepared with '+filtered.length+' entries.','Tap here to open the CSV file');
+   downloadWorkflowBlob(blob,filename,'wfAuditMsg','Audit CSV prepared with '+filtered.length+' entries.','Tap here to open the CSV file');
  };
  $('wfExportCsv').onclick=()=>{
    const rows=[['Record type','Date','Staff ID','Amount GHS','Reference / reason','Status'],...cons.map(x=>['Contribution',x.date,x.teacher_id,x.amount,x.reference||'',reversed.has('contribution:'+x.id)?'REVERSED':'Active']),...pays.map(x=>['Welfare payout',x.date,x.teacher_id,x.amount,x.reason||x.reference||'',reversed.has('payout:'+x.id)?'REVERSED':'Active'])];
    const csv=rows.map(row=>row.map(csvCell).join(',')).join('\r\n');
+   const schoolCode=String(ctx.school_code||'school').replace(/[^a-z0-9_-]/gi,'_');
+   const filename='Welfare_Ledgers_'+schoolCode+'_'+new Date().toISOString().split('T')[0]+'.csv';
    const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
-   downloadWorkflowBlob(blob,(ctx.school_code||'school')+'-welfare-ledgers.csv','wfReportMsg','CSV export prepared for download.','Tap here to open the CSV file');
+   downloadWorkflowBlob(blob,filename,'wfReportMsg','CSV export prepared for download.','Tap here to open the CSV file');
  };
   // Audit is a dedicated, lazy-loaded view. Never fetch or render audit rows as part
  // of the management panel; fetch only after the user explicitly selects Audit Trail.
