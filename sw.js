@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_VERSION='twf-pwa-shell-v5';
+const CACHE_VERSION='twf-pwa-shell-v6';
 const SHELL_ASSETS=[
  './',
  './index.html',
@@ -82,6 +82,19 @@ self.addEventListener('fetch',event=>{
        const pathMatch=await cache.match(new URL(url.pathname,self.location.origin).href);
        if(pathMatch)return pathMatch;
        return (await cache.match(new URL('./offline.html',self.registration.scope).href))||Response.error();
+     }
+   })());
+   return;
+ }
+ if(/\/school-portal-workflows\.js$/i.test(url.pathname)){
+   event.respondWith((async()=>{
+     const cache=await caches.open(CACHE_VERSION);
+     try{
+       const response=await fetch(request,{cache:'no-store'});
+       if(response&&response.ok)cache.put(request,response.clone()).catch(()=>{});
+       return response;
+     }catch(_){
+       return (await cache.match(request))||Response.error();
      }
    })());
    return;
