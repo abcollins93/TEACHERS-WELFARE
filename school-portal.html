@@ -3204,9 +3204,22 @@ body:has(#login:not(.hidden)) main{
   padding-top:0!important;
 }
 </style>
-</body></html>
-
-
-
-
-
+<style id="teacher-profile-accent-rounded-final">
+/* Match the administrator profile accent treatment on the teacher's own profile cards. */
+#wfTeacherPanel .teacher-profile-accent{
+  border-top-width:5px!important;
+  border-top-style:solid!important;
+  border-top-left-radius:var(--radius-lg,22px)!important;
+  border-top-right-radius:var(--radius-lg,22px)!important;
+  background-clip:padding-box;
+}
+#wfTeacherPanel .teacher-profile-accent-green{border-top-color:#22a06b!important}
+#wfTeacherPanel .teacher-profile-accent-blue{border-top-color:#3b82f6!important}
+#wfTeacherPanel .teacher-profile-accent-gold{border-top-color:#d6a637!important}
+#wfTeacherPanel .teacher-profile-accent-purple{border-top-color:#8b5cf6!important}
+@media(max-width:560px){
+  #wfTeacherPanel .teacher-profile-accent{border-top-left-radius:17px!important;border-top-right-radius:17px!important}
+}
+</style>
+</body>
+</html>
