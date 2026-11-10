@@ -1457,6 +1457,131 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
 
 
 
+
+<style id="tenant-visual-polish">
+/* Tenant portal visual polish: subtle glass surfaces, consistent geometry and tactile feedback */
+:root{
+ --tenant-radius-card:20px;
+ --tenant-radius-control:13px;
+ --tenant-glass-light:rgba(255,255,255,.78);
+ --tenant-glass-border:rgba(255,255,255,.72);
+ --tenant-glass-shadow:0 14px 38px rgba(11,29,58,.085),inset 0 1px 0 rgba(255,255,255,.72);
+}
+.dark{
+ --tenant-glass-light:rgba(10,27,52,.78);
+ --tenant-glass-border:rgba(148,163,184,.18);
+ --tenant-glass-shadow:0 16px 40px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.045);
+}
+/* Fixed header and tenant navigation */
+.app-header-group>header.top,header.top{
+ background:linear-gradient(115deg,rgba(3,10,22,.94),rgba(11,29,58,.91) 58%,rgba(32,60,99,.88))!important;
+ border-bottom:1px solid rgba(230,190,90,.32)!important;
+ box-shadow:0 10px 30px rgba(3,10,22,.2),inset 0 1px 0 rgba(255,255,255,.07)!important;
+ -webkit-backdrop-filter:blur(20px) saturate(155%);
+ backdrop-filter:blur(20px) saturate(155%);
+}
+#dashboard .sidebar{
+ background:linear-gradient(180deg,rgba(7,22,44,.96),rgba(3,10,22,.94))!important;
+ border-color:rgba(230,190,90,.16)!important;
+ box-shadow:16px 0 42px rgba(3,10,22,.2),inset -1px 0 rgba(255,255,255,.045)!important;
+ -webkit-backdrop-filter:blur(22px) saturate(145%);
+ backdrop-filter:blur(22px) saturate(145%);
+}
+#dashboard .sidebar .sidebar-brand{
+ background:linear-gradient(110deg,rgba(255,255,255,.045),rgba(255,255,255,.012));
+ -webkit-backdrop-filter:blur(12px);
+ backdrop-filter:blur(12px);
+}
+#dashboard .sidebar .navbtn{
+ border:1px solid transparent;
+ border-radius:14px;
+ transition:background .2s ease,border-color .2s ease,transform .18s ease,box-shadow .2s ease,color .2s ease;
+}
+#dashboard .sidebar .navbtn:hover{
+ transform:translateX(2px);
+ background:rgba(255,255,255,.075);
+ border-color:rgba(255,255,255,.085);
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.055);
+}
+#dashboard .sidebar .navbtn.active{
+ background:linear-gradient(105deg,rgba(214,166,55,.22),rgba(255,255,255,.065));
+ border-color:rgba(230,190,90,.24);
+ box-shadow:inset 3px 0 #e7bd46,0 5px 16px rgba(0,0,0,.12);
+}
+/* Cards and information surfaces */
+#dashboard .panel:not(#login),#dashboard .metric,#dashboard .support,
+#dashboard .teacher-dashboard-ledger-card,#dashboard .sidebar-account,
+#dashboard #workflows .panel,#dashboard #wfAdminPanel>.panel{
+ border-radius:var(--tenant-radius-card);
+ border-color:var(--tenant-glass-border);
+ box-shadow:var(--tenant-glass-shadow);
+}
+#dashboard .panel:not(#login),#dashboard .support,
+#dashboard .teacher-dashboard-ledger-card{
+ background:var(--tenant-glass-light);
+ -webkit-backdrop-filter:blur(16px) saturate(140%);
+ backdrop-filter:blur(16px) saturate(140%);
+}
+#dashboard .metric{
+ transition:transform .2s ease,box-shadow .22s ease,border-color .2s ease;
+}
+#dashboard .metric:hover{
+ transform:translateY(-3px);
+ box-shadow:0 18px 38px rgba(11,29,58,.13),inset 0 1px 0 rgba(255,255,255,.7);
+ border-color:rgba(214,166,55,.3);
+}
+.dark #dashboard .metric:hover{
+ box-shadow:0 18px 38px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.06);
+}
+#dashboard .metric:active{transform:translateY(-1px) scale(.992)}
+#dashboard .portal-hero,#dashboard .wf-admin-intro{
+ box-shadow:0 20px 48px rgba(7,27,53,.22),inset 0 1px 0 rgba(255,255,255,.12);
+}
+/* Consistent controls and tactile response */
+#dashboard button,#dashboard .button,#dashboard input,#dashboard select,#dashboard textarea{
+ border-radius:var(--tenant-radius-control);
+}
+#dashboard button{
+ transition:transform .18s ease,box-shadow .2s ease,background-color .2s ease,border-color .2s ease,filter .2s ease;
+}
+#dashboard button:hover:not(:disabled){
+ box-shadow:0 8px 20px rgba(11,29,58,.13);
+ filter:brightness(1.025);
+}
+#dashboard button:active:not(:disabled){
+ transform:scale(.975);
+ box-shadow:0 3px 9px rgba(11,29,58,.12);
+}
+#dashboard input,#dashboard select,#dashboard textarea{
+ border:1px solid var(--line);
+ transition:border-color .2s ease,box-shadow .2s ease,background-color .2s ease;
+}
+#dashboard input:focus,#dashboard select:focus,#dashboard textarea:focus{
+ border-color:rgba(214,166,55,.82);
+ box-shadow:0 0 0 4px rgba(214,166,55,.13);
+}
+#dashboard input::placeholder,#dashboard textarea::placeholder{opacity:.72}
+#dashboard [role="dialog"],#dashboard .modal-content,#dashboard .modal-card{
+ border:1px solid var(--tenant-glass-border);
+ border-radius:22px;
+ box-shadow:0 24px 70px rgba(3,10,22,.28),inset 0 1px 0 rgba(255,255,255,.16);
+ -webkit-backdrop-filter:blur(20px) saturate(145%);
+ backdrop-filter:blur(20px) saturate(145%);
+}
+@media(max-width:700px){
+ #dashboard .panel:not(#login),#dashboard .metric,#dashboard .support,
+ #dashboard .teacher-dashboard-ledger-card{border-radius:17px}
+ #dashboard .metric:hover{transform:none}
+ #dashboard .sidebar .navbtn:active{transform:scale(.985)}
+ #dashboard button{touch-action:manipulation}
+}
+@media(prefers-reduced-motion:reduce){
+ #dashboard .metric,#dashboard button,#dashboard .sidebar .navbtn,
+ #dashboard input,#dashboard select,#dashboard textarea{transition:none!important}
+ #dashboard .metric:hover,#dashboard button:active,#dashboard .sidebar .navbtn:hover{transform:none!important}
+}
+</style>
+
 </head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading page">
