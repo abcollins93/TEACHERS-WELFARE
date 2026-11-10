@@ -2107,9 +2107,9 @@ async function renderTeacherDashboard(profile,school){
   amount:Number(row.amount||0)
  })).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
  async function downloadTeacherStatement(){
+  if(!window.html2pdf)return statementStatus('The PDF service is unavailable. Check your internet connection and try again.',true);
   const previewWindow=window.open('about:blank','_blank');
   if(previewWindow){try{previewWindow.document.title='Preparing welfare statement';previewWindow.document.body.textContent='Preparing your PDF statement…';}catch(_){}}
-  if(!window.html2pdf)return statementStatus('The PDF service is unavailable. Check your internet connection and try again.',true);
   statementButton.disabled=true;statementStatus('Verifying your account and preparing your statement…');
   try{
    const {data:{user:verifiedUser},error:authError}=await client.auth.getUser();
@@ -2146,7 +2146,10 @@ async function renderTeacherDashboard(profile,school){
     standardMonthlyDues:teacherStandardMonthlyDues,
     academicYear:window.getCurrentAcademicYear()
    });
-   window.downloadWelfareBlob(generatedStatement.blob,generatedStatement.filename,statementMessage,'Your personal PDF statement is ready.',previewWindow);
+   const pdfBlob=generatedStatement?.blob;
+   const filename=String(generatedStatement?.filename||'teacher-statement.pdf');
+   if(!(pdfBlob instanceof Blob))throw new Error('The generated personal statement PDF is unavailable.');
+   window.downloadWelfareBlob(pdfBlob,filename,statementMessage,'Your personal PDF statement is ready.',previewWindow);
   }catch(error){
    if(previewWindow&&!previewWindow.closed)previewWindow.close();
    console.error('[Teacher statement] PDF generation failed:',error);
