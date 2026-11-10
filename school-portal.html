@@ -2082,8 +2082,6 @@ async function renderTeacherDashboard(profile,school){
  })).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
  async function downloadTeacherStatement(){
   if(!window.html2pdf)return statementStatus('The PDF service is unavailable. Check your internet connection and try again.',true);
-  const previewWindow=window.open('about:blank','_blank');
-  if(previewWindow){try{previewWindow.document.title='Preparing welfare statement';previewWindow.document.body.textContent='Preparing your PDF statement…';}catch(_){}}
   statementButton.disabled=true;statementStatus('Verifying your account and preparing your statement…');
   try{
    const {data:{user:verifiedUser},error:authError}=await client.auth.getUser();
@@ -2124,9 +2122,8 @@ async function renderTeacherDashboard(profile,school){
    const rawFilename=String(generatedStatement?.filename||'Welfare_Statement_Report.pdf');
    const filename=(rawFilename.replace(/\\.pdf$/i,'')||'Welfare_Statement_Report')+'.pdf';
    if(!(pdfBlob instanceof Blob))throw new Error('The generated personal statement PDF is unavailable.');
-   window.downloadWelfareBlob(pdfBlob,filename,statementMessage,'Your personal PDF statement is ready.',previewWindow);
+   window.downloadWelfareBlob(pdfBlob,filename,statementMessage,'Your personal PDF statement is ready.');
   }catch(error){
-   if(previewWindow&&!previewWindow.closed)previewWindow.close();
    console.error('[Teacher statement] PDF generation failed:',error);
    statementStatus(error?.message||'The PDF could not be generated. Please try again.',true);
   }finally{statementButton.disabled=false;}
@@ -2351,16 +2348,22 @@ try {
   }
   window.finishTenantSkeletons?.();
   const duesMetric=$('standardDuesMetric'),duesInput=$('wfMonthlyDues');if(duesMetric&&duesInput){const updateDues=()=>{duesMetric.textContent='GHS '+money(duesInput.value||0);};updateDues();duesInput.addEventListener('input',updateDues);}
- const schoolPdfButton=$('downloadSchoolPdf');
- if(schoolPdfButton)schoolPdfButton.onclick=()=>{
-  const previewWindow=window.open('about:blank','_blank');
-  if(previewWindow){try{previewWindow.document.title='Preparing school summary';previewWindow.document.body.textContent='Preparing your PDF summary…';}catch(_){}}
+ const schoolPdfButton=$('downloadSchoolPdf'); if(schoolPdfButton)schoolPdfButton.onclick=async()=>{
+  if(schoolPdfButton.disabled)return;
   if(!window.html2pdf){alert('PDF library is unavailable. Please check your internet connection.');return;}
   const teacherTable=document.querySelector('#schoolTeachers table');
   if(!teacherTable){alert('The teacher register is still loading. Please try again in a moment.');return;}
-  const report=document.createElement('div');report.style.cssText='padding:24px;color:#182235;font-family:Arial,sans-serif;background:white';
-  report.innerHTML='<h1 style="color:#0b1d3a">'+escapeHtml(school.name)+'</h1><p>School Welfare Fund — Summary Statement</p><p>School code: '+escapeHtml(school.school_code)+' | Generated: '+new Date().toLocaleString()+'</p><hr><h2>Fund summary</h2><p>Registered teachers: '+escapeHtml($('teacherCount').textContent)+'</p><p>Total contributions: GHS '+escapeHtml($('contributionTotal').textContent)+'</p><p>Total welfare payouts: GHS '+escapeHtml($('payoutTotal').textContent)+'</p><p><strong>Net fund balance: GHS '+escapeHtml($('netTotal').textContent)+'</strong></p><h2>Teacher register</h2>'+teacherTable.outerHTML;
-  window.html2pdf().set({margin:10,filename:(school.school_code||'school')+'-welfare-summary.pdf',image:{type:'jpeg',quality:.99},html2canvas:{scale:3,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:'landscape'}}).from(report).outputPdf('blob').then(blob=>window.downloadWelfareBlob(blob,(school.school_code||'school')+'-welfare-summary.pdf',null,'School PDF summary is ready.',previewWindow)).catch(error=>{if(previewWindow&&!previewWindow.closed)previewWindow.close();console.error('[School Welfare] School summary PDF failed:',error);alert('The school PDF could not be generated. Please try again.');});
+  const originalButtonHtml=schoolPdfButton.innerHTML;
+  let progress=document.getElementById('schoolPdfProgress');
+  if(!progress){progress=document.createElement('p');progress.id='schoolPdfProgress';progress.className='muted';progress.setAttribute('role','status');progress.setAttribute('aria-live','polite');schoolPdfButton.insertAdjacentElement('afterend',progress);}
+  schoolPdfButton.disabled=true;schoolPdfButton.setAttribute('aria-busy','true');progress.textContent='Generating school PDF summary…';
+  try{
+   const report=document.createElement('div');report.style.cssText='padding:24px;color:#182235;font-family:Arial,sans-serif;background:white';
+   report.innerHTML='<h1 style="color:#0b1d3a">'+escapeHtml(school.name)+'</h1><p>School Welfare Fund — Summary Statement</p><p>School code: '+escapeHtml(school.school_code)+' | Generated: '+new Date().toLocaleString()+'</p><hr><h2>Fund summary</h2><p>Registered teachers: '+escapeHtml($('teacherCount').textContent)+'</p><p>Total contributions: GHS '+escapeHtml($('contributionTotal').textContent)+'</p><p>Total welfare payouts: GHS '+escapeHtml($('payoutTotal').textContent)+'</p><p><strong>Net fund balance: GHS '+escapeHtml($('netTotal').textContent)+'</strong></p><h2>Teacher register</h2>'+teacherTable.outerHTML;
+   const blob=await window.html2pdf().set({margin:10,filename:(school.school_code||'school')+'-welfare-summary.pdf',image:{type:'jpeg',quality:.99},html2canvas:{scale:3,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:'landscape'}}).from(report).outputPdf('blob');
+   window.downloadWelfareBlob(blob,(school.school_code||'school')+'-welfare-summary.pdf',progress,'School PDF summary is ready.');
+  }catch(error){console.error('[School Welfare] School summary PDF failed:',error);progress.textContent=error?.message||'The school PDF could not be generated. Please try again.';progress.className='error';}
+  finally{schoolPdfButton.disabled=false;schoolPdfButton.removeAttribute('aria-busy');schoolPdfButton.innerHTML=originalButtonHtml;}
  };
  showLoginWelcome('Admin','School Administrator',school.name);
 }
@@ -3126,7 +3129,7 @@ window.generateTenantWelfarePdf=async function(o){
  }finally{host.remove();}
  return {documentId:id,blob:pdfBlob,filename};
 };
-window.downloadWelfareBlob=function(blob,fileName,statusNode,successText,previewWindow){
+window.downloadWelfareBlob=function(blob,fileName,statusNode,successText){
  if(!(blob instanceof Blob))throw new Error('The generated file is unavailable.');
  const filename=(String(fileName||'Welfare_Statement_Report').replace(/\\.pdf$/i,'')||'Welfare_Statement_Report')+'.pdf';
  const pdfBlob=blob.type==='application/pdf'?blob:new Blob([blob],{type:'application/pdf'});
@@ -3136,14 +3139,13 @@ window.downloadWelfareBlob=function(blob,fileName,statusNode,successText,preview
  link.setAttribute('download',filename);
  link.style.cssText='display:inline-block;margin:8px 0;padding:9px 13px;border-radius:9px;background:#eaf2ff;color:#12376b;font-weight:800;text-decoration:underline;overflow-wrap:anywhere';
  link.textContent='Tap here to view downloaded PDF';
- link.target='_blank';
- link.rel='noopener';
  document.body.appendChild(link);
  link.click();
  document.body.removeChild(link);
- if(previewWindow&&!previewWindow.closed){try{previewWindow.location.href=url;}catch(openError){console.warn('[Welfare PDF] Preview tab could not be navigated:',openError);}}
  const fallback=link.cloneNode(true);
  fallback.removeAttribute('download');
+ fallback.target='_blank';
+ fallback.rel='noopener';
  fallback.textContent='Tap here to view downloaded PDF';
  if(statusNode){
    statusNode.textContent=successText||'Your file is ready.';
