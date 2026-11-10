@@ -20,7 +20,7 @@
    var label=safeTenantLabel();
    var shortLabel=('Welfare '+(schoolCode||label)).replace(/\\s+/g,' ').slice(0,20);
    var manifest={
-     id:pageUrl.pathname+pageUrl.search,
+     id:window.location.href,
      name:'Welfare - '+label,
      short_name:shortLabel,
      description:'Teachers Welfare Fund portal for '+label+'.',
