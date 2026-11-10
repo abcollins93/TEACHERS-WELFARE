@@ -33,7 +33,22 @@ self.addEventListener('fetch',event=>{
  const request=event.request;
  if(request.method!=='GET')return;
  const url=new URL(request.url);
- if(url.origin!==self.location.origin||isSensitiveRequest(url))return;
+ if(url.origin!==self.location.origin){
+   const trustedStaticHosts=['cdnjs.cloudflare.com','cdn.jsdelivr.net','cdn.tailwindcss.com','fonts.googleapis.com','fonts.gstatic.com'];
+   if(!trustedStaticHosts.includes(url.hostname)||!['script','style','font','image'].includes(request.destination))return;
+   event.respondWith((async()=>{
+     const cache=await caches.open('twf-pwa-cdn-v1');
+     const cached=await cache.match(request);
+     if(cached)return cached;
+     try{
+       const response=await fetch(request);
+       if(response&&(response.ok||response.type==='opaque'))cache.put(request,response.clone()).catch(()=>{});
+       return response;
+     }catch(_){return cached||Response.error();}
+   })());
+   return;
+ }
+ if(isSensitiveRequest(url))return;
  if(request.mode==='navigate'){
    event.respondWith((async()=>{
      const cache=await caches.open(CACHE_VERSION);
