@@ -1407,6 +1407,21 @@ header.top #headerAvatar{
 /* Let the account details wrap inside the navigation drawer instead of truncating them. */
 #schoolSidebar .sidebar-account-copy small#sideSchoolCode{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere!important;line-height:1.45!important}
 </style>
+
+<style id="tenant-quick-actions-menu-styles">
+.quick-actions-wrap{position:relative;display:flex;align-items:center;flex:0 0 auto}
+.quick-actions-toggle{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:39px;padding:8px 13px;border:1px solid rgba(232,194,91,.5);border-radius:999px;background:linear-gradient(135deg,rgba(214,166,55,.2),rgba(255,255,255,.08));color:#f8df9a;font-size:.76rem;font-weight:800;white-space:nowrap;cursor:pointer;box-shadow:inset 0 1px rgba(255,255,255,.1);transition:background .2s,transform .2s}
+.quick-actions-toggle:hover{background:rgba(214,166,55,.28);transform:translateY(-1px)}
+.quick-actions-chevron{font-size:.65rem;transition:transform .2s}
+.quick-actions-toggle[aria-expanded="true"] .quick-actions-chevron{transform:rotate(180deg)}
+.quick-actions-menu{position:absolute;top:calc(100% + 11px);right:0;z-index:6000;min-width:220px;padding:8px;border:1px solid rgba(214,166,55,.35);border-radius:16px;background:linear-gradient(145deg,#07162b,#102b4a);box-shadow:0 16px 40px rgba(0,0,0,.28)}
+.quick-actions-menu[hidden]{display:none!important}
+.quick-actions-menu button{display:flex;align-items:center;gap:11px;width:100%;padding:10px 12px;border:0;border-radius:10px;background:transparent;color:#edf3fb;text-align:left;font-size:.8rem;font-weight:700;cursor:pointer}
+.quick-actions-menu button i{width:17px;color:#e9c35b;text-align:center}
+.quick-actions-menu button:hover,.quick-actions-menu button:focus-visible{background:rgba(255,255,255,.1);outline:none}
+@media(max-width:760px){.quick-actions-toggle{width:37px;min-width:37px;height:37px;min-height:37px;padding:0;font-size:0;gap:0}.quick-actions-toggle>i:first-child{font-size:.95rem}.quick-actions-chevron{display:none}.quick-actions-menu{right:-44px;min-width:210px}}
+@media(max-width:430px){.quick-actions-toggle{width:35px;min-width:35px;height:35px;min-height:35px}}
+</style>
 </head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading page">
@@ -1429,6 +1444,19 @@ header.top #headerAvatar{
   </div>
  </div>
  <div class="top-account-actions" style="display:flex;align-items:center;gap:12px">
+  <div class="quick-actions-wrap" id="quickActionsWrap">
+   <button id="quickActionsToggle" class="quick-actions-toggle" type="button" aria-expanded="false" aria-controls="quickActionsMenu">
+    <i class="fa-solid fa-bolt" aria-hidden="true"></i><span>Quick actions</span><i class="fa-solid fa-chevron-down quick-actions-chevron" aria-hidden="true"></i>
+   </button>
+   <div id="quickActionsMenu" class="quick-actions-menu" hidden>
+    <button type="button" data-quick-target="schoolOverview"><i class="fa-solid fa-chart-pie"></i> Dashboard</button>
+    <button type="button" data-quick-target="wfTeacherPanel"><i class="fa-solid fa-user"></i> Teacher profile</button>
+    <button type="button" data-quick-target="schoolTeachers"><i class="fa-solid fa-users"></i> Teachers &amp; Members</button>
+    <button type="button" data-quick-target="wfContributionPanel"><i class="fa-solid fa-money-bill-wave"></i> Contributions</button>
+    <button type="button" data-quick-target="wfPayoutPanel"><i class="fa-solid fa-hand-holding-heart"></i> Welfare &amp; Payouts</button>
+    <button type="button" data-quick-target="wfReportsPanel"><i class="fa-solid fa-file-invoice-dollar"></i> Statements &amp; Reports</button>
+   </div>
+  </div>
   <button id="themeToggle" class="secondary" type="button" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i> Theme</button>
   <div class="shield"><i class="fa-solid fa-shield-halved"></i>Secure school administrator access</div>
   <div id="headerProfile" class="header-profile hidden" aria-label="Signed-in profile"><button type="button" class="header-avatar" id="headerAvatar" aria-label="Change profile picture" title="Change profile picture"><i class="fa-solid fa-user" aria-hidden="true"></i><span class="header-avatar-edit" aria-hidden="true"><i class="fa-solid fa-camera"></i></span></button><input id="headerAvatarFile" type="file" accept="image/*" hidden><span id="headerAvatarStatus" class="header-avatar-status" role="status" aria-live="polite"></span><div class="header-profile-copy"><strong id="headerProfileName">Signed-in user</strong><small id="headerProfileRole">Portal account</small></div></div>
@@ -3252,6 +3280,21 @@ body:has(#login:not(.hidden)) main{
  const ids=['teacherCount','contributionTotal','payoutTotal','monthlyContributionTotal','netTotal','standardDuesMetric','lastActivity','teacherDashboardName','teacherDashboardPhone','teacherDashboardClass','teacherOwnName','teacherOwnRank','teacherOwnStaffId','teacherOwnRegistration','teacherOwnMembership'];
  window.startTenantSkeletons=function(){ids.forEach(id=>{const el=document.getElementById(id);if(el){el.classList.add('welfare-skeleton');if(/Name|lastActivity/i.test(id))el.classList.add('welfare-skeleton-wide');}});};
  window.finishTenantSkeletons=function(){ids.forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('welfare-skeleton','welfare-skeleton-wide');});};
+})();
+</script>
+
+<script id="tenant-quick-actions-menu-logic">
+(function(){
+ const wrap=document.getElementById('quickActionsWrap');
+ const toggle=document.getElementById('quickActionsToggle');
+ const menu=document.getElementById('quickActionsMenu');
+ if(!wrap||!toggle||!menu||wrap.dataset.ready==='true')return;
+ wrap.dataset.ready='true';
+ const close=()=>{menu.hidden=true;toggle.setAttribute('aria-expanded','false');};
+ toggle.addEventListener('click',()=>{const open=menu.hidden;menu.hidden=!open;toggle.setAttribute('aria-expanded',String(open));});
+ menu.addEventListener('click',event=>{const action=event.target.closest('[data-quick-target]');if(!action)return;const target=action.dataset.quickTarget;const nav=document.querySelector('.sidebar .navbtn[data-target="'+target+'"]');if(nav&&!nav.disabled&&!nav.classList.contains('role-restricted'))nav.click();close();});
+ document.addEventListener('click',event=>{if(!wrap.contains(event.target))close();});
+ document.addEventListener('keydown',event=>{if(event.key==='Escape')close();});
 })();
 </script>
 </body>
