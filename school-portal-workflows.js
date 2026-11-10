@@ -14,6 +14,28 @@ const RANK_OPTIONS=[
 ];
 const rankOptionsMarkup=()=>'<option value="">Select Rank / Grade</option>'+RANK_OPTIONS.map(rank=>'<option value="'+esc(rank)+'">'+esc(rank)+'</option>').join('');
 const csvCell=v=>{let s=String(v??'');if(/^[\s]*[=+@\-\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';};
+const downloadWorkflowBlob=(blob,fileName,statusId,successText,viewLabel)=>{
+ if(!(blob instanceof Blob))throw new Error('The generated file is unavailable.');
+ const url=window.URL.createObjectURL(blob),link=document.createElement('a');
+ link.href=url;
+ link.setAttribute('download',fileName);
+ document.body.appendChild(link);
+ link.click();
+ document.body.removeChild(link);
+ const status=$(statusId);
+ if(status){
+   status.textContent=successText;
+   status.className='muted';
+   const fallback=document.createElement('a');
+   fallback.href=url;
+   fallback.target='_blank';
+   fallback.rel='noopener';
+   fallback.textContent=viewLabel||'Tap here to view downloaded PDF';
+   fallback.style.cssText='display:inline-block;margin:7px 0;padding:8px 12px;border-radius:8px;background:#eaf2ff;color:#12376b;font-weight:800;text-decoration:underline;overflow-wrap:anywhere';
+   status.insertAdjacentElement('afterend',fallback);
+ }
+ setTimeout(()=>URL.revokeObjectURL(url),10*60*1000);
+};
 
 // Tenant names and details are supplied by the authenticated school record.
 
@@ -783,8 +805,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    msg(statusId,'Preparing PDF…');
    try{
      if(typeof window.generateTenantWelfarePdf!=='function')throw new Error('The PDF generator is unavailable. Reload the portal and try again.');
-     await window.generateTenantWelfarePdf(buildOptions());
-     msg(statusId,successText);
+     const generated=await window.generateTenantWelfarePdf(buildOptions());
+     downloadWorkflowBlob(generated.blob,generated.filename,statusId,successText,'Tap here to view downloaded PDF');
    }catch(error){
      console.error('[School Welfare PDF]',error);
      msg(statusId,error?.message||'The PDF could not be generated. Check your connection and try again.',true);
@@ -890,15 +912,14 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    const filtered=auditRows.filter(x=>(!cat||x.category===cat)&&[x.time_string,x.actor_name,x.action,x.details,x.status,x.category].some(v=>String(v||'').toLowerCase().includes(q)));
    const rows=[['Time','Actor','Category','Action','Details','Status'],...filtered.map(x=>[x.time_string||'',x.actor_name||'',x.category||'',x.action||'',x.details||'',x.status||''])];
     const csv=rows.map(row=>row.map(csvCell).join(',')).join('\r\n');
-    const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
-   a.href=url;a.download=(ctx.school_code||'school')+'-audit-history.csv';a.click();URL.revokeObjectURL(url);
-   msg('wfAuditMsg','Audit CSV prepared with '+filtered.length+' entries.');
+    const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
+   downloadWorkflowBlob(blob,(ctx.school_code||'school')+'-audit-history.csv','wfAuditMsg','Audit CSV prepared with '+filtered.length+' entries.','Tap here to open the CSV file');
  };
  $('wfExportCsv').onclick=()=>{
    const rows=[['Record type','Date','Staff ID','Amount GHS','Reference / reason','Status'],...cons.map(x=>['Contribution',x.date,x.teacher_id,x.amount,x.reference||'',reversed.has('contribution:'+x.id)?'REVERSED':'Active']),...pays.map(x=>['Welfare payout',x.date,x.teacher_id,x.amount,x.reason||x.reference||'',reversed.has('payout:'+x.id)?'REVERSED':'Active'])];
    const csv=rows.map(row=>row.map(csvCell).join(',')).join('\r\n');
-   const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
-   a.href=url;a.download=(ctx.school_code||'school')+'-welfare-ledgers.csv';a.click();URL.revokeObjectURL(url);msg('wfReportMsg','CSV export prepared for download.');
+   const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
+   downloadWorkflowBlob(blob,(ctx.school_code||'school')+'-welfare-ledgers.csv','wfReportMsg','CSV export prepared for download.','Tap here to open the CSV file');
  };
   // Audit is a dedicated, lazy-loaded view. Never fetch or render audit rows as part
  // of the management panel; fetch only after the user explicitly selects Audit Trail.
