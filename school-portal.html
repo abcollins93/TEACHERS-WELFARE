@@ -2133,7 +2133,7 @@ async function renderTeacherDashboard(profile,school){
    if(!teacherDuesError)teacherStandardMonthlyDues=Number(teacherDuesSetting||0);
    else console.warn('[Teacher statement] Could not load this school\'s standard monthly dues:',teacherDuesError.message);
    const transactions=[...statementRows(personalContributions,'Contribution'),...statementRows(personalPayouts,'Welfare payout')].sort((a,b)=>String(a.date).localeCompare(String(b.date)));
-   await window.generateTenantWelfarePdf({
+   const generatedStatement=await window.generateTenantWelfarePdf({
     type:'individual',
     school:{name:school.name,school_code:school.school_code,district:school.district,region:school.region},
     teacher:{id:verifiedTeacherId,name:teacherRecord?.name||teacherName,phone:teacherRecord?.phone||'',rank:teacherRecord?.rank||profile.rank||'',class_name:teacherRecord?.class_name||profile.class_name||'',passport:teacherAvatar||teacherRecord?.passport||''},
@@ -2144,7 +2144,7 @@ async function renderTeacherDashboard(profile,school){
     standardMonthlyDues:teacherStandardMonthlyDues,
     academicYear:window.getCurrentAcademicYear()
    });
-   statementStatus('Your personal PDF statement has been downloaded.');
+   window.downloadWelfareBlob(generatedStatement.blob,generatedStatement.filename,statementMessage,'Your personal PDF statement is ready.');
   }catch(error){
    console.error('[Teacher statement] PDF generation failed:',error);
    statementStatus(error?.message||'The PDF could not be generated. Please try again.',true);
@@ -2377,7 +2377,7 @@ try {
   if(!teacherTable){alert('The teacher register is still loading. Please try again in a moment.');return;}
   const report=document.createElement('div');report.style.cssText='padding:24px;color:#182235;font-family:Arial,sans-serif;background:white';
   report.innerHTML='<h1 style="color:#0b1d3a">'+escapeHtml(school.name)+'</h1><p>School Welfare Fund — Summary Statement</p><p>School code: '+escapeHtml(school.school_code)+' | Generated: '+new Date().toLocaleString()+'</p><hr><h2>Fund summary</h2><p>Registered teachers: '+escapeHtml($('teacherCount').textContent)+'</p><p>Total contributions: GHS '+escapeHtml($('contributionTotal').textContent)+'</p><p>Total welfare payouts: GHS '+escapeHtml($('payoutTotal').textContent)+'</p><p><strong>Net fund balance: GHS '+escapeHtml($('netTotal').textContent)+'</strong></p><h2>Teacher register</h2>'+teacherTable.outerHTML;
-  window.html2pdf().set({margin:10,filename:(school.school_code||'school')+'-welfare-summary.pdf',image:{type:'jpeg',quality:.96},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:'landscape'}}).from(report).save();
+  window.html2pdf().set({margin:10,filename:(school.school_code||'school')+'-welfare-summary.pdf',image:{type:'jpeg',quality:.96},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:'landscape'}}).from(report).outputPdf('blob').then(blob=>window.downloadWelfareBlob(blob,(school.school_code||'school')+'-welfare-summary.pdf',null,'School PDF summary is ready.'));
  };
  showLoginWelcome('Admin','School Administrator',school.name);
 }
@@ -3050,9 +3050,9 @@ window.generateTenantWelfarePdf=async function(o){
   host.style.position='relative';host.style.left='auto';host.style.top='auto';
   const safeCode=String(schoolCode||schoolName).replace(/[^a-z0-9_-]/gi,'_')||'school';
   const filename=safeCode+'-'+(individual?'member-'+String(teacher.id||'statement').replace(/[^a-z0-9_-]/gi,'_')+'-statement':monthly?month+'-monthly-summary':annual?year+'-yearly-summary':'complete-fund-summary')+'.pdf';
-  await window.html2pdf().set({margin:[8,8,8,8],filename,image:{type:'jpeg',quality:.97},html2canvas:{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0,windowWidth:individual?794:1120},jsPDF:{unit:'mm',format:'a4',orientation,compress:true},pagebreak:{mode:['css','legacy'],avoid:['tr','.twf-metric','.twf-signatures']}}).from(host).save();
+  const pdfBlob=await window.html2pdf().set({margin:[8,8,8,8],filename,image:{type:'jpeg',quality:.97},html2canvas:{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0,windowWidth:individual?794:1120},jsPDF:{unit:'mm',format:'a4',orientation,compress:true},pagebreak:{mode:['css','legacy'],avoid:['tr','.twf-metric','.twf-signatures']}}).from(host).outputPdf('blob');
  }finally{host.remove();}
- return {documentId:id};
+ return {documentId:id,blob:pdfBlob,filename};
 };
 })();
 </script>
@@ -3138,6 +3138,30 @@ window.generateTenantWelfarePdf=async function(o){
   await window.html2pdf().set({margin:[8,8,8,8],filename,image:{type:'jpeg',quality:.97},html2canvas:{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0,windowWidth:individual?794:1120},jsPDF:{unit:'mm',format:'a4',orientation,compress:true},pagebreak:{mode:['css','legacy'],avoid:['tr','.twf-metric','.twf-signatures']}}).from(host).save();
  }finally{host.remove();}
  return {documentId:id};
+};
+window.downloadWelfareBlob=function(blob,fileName,statusNode,successText){
+ if(!(blob instanceof Blob))throw new Error('The generated file is unavailable.');
+ const url=window.URL.createObjectURL(blob);
+ const link=document.createElement('a');
+ link.href=url;
+ link.setAttribute('download',fileName);
+ link.style.cssText='display:inline-block;margin:8px 0;padding:9px 13px;border-radius:9px;background:#eaf2ff;color:#12376b;font-weight:800;text-decoration:underline;overflow-wrap:anywhere';
+ link.textContent='Tap here to view downloaded PDF';
+ link.target='_blank';
+ link.rel='noopener';
+ document.body.appendChild(link);
+ link.click();
+ document.body.removeChild(link);
+ if(statusNode){
+   statusNode.textContent=successText||'Your file is ready.';
+   statusNode.className='muted';
+   const fallback=link.cloneNode(true);
+   fallback.removeAttribute('download');
+   fallback.textContent='Tap here to view downloaded PDF';
+   statusNode.insertAdjacentElement('afterend',fallback);
+ }
+ setTimeout(()=>URL.revokeObjectURL(url),10*60*1000);
+ return url;
 };
 window.__tenantWelfarePdfGenerator=window.generateTenantWelfarePdf;
 })();
