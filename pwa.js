@@ -1,3 +1,15 @@
+function showPwaInstallNotice(){
+ var id='pwaInstallNoticeModal',root=document.getElementById(id);
+ if(!root){
+  var style=document.createElement('style');style.textContent='#'+id+'{position:fixed;inset:0;z-index:15000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(2,8,23,.76);backdrop-filter:blur(7px)}#'+id+'[hidden]{display:none!important}#'+id+' .pwa-notice-card{width:min(100%,440px);padding:23px;border:1px solid #334155;border-radius:18px;background:linear-gradient(145deg,#10213b,#081426);color:#f1f5f9;box-shadow:0 25px 70px rgba(0,0,0,.5)}#'+id+' h2{margin:0 0 10px;color:#fff;font-size:1.15rem}#'+id+' p{margin:0;color:#c1ccdc;line-height:1.65}#'+id+' button{display:block;margin:20px 0 0 auto;min-height:42px;padding:9px 18px;border:1px solid #d6a637;border-radius:10px;background:linear-gradient(110deg,#f0c65d,#d6a637);color:#172033;font-weight:800}';
+  document.head.appendChild(style);root=document.createElement('div');root.id=id;root.hidden=true;root.innerHTML='<section class="pwa-notice-card" role="dialog" aria-modal="true" aria-labelledby="pwaInstallNoticeTitle"><h2 id="pwaInstallNoticeTitle">Install this portal</h2><p>To install this school portal, open your browser menu and choose “Add to Home screen” or “Install app”.</p><button type="button">OK</button></section>';document.body.appendChild(root);
+ }
+ root.hidden=false;var button=root.querySelector('button'),prior=document.activeElement;
+ var close=function(){root.hidden=true;button.removeEventListener('click',close);document.removeEventListener('keydown',key,true);if(prior&&prior.focus)prior.focus({preventScroll:true});};
+ var key=function(e){if(e.key==='Escape'||e.key==='Enter'){e.preventDefault();close();}};
+ button.addEventListener('click',close);document.addEventListener('keydown',key,true);button.focus();
+}
+
 (function(){
  'use strict';
  var pageUrl=new URL(window.location.href);
@@ -114,7 +126,7 @@
        deferredPrompt=null;
        if(installButton){installButton.remove();installButton=null;}
      }else{
-       window.alert('To install this school portal, open your browser menu and choose “Add to Home screen” or “Install app”.');
+       if(window.showWelfareDialog){window.showWelfareDialog('alert','To install this school portal, open your browser menu and choose “Add to Home screen” or “Install app”.','Install this portal');}else{showPwaInstallNotice();}
      }
    });
    var hero=document.querySelector('#schoolOverview .portal-hero');
