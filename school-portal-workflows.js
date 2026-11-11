@@ -5,6 +5,81 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>Number(n||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
 const today=()=>new Date().toISOString().slice(0,10);
+
+// Branded, accessible reason dialog used by contribution and payout reversals.
+function requestReversalReason(transactionType){
+ return new Promise(resolve=>{
+  let layer=document.getElementById('wfReversalReasonModal');
+  if(!layer){
+   const style=document.createElement('style');
+   style.id='wf-reversal-reason-modal-style';
+   style.textContent=`
+#wfReversalReasonModal{position:fixed;inset:0;z-index:12000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(2,8,23,.72);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+#wfReversalReasonModal[hidden]{display:none!important}
+#wfReversalReasonModal .wf-reversal-dialog{width:min(100%,480px);border:1px solid #334155;border-radius:20px;padding:24px;background:linear-gradient(145deg,#10213b,#081426);color:#f1f5f9;box-shadow:0 28px 85px rgba(0,0,0,.48);animation:wfReversalModalIn .18s ease-out}
+#wfReversalReasonModal .wf-reversal-kicker{display:flex;align-items:center;gap:9px;color:#e9c56b;font-size:.72rem;font-weight:850;letter-spacing:.12em;text-transform:uppercase}
+#wfReversalReasonModal .wf-reversal-kicker i{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;background:rgba(214,166,55,.14)}
+#wfReversalReasonModal h2{margin:14px 0 6px;color:#fff;font-size:1.25rem;letter-spacing:-.035em}
+#wfReversalReasonModal p{margin:0 0 15px;color:#b8c5d8;font-size:.88rem;line-height:1.6}
+#wfReversalReasonModal label{display:block;margin:0 0 7px;color:#e2e8f0;font-size:.8rem;font-weight:800}
+#wfReversalReasonModal textarea{display:block;width:100%;min-height:116px;resize:vertical;padding:12px 13px;border:1px solid #435570;border-radius:12px;background:#071326;color:#f8fafc;font:inherit;line-height:1.5;outline:none}
+#wfReversalReasonModal textarea::placeholder{color:#8292aa}
+#wfReversalReasonModal textarea:focus{border-color:#d6a637;box-shadow:0 0 0 3px rgba(214,166,55,.2)}
+#wfReversalReasonModal .wf-reversal-hint{display:block;margin-top:7px;color:#91a1b8;font-size:.72rem}
+#wfReversalReasonModal .wf-reversal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+#wfReversalReasonModal button{min-height:43px;padding:10px 16px;border-radius:10px;font:inherit;font-size:.84rem;font-weight:850;cursor:pointer}
+#wfReversalReasonModal .wf-reversal-cancel{border:1px solid #40516b;background:#172b47;color:#e2e8f0}
+#wfReversalReasonModal .wf-reversal-confirm{border:1px solid #d6a637;background:linear-gradient(110deg,#f0c65d,#d6a637);color:#172033}
+#wfReversalReasonModal button:disabled{opacity:.45;cursor:not-allowed}
+#wfReversalReasonModal button:focus-visible{outline:3px solid rgba(214,166,55,.42);outline-offset:2px}
+@keyframes wfReversalModalIn{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:520px){#wfReversalReasonModal{padding:13px}#wfReversalReasonModal .wf-reversal-dialog{padding:20px 17px;border-radius:17px}#wfReversalReasonModal .wf-reversal-actions button{flex:1}}
+@media(prefers-reduced-motion:reduce){#wfReversalReasonModal .wf-reversal-dialog{animation:none}}
+`;
+   document.head.appendChild(style);
+   layer=document.createElement('div');
+   layer.id='wfReversalReasonModal';
+   layer.hidden=true;
+   layer.innerHTML='<section class="wf-reversal-dialog" role="dialog" aria-modal="true" aria-labelledby="wfReversalReasonTitle" aria-describedby="wfReversalReasonDescription"><div class="wf-reversal-kicker"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Transaction control</div><h2 id="wfReversalReasonTitle">Reason for reversal</h2><p id="wfReversalReasonDescription">Enter a clear reason for this reversal. The original transaction will be retained for the audit trail.</p><label for="wfReversalReasonInput">Reversal reason <span aria-hidden="true">*</span></label><textarea id="wfReversalReasonInput" maxlength="1000" placeholder="Describe why this transaction is being reversed…" required></textarea><small class="wf-reversal-hint">A reason is required before the reversal can continue.</small><div class="wf-reversal-actions"><button type="button" class="wf-reversal-cancel" data-wf-reason-cancel>Cancel</button><button type="button" class="wf-reversal-confirm" data-wf-reason-confirm disabled>Confirm</button></div></section>';
+   document.body.appendChild(layer);
+  }
+  const input=layer.querySelector('#wfReversalReasonInput');
+  const title=layer.querySelector('#wfReversalReasonTitle');
+  const description=layer.querySelector('#wfReversalReasonDescription');
+  const confirmButton=layer.querySelector('[data-wf-reason-confirm]');
+  const cancelButton=layer.querySelector('[data-wf-reason-cancel]');
+  title.textContent='Reason for '+transactionType+' reversal';
+  description.textContent='Enter a clear reason for reversing this '+transactionType+'. The original transaction will be retained for the audit trail.';
+  input.value='';
+  confirmButton.disabled=true;
+  layer.hidden=false;
+  document.body.style.overflow='hidden';
+  const previousFocus=document.activeElement;
+  let settled=false;
+  const finish=value=>{
+   if(settled)return;
+   settled=true;
+   layer.hidden=true;
+   document.body.style.overflow='';
+   document.removeEventListener('keydown',onKeyDown,true);
+   confirmButton.removeEventListener('click',onConfirm);
+   cancelButton.removeEventListener('click',onCancel);
+   layer.removeEventListener('click',onBackdrop);
+   if(previousFocus&&typeof previousFocus.focus==='function')previousFocus.focus({preventScroll:true});
+   resolve(value);
+  };
+  const onConfirm=()=>{const value=input.value.trim();if(value)finish(value);};
+  const onCancel=()=>finish(null);
+  const onBackdrop=event=>{if(event.target===layer)onCancel();};
+  const onKeyDown=event=>{if(event.key==='Escape'){event.preventDefault();onCancel();}else if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)){event.preventDefault();onConfirm();}};
+  input.addEventListener('input',()=>{confirmButton.disabled=!input.value.trim();});
+  confirmButton.addEventListener('click',onConfirm);
+  cancelButton.addEventListener('click',onCancel);
+  layer.addEventListener('click',onBackdrop);
+  document.addEventListener('keydown',onKeyDown,true);
+  requestAnimationFrame(()=>input.focus());
+ });
+}
 const RANK_OPTIONS=[
  'Headmaster','Assistant Headmaster','Headmistress','Assistant Headmistress',
  'Member','Pupil Teacher','Superintendent II','Superintendent I',
@@ -1013,8 +1088,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    const auditOk=await audit(client,ctx,wasEditing?'Update teacher profile':'Register teacher',row.name,row.id);resetTeacherForm();await refreshWorkflow();msg('wfTeacherMsg',auditOk?(wasEditing?'Teacher profile updated.':'Teacher registered.'):'Saved, but the audit entry failed. Notify the platform administrator.',!auditOk);
  };
  $('wfContribution').onsubmit=async e=>{e.preventDefault();const teacher_id=$('wfConTeacher').value,amount=Number($('wfConAmount').value);if(!teacher_id||!Number.isFinite(amount)||amount<=0)return msg('wfConMsg','Choose a teacher and a positive amount.',true);const teacher=teachers.find(t=>String(t.id)===String(teacher_id));if(!teacher)return msg('wfConMsg','The selected teacher could not be verified. Refresh the register and try again.',true);const confirmation='Confirm contribution recording?\n\nGHS '+amount.toFixed(2)+' will be recorded as a contribution in the name of '+teacher.name+'.\n\nSelect OK to commit or Cancel to stop.';if(!window.confirm(confirmation))return msg('wfConMsg','Contribution not saved.');const row={teacher_id,amount,date:$('wfConDate').value,reference:$('wfConRef').value.trim()||null,school_id:ctx.id};msg('wfConMsg','Saving contribution for '+teacher.name+'…');const {error}=await client.from('contributions').insert(row);if(error)return msg('wfConMsg','Not saved. Check school permissions.',true);const auditOk=await audit(client,ctx,'Record contribution','GHS '+amount.toFixed(2)+' recorded in the name of '+teacher.name,teacher_id);$('wfContribution').reset();$('wfConDate').value=today();await refreshWorkflow();msg('wfConMsg',auditOk?'Contribution of GHS '+amount.toFixed(2)+' recorded in the name of '+teacher.name+'.':'Contribution saved, but the audit entry failed. Notify the platform administrator.',!auditOk);};
- $('wfConRows').addEventListener('click',async e=>{const b=e.target.closest('[data-wf-reverse]');if(!b)return;const type=b.dataset.wfReverse,id=b.dataset.wfId;const rows=type==='contribution'?cons:pays;const tx=rows.find(x=>String(x.id)===String(id));if(!tx||reversed.has(type+':'+id))return;const reason=prompt('Enter the reason for reversing this '+type+'. The original record will be retained:');if(!reason||!reason.trim())return; if(!confirm('Confirm reversal of GHS '+money(tx.amount)+'? The original transaction will remain visible and be excluded from active totals.'))return;const {data:{user}}=await client.auth.getUser();const {error}=await client.from('transaction_reversals').insert({school_id:ctx.id,transaction_type:type,transaction_id:id,teacher_id:tx.teacher_id,amount:tx.amount,transaction_date:tx.date,reason:reason.trim(),reversed_by:user?.email||'School administrator'});if(error){alert(error.code==='23505'?'This transaction has already been reversed.':'Reversal was not saved. Check school permissions and reversal-table policies.');return;}const ok=await audit(client,ctx,'Reverse '+type,'Original transaction '+id+'; GHS '+Number(tx.amount).toFixed(2)+'; reason: '+reason.trim(),tx.teacher_id);await refreshWorkflow();if(!ok)alert('Reversal saved, but the audit entry failed.');});
- $('wfPayRows').addEventListener('click',async e=>{const b=e.target.closest('[data-wf-reverse]');if(!b)return;const type=b.dataset.wfReverse,id=b.dataset.wfId;const rows=type==='contribution'?cons:pays;const tx=rows.find(x=>String(x.id)===String(id));if(!tx||reversed.has(type+':'+id))return;const reason=prompt('Enter the reason for reversing this '+type+'. The original record will be retained:');if(!reason||!reason.trim())return;if(!confirm('Confirm reversal of GHS '+money(tx.amount)+'? The original transaction will remain visible and be excluded from active totals.'))return;const {data:{user}}=await client.auth.getUser();const {error}=await client.from('transaction_reversals').insert({school_id:ctx.id,transaction_type:type,transaction_id:id,teacher_id:tx.teacher_id,amount:tx.amount,transaction_date:tx.date,reason:reason.trim(),reversed_by:user?.email||'School administrator'});if(error){alert(error.code==='23505'?'This transaction has already been reversed.':'Reversal was not saved. Check school permissions and reversal-table policies.');return;}const ok=await audit(client,ctx,'Reverse '+type,'Original transaction '+id+'; GHS '+Number(tx.amount).toFixed(2)+'; reason: '+reason.trim(),tx.teacher_id);await refreshWorkflow();if(!ok)alert('Reversal saved, but the audit entry failed.');});
+ $('wfConRows').addEventListener('click',async e=>{const b=e.target.closest('[data-wf-reverse]');if(!b)return;const type=b.dataset.wfReverse,id=b.dataset.wfId;const rows=type==='contribution'?cons:pays;const tx=rows.find(x=>String(x.id)===String(id));if(!tx||reversed.has(type+':'+id))return;const reason=await requestReversalReason(type);if(!reason||!reason.trim())return; if(!confirm('Confirm reversal of GHS '+money(tx.amount)+'? The original transaction will remain visible and be excluded from active totals.'))return;const {data:{user}}=await client.auth.getUser();const {error}=await client.from('transaction_reversals').insert({school_id:ctx.id,transaction_type:type,transaction_id:id,teacher_id:tx.teacher_id,amount:tx.amount,transaction_date:tx.date,reason:reason.trim(),reversed_by:user?.email||'School administrator'});if(error){alert(error.code==='23505'?'This transaction has already been reversed.':'Reversal was not saved. Check school permissions and reversal-table policies.');return;}const ok=await audit(client,ctx,'Reverse '+type,'Original transaction '+id+'; GHS '+Number(tx.amount).toFixed(2)+'; reason: '+reason.trim(),tx.teacher_id);await refreshWorkflow();if(!ok)alert('Reversal saved, but the audit entry failed.');});
+ $('wfPayRows').addEventListener('click',async e=>{const b=e.target.closest('[data-wf-reverse]');if(!b)return;const type=b.dataset.wfReverse,id=b.dataset.wfId;const rows=type==='contribution'?cons:pays;const tx=rows.find(x=>String(x.id)===String(id));if(!tx||reversed.has(type+':'+id))return;const reason=await requestReversalReason(type);if(!reason||!reason.trim())return;if(!confirm('Confirm reversal of GHS '+money(tx.amount)+'? The original transaction will remain visible and be excluded from active totals.'))return;const {data:{user}}=await client.auth.getUser();const {error}=await client.from('transaction_reversals').insert({school_id:ctx.id,transaction_type:type,transaction_id:id,teacher_id:tx.teacher_id,amount:tx.amount,transaction_date:tx.date,reason:reason.trim(),reversed_by:user?.email||'School administrator'});if(error){alert(error.code==='23505'?'This transaction has already been reversed.':'Reversal was not saved. Check school permissions and reversal-table policies.');return;}const ok=await audit(client,ctx,'Reverse '+type,'Original transaction '+id+'; GHS '+Number(tx.amount).toFixed(2)+'; reason: '+reason.trim(),tx.teacher_id);await refreshWorkflow();if(!ok)alert('Reversal saved, but the audit entry failed.');});
  $('wfPayout').onsubmit=async e=>{e.preventDefault();const teacher_id=$('wfPayTeacher').value,amount=Number($('wfPayAmount').value);if(!teacher_id||!Number.isFinite(amount)||amount<=0)return msg('wfPayMsg','Choose a teacher and enter a positive amount.',true);const activeContributions=cons.filter(x=>!reversed.has('contribution:'+String(x.id))).reduce((sum,x)=>sum+Number(x.amount||0),0);const activePayouts=pays.filter(x=>!reversed.has('payout:'+String(x.id))).reduce((sum,x)=>sum+Number(x.amount||0),0);const available=Math.round((activeContributions-activePayouts)*100)/100;if(amount>available+0.001)return msg('wfPayMsg','Payout exceeds the available school fund balance of GHS '+money(Math.max(0,available))+'. Reverse or reconcile records before proceeding.',true);if(!confirm('Confirm welfare payout of GHS '+amount.toFixed(2)+'? Available balance after payout: GHS '+money(available-amount)+'.'))return;const row={teacher_id,amount,date:$('wfPayDate').value,reason:$('wfPayReason').value.trim(),reference:$('wfPayRef').value.trim()||null,school_id:ctx.id};msg('wfPayMsg','Saving…');const {error}=await client.rpc('record_school_welfare_payout',{p_school_id:ctx.id,p_teacher_id:teacher_id,p_amount:amount,p_date:row.date,p_reason:row.reason,p_reference:row.reference});if(error){console.warn('Secure payout RPC failed',error.code,error.message);return msg('wfPayMsg',error.code==='23514'?'Payout was not saved: the available school fund balance may be insufficient, or the amount/reason/date is invalid. Refresh the ledger and check the details.':'Payout was not saved. The secure database check failed; no payout was recorded. Check administrator access and try again.',true);}const auditOk=await audit(client,ctx,'Record payout','GHS '+amount.toFixed(2)+' — '+row.reason,teacher_id);$('wfPayout').reset();$('wfPayDate').value=today();await refreshWorkflow();msg('wfPayMsg',auditOk?'Payout recorded.':'Payout saved, but the audit entry failed. Notify the platform administrator.',!auditOk);};
    return true;
  }catch(error){
