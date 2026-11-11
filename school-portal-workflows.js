@@ -1127,7 +1127,17 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  $('wfResetConfirmation').placeholder='RESET:'+ctx.school_code;
  const callAdminManagement=async payload=>{
    const {data,error}=await client.functions.invoke('school-admin-management',{body:{...payload,school_id:ctx.id}});
-   if(error)throw new Error(data?.error||error.message||'The request failed.');
+   if(error){
+     let responseMessage=data?.error||data?.message||'';
+     try{
+       const response=error.context;
+       if(!responseMessage&&response&&typeof response.clone==='function'){
+         const payload=await response.clone().json();
+         responseMessage=payload?.error||payload?.message||'';
+       }
+     }catch(_){}
+     throw new Error(responseMessage||error.message||'The request failed.');
+   }
    if(data?.error)throw new Error(data.error);
    return data||{};
  };
@@ -1164,7 +1174,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     if(finalPhrase!=='RESET ALL')return msg('wfResetDataMsg','Type RESET ALL exactly to confirm this second safety step. No records were changed.',true);
    if(!await wfConfirm('FINAL CONFIRMATION: Permanently delete all member, contribution, payout and reversal records belonging only to '+ctx.name+' ('+ctx.school_code+')? Audit history and school settings will remain. This cannot be undone.'))return;
    msg('wfResetDataMsg','Verifying administrator and processing the school-scoped reset…');
-   try{const result=await callAdminManagement({action:'reset',current_password,confirmation});$('wfResetDataForm').reset();$('wfResetExpected').textContent='Required phrase: RESET:'+ctx.school_code;$('wfResetConfirmation').placeholder='RESET:'+ctx.school_code;msg('wfResetDataMsg','Reset completed. Removed '+(result.result?.members_removed??0)+' members, '+(result.result?.contributions_removed??0)+' contributions, '+(result.result?.payouts_removed??0)+' payouts. Audit history preserved.');await refreshWorkflow();}
+   try{const result=await callAdminManagement({action:'reset',current_password,confirmation,final_confirmation:finalPhrase});$('wfResetDataForm').reset();$('wfResetExpected').textContent='Required phrase: RESET:'+ctx.school_code;$('wfResetConfirmation').placeholder='RESET:'+ctx.school_code;msg('wfResetDataMsg','Reset completed. Removed '+(result.result?.members_removed??0)+' members, '+(result.result?.contributions_removed??0)+' contributions, '+(result.result?.payouts_removed??0)+' payouts. Audit history preserved.');await refreshWorkflow();}
    catch(error){msg('wfResetDataMsg',error.message||'Reset failed. No success was assumed.',true);}
  };
  loadSchoolAdmins();
