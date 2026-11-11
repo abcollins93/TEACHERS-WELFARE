@@ -2170,7 +2170,7 @@ async function renderTeacherDashboard(profile,school){
  const schoolRegisteredMemberCount=registeredMemberCountError?null:Number(registeredMemberCount||0);
  const nowForMonth=new Date();
  const monthKey=nowForMonth.getFullYear()+'-'+String(nowForMonth.getMonth()+1).padStart(2,'0');
- const monthC=activeTeacherContributionRows.filter(x=>String(x.contribution_date||x.date||'').slice(0,7)===monthKey).reduce((sum,x)=>sum+Number(x.amount||0),0);
+ let monthC=activeTeacherContributionRows.filter(x=>String(x.contribution_date||x.date||'').slice(0,7)===monthKey).reduce((sum,x)=>sum+Number(x.amount||0),0);
  const money=n=>Number(n||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
  const metricLabels=document.querySelectorAll('#schoolOverview .dashboard-metrics .metric-compact .metric-label');
  if(metricLabels[0])metricLabels[0].textContent='Registered Members';
@@ -2289,7 +2289,7 @@ async function renderTeacherDashboard(profile,school){
    const refreshedMonthDate=new Date();
    const refreshedMonthKey=refreshedMonthDate.getFullYear()+'-'+String(refreshedMonthDate.getMonth()+1).padStart(2,'0');
    const refreshedMonthTotal=activeTeacherContributionRows.filter(row=>String(row.contribution_date||row.date||'').slice(0,7)===refreshedMonthKey).reduce((sum,row)=>sum+Number(row.amount||0),0);
-   const monthC=refreshedMonthTotal;
+   monthC=refreshedMonthTotal;
    renderTeacherContributionProgress();
    if(!contributionLoadError){
     $('contributionTotal').textContent=money(refreshedConTotal);
