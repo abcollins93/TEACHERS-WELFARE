@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_VERSION='twf-pwa-shell-v11';
+const CACHE_VERSION='twf-pwa-shell-v12';
 const SHELL_ASSETS=[
  './',
  './index.html',
