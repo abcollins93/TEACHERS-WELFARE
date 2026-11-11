@@ -3646,5 +3646,156 @@ body:has(#login:not(.hidden)) main{
 #mobileNavToggle{cursor:pointer;touch-action:manipulation}
 body.sidebar-open{overflow:hidden}
 </style>
+
+<style id="tenant-3d-card-elevation">
+/* Unified elevated card treatment for dashboard metrics and information cards. */
+:root{
+ --tenant-card-shadow:0 10px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.05);
+ --tenant-card-shadow-raised:0 20px 30px -10px rgba(0,0,0,.15),0 12px 12px -8px rgba(0,0,0,.08);
+}
+.dark{
+ --tenant-card-shadow:0 12px 28px -6px rgba(0,0,0,.4),0 8px 12px -7px rgba(0,0,0,.28);
+ --tenant-card-shadow-raised:0 22px 34px -10px rgba(0,0,0,.52),0 14px 16px -9px rgba(0,0,0,.36);
+}
+#dashboard .metric,
+#dashboard .stat-card,
+#dashboard .metric-card,
+#dashboard .wf-contrib-metric,
+#dashboard .wf-payout-metric,
+#dashboard .twf-metric,
+#dashboard .panel:not(#login),
+#dashboard .support,
+#dashboard .teacher-dashboard-ledger-card,
+#dashboard .sidebar-account,
+#dashboard #workflows .panel,
+#dashboard #wfAdminPanel>.panel,
+#dashboard [class*="info-card"],
+#dashboard [class*="summary-card"],
+#dashboard [class*="detail-card"],
+#dashboard [class*="section-card"],
+#dashboard [class*="content-card"]{
+ box-shadow:var(--tenant-card-shadow);
+ transition:transform .25s ease,box-shadow .25s ease;
+}
+#dashboard .metric:hover,
+#dashboard .metric:focus-within,
+#dashboard .stat-card:hover,
+#dashboard .stat-card:focus-within,
+#dashboard .metric-card:hover,
+#dashboard .metric-card:focus-within,
+#dashboard .wf-contrib-metric:hover,
+#dashboard .wf-contrib-metric:focus-within,
+#dashboard .wf-payout-metric:hover,
+#dashboard .wf-payout-metric:focus-within,
+#dashboard .twf-metric:hover,
+#dashboard .twf-metric:focus-within,
+#dashboard .panel:not(#login):hover,
+#dashboard .panel:not(#login):focus-within,
+#dashboard .support:hover,
+#dashboard .support:focus-within,
+#dashboard .teacher-dashboard-ledger-card:hover,
+#dashboard .teacher-dashboard-ledger-card:focus-within,
+#dashboard [class*="info-card"]:hover,
+#dashboard [class*="info-card"]:focus-within,
+#dashboard [class*="summary-card"]:hover,
+#dashboard [class*="summary-card"]:focus-within,
+#dashboard [class*="detail-card"]:hover,
+#dashboard [class*="detail-card"]:focus-within,
+#dashboard [class*="section-card"]:hover,
+#dashboard [class*="section-card"]:focus-within,
+#dashboard [class*="content-card"]:hover,
+#dashboard [class*="content-card"]:focus-within{
+ transform:translateY(-4px);
+ box-shadow:var(--tenant-card-shadow-raised);
+}
+#dashboard .metric:active,
+#dashboard .stat-card:active,
+#dashboard .metric-card:active,
+#dashboard .wf-contrib-metric:active,
+#dashboard .wf-payout-metric:active,
+#dashboard .twf-metric:active,
+#dashboard .panel:not(#login):active,
+#dashboard .support:active,
+#dashboard [class*="info-card"]:active,
+#dashboard [class*="summary-card"]:active,
+#dashboard [class*="detail-card"]:active,
+#dashboard [class*="section-card"]:active,
+#dashboard [class*="content-card"]:active{
+ transform:translateY(-2px);
+}
+.dark #dashboard .metric,
+.dark #dashboard .stat-card,
+.dark #dashboard .metric-card,
+.dark #dashboard .wf-contrib-metric,
+.dark #dashboard .wf-payout-metric,
+.dark #dashboard .twf-metric,
+.dark #dashboard .panel:not(#login),
+.dark #dashboard .support,
+.dark #dashboard .teacher-dashboard-ledger-card,
+.dark #dashboard .sidebar-account,
+.dark #dashboard #workflows .panel,
+.dark #dashboard #wfAdminPanel>.panel,
+.dark #dashboard [class*="info-card"],
+.dark #dashboard [class*="summary-card"],
+.dark #dashboard [class*="detail-card"],
+.dark #dashboard [class*="section-card"],
+.dark #dashboard [class*="content-card"]{
+ box-shadow:var(--tenant-card-shadow)!important;
+}
+.dark #dashboard .metric:hover,
+.dark #dashboard .metric:focus-within,
+.dark #dashboard .stat-card:hover,
+.dark #dashboard .stat-card:focus-within,
+.dark #dashboard .metric-card:hover,
+.dark #dashboard .metric-card:focus-within,
+.dark #dashboard .wf-contrib-metric:hover,
+.dark #dashboard .wf-contrib-metric:focus-within,
+.dark #dashboard .wf-payout-metric:hover,
+.dark #dashboard .wf-payout-metric:focus-within,
+.dark #dashboard .twf-metric:hover,
+.dark #dashboard .twf-metric:focus-within,
+.dark #dashboard .panel:not(#login):hover,
+.dark #dashboard .panel:not(#login):focus-within,
+.dark #dashboard .support:hover,
+.dark #dashboard .support:focus-within,
+.dark #dashboard .teacher-dashboard-ledger-card:hover,
+.dark #dashboard .teacher-dashboard-ledger-card:focus-within,
+.dark #dashboard [class*="info-card"]:hover,
+.dark #dashboard [class*="info-card"]:focus-within,
+.dark #dashboard [class*="summary-card"]:hover,
+.dark #dashboard [class*="summary-card"]:focus-within,
+.dark #dashboard [class*="detail-card"]:hover,
+.dark #dashboard [class*="detail-card"]:focus-within,
+.dark #dashboard [class*="section-card"]:hover,
+.dark #dashboard [class*="section-card"]:focus-within,
+.dark #dashboard [class*="content-card"]:hover,
+.dark #dashboard [class*="content-card"]:focus-within{
+ box-shadow:var(--tenant-card-shadow-raised)!important;
+}
+@media(max-width:700px){
+ #dashboard .metric:active,
+ #dashboard .stat-card:active,
+ #dashboard .metric-card:active,
+ #dashboard .wf-contrib-metric:active,
+ #dashboard .wf-payout-metric:active,
+ #dashboard .twf-metric:active,
+ #dashboard .panel:not(#login):active,
+ #dashboard .support:active,
+ #dashboard [class*="info-card"]:active,
+ #dashboard [class*="summary-card"]:active,
+ #dashboard [class*="detail-card"]:active,
+ #dashboard [class*="section-card"]:active,
+ #dashboard [class*="content-card"]:active{transform:translateY(-2px)}
+}
+@media(prefers-reduced-motion:reduce){
+ #dashboard .metric,#dashboard .stat-card,#dashboard .metric-card,
+ #dashboard .wf-contrib-metric,#dashboard .wf-payout-metric,#dashboard .twf-metric,
+ #dashboard .panel:not(#login),#dashboard .support,
+ #dashboard .teacher-dashboard-ledger-card,
+ #dashboard [class*="info-card"],#dashboard [class*="summary-card"],
+ #dashboard [class*="detail-card"],#dashboard [class*="section-card"],
+ #dashboard [class*="content-card"]{transition:none!important}
+}
+</style>
 </body>
 </html>
