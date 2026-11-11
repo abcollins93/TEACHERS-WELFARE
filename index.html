@@ -3308,6 +3308,39 @@ function renderUniversalWithdrawalTable() {
     }).join('');
 }
 
+function welfareDialog(kind,message,title){
+ return new Promise(resolve=>{
+  let root=document.getElementById('welfareGlobalDialog');
+  if(!root){
+   const style=document.createElement('style');style.id='welfare-global-dialog-style';style.textContent=`
+#welfareGlobalDialog{position:fixed;inset:0;z-index:14000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(2,8,23,.76);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+#welfareGlobalDialog[hidden]{display:none!important}
+#welfareGlobalDialog .wg-card{width:min(100%,470px);padding:24px;border:1px solid #334155;border-radius:19px;background:linear-gradient(145deg,#10213b,#081426);color:#f1f5f9;box-shadow:0 28px 85px rgba(0,0,0,.5)}
+#welfareGlobalDialog h2{margin:0 0 10px;color:#fff;font-size:1.2rem;font-weight:850}
+#welfareGlobalDialog .wg-message{color:#c1ccdc;line-height:1.65;font-size:.9rem;white-space:pre-wrap;overflow-wrap:anywhere}
+#welfareGlobalDialog textarea{display:block;width:100%;min-height:105px;margin-top:15px;padding:12px;border:1px solid #435570;border-radius:11px;background:#071326;color:#fff;font:inherit;box-sizing:border-box}
+#welfareGlobalDialog textarea:focus{outline:0;border-color:#d6a637;box-shadow:0 0 0 3px rgba(214,166,55,.18)}
+#welfareGlobalDialog .wg-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+#welfareGlobalDialog button{min-height:42px;padding:9px 16px;border-radius:10px;font:inherit;font-weight:800;cursor:pointer}
+#welfareGlobalDialog .wg-cancel{border:1px solid #40516b;background:#172b47;color:#e2e8f0}
+#welfareGlobalDialog .wg-ok{border:1px solid #d6a637;background:linear-gradient(110deg,#f0c65d,#d6a637);color:#172033}
+@media(max-width:520px){#welfareGlobalDialog .wg-card{padding:20px 17px}#welfareGlobalDialog .wg-actions button{flex:1}}
+`;document.head.appendChild(style);
+   root=document.createElement('div');root.id='welfareGlobalDialog';root.hidden=true;root.innerHTML='<section class="wg-card" role="dialog" aria-modal="true" aria-labelledby="wgTitle"><h2 id="wgTitle"></h2><div class="wg-message" id="wgMessage"></div><textarea id="wgInput" hidden></textarea><div class="wg-actions"><button type="button" class="wg-cancel" id="wgCancel">Cancel</button><button type="button" class="wg-ok" id="wgConfirm">Confirm</button></div></section>';document.body.appendChild(root);
+  }
+  const input=root.querySelector('#wgInput'),ok=root.querySelector('#wgConfirm'),cancel=root.querySelector('#wgCancel');
+  root.querySelector('#wgTitle').textContent=title||(kind==='alert'?'Notice':kind==='prompt'?'Additional information required':'Confirm action');
+  root.querySelector('#wgMessage').textContent=String(message??'');input.hidden=kind!=='prompt';input.value='';input.placeholder='Enter your response…';cancel.hidden=kind==='alert';ok.textContent=kind==='alert'?'OK':kind==='prompt'?'Confirm':'Confirm';
+  root.hidden=false;document.body.style.overflow='hidden';const prior=document.activeElement;let done=false;
+  const finish=value=>{if(done)return;done=true;root.hidden=true;document.body.style.overflow='';document.removeEventListener('keydown',keys,true);ok.removeEventListener('click',yes);cancel.removeEventListener('click',no);root.removeEventListener('click',backdrop);if(prior?.focus)prior.focus({preventScroll:true});resolve(value);};
+  const yes=()=>{if(kind==='prompt'){const v=input.value.trim();if(!v)return;finish(v);}else finish(true);};
+  const no=()=>finish(kind==='confirm'?false:null);const backdrop=e=>{if(e.target===root)no();};
+  const keys=e=>{if(e.key==='Escape'){e.preventDefault();no();}else if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();yes();}};
+  ok.addEventListener('click',yes);cancel.addEventListener('click',no);root.addEventListener('click',backdrop);document.addEventListener('keydown',keys,true);
+  if(kind==='prompt')input.focus();else ok.focus();
+ });
+}
+
 async function handleReverseContribution(teacherId, paymentIndex) {
     if (!requireAdmin()) return;
     const teacher = getTeacherById(teacherId);
@@ -3318,16 +3351,16 @@ async function handleReverseContribution(teacherId, paymentIndex) {
 
     const payment = teacher.payments[paymentIndex];
     
-    const firstConfirm = confirm(`REVERSAL WARNING: You are about to reverse a contribution of ${money(payment.amount)} for member ${teacher.name} (Ref: ${payment.reference || 'N/A'}). Do you wish to proceed?`);
+    const firstConfirm = await welfareDialog('confirm',`REVERSAL WARNING: You are about to reverse a contribution of ${money(payment.amount)} for member ${teacher.name} (Ref: ${payment.reference || 'N/A'}). Do you wish to proceed?`);
     if (!firstConfirm) return;
 
-    const remark = prompt('Mandatory Reversal Remark / Reason (Required for audit logging):');
+    const remark = await welfareDialog('prompt','Mandatory Reversal Remark / Reason (Required for audit logging):');
     if (!remark || !remark.trim()) {
         showToast('Transaction reversal cancelled: A mandatory remark/reason is required.', 'error');
         return;
     }
 
-    const secondConfirm = confirm(`FINAL CONFIRMATION: This will permanently subtract ${money(payment.amount)} from ${teacher.name}'s total and recalculate the fund balance. Proceed?`);
+    const secondConfirm = await welfareDialog('confirm',`FINAL CONFIRMATION: This will permanently subtract ${money(payment.amount)} from ${teacher.name}'s total and recalculate the fund balance. Proceed?`);
     if (!secondConfirm) return;
 
     teacher.payments.splice(paymentIndex, 1);
@@ -3352,16 +3385,16 @@ async function handleReversePayout(teacherId, payoutIndex) {
 
     const payout = teacher.payouts[payoutIndex];
 
-    const firstConfirm = confirm(`REVERSAL WARNING: You are about to reverse a welfare payout of ${money(payout.amount)} for ${teacher.name} (${payout.reason}, Ref: ${payout.reference || 'N/A'}). Do you wish to proceed?`);
+    const firstConfirm = await welfareDialog('confirm',`REVERSAL WARNING: You are about to reverse a welfare payout of ${money(payout.amount)} for ${teacher.name} (${payout.reason}, Ref: ${payout.reference || 'N/A'}). Do you wish to proceed?`);
     if (!firstConfirm) return;
 
-    const remark = prompt('Mandatory Reversal Remark / Reason (Required for audit logging):');
+    const remark = await welfareDialog('prompt','Mandatory Reversal Remark / Reason (Required for audit logging):');
     if (!remark || !remark.trim()) {
         showToast('Transaction reversal cancelled: A mandatory remark/reason is required.', 'error');
         return;
     }
 
-    const secondConfirm = confirm(`FINAL CONFIRMATION: This will permanently cancel the payout of ${money(payout.amount)} and restore it to the welfare fund balance. Proceed?`);
+    const secondConfirm = await welfareDialog('confirm',`FINAL CONFIRMATION: This will permanently cancel the payout of ${money(payout.amount)} and restore it to the welfare fund balance. Proceed?`);
     if (!secondConfirm) return;
 
     teacher.payouts.splice(payoutIndex, 1);
@@ -3757,9 +3790,9 @@ function renderAuditTable() {
     }).join('');
 }
 
-function clearAuditLogs() {
+async function clearAuditLogs() {
     if (!requireAdmin()) return;
-    const confirmed = confirm('Are you sure you want to clear all audit trail records?');
+    const confirmed = await welfareDialog('confirm','Are you sure you want to clear all audit trail records?');
     if (!confirmed) return;
 
     adminLogs = [];
@@ -4028,7 +4061,7 @@ async function handleRemoveAdmin(username) {
         return;
     }
 
-    const confirmed = confirm(`Are you sure you want to remove admin account: ${username}?`);
+    const confirmed = await welfareDialog('confirm',`Are you sure you want to remove admin account: ${username}?`);
     if (!confirmed) return;
 
     adminUsers = adminUsers.filter(a => a.username !== username);
@@ -4109,7 +4142,7 @@ async function handleRecordPayment(event) {
         return;
     }
 
-    const confirmed = confirm(`Log contribution of ${money(amount)} for ${teacher.name}?`);
+    const confirmed = await welfareDialog('confirm',`Log contribution of ${money(amount)} for ${teacher.name}?`);
     if (!confirmed) return;
 
     const payment = { date, amount, reference: generateReference('PAY') };
@@ -4159,7 +4192,7 @@ async function handleRecordWithdrawal(event) {
         return;
     }
 
-    const confirmed = confirm(`Process welfare withdrawal of ${money(amount)} for beneficiary ${teacher.name} (${reason})?`);
+    const confirmed = await welfareDialog('confirm',`Process welfare withdrawal of ${money(amount)} for beneficiary ${teacher.name} (${reason})?`);
     if (!confirmed) return;
 
     const payout = { date, amount, reason, reference: generateReference('WEL') };
@@ -4257,7 +4290,7 @@ async function handleRemoveStaff(id) {
     const teacher = getTeacherById(id);
     if (!teacher) return;
 
-    const confirmed = confirm(`Remove ${teacher.name} from active staff? Note: Their historical contribution and payout records will be retained.`);
+    const confirmed = await welfareDialog('confirm',`Remove ${teacher.name} from active staff? Note: Their historical contribution and payout records will be retained.`);
     if (!confirmed) return;
 
     const removedName = teacher.name;
@@ -4572,10 +4605,10 @@ function logoutAdmin() {
 async function confirmResetAllData() {
     if (!requireAdmin()) return;
 
-    const first = confirm('WARNING: This will remove ALL registered members, contributions and welfare payout history from the database. Your audit trail will be completely preserved. Continue?');
+    const first = await welfareDialog('confirm','WARNING: This will remove ALL registered members, contributions and welfare payout history from the database. Your audit trail will be completely preserved. Continue?');
     if (!first) return;
 
-    const second = prompt('Type RESET ALL to confirm permanent deletion of welfare fund records.');
+    const second = await welfareDialog('prompt','Type RESET ALL to confirm permanent deletion of welfare fund records.');
     if (second !== 'RESET ALL') {
         showToast('Reset cancelled. The confirmation text did not match.', 'error');
         return;
@@ -5410,7 +5443,7 @@ async function masterCopyGateway(code, button) {
 }
 
 async function masterToggleSchool(id, status) {
-  if (!confirm(`Are you sure you want to ${status} this school?`)) return;
+  if (!await welfareDialog('confirm',`Are you sure you want to ${status} this school?`)) return;
   try {
     await masterVerifySession();
     const { error } = await supabaseClient.from('platform_schools').update({ status }).eq('id', id);
