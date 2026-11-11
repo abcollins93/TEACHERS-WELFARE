@@ -1807,20 +1807,38 @@ $('sidebarCollapse')?.addEventListener('click',()=>{
 
 const money=n=>Number(n||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
 $('codeLabel').textContent=code||'Missing school code';
-// Resolve the tenant display name from its unique gateway code before sign-in when public read policies permit it.
+// Verify the platform directory status before enabling either administrator or teacher sign-in.
+let gatewayAccessBlocked=false;
+function blockTenantAccess(title, message){
+ gatewayAccessBlocked=true;
+ $('loginSchoolName').textContent=title;
+ $('loginError').textContent=message;
+ ['loginBtn','teacherLoginButton','forgotPassword','teacherForgotPreview'].forEach(id=>{const el=$(id);if(el)el.disabled=true;});
+ ['email','password','teacherStaffId','teacherPreviewPassword'].forEach(id=>{const el=$(id);if(el)el.disabled=true;});
+ $('login')?.classList.remove('hidden');
+ $('dashboard')?.classList.add('hidden');
+}
 async function loadGatewayIdentity(){
- if(!code)return;
- const {data,error}=await client.from('schools').select('name,school_code,status').eq('school_code',code).maybeSingle();
- if(error||!data||data.status!=='active'){
-  $('loginSchoolName').textContent='School gateway unavailable';
-  $('loginError').textContent='The school name could not be verified for this gateway link. Please check the school code in the link or contact the platform administrator.';
+ if(!code){blockTenantAccess('School gateway unavailable','A valid school code is required. Please use the official gateway link.');return;}
+ const {data:directory,error:directoryError}=await client.from('platform_schools').select('status').eq('school_code',code).maybeSingle();
+ if(directoryError||!directory){
+  blockTenantAccess('School gateway unavailable','This school’s access status could not be verified. For security, sign-in is blocked. Please contact the platform administrator.');
   return;
  }
- const name=String(data.name||'').trim();if(!name){$('loginSchoolName').textContent='School gateway unavailable';return;}
+ if(String(directory.status).toLowerCase()!=='active'){
+  blockTenantAccess('School account suspended','Access to this school portal has been suspended. Administrator and teacher sign-in are disabled. Please contact your platform administrator.');
+  return;
+ }
+ const {data,error}=await client.from('schools').select('name,school_code,status').eq('school_code',code).maybeSingle();
+ if(error||!data||data.status!=='active'){
+  blockTenantAccess('School gateway unavailable','The operational school record is inactive or could not be verified. Sign-in is blocked. Please contact the platform administrator.');
+  return;
+ }
+ const name=String(data.name||'').trim();if(!name){blockTenantAccess('School gateway unavailable','The school identity could not be verified. Sign-in is blocked.');return;}
  $('brand').textContent=name;$('loginSchoolName').textContent=name;$('documentTitle').textContent=name+' | Teachers Welfare Fund';
 }
 tenantIdentityReady=loadGatewayIdentity().catch(()=>{
- $('loginSchoolName').textContent='School gateway unavailable';
+ blockTenantAccess('School gateway unavailable','We could not verify this school’s access status. For security, sign-in is blocked.');
 });
 if(!/^[A-Z0-9-]{3,32}$/.test(code)){ $('loginError').textContent='This gateway link is missing a valid school code. Please use the link provided by your school platform administrator.';$('loginBtn').disabled=true; }
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -2490,6 +2508,11 @@ async function waitForSchoolWorkflows(timeoutMs=10000){
  return typeof window.initSchoolWorkflows==='function';
 }
 async function showDashboard(){
+ await tenantIdentityReady;
+ if(gatewayAccessBlocked){
+  try{await client.auth.signOut();}catch(_){}
+  return;
+ }
  const {data:{user},error:userErr}=await client.auth.getUser();
  if(userErr||!user){$('login').classList.remove('hidden');$('dashboard').classList.add('hidden');return;}
  window.startTenantSkeletons?.();
