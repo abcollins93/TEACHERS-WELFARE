@@ -267,6 +267,29 @@ footer.tenant-portal-footer{
 .teacher-dashboard-details{margin-top:11px;color:#66758b;font-size:.8rem}
 .teacher-dashboard-details span{display:inline-flex;align-items:center;gap:6px}.teacher-dashboard-details i{color:#b58a24}
 .teacher-dashboard-statement{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:46px;padding:12px 17px;border-radius:13px;background:linear-gradient(115deg,#0b1d3a,#244a76);color:#fff;font-weight:850;box-shadow:0 8px 18px rgba(11,29,58,.18);white-space:nowrap}
+.teacher-contribution-progress{position:relative;isolation:isolate;overflow:hidden;margin:0 0 20px;padding:clamp(17px,2.5vw,24px);border:1px solid #dce7f3;border-radius:22px;background:linear-gradient(145deg,#fff 0%,#f4f8ff 58%,#edf5ff 100%);box-shadow:0 16px 34px rgba(11,29,58,.10),0 5px 12px rgba(11,29,58,.055),inset 0 1px 0 rgba(255,255,255,.95)}
+.teacher-contribution-progress:before{content:"";position:absolute;inset:0 0 auto;height:5px;background:linear-gradient(90deg,#0b1d3a,#2563eb,#d6a637)}
+.teacher-contribution-progress[hidden]{display:none!important}
+.teacher-progress-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.teacher-progress-heading h3{margin:4px 0;color:#102341;font-size:clamp(1.05rem,2.4vw,1.3rem);font-weight:900;letter-spacing:-.025em}
+.teacher-progress-heading p{margin:0;color:#718096;font-size:.8rem}
+.teacher-progress-percent{flex:0 0 auto;padding:7px 11px;border-radius:999px;background:#e8efff;color:#1d4ed8;font-size:.85rem;font-weight:900;font-variant-numeric:tabular-nums}
+.teacher-progress-fraction{margin:18px 0 9px;color:#1e293b;font-size:clamp(.88rem,2.2vw,1rem);font-weight:850;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.teacher-progress-track{height:16px;overflow:hidden;border:1px solid #dbe5f1;border-radius:999px;background:#e7edf5;box-shadow:inset 0 3px 6px rgba(15,23,42,.12),0 1px 0 rgba(255,255,255,.9)}
+.teacher-progress-fill{display:block;width:0;height:100%;border-radius:inherit;background:#d97706;box-shadow:inset 0 2px 2px rgba(255,255,255,.28),0 2px 8px rgba(15,23,42,.16);transition:width .7s cubic-bezier(.2,.75,.25,1),background-color .25s ease}
+.teacher-contribution-progress.is-on-track .teacher-progress-fill{background:#2563eb}
+.teacher-contribution-progress.is-complete .teacher-progress-fill{background:#059669}
+.teacher-progress-footer{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:8px;color:#718096;font-size:.72rem;font-weight:700}
+.teacher-progress-reminder{margin-top:15px;padding:10px 12px;border:1px solid #f4d28b;border-radius:12px;background:linear-gradient(100deg,#fff8e7,#fffdf7);color:#875b0b;font-size:.8rem;font-weight:750;line-height:1.5}
+.teacher-progress-reminder.is-paid{border-color:#a7e4c4;background:#edfbf3;color:#147448}
+.teacher-progress-reminder[hidden]{display:none!important}
+.dark .teacher-contribution-progress{background:linear-gradient(145deg,#102541,#0b1b31 62%,#102846);border-color:#2b4565;box-shadow:0 16px 34px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.06)}
+.dark .teacher-progress-heading h3,.dark .teacher-progress-fraction{color:#f1f5fb}
+.dark .teacher-progress-heading p,.dark .teacher-progress-footer{color:#a9bad0}
+.dark .teacher-progress-percent{background:#1c365b;color:#bfdbfe}
+.dark .teacher-progress-track{background:#1b304a;border-color:#314968;box-shadow:inset 0 3px 6px rgba(0,0,0,.3)}
+.dark .teacher-progress-reminder{background:#3c301b;border-color:#715a2d;color:#f8dfa1}
+.dark .teacher-progress-reminder.is-paid{background:#123b30;border-color:#24694f;color:#a7f3d0}
 .teacher-dashboard-ledgers{display:grid;gap:18px;margin-top:20px}
 .teacher-dashboard-ledger-card{min-width:0;padding:20px;border:1px solid #e4eaf2;border-radius:20px;background:rgba(255,255,255,.96);box-shadow:0 12px 30px rgba(11,29,58,.055)}
 .teacher-dashboard-ledger-card>header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:15px}
@@ -1680,6 +1703,13 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
  </div>
  <button type="button" id="teacherDashboardStatementButton" class="teacher-dashboard-statement"><i class="fa-solid fa-file-pdf"></i> Download my statement</button>
 </section>
+<section id="teacherContributionProgress" class="teacher-contribution-progress" hidden aria-label="Your annual contribution progress">
+ <div class="teacher-progress-heading"><div><span class="teacher-dashboard-kicker">MY CONTRIBUTION JOURNEY</span><h3>Annual Contribution Progress</h3><p id="teacherProgressPeriod">Current year contribution target</p></div><span id="teacherProgressPercent" class="teacher-progress-percent">—</span></div>
+ <div class="teacher-progress-fraction" id="teacherProgressFraction">GHS 0.00 / GHS 0.00 Expected</div>
+ <div class="teacher-progress-track" role="progressbar" id="teacherProgressBar" aria-label="Annual contribution progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="teacherProgressFill" class="teacher-progress-fill"></span></div>
+ <div class="teacher-progress-footer"><span id="teacherProgressPaidMonths">0 of 0 monthly dues paid</span><span id="teacherProgressTarget">Expected target</span></div>
+ <div id="teacherProgressReminder" class="teacher-progress-reminder" role="status" aria-live="polite"></div>
+</section>
 <div class="grid dashboard-metrics"><div class="metric metric-compact"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-users text-2xl"></i></div><div class="metric-content"><span class="metric-label">Registered Members</span><strong id="teacherCount">—</strong></div></div><div class="metric metric-compact"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-arrow-trend-up"></i></div><div class="metric-content"><span class="metric-label">My Contributions · GHS</span><strong id="contributionTotal">—</strong></div></div><div class="metric metric-compact"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-hand-holding-heart text-2xl"></i></div><div class="metric-content"><span class="metric-label">My Payouts · GHS</span><strong id="payoutTotal">—</strong></div></div><div class="metric metric-compact"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-calendar-days text-2xl"></i></div><div class="metric-content"><span class="metric-label">Contributions This Month · GHS</span><strong id="monthlyContributionTotal">—</strong></div></div><div class="metric metric-featured metric-balance"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-vault"></i></div><div class="metric-content"><span class="metric-label">TOTAL FUND BALANCE · GHS</span><strong id="netTotal">—</strong><span class="metric-note metric-note-positive"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> After all active payouts</span></div></div><div class="metric metric-featured metric-standard"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-list-check"></i></div><div class="metric-content"><span class="metric-label">STANDARD MONTHLY DUES</span><strong id="standardDuesMetric">—</strong><span class="metric-note">Current school rate</span></div></div><div class="metric metric-featured metric-activity"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-clock-rotate-left"></i></div><div class="metric-content"><span class="metric-label">LAST ACTIVITY</span><strong id="lastActivity" style="font-size:1rem">—</strong><span class="metric-note">Latest recorded activity</span></div></div>
 </div>
 <section id="teacherDashboardLedgers" class="teacher-dashboard-ledgers" hidden>
@@ -2171,6 +2201,39 @@ async function renderTeacherDashboard(profile,school){
  const existingStandardCard=$('standardDuesMetric')?.closest('.metric-standard');
  if(existingStandardCard)existingStandardCard.insertAdjacentElement('afterend',teacherDuesCard);
  $('teacherStandardMonthlyDuesAmount').textContent=teacherStandardDuesError?'Unavailable':'GHS '+money(teacherStandardDues||0);
+ const renderTeacherContributionProgress=()=>{
+  const card=$('teacherContributionProgress');
+  if(!card)return;
+  card.hidden=false;
+  const monthlyDues=Number(teacherStandardDues||0);
+  const now=new Date(),year=now.getFullYear(),month=now.getMonth()+1;
+  const yearRows=activeTeacherContributionRows.filter(row=>{
+   const raw=String(row.contribution_date||row.date||'').slice(0,10);
+   return /^\\d{4}-\\d{2}-\\d{2}$/.test(raw)&&Number(raw.slice(0,4))===year;
+  });
+  const yearPaid=yearRows.reduce((sum,row)=>sum+Number(row.amount||0),0);
+  const expected=monthlyDues*month;
+  const pct=expected>0?yearPaid/expected*100:0;
+  const displayPct=Math.round(pct);
+  const fill=$('teacherProgressFill'),bar=$('teacherProgressBar');
+  card.classList.remove('is-on-track','is-complete');
+  if(pct>=100)card.classList.add('is-complete');else if(pct>70)card.classList.add('is-on-track');
+  if(fill)fill.style.width=Math.min(100,Math.max(0,pct))+'%';
+  if(bar){bar.setAttribute('aria-valuenow',String(Math.min(100,Math.max(0,displayPct))));bar.setAttribute('aria-valuetext',displayPct+' percent of expected annual-to-date contributions');}
+  if($('teacherProgressPercent'))$('teacherProgressPercent').textContent=monthlyDues>0?displayPct+'%':'—';
+  if($('teacherProgressFraction'))$('teacherProgressFraction').textContent=teacherStandardDuesError?'Your contribution target is currently unavailable':cash(yearPaid)+' / '+cash(expected)+' Expected';
+  if($('teacherProgressPeriod'))$('teacherProgressPeriod').textContent='January – '+now.toLocaleDateString('en-GH',{month:'long'})+' '+year;
+  if($('teacherProgressPaidMonths'))$('teacherProgressPaidMonths').textContent=monthlyDues>0?cash(yearPaid)+' contributed this year':'School monthly dues not configured';
+  if($('teacherProgressTarget'))$('teacherProgressTarget').textContent=monthlyDues>0?cash(monthlyDues)+' monthly dues':'Target unavailable';
+  const reminder=$('teacherProgressReminder');
+  if(reminder){
+   reminder.hidden=false;
+   if(teacherStandardDuesError||monthlyDues<=0){reminder.classList.remove('is-paid');reminder.textContent='Your school’s monthly dues target is not available right now. Please check with your school administrator.';}
+   else if(monthC+0.001<monthlyDues){reminder.classList.remove('is-paid');reminder.textContent='Monthly dues reminder: '+cash(monthlyDues-monthC)+' remains for '+now.toLocaleDateString('en-GH',{month:'long'})+'. Please submit your contribution to stay up to date.';}
+   else{reminder.classList.add('is-paid');reminder.textContent='You have met this month’s standard dues. Thank you for supporting your school welfare fund.';}
+  }
+ }; 
+ renderTeacherContributionProgress();
  const latest=[...contributions,...payouts].map(x=>x.date).filter(Boolean).sort().reverse()[0];
  $('lastActivity').textContent=latest?new Date(latest+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'No records';
  const date=v=>v?new Date(v+'T00:00:00').toLocaleDateString('en-GB'):'—';
@@ -2226,6 +2289,8 @@ async function renderTeacherDashboard(profile,school){
    const refreshedMonthDate=new Date();
    const refreshedMonthKey=refreshedMonthDate.getFullYear()+'-'+String(refreshedMonthDate.getMonth()+1).padStart(2,'0');
    const refreshedMonthTotal=activeTeacherContributionRows.filter(row=>String(row.contribution_date||row.date||'').slice(0,7)===refreshedMonthKey).reduce((sum,row)=>sum+Number(row.amount||0),0);
+   const monthC=refreshedMonthTotal;
+   renderTeacherContributionProgress();
    if(!contributionLoadError){
     $('contributionTotal').textContent=money(refreshedConTotal);
     $('monthlyContributionTotal').textContent=money(refreshedMonthTotal);
