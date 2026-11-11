@@ -2815,6 +2815,27 @@ function populateRankSelects() {
     });
 }
 
+function isActiveContribution(payment) {
+    if (!payment || typeof payment !== 'object') return false;
+    const status = String(payment.status || payment.transaction_status || payment.reversal_status || '').trim().toLowerCase();
+    return status !== 'reversed' &&
+        payment.is_reversed !== true &&
+        payment.isReversed !== true &&
+        payment.reversed !== true &&
+        !payment.reversed_at &&
+        !payment.reversedAt;
+}
+
+function getActiveContributions(teacher) {
+    return (Array.isArray(teacher?.payments) ? teacher.payments : []).filter(isActiveContribution);
+}
+
+function getAllActiveContributions() {
+    return getAllTeachers().flatMap(teacher =>
+        getActiveContributions(teacher).map(payment => ({ teacher, payment }))
+    );
+}
+
 function getAllTeachers() {
     return [...welfareData.teachers, ...removedMembers];
 }
@@ -3078,11 +3099,12 @@ function renderDashboard() {
         avatarInitials.classList.remove('hidden');
     }
 
-    const memberTotal = teacher.payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
+    const activePayments = getActiveContributions(teacher);
+    const memberTotal = activePayments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
     document.getElementById('statMemberTotal').textContent = money(memberTotal);
-    document.getElementById('statMemberContribCount').textContent = `${teacher.payments.length} Payment${teacher.payments.length === 1 ? '' : 's'} recorded`;
+    document.getElementById('statMemberContribCount').textContent = `${activePayments.length} Payment${activePayments.length === 1 ? '' : 's'} recorded`;
 
-    const sortedPayments = [...teacher.payments].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+    const sortedPayments = [...activePayments].sort((a, b) => String(b.date).localeCompare(String(a.date)));
     if (sortedPayments.length) {
         const latest = sortedPayments[0];
         document.getElementById('statLastPayment').textContent = money(latest.amount);
@@ -3148,7 +3170,7 @@ function renderProfileSection() {
         return;
     }
 
-    const payments = Array.isArray(teacher.payments) ? teacher.payments : [];
+    const payments = getActiveContributions(teacher);
     const payouts = Array.isArray(teacher.payouts) ? teacher.payouts : [];
     const schoolContext = { ...PROFILE_SCHOOL_DEFAULTS, ...(window.WELFARE_SCHOOL_PROFILE || {}) };
     const schoolName = teacher.schoolName || teacher.school_name || teacher.school || schoolContext.name ||
@@ -3223,7 +3245,7 @@ function openProfileEditModal() {
 
 function renderMemberPaymentTable(teacher) {
     const body = document.getElementById('paymentTableBody');
-    const payments = [...teacher.payments].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+    const payments = getActiveContributions(teacher).sort((a, b) => String(b.date).localeCompare(String(a.date)));
     if (!payments.length) {
         body.innerHTML = emptyRow(6, 'No contribution records found.');
         return;
@@ -3419,7 +3441,7 @@ function renderTeachersSection() {
     }
 
     body.innerHTML = activeTeachers.map(teacher => {
-        const payments = Array.isArray(teacher.payments) ? teacher.payments : [];
+        const payments = getActiveContributions(teacher);
         const total = payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
         return `
             <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
@@ -3451,8 +3473,8 @@ function renderPaymentsSection() {
     const body = document.getElementById('allPaymentsBody');
     const records = [];
     getAllTeachers().forEach(teacher => {
-        teacher.payments.forEach((payment, pIndex) => {
-            records.push({ teacher, payment, pIndex });
+        (Array.isArray(teacher.payments) ? teacher.payments : []).forEach((payment, pIndex) => {
+            if (isActiveContribution(payment)) records.push({ teacher, payment, pIndex });
         });
     });
     records.sort((a, b) => String(b.payment.date).localeCompare(String(a.payment.date)));
@@ -3539,7 +3561,8 @@ function renderAdminRoster() {
     }
 
     body.innerHTML = welfareData.teachers.map(teacher => {
-        const total = teacher.payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+        const activePayments = getActiveContributions(teacher);
+        const total = activePayments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
         return `
             <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
                 <td class="px-5 py-4 font-mono font-bold text-xs">${escapeHtml(teacher.id)}</td>
@@ -4583,13 +4606,7 @@ async function confirmResetAllData() {
 }
 
 function getTotalContributions() {
-    const activeContrib = welfareData.teachers.reduce((total, teacher) => {
-        return total + teacher.payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
-    }, 0);
-    const removedContrib = removedMembers.reduce((total, teacher) => {
-        return total + teacher.payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
-    }, 0);
-    return activeContrib + removedContrib;
+    return getAllActiveContributions().reduce((total, record) => total + Number(record.payment.amount || 0), 0);
 }
 
 function getTotalPayouts() {
@@ -4648,14 +4665,15 @@ async function downloadPDF() {
         });
     }
 
-    const totalPaid = teacher.payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
+    const activePayments = getActiveContributions(teacher);
+    const totalPaid = activePayments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
     const totalWithdrawn = teacher.payouts.reduce((sum, payout) => sum + Number(payout.amount || 0), 0);
 
     document.getElementById('pdfTotalPaid').textContent = money(totalPaid);
     document.getElementById('pdfTotalWithdrawn').textContent = money(totalWithdrawn);
 
     const paymentBody = document.getElementById('pdfTableBody');
-    const payments = [...teacher.payments].sort((a, b) => String(a.date).localeCompare(String(b.date)));
+    const payments = getActiveContributions(teacher).sort((a, b) => String(a.date).localeCompare(String(b.date)));
 
     if (!payments.length) {
         paymentBody.innerHTML = `<tr><td colspan="5" class="border px-2 py-3 text-center text-slate-500">No contribution records available.</td></tr>`;
@@ -4744,12 +4762,10 @@ async function downloadMonthlySummaryPDF() {
     }
 
     const monthlyPayments = [];
-    getAllTeachers().forEach(teacher => {
-        teacher.payments.forEach(payment => {
-            if (payment.date && payment.date.startsWith(targetMonthInput)) {
-                monthlyPayments.push({ teacher, payment });
-            }
-        });
+    getAllActiveContributions().forEach(({ teacher, payment }) => {
+        if (payment.date && payment.date.startsWith(targetMonthInput)) {
+            monthlyPayments.push({ teacher, payment });
+        }
     });
 
     const monthlyPayouts = [];
@@ -4862,14 +4878,15 @@ async function downloadFundSummaryPDF() {
         membersBody.innerHTML = `<tr><td colspan="6" class="border px-2 py-3 text-center text-slate-500">No active members registered.</td></tr>`;
     } else {
         membersBody.innerHTML = welfareData.teachers.map((teacher, index) => {
-            const contribution = teacher.payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
+            const activePayments = getActiveContributions(teacher);
+            const contribution = activePayments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
             return `
                 <tr>
                     <td>${index + 1}</td>
                     <td>${escapeHtml(teacher.id)}</td>
                     <td class="font-bold">${escapeHtml(teacher.name)}</td>
                     <td>${escapeHtml(teacher.rank)}</td>
-                    <td class="text-center">${teacher.payments.length}</td>
+                    <td class="text-center">${activePayments.length}</td>
                     <td class="text-right font-bold">${money(contribution)}</td>
                 </tr>
             `;
