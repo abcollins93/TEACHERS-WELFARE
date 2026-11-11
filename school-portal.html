@@ -2535,11 +2535,32 @@ try {
   }
   window.finishTenantSkeletons?.();
   const duesMetric=$('standardDuesMetric'),duesInput=$('wfMonthlyDues');if(duesMetric&&duesInput){const updateDues=()=>{duesMetric.textContent='GHS '+money(duesInput.value||0);};updateDues();duesInput.addEventListener('input',updateDues);}
+ window.showWelfareDialog=window.showWelfareDialog||function(kind,message,title){
+  return new Promise(resolve=>{
+   let root=document.getElementById('schoolWelfareDialog');
+   if(!root){
+    const style=document.createElement('style');style.textContent=`
+#schoolWelfareDialog{position:fixed;inset:0;z-index:14500;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(2,8,23,.76);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+#schoolWelfareDialog[hidden]{display:none!important}#schoolWelfareDialog .swg-card{width:min(100%,470px);padding:24px;border:1px solid #334155;border-radius:19px;background:linear-gradient(145deg,#10213b,#081426);color:#f1f5f9;box-shadow:0 28px 85px rgba(0,0,0,.5)}
+#schoolWelfareDialog h2{margin:0 0 10px;color:#fff;font-size:1.2rem;font-weight:850}#schoolWelfareDialog .swg-message{color:#c1ccdc;line-height:1.65;font-size:.9rem;white-space:pre-wrap;overflow-wrap:anywhere}
+#schoolWelfareDialog .swg-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}#schoolWelfareDialog button{min-height:42px;padding:9px 16px;border-radius:10px;font:inherit;font-weight:800;cursor:pointer}
+#schoolWelfareDialog .swg-ok{border:1px solid #d6a637;background:linear-gradient(110deg,#f0c65d,#d6a637);color:#172033}
+@media(max-width:520px){#schoolWelfareDialog .swg-card{padding:20px 17px}#schoolWelfareDialog .swg-actions button{flex:1}}
+`;document.head.appendChild(style);
+    root=document.createElement('div');root.id='schoolWelfareDialog';root.hidden=true;root.innerHTML='<section class="swg-card" role="dialog" aria-modal="true" aria-labelledby="swgTitle"><h2 id="swgTitle"></h2><div class="swg-message" id="swgMessage"></div><div class="swg-actions"><button type="button" class="swg-ok">OK</button></div></section>';document.body.appendChild(root);
+   }
+   root.querySelector('#swgTitle').textContent=title||(kind==='alert'?'Notice':'Confirm action');root.querySelector('#swgMessage').textContent=String(message??'');root.hidden=false;document.body.style.overflow='hidden';
+   const button=root.querySelector('button'),prior=document.activeElement;let done=false;
+   const finish=()=>{if(done)return;done=true;root.hidden=true;document.body.style.overflow='';button.removeEventListener('click',finish);document.removeEventListener('keydown',keys,true);if(prior?.focus)prior.focus({preventScroll:true});resolve(true);};
+   const keys=e=>{if(e.key==='Escape'||e.key==='Enter'){e.preventDefault();finish();}};
+   button.addEventListener('click',finish);document.addEventListener('keydown',keys,true);button.focus();
+  });
+ };
  const schoolPdfButton=$('downloadSchoolPdf'); if(schoolPdfButton)schoolPdfButton.onclick=async()=>{
   if(schoolPdfButton.disabled)return;
-  if(!window.html2pdf){alert('PDF library is unavailable. Please check your internet connection.');return;}
+  if(!window.html2pdf){window.showWelfareDialog('alert','PDF library is unavailable. Please check your internet connection.');return;}
   const teacherTable=document.querySelector('#schoolTeachers table');
-  if(!teacherTable){alert('The teacher register is still loading. Please try again in a moment.');return;}
+  if(!teacherTable){window.showWelfareDialog('alert','The teacher register is still loading. Please try again in a moment.');return;}
   const originalButtonHtml=schoolPdfButton.innerHTML;
   let progress=document.getElementById('schoolPdfProgress');
   if(!progress){progress=document.createElement('p');progress.id='schoolPdfProgress';progress.className='muted';progress.setAttribute('role','status');progress.setAttribute('aria-live','polite');schoolPdfButton.insertAdjacentElement('afterend',progress);}
@@ -2791,7 +2812,7 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
     if (reportsPanel) reportsPanel.classList.toggle('hidden', requestedId !== 'wfReportsPanel');
     if(window.__welfareCurrentRole==='teacher' && ['schoolTeachers','wfAdminPanel','wfAuditPanel','wfReportsPanel'].includes(requestedId)){
       button.classList.remove('active');button.setAttribute('aria-current','false');
-      window.alert('Restricted Access. This section is available to school administrators only.');
+      window.showWelfareDialog('alert','Restricted Access. This section is available to school administrators only.');
       return;
     }
     const auditView = document.getElementById('wfAuditView');
