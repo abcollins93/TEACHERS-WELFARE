@@ -2818,12 +2818,10 @@ function populateRankSelects() {
 function isActiveContribution(payment) {
     if (!payment || typeof payment !== 'object') return false;
     const status = String(payment.status || payment.transaction_status || payment.reversal_status || '').trim().toLowerCase();
-    return status !== 'reversed' &&
-        payment.is_reversed !== true &&
-        payment.isReversed !== true &&
-        payment.reversed !== true &&
-        !payment.reversed_at &&
-        !payment.reversedAt;
+    const reversedFlag = [payment.is_reversed, payment.isReversed, payment.reversed]
+        .some(value => value === true || ['true', 't', '1', 'yes'].includes(String(value).trim().toLowerCase()));
+    return status !== 'reversed' && !reversedFlag &&
+        !payment.reversed_at && !payment.reversedAt;
 }
 
 function getActiveContributions(teacher) {
