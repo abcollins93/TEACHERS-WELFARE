@@ -5404,28 +5404,39 @@ async function masterVerifySession() {
 }
 function masterNotice(message, isError=false) {
   const box = document.getElementById('masterSchoolNotice');
+  if (!box) return;
   box.textContent = message;
   box.className = 'm-4 p-3 rounded-xl text-sm ' + (isError ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300' : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300');
 }
 async function masterLoadSchools() {
   const rows = document.getElementById('masterSchoolRows');
+  if (!rows) {
+    masterNotice('School directory table is unavailable on this page. Refresh the page and try again.', true);
+    return;
+  }
   rows.innerHTML = '<tr><td colspan="6" class="p-5">Loading school directory…</td></tr>';
   try {
     await masterVerifySession();
     const { data, error } = await supabaseClient.from('platform_schools').select('id, name, school_code, admin_email, status, created_at').order('created_at', { ascending: false });
     if (error) throw error;
-    const schools = data || [];
-    document.getElementById('masterSchoolCount').textContent = schools.length;
-    document.getElementById('masterActiveCount').textContent = schools.filter(x => x.status === 'active').length;
-    document.getElementById().textContent = schools.filter(x => x.status === 'suspended').length;
-    if (!schools.length) { rows.innerHTML = '<tr><td colspan="6" class="p-5 text-slate-500">No schools registered yet.</td></tr>'; return; }
+    const schools = Array.isArray(data) ? data : [];
+    const totalCount = document.getElementById('masterSchoolCount');
+    const activeCount = document.getElementById('masterActiveCount');
+    const suspendedCount = document.getElementById('masterSuspendedCount');
+    if (totalCount) totalCount.textContent = schools.length;
+    if (activeCount) activeCount.textContent = schools.filter(x => x.status === 'active').length;
+    if (suspendedCount) suspendedCount.textContent = schools.filter(x => x.status === 'suspended').length;
+    if (!schools.length) {
+      rows.innerHTML = '<tr><td colspan="6" class="p-5 text-slate-500">No schools registered yet.</td></tr>';
+      return;
+    }
     rows.innerHTML = schools.map(s => `<tr class="border-t border-slate-100 dark:border-slate-800">
       <td class="p-3 font-bold">${masterEscape(s.name)}</td><td class="p-3 font-mono">${masterEscape(s.school_code)}</td>
       <td class="p-3">${masterEscape(s.admin_email || '—')}</td><td class="p-3"><span class="px-2 py-1 rounded-lg text-xs font-bold ${s.status==='active'?'bg-emerald-100 text-emerald-700':'bg-rose-100 text-rose-700'}">${masterEscape(s.status)}</span></td>
        <td class="p-3"><div class="flex flex-wrap gap-2">${String(s.school_code || '').trim().toUpperCase() === 'NTONSO-A-01' ? '<a href="' + window.location.origin + window.location.pathname + '" class="inline-flex whitespace-nowrap rounded-lg bg-sdaNavy-900 text-white px-3 py-2 text-xs font-bold hover:opacity-90" target="_blank" rel="noopener">Open School</a>' : '<a href="g.html?c=' + encodeURIComponent(String(s.school_code || '').trim().toUpperCase()) + '" class="inline-flex whitespace-nowrap rounded-lg bg-sdaNavy-900 text-white px-3 py-2 text-xs font-bold hover:opacity-90" target="_blank" rel="noopener">Open Gateway</a>'}<button type="button" onclick="masterCopyGateway('${masterEscape(String(s.school_code || '').trim().toUpperCase())}',this)" class="inline-flex whitespace-nowrap rounded-lg bg-amber-500 text-slate-950 px-3 py-2 text-xs font-bold hover:bg-amber-400">Copy Gateway Link</button></div></td>
       <td class="p-3"><button onclick="masterToggleSchool('${masterEscape(String(s.id))}','${s.status==='active'?'suspended':'active'}')" class="rounded-lg px-3 py-2 text-xs font-bold ${s.status==='active'?'bg-rose-100 text-rose-700':'bg-emerald-100 text-emerald-700'}">${s.status==='active'?'Suspend':'Activate'}</button></td></tr>`).join('');
   } catch (err) {
-    rows.innerHTML = '<tr><td colspan="6" class="p-5 text-rose-600">Could not load directory. Check the platform tables and RLS policies.</td></tr>';
+    if (rows) rows.innerHTML = '<tr><td colspan="6" class="p-5 text-rose-600">Could not load directory. Check the platform tables and RLS policies.</td></tr>';
     masterNotice(err?.message || 'Unable to load school directory.', true);
   }
 }
