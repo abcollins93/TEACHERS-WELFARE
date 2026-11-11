@@ -928,6 +928,19 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   #wfTeacherRegisterPanel .wf-membership-badge{background:#ecfdf5;color:#047857;border-color:#a7f3d0}
   #wfTeacherRegisterPanel .wf-employer-badge{background:#f1f5f9;color:#475569;border-color:#cbd5e1}
   #wfTeacherRegisterPanel .wf-accent-cell{padding-left:12px;padding-right:12px}
+  /* Signature identity columns: Staff ID, teacher name and phone. */
+  #wfTeacherRegisterPanel .wf-staff-id-cell{white-space:nowrap}
+  #wfTeacherRegisterPanel .wf-staff-id-badge{display:inline-flex;align-items:center;padding:5px 9px;border:1px solid #cbd5e1;border-radius:8px;background:#f1f5f9;color:#334155;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:.78rem;font-weight:700;letter-spacing:.015em;white-space:nowrap}
+  #wfTeacherRegisterPanel td.teacher-name-cell{color:#0f172a!important;font-weight:700;letter-spacing:.005em}
+  #wfTeacherRegisterPanel td.wf-phone-cell{color:#0d9488!important;font-weight:650;font-variant-numeric:tabular-nums;white-space:nowrap}
+  #wfTeacherRegisterPanel tbody tr{transition:background-color .16s ease}
+  #wfTeacherRegisterPanel tbody td{border-bottom:1px solid #e2e8f0;padding:12px 10px}
+  #wfTeacherRegisterPanel tbody tr:hover{background:#f8fafc}
+  .dark #wfTeacherRegisterPanel .wf-staff-id-badge{background:#26364a;color:#cbd5e1;border-color:#475569}
+  .dark #wfTeacherRegisterPanel td.teacher-name-cell{color:#f8fafc!important}
+  .dark #wfTeacherRegisterPanel td.wf-phone-cell{color:#5eead4!important}
+  .dark #wfTeacherRegisterPanel tbody td{border-bottom-color:#334155}
+  .dark #wfTeacherRegisterPanel tbody tr:hover{background:#102541}
   /* Clear action hierarchy for teacher and administrator management tables. */
   #wfTeacherRegisterPanel .wf-table-action{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:8px 12px!important;margin:2px 3px 2px 0;border:1px solid transparent!important;border-radius:10px!important;font-size:.76rem!important;font-weight:800!important;line-height:1.2;white-space:nowrap;box-shadow:none!important;transition:all .2s ease}
   #wfTeacherRegisterPanel .wf-table-action:hover{transform:translateY(-1px)}
@@ -1005,7 +1018,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  };
  ensureTeacherTableAccentStyles();
  const renderTeacherTables=()=>{const q=String($('wfTeacherSearch')?.value||'').trim().toLowerCase();const visible=teachers.filter(t=>[t.id,t.name,t.phone,t.rank,t.class_name,t.membership_type,t.employer].some(v=>String(v||'').toLowerCase().includes(q)));
- $('wfManageTeacherRows').innerHTML=visible.length?visible.map(t=>'<tr><td>'+esc(t.id)+'</td><td class="teacher-name-cell">'+esc(t.name)+'</td><td>'+esc(t.phone||'—')+'</td><td class="wf-accent-cell wf-rank-cell"><span class="wf-rank-badge">'+esc(t.rank||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-class-accent">'+esc(t.class_name||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-membership-badge">'+esc(t.membership_type||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-employer-badge">'+esc(t.employer||'—')+'</span></td><td><span class="wf-teacher-status '+(t.is_active===false?'inactive':'active')+'">'+(t.is_active===false?'Inactive':'Active')+'</span></td><td><button type="button" class="wf-table-action wf-action-view" data-view-profile="'+esc(t.id)+'">View profile</button> <button type="button" class="wf-table-action wf-action-edit" data-wf-edit="'+esc(t.id)+'">Edit</button> '+'<button type="button" class="wf-table-action wf-action-primary" data-wf-activate="'+esc(t.id)+'">Activate / reset login</button> '+(t.is_active===false?'<button type="button" class="wf-table-action wf-action-primary" data-wf-restore="'+esc(t.id)+'">Restore</button>':'<button type="button" class="wf-table-action wf-action-danger" data-wf-remove="'+esc(t.id)+'">Deactivate</button>')+'</td></tr>').join(''):'<tr><td colspan="9">No matching teachers.</td></tr>';};
+ $('wfManageTeacherRows').innerHTML=visible.length?visible.map(t=>'<tr><td class="wf-staff-id-cell"><span class="wf-staff-id-badge">'+esc(t.id)+'</span></td><td class="teacher-name-cell">'+esc(t.name)+'</td><td class="wf-phone-cell">'+esc(t.phone||'—')+'</td><td class="wf-accent-cell wf-rank-cell"><span class="wf-rank-badge">'+esc(t.rank||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-class-accent">'+esc(t.class_name||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-membership-badge">'+esc(t.membership_type||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-employer-badge">'+esc(t.employer||'—')+'</span></td><td><span class="wf-teacher-status '+(t.is_active===false?'inactive':'active')+'">'+(t.is_active===false?'Inactive':'Active')+'</span></td><td><button type="button" class="wf-table-action wf-action-view" data-view-profile="'+esc(t.id)+'">View profile</button> <button type="button" class="wf-table-action wf-action-edit" data-wf-edit="'+esc(t.id)+'">Edit</button> '+'<button type="button" class="wf-table-action wf-action-primary" data-wf-activate="'+esc(t.id)+'">Activate / reset login</button> '+(t.is_active===false?'<button type="button" class="wf-table-action wf-action-primary" data-wf-restore="'+esc(t.id)+'">Restore</button>':'<button type="button" class="wf-table-action wf-action-danger" data-wf-remove="'+esc(t.id)+'">Deactivate</button>')+'</td></tr>').join(''):'<tr><td colspan="9">No matching teachers.</td></tr>';};
  renderTeacherTables();
  $('wfTeacherSearch').addEventListener('input',renderTeacherTables);
  $('wfManageTeacherRows').addEventListener('click',async e=>{
