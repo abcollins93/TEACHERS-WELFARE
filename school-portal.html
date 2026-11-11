@@ -2079,12 +2079,21 @@ async function renderTeacherDashboard(profile,school){
  const contributions=ce?[]:(cs||[]),payouts=pe?[]:(ps||[]);
  let teacherContributionRows=pcfe?[]:(personalContributionFeed||[]);
  let schoolPayoutRows=spe?[]:(schoolPayoutData||[]);
- const totalC=teacherContributionRows.filter(x=>!x.is_reversed).reduce((sum,x)=>sum+Number(x.amount||0),0);
+ const isActiveTeacherContribution=row=>{
+  if(!row||typeof row!=='object')return false;
+  const status=String(row.status||row.transaction_status||row.reversal_status||'').trim().toLowerCase();
+  const reversedFlag=[row.is_reversed,row.isReversed,row.reversed].some(value=>value===true||['true','t','1','yes'].includes(String(value).trim().toLowerCase()));
+  return status!=='reversed'&&!reversedFlag&&!row.reversed_at&&!row.reversedAt;
+ };
+ let activeTeacherContributionRows=teacherContributionRows.filter(isActiveTeacherContribution);
+ const activeTeacherContributionCount=()=>activeTeacherContributionRows.length;
+ const totalC=activeTeacherContributionRows.reduce((sum,x)=>sum+Number(x.amount||0),0);
  const totalP=payouts.reduce((sum,x)=>sum+Number(x.amount||0),0);
  const ownMemberCount=teacherRecord?.is_active===false?0:1;
  const schoolRegisteredMemberCount=registeredMemberCountError?null:Number(registeredMemberCount||0);
- const monthKey=new Date().toISOString().slice(0,7);
- const monthC=contributions.filter(x=>String(x.date||'').slice(0,7)===monthKey).reduce((sum,x)=>sum+Number(x.amount||0),0);
+ const nowForMonth=new Date();
+ const monthKey=nowForMonth.getFullYear()+'-'+String(nowForMonth.getMonth()+1).padStart(2,'0');
+ const monthC=activeTeacherContributionRows.filter(x=>String(x.contribution_date||x.date||'').slice(0,7)===monthKey).reduce((sum,x)=>sum+Number(x.amount||0),0);
  const money=n=>Number(n||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
  const metricLabels=document.querySelectorAll('#schoolOverview .dashboard-metrics .metric-compact .metric-label');
  if(metricLabels[0])metricLabels[0].textContent='Registered Members';
@@ -2100,7 +2109,7 @@ async function renderTeacherDashboard(profile,school){
  if(balanceNote)balanceNote.textContent='School-wide contributions less all active welfare payouts';
  const standardLabel=document.querySelector('#schoolOverview .metric-standard .metric-label');
  if(standardLabel)standardLabel.textContent='MY CONTRIBUTION RECORDS';
- const standardValue=$('standardDuesMetric');if(standardValue)standardValue.textContent=String(contributions.length);
+ const standardValue=$('standardDuesMetric');if(standardValue)standardValue.textContent=String(activeTeacherContributionCount());
  const existingTeacherDuesCard=$('teacherStandardMonthlyDues');
  if(existingTeacherDuesCard)existingTeacherDuesCard.remove();
  const teacherDuesCard=document.createElement('div');
@@ -2140,7 +2149,7 @@ async function renderTeacherDashboard(profile,school){
     :'<tr><td colspan="6">No school-wide welfare payouts have been recorded yet.</td></tr>';
   }
   const contributionState=$('teacherDashboardContributionState'),payoutState=$('teacherDashboardPayoutState');
-  if(contributionState)contributionState.textContent=contributionLoadError?'Personal records unavailable':teacherContributionRows.length+' personal record(s)';
+  if(contributionState)contributionState.textContent=contributionLoadError?'Personal records unavailable':activeTeacherContributionCount()+' active personal record(s)';
   if(payoutState)payoutState.textContent=schoolPayoutLoadError?'School feed unavailable':schoolPayoutRows.length+' school record(s)';
  };
  renderTeacherDashboardLedgers();
@@ -2164,11 +2173,18 @@ async function renderTeacherDashboard(profile,school){
    if(!freshContributionFeed.error){teacherContributionRows=freshContributionFeed.data||[];contributionLoadError=false;}else contributionLoadError=true;
    if(!freshSchoolFundSummary.error){schoolFundBalance=Number(freshSchoolFundSummary.data?.[0]?.total_fund_balance||0);schoolFundSummaryError=false;}else schoolFundSummaryError=true;
    if(!freshRegisteredMemberCount.error){$('teacherCount').textContent=String(Number(freshRegisteredMemberCount.data||0));}else $('teacherCount').textContent='Unavailable';
-   const refreshedConTotal=teacherContributionRows.filter(row=>!row.is_reversed).reduce((sum,row)=>sum+Number(row.amount||0),0);
+   activeTeacherContributionRows=teacherContributionRows.filter(isActiveTeacherContribution);
+   const refreshedConTotal=activeTeacherContributionRows.reduce((sum,row)=>sum+Number(row.amount||0),0);
    const refreshedOwnPayoutTotal=payouts.reduce((sum,row)=>sum+Number(row.amount||0),0);
-   const refreshedMonthKey=new Date().toISOString().slice(0,7);
-   const refreshedMonthTotal=teacherContributionRows.filter(row=>!row.is_reversed&&String(row.contribution_date||'').slice(0,7)===refreshedMonthKey).reduce((sum,row)=>sum+Number(row.amount||0),0);
-   if(!contributionLoadError){$('contributionTotal').textContent=money(refreshedConTotal);$('monthlyContributionTotal').textContent=money(refreshedMonthTotal);$('teacherConTotal').textContent=cash(refreshedConTotal);}
+   const refreshedMonthDate=new Date();
+   const refreshedMonthKey=refreshedMonthDate.getFullYear()+'-'+String(refreshedMonthDate.getMonth()+1).padStart(2,'0');
+   const refreshedMonthTotal=activeTeacherContributionRows.filter(row=>String(row.contribution_date||row.date||'').slice(0,7)===refreshedMonthKey).reduce((sum,row)=>sum+Number(row.amount||0),0);
+   if(!contributionLoadError){
+    $('contributionTotal').textContent=money(refreshedConTotal);
+    $('monthlyContributionTotal').textContent=money(refreshedMonthTotal);
+    $('teacherConTotal').textContent=cash(refreshedConTotal);
+    if($('standardDuesMetric'))$('standardDuesMetric').textContent=String(activeTeacherContributionCount());
+   }
    if(!freshOwnPay.error){$('payoutTotal').textContent=money(refreshedOwnPayoutTotal);$('teacherConDisbursement').textContent=cash(refreshedOwnPayoutTotal);}
    if(!schoolFundSummaryError){$('netTotal').textContent=money(schoolFundBalance);$('teacherConNet').textContent=cash(schoolFundBalance);$('teacherCurrentFund').textContent=cash(schoolFundBalance);}
    renderTeacherDashboardLedgers();
@@ -2207,12 +2223,12 @@ async function renderTeacherDashboard(profile,school){
  $('teacherOwnFinanceRows').innerHTML=[
   '<div class="tp-finance"><span>Total Dues Contributed</span><strong style="color:#15803d">'+escapeHtml(cash(totalC))+'</strong></div>',
   '<div class="tp-finance"><span>Total Welfare Payouts Received</span><strong style="color:#dc2626">'+escapeHtml(cash(totalP))+'</strong></div>',
-  '<div class="tp-finance"><span>Total Payments Recorded</span><strong>'+contributions.length+'</strong></div>',
-  '<div class="tp-finance"><span>Most Recent Contribution</span><strong>'+escapeHtml(contributions.length?profileDate([...contributions].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')))[0].date):'—')+'</strong></div>'
+  '<div class="tp-finance"><span>Total Payments Recorded</span><strong>'+activeTeacherContributionCount()+'</strong></div>',
+  '<div class="tp-finance"><span>Most Recent Contribution</span><strong>'+escapeHtml(activeTeacherContributionRows.length?profileDate([...activeTeacherContributionRows].sort((a,b)=>String(b.contribution_date||b.date||'').localeCompare(String(a.contribution_date||a.date||'')))[0].contribution_date||[...activeTeacherContributionRows].sort((a,b)=>String(b.contribution_date||b.date||'').localeCompare(String(a.contribution_date||a.date||'')))[0].date):'—')+'</strong></div>'
  ].join('');
  $('teacherOwnProfilePrint')?.addEventListener('click',()=>window.print());
 
- $('teacherContributionsState').textContent=contributionLoadError?'Could not load your contribution records securely.':teacherContributionRows.length?contributions.length+' personal record(s)':'No contribution records are available yet.';
+ $('teacherContributionsState').textContent=contributionLoadError?'Could not load your contribution records securely.':activeTeacherContributionCount()?activeTeacherContributionCount()+' active personal record(s)':'No active contribution records are available yet.';
  $('teacherConTotal').textContent=contributionLoadError?'Unavailable':cash(totalC);
  $('teacherConDisbursement').textContent=pe?'Unavailable':cash(totalP);
  $('teacherConNet').textContent=schoolFundSummaryError?'Unavailable':cash(schoolFundBalance);
