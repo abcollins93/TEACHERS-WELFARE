@@ -720,11 +720,23 @@ window.initSchoolWorkflows=async function(client,school,refresh){
       <div><small class="muted">REGISTRATION DATE</small><strong id="tpRegistration">—</strong></div><div><small class="muted">MEMBERSHIP TYPE</small><strong id="tpMembership">—</strong></div>
      </div>
     </article>
-    <article class="panel" style="margin:0;padding:22px"><h3><i class="fa-solid fa-address-card"></i> Personal &amp; Contact Information</h3><div id="tpPersonalRows" class="tp-fields"></div><p class="muted">To update your official personal or contact information, contact the Executive Administrator.</p><button type="button" class="secondary" id="tpEditContact">Edit Contact Info</button></article>
-    <article class="panel" style="margin:0;padding:22px"><h3><i class="fa-solid fa-briefcase"></i> Professional &amp; Employment Details</h3><div id="tpProfessionalRows" class="tp-fields"></div></article>
-    <article class="panel" style="margin:0;padding:22px"><h3><i class="fa-solid fa-hand-holding-heart"></i> Welfare Membership &amp; Financial Summary</h3><div id="tpFinanceRows"></div></article>
+    <article class="panel teacher-profile-accent teacher-profile-accent-blue" style="margin:0;padding:22px"><h3><i class="fa-solid fa-address-card"></i> Personal &amp; Contact Information</h3><div id="tpPersonalRows" class="tp-fields"></div><p class="muted">To update your official personal or contact information, contact the Executive Administrator.</p><button type="button" class="secondary" id="tpEditContact">Edit Contact Info</button></article>
+    <article class="panel teacher-profile-accent teacher-profile-accent-gold" style="margin:0;padding:22px"><h3><i class="fa-solid fa-briefcase"></i> Professional &amp; Employment Details</h3><div id="tpProfessionalRows" class="tp-fields"></div></article>
+    <article class="panel teacher-profile-accent teacher-profile-accent-purple" style="margin:0;padding:22px"><h3><i class="fa-solid fa-hand-holding-heart"></i> Welfare Membership &amp; Financial Summary</h3><div id="tpFinanceRows"></div></article>
    </div>
    <style>
+    /* Match the teacher's own profile cards: 5px thematic top accents, rounded top corners and consistent panel depth. */
+    #teacherProfileViewer .teacher-profile-accent{
+      border-top-width:5px!important;
+      border-top-style:solid!important;
+      border-top-left-radius:var(--radius-lg,22px)!important;
+      border-top-right-radius:var(--radius-lg,22px)!important;
+      background-clip:padding-box;
+      box-shadow:var(--panel-shadow,0 8px 22px rgba(15,23,42,.08));
+    }
+    #teacherProfileViewer .teacher-profile-accent-blue{border-top-color:#3b82f6!important}
+    #teacherProfileViewer .teacher-profile-accent-gold{border-top-color:#d6a637!important}
+    #teacherProfileViewer .teacher-profile-accent-purple{border-top-color:#8b5cf6!important}
     #teacherProfileViewer .tp-fields{display:grid;gap:10px}
     #teacherProfileViewer .tp-field{border:1px solid var(--line);background:rgba(120,130,150,.06);border-radius:12px;padding:11px 13px}
     #teacherProfileViewer .tp-field small{display:block;color:var(--muted);font-size:.68rem;font-weight:850;letter-spacing:.06em;margin-bottom:5px}
@@ -732,7 +744,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     #teacherProfileViewer .tp-finance{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
     #teacherProfilePrint{background:linear-gradient(120deg,#ec4899,#db2777)!important;color:#fff!important;border:1px solid #db2777!important;border-radius:10px;box-shadow:0 6px 16px rgba(219,39,119,.22)}
     #teacherProfilePrint:hover:not(:disabled){background:linear-gradient(120deg,#db2777,#be185d)!important;border-color:#be185d!important}
-    @media(max-width:760px){#teacherProfileContent{grid-template-columns:1fr!important}#teacherProfilePrint{width:100%}}
+    @media(max-width:760px){#teacherProfileContent{grid-template-columns:1fr!important}#teacherProfileViewer .teacher-profile-accent{border-top-left-radius:17px!important;border-top-right-radius:17px!important}#teacherProfilePrint{width:100%}}
     @media print{body *{visibility:hidden!important}#teacherProfileViewer,#teacherProfileViewer *{visibility:visible!important}#teacherProfileViewer{position:absolute;inset:0;width:100%;margin:0!important}#teacherProfilePrint,#teacherProfileSelect,#teacherProfileViewer label,#tpEditContact{display:none!important}}
    </style>`;
   const wf=$('workflows');profileHost.insertBefore(p,wf&&wf.parentElement===profileHost?wf:null);
