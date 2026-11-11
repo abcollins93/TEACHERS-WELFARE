@@ -1728,29 +1728,34 @@ try{applyTheme(localStorage.getItem('welfare-theme')==='dark');}catch(_){}
 $('themeToggle').addEventListener('click',()=>{const dark=!document.documentElement.classList.contains('dark');applyTheme(dark);try{localStorage.setItem('welfare-theme',dark?'dark':'light');}catch(_){} });
 const sidebar=$('sidebarCollapse')?.closest('.sidebar');
 const mobileNavOverlay=$('mobile-nav-overlay');
-function closeMobileNav(){
- sidebar?.classList.remove('is-mobile-open');
- mobileNavOverlay?.classList.remove('is-open');
- mobileNavOverlay?.setAttribute('aria-hidden','true');
- mobileNavOverlay?.style.setProperty('pointer-events','none');
- $('mobileNavToggle')?.setAttribute('aria-expanded','false');
- $('mobileNavToggle')?.setAttribute('aria-label','Open navigation menu');
-}
-function openMobileNav(){
+function syncMobileNavState(isOpen){
  if(!sidebar)return;
- sidebar.classList.add('is-mobile-open');
- mobileNavOverlay?.classList.add('is-open');
- mobileNavOverlay?.setAttribute('aria-hidden','false');
+ sidebar.classList.toggle('is-mobile-open',isOpen);
+ mobileNavOverlay?.classList.toggle('is-open',isOpen);
+ mobileNavOverlay?.setAttribute('aria-hidden',String(!isOpen));
  mobileNavOverlay?.style.removeProperty('pointer-events');
- $('mobileNavToggle')?.setAttribute('aria-expanded','true');
- $('mobileNavToggle')?.setAttribute('aria-label','Close navigation menu');
+ const toggle=document.getElementById('mobileNavToggle');
+ toggle?.setAttribute('aria-expanded',String(isOpen));
+ toggle?.setAttribute('aria-label',isOpen?'Close navigation menu':'Open navigation menu');
+ toggle?.setAttribute('title',isOpen?'Close navigation menu':'Open navigation menu');
+ const icon=toggle?.querySelector('i');
+ if(icon)icon.className=isOpen?'fa-solid fa-xmark':'fa-solid fa-bars';
+ document.body.classList.toggle('sidebar-open',isOpen);
 }
-$('mobileNavToggle')?.addEventListener('click',()=>{
- if(!sidebar)return;
- if(sidebar.classList.contains('is-mobile-open')) closeMobileNav();
- else openMobileNav();
+function closeMobileNav(){syncMobileNavState(false);}
+function openMobileNav(){syncMobileNavState(true);}
+/* Document-level delegation survives dashboard/view content replacement. */
+document.addEventListener('click',event=>{
+ const toggle=event.target.closest('#mobileNavToggle');
+ if(toggle){
+  event.preventDefault();
+  event.stopPropagation();
+  if(!sidebar)return;
+  syncMobileNavState(!sidebar.classList.contains('is-mobile-open'));
+  return;
+ }
+ if(event.target.closest('#mobile-nav-overlay'))closeMobileNav();
 });
-mobileNavOverlay?.addEventListener('click',closeMobileNav);
 $('sidebarCollapse')?.addEventListener('click',()=>{
  if(!sidebar)return;
  if(window.matchMedia('(max-width: 950px)').matches){
@@ -1762,8 +1767,6 @@ $('sidebarCollapse')?.addEventListener('click',()=>{
  $('sidebarCollapse').setAttribute('aria-label',collapsed?'Expand sidebar':'Collapse sidebar');
  $('sidebarCollapse').innerHTML=collapsed?'<i class="fa-solid fa-angles-right"></i>':'<i class="fa-solid fa-xmark"></i>';
 });
-mobileNavOverlay?.addEventListener('click',closeMobileNav);
-
 
 const money=n=>Number(n||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
 $('codeLabel').textContent=code||'Missing school code';
@@ -2695,19 +2698,25 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
     const isMobile = window.matchMedia('(max-width: 950px)').matches;
     if (sidebar) {
       sidebar.classList.remove('is-mobile-open', 'mobile-open');
-      sidebar.setAttribute('aria-hidden', isMobile ? 'true' : 'false');
-      if (isMobile) sidebar.style.setProperty('transform', 'translateX(-105%)', 'important');
+      sidebar.removeAttribute('aria-hidden');
+      sidebar.style.removeProperty('transform');
     }
     if (overlay) {
       overlay.classList.remove('is-open');
       overlay.setAttribute('aria-hidden', 'true');
-      overlay.style.setProperty('opacity', '0', 'important');
-      overlay.style.setProperty('visibility', 'hidden', 'important');
-      overlay.style.setProperty('pointer-events', 'none', 'important');
+      overlay.style.removeProperty('opacity');
+      overlay.style.removeProperty('visibility');
+      overlay.style.setProperty('pointer-events', 'none');
     }
     document.body.classList.remove('sidebar-open');
     const toggle = document.getElementById('mobileNavToggle');
-    if (toggle) toggle.setAttribute('aria-expanded', 'false');
+    if (toggle) {
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-label', 'Open navigation menu');
+      toggle.setAttribute('title', 'Open navigation menu');
+      const icon = toggle.querySelector('i');
+      if (icon) icon.className = 'fa-solid fa-bars';
+    }
   }
   // Non-view sidebar actions (for example sign-out) may close immediately.
   // View navigation closes only after its destination has been activated below.
@@ -3623,6 +3632,19 @@ body:has(#login:not(.hidden)) main{
 .dark #dashboard .metric-label,.dark #dashboard .metric-note{
  color:var(--tenant-text-secondary)!important;
 }
+</style>
+
+<style id="tenant-sidebar-global-interaction">
+@media(max-width:950px){
+ #mobile-nav-overlay{z-index:10001!important;pointer-events:none}
+ #mobile-nav-overlay.is-open{pointer-events:auto}
+ #dashboard .sidebar,#dashboard .sidebar.is-mobile-open{z-index:10002!important}
+ header.top{z-index:1000!important;pointer-events:auto}
+ #mobileNavToggle{position:relative!important;z-index:10003!important;pointer-events:auto!important;touch-action:manipulation}
+ header.top .top-brand-group{position:relative;z-index:10003;pointer-events:auto}
+}
+#mobileNavToggle{cursor:pointer;touch-action:manipulation}
+body.sidebar-open{overflow:hidden}
 </style>
 </body>
 </html>
