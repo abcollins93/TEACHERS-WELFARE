@@ -3491,5 +3491,138 @@ body:has(#login:not(.hidden)) main{
  document.addEventListener('keydown',event=>{if(event.key==='Escape')close();});
 })();
 </script>
+
+<style id="tenant-dark-theme-coverage">
+/* Consistent light/dark surface tokens for all tenant workspace components. */
+:root{
+ --tenant-card-bg:#ffffff;
+ --tenant-card-bg-soft:#f8fafc;
+ --tenant-text-primary:#182235;
+ --tenant-text-secondary:#64748b;
+ --tenant-control-bg:#ffffff;
+ --tenant-control-border:#dbe3ee;
+}
+.dark{
+ --tenant-card-bg:#1e293b;
+ --tenant-card-bg-soft:#0f172a;
+ --tenant-text-primary:#f1f5f9;
+ --tenant-text-secondary:#cbd5e1;
+ --tenant-control-bg:#0f172a;
+ --tenant-control-border:#475569;
+ --surface:#1e293b;
+ --card-bg:#1e293b;
+ --text-primary:#f1f5f9;
+ --text-secondary:#cbd5e1;
+}
+/* Overview cards and all metric variants, including teacher metrics. */
+.dark #schoolOverview .dashboard-metrics .metric,
+.dark #schoolOverview .dashboard-metrics .metric-compact,
+.dark #schoolOverview .dashboard-metrics .metric-featured,
+.dark #dashboard .metric,
+.dark #dashboard .stat-card,
+.dark #dashboard .metric-card,
+.dark .wf-contrib-metric,.dark .wf-payout-metric,.dark .twf-metric{
+ background:var(--tenant-card-bg)!important;
+ color:var(--tenant-text-primary)!important;
+ border-color:#334155!important;
+ box-shadow:0 10px 26px rgba(0,0,0,.24)!important;
+}
+.dark #schoolOverview .dashboard-metrics .metric-compact>span,
+.dark #schoolOverview .dashboard-metrics .metric-label,
+.dark #schoolOverview .dashboard-metrics .metric-note,
+.dark .wf-contrib-metric small,.dark .wf-payout-metric small,.dark .twf-metric small{
+ color:var(--tenant-text-secondary)!important;
+}
+.dark #schoolOverview .dashboard-metrics .metric-compact>strong,
+.dark #schoolOverview .dashboard-metrics .metric-content strong,
+.dark .wf-contrib-metric strong,.dark .wf-payout-metric strong,.dark .twf-metric strong,
+.dark #dashboard .metric strong{
+ color:#f8fafc!important;
+}
+.dark #schoolOverview .dashboard-metrics .metric-icon,
+.dark #schoolOverview .dashboard-metrics .metric-compact:before,
+.dark .wf-contrib-metric:before,.dark .wf-payout-metric:before,.dark .twf-metric:before{
+ filter:brightness(.82) saturate(.9);
+}
+/* Panels, cards, nested section wrappers and information surfaces. */
+.dark #dashboard .panel:not(#login),
+.dark #dashboard .card,.dark #dashboard .support,
+.dark #dashboard .teacher-dashboard-ledger-card,
+.dark #dashboard .sidebar-account,
+.dark #dashboard .wf-payout-view,.dark #dashboard .wf-payout-log,
+.dark #dashboard .wf-contrib-log,
+.dark #dashboard .wf-admin-section,.dark #dashboard .wf-section,
+.dark #dashboard [class*="section-card"],
+.dark #dashboard [class*="content-card"],
+.dark #dashboard [class*="summary-card"],
+.dark #dashboard [class*="detail-card"],
+.dark #dashboard [class*="modal"] .modal-content,
+.dark #dashboard dialog,
+.dark #dashboard [role="dialog"]{
+ background:var(--tenant-card-bg)!important;
+ color:var(--tenant-text-primary)!important;
+ border-color:#334155!important;
+}
+.dark #dashboard .panel p,.dark #dashboard .panel label,
+.dark #dashboard .card p,.dark #dashboard .card label,
+.dark #dashboard .support p,.dark #dashboard .support label,
+.dark #dashboard .wf-payout-view p,.dark #dashboard .wf-contrib-log p,
+.dark #dashboard .wf-payout-log p,
+.dark #dashboard .teacher-dashboard-ledger-card p,
+.dark #dashboard .teacher-dashboard-details{
+ color:var(--tenant-text-secondary)!important;
+}
+.dark #dashboard .panel h1,.dark #dashboard .panel h2,.dark #dashboard .panel h3,
+.dark #dashboard .card h1,.dark #dashboard .card h2,.dark #dashboard .card h3,
+.dark #dashboard .panel strong,.dark #dashboard .card strong{
+ color:var(--tenant-text-primary);
+}
+/* Inputs, selects, textareas, search fields and modal controls. */
+.dark #dashboard input:not([type="checkbox"]):not([type="radio"]),
+.dark #dashboard select,.dark #dashboard textarea,
+.dark #dashboard [role="dialog"] input,.dark #dashboard [role="dialog"] select,
+.dark #dashboard [role="dialog"] textarea{
+ background:var(--tenant-control-bg)!important;
+ color:var(--tenant-text-primary)!important;
+ border-color:var(--tenant-control-border)!important;
+}
+.dark #dashboard input::placeholder,.dark #dashboard textarea::placeholder{
+ color:#94a3b8!important;opacity:1;
+}
+.dark #dashboard input:focus,.dark #dashboard select:focus,.dark #dashboard textarea:focus{
+ border-color:#d6a637!important;
+}
+/* Tables and rows embedded in all tenant sections. */
+.dark #dashboard table th,.dark #dashboard .table-wrap th,
+.dark #dashboard .wf-payout-table-wrap th,
+.dark #dashboard .teacher-dashboard-table-wrap th{
+ background:#142338!important;color:#e2e8f0!important;border-color:#334155!important;
+}
+.dark #dashboard table td,.dark #dashboard .table-wrap td,
+.dark #dashboard .wf-payout-table-wrap td,
+.dark #dashboard .teacher-dashboard-table-wrap td{
+ color:#e2e8f0!important;border-color:#334155!important;
+}
+.dark #dashboard tbody tr:hover{background:rgba(148,163,184,.09)!important}
+/* Remove remaining solid-white backgrounds on common nested surfaces while
+   preserving deliberately dark branded hero, header, sidebar and PDF templates. */
+.dark #dashboard .wf-payout-log-head,
+.dark #dashboard .wf-contrib-log-head,
+.dark #dashboard .teacher-dashboard-table-wrap,
+.dark #dashboard .table-wrap,
+.dark #dashboard .empty-state,
+.dark #dashboard .notice,
+.dark #dashboard .alert,
+.dark #dashboard .accordion-content{
+ background:var(--tenant-card-bg-soft)!important;
+ color:var(--tenant-text-primary)!important;
+ border-color:#334155!important;
+}
+.dark #dashboard .muted,.dark #dashboard .text-muted,
+.dark #dashboard .help-text,.dark #dashboard .form-text,
+.dark #dashboard .metric-label,.dark #dashboard .metric-note{
+ color:var(--tenant-text-secondary)!important;
+}
+</style>
 </body>
 </html>
