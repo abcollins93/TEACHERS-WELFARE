@@ -2247,12 +2247,21 @@ async function renderTeacherDashboard(profile,school){
     client.rpc('get_my_teacher_contributions'),client.rpc('get_my_teacher_payouts'),client.rpc('get_my_school_fund_summary'),client.rpc('get_my_teacher_contribution_feed')
    ]);
    if(contributionError||payoutError||statementFundError||statementContributionFeedError||!statementFundRows?.length)throw new Error('Your financial records and school fund balance could not be retrieved securely. No PDF was generated.');
-   const personalContributions=(ownContributions||[]).filter(x=>String(x.teacher_id)===verifiedTeacherId&&String(x.school_id)===String(school.id));
+   const personalContributionsAll=(ownContributions||[]).filter(x=>String(x.teacher_id)===verifiedTeacherId&&String(x.school_id)===String(school.id));
    const personalPayouts=(ownPayouts||[]).filter(x=>String(x.teacher_id)===verifiedTeacherId&&String(x.school_id)===String(school.id));
-   if(personalContributions.length!==(ownContributions||[]).length||personalPayouts.length!==(ownPayouts||[]).length)throw new Error('A record did not match your authenticated teacher account. Please contact your school administrator.');
-   const contributionTotal=personalContributions.reduce((sum,x)=>sum+Number(x.amount||0),0);
-   const payoutTotal=personalPayouts.reduce((sum,x)=>sum+Number(x.amount||0),0);
-   const activePersonalContributionTotal=(statementContributionFeed||[]).filter(x=>!x.is_reversed).reduce((sum,x)=>sum+Number(x.amount||0),0);
+   if(personalContributionsAll.length!==(ownContributions||[]).length||personalPayouts.length!==(ownPayouts||[]).length)throw new Error('A record did not match your authenticated teacher account. Please contact your school administrator.');
+   // The authenticated contribution feed carries the reversal state used by the dashboard.
+   // Exclude reversed rows from the statement even when the base contribution RPC omits that flag.
+   const personalContributionFeed=(statementContributionFeed||[]).filter(x=>String(x.teacher_id||verifiedTeacherId)===verifiedTeacherId);
+   const reversedContributionIds=new Set(personalContributionFeed.filter(x=>x.is_reversed).flatMap(x=>[x.id,x.contribution_id,x.transaction_id]).filter(v=>v!==null&&v!==undefined).map(String));
+   const activeFeedIds=new Set(personalContributionFeed.filter(x=>!x.is_reversed).flatMap(x=>[x.id,x.contribution_id,x.transaction_id]).filter(v=>v!==null&&v!==undefined).map(String));
+   const personalContributions=personalContributionsAll.filter(x=>{
+    if(x.is_reversed===true||String(x.status||'').toLowerCase()==='reversed')return false;
+    const ids=[x.id,x.contribution_id,x.transaction_id].filter(v=>v!==null&&v!==undefined).map(String);
+    if(ids.some(id=>reversedContributionIds.has(id)))return false;
+    return !activeFeedIds.size||ids.some(id=>activeFeedIds.has(id));
+   });
+   const activePersonalContributionTotal=personalContributionFeed.filter(x=>!x.is_reversed).reduce((sum,x)=>sum+Number(x.amount||0),0);
    const schoolWideFundBalance=Number(statementFundRows[0].total_fund_balance||0);
    let teacherStandardMonthlyDues=0;
    const {data:teacherDuesSetting,error:teacherDuesError}=await client.rpc('get_my_teacher_school_standard_dues');
@@ -3208,7 +3217,7 @@ const style='.twf-pdf{box-sizing:border-box;background:#fff;color:#111827;font:1
 window.generateTenantWelfarePdf=async function(o){
  o=o&&typeof o==='object'?o:{};
  if(typeof window.html2pdf!=='function')throw new Error('PDF service is unavailable. Check your internet connection.');
- const type=o.type,school=o.school&&typeof o.school==='object'?o.school:{},teacher=o.teacher&&typeof o.teacher==='object'?o.teacher:{},cs=Array.isArray(o.contributions)?o.contributions.slice():[],ps=Array.isArray(o.payouts)?o.payouts.slice():[],ts=Array.isArray(o.teachers)?o.teachers.slice():[],month=String(o.month||'');
+ const type=o.type,school=o.school&&typeof o.school==='object'?o.school:{},teacher=o.teacher&&typeof o.teacher==='object'?o.teacher:{},cs=(Array.isArray(o.contributions)?o.contributions:[]).filter(x=>x&&x.is_reversed!==true&&String(x.status||'').toLowerCase()!=='reversed'),ps=Array.isArray(o.payouts)?o.payouts.slice():[],ts=Array.isArray(o.teachers)?o.teachers.slice():[],month=String(o.month||'');
  const reportYear=String(o.year||'');
  if(type==='annual'){
   if(!/^\d{4}$/.test(reportYear))throw new Error('Choose a valid reporting year.');
