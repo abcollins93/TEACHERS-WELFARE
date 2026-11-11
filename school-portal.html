@@ -2250,18 +2250,28 @@ async function renderTeacherDashboard(profile,school){
    const personalContributionsAll=(ownContributions||[]).filter(x=>String(x.teacher_id)===verifiedTeacherId&&String(x.school_id)===String(school.id));
    const personalPayouts=(ownPayouts||[]).filter(x=>String(x.teacher_id)===verifiedTeacherId&&String(x.school_id)===String(school.id));
    if(personalContributionsAll.length!==(ownContributions||[]).length||personalPayouts.length!==(ownPayouts||[]).length)throw new Error('A record did not match your authenticated teacher account. Please contact your school administrator.');
-   // The authenticated contribution feed carries the reversal state used by the dashboard.
-   // Exclude reversed rows from the statement even when the base contribution RPC omits that flag.
-   const personalContributionFeed=(statementContributionFeed||[]).filter(x=>String(x.teacher_id||verifiedTeacherId)===verifiedTeacherId);
-   const reversedContributionIds=new Set(personalContributionFeed.filter(x=>x.is_reversed).flatMap(x=>[x.id,x.contribution_id,x.transaction_id]).filter(v=>v!==null&&v!==undefined).map(String));
-   const activeFeedIds=new Set(personalContributionFeed.filter(x=>!x.is_reversed).flatMap(x=>[x.id,x.contribution_id,x.transaction_id]).filter(v=>v!==null&&v!==undefined).map(String));
-   const personalContributions=personalContributionsAll.filter(x=>{
-    if(x.is_reversed===true||String(x.status||'').toLowerCase()==='reversed')return false;
-    const ids=[x.id,x.contribution_id,x.transaction_id].filter(v=>v!==null&&v!==undefined).map(String);
-    if(ids.some(id=>reversedContributionIds.has(id)))return false;
-    return !activeFeedIds.size||ids.some(id=>activeFeedIds.has(id));
+   // This RPC intentionally returns only reference, amount, contribution_date and is_reversed.
+   // Match the authenticated feed to the base contribution rows using those actual fields;
+   // the feed does not expose contribution UUIDs or teacher_id.
+   const personalContributionFeed=Array.isArray(statementContributionFeed)?statementContributionFeed:[];
+   const contributionMatchKey=(row)=>{
+    const reference=String(row.reference||'').trim().toLowerCase();
+    const amount=Number(row.amount||0).toFixed(2);
+    const date=String(row.date||row.contribution_date||'').slice(0,10);
+    return reference+'|'+amount+'|'+date;
+   };
+   const reversedContributionKeys=new Map();
+   personalContributionFeed.filter(x=>x.is_reversed===true).forEach(row=>{
+    const key=contributionMatchKey(row);
+    reversedContributionKeys.set(key,(reversedContributionKeys.get(key)||0)+1);
    });
-   const activePersonalContributionTotal=personalContributionFeed.filter(x=>!x.is_reversed).reduce((sum,x)=>sum+Number(x.amount||0),0);
+   const personalContributions=personalContributionsAll.filter(row=>{
+    if(row.is_reversed===true||String(row.status||'').trim().toLowerCase()==='reversed')return false;
+    const key=contributionMatchKey(row),remaining=reversedContributionKeys.get(key)||0;
+    if(remaining>0){reversedContributionKeys.set(key,remaining-1);return false;}
+    return true;
+   });
+   const activePersonalContributionTotal=personalContributionFeed.filter(x=>x.is_reversed!==true).reduce((sum,x)=>sum+Number(x.amount||0),0);
    const schoolWideFundBalance=Number(statementFundRows[0].total_fund_balance||0);
    let teacherStandardMonthlyDues=0;
    const {data:teacherDuesSetting,error:teacherDuesError}=await client.rpc('get_my_teacher_school_standard_dues');
