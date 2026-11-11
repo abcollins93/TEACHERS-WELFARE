@@ -585,6 +585,52 @@ try {
  window.finishWelfareMainSkeletons=function(){ids.forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('welfare-skeleton','welfare-skeleton-wide');});};
 })();
 </script>
+
+<style id="admin-profile-teacher-style-parity">
+/* Match admin profile cards to the teacher profile's 5px accent, rounded edge,
+   compact spacing and elevated surface treatment. Presentation only. */
+#section-profile .profile-accent-card{
+  box-sizing:border-box!important;
+  border-top:5px solid var(--profile-accent)!important;
+  border-top-left-radius:18px!important;
+  border-top-right-radius:18px!important;
+  padding:22px!important;
+  box-shadow:0 8px 26px rgba(11,29,58,.045)!important;
+  overflow:hidden;
+  background-clip:padding-box!important;
+  transition:box-shadow .2s ease,transform .2s ease!important;
+}
+#section-profile .profile-accent-card::before{
+  height:5px!important;
+  border-radius:18px 18px 0 0!important;
+}
+#section-profile .profile-accent-green{--profile-accent:#22a06b!important}
+#section-profile .profile-accent-blue{--profile-accent:#3b82f6!important}
+#section-profile .profile-accent-gold{--profile-accent:#d6a637!important}
+#section-profile .profile-accent-purple{--profile-accent:#8b5cf6!important}
+#section-profile .profile-accent-card:hover,
+#section-profile .profile-accent-card:focus-within{
+  box-shadow:0 16px 36px rgba(11,29,58,.09)!important;
+}
+.dark #section-profile .profile-accent-card{
+  box-shadow:0 12px 32px rgba(0,0,0,.22)!important;
+}
+@media(max-width:640px){
+  #section-profile .profile-accent-card{
+    border-top-left-radius:17px!important;
+    border-top-right-radius:17px!important;
+    padding:18px!important;
+  }
+  #section-profile .profile-accent-card::before{
+    border-top-left-radius:17px!important;
+    border-top-right-radius:17px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  #section-profile .profile-accent-card{transition:none!important}
+}
+</style>
+
 </body>';
         return;
     }
