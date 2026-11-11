@@ -928,6 +928,31 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   #wfTeacherRegisterPanel .wf-membership-badge{background:#ecfdf5;color:#047857;border-color:#a7f3d0}
   #wfTeacherRegisterPanel .wf-employer-badge{background:#f1f5f9;color:#475569;border-color:#cbd5e1}
   #wfTeacherRegisterPanel .wf-accent-cell{padding-left:12px;padding-right:12px}
+  /* Clear action hierarchy for teacher and administrator management tables. */
+  #wfTeacherRegisterPanel .wf-table-action{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:8px 12px!important;margin:2px 3px 2px 0;border:1px solid transparent!important;border-radius:10px!important;font-size:.76rem!important;font-weight:800!important;line-height:1.2;white-space:nowrap;box-shadow:none!important;transition:all .2s ease}
+  #wfTeacherRegisterPanel .wf-table-action:hover{transform:translateY(-1px)}
+  #wfTeacherRegisterPanel .wf-action-view{background:#e0f2fe!important;color:#075985!important;border-color:#bae6fd!important}
+  #wfTeacherRegisterPanel .wf-action-view:hover{background:#bae6fd!important}
+  #wfTeacherRegisterPanel .wf-action-edit{background:#fef3c7!important;color:#92400e!important;border-color:#fcd34d!important}
+  #wfTeacherRegisterPanel .wf-action-edit:hover{background:#fde68a!important}
+  #wfTeacherRegisterPanel .wf-action-primary{background:#0f172a!important;color:#fff!important;border-color:#d6a637!important}
+  #wfTeacherRegisterPanel .wf-action-primary:hover{background:#1e293b!important}
+  #wfTeacherRegisterPanel .wf-action-danger{background:#fff1f2!important;color:#be123c!important;border-color:#fecdd3!important}
+  #wfTeacherRegisterPanel .wf-action-danger:hover{background:#ffe4e6!important}
+  #wfTeacherRegisterPanel .wf-teacher-status{display:inline-flex;align-items:center;justify-content:center;padding:5px 10px;border:1px solid #bbf7d0;border-radius:999px;background:#dcfce7;color:#166534;font-size:.7rem;font-weight:850;white-space:nowrap}
+  #wfTeacherRegisterPanel .wf-teacher-status.inactive{background:#f1f5f9;color:#475569;border-color:#cbd5e1}
+  #wfAdminPanel .wf-admin-pill{display:inline-flex;align-items:center;justify-content:center;padding:5px 10px;border:1px solid #cbd5e1;border-radius:999px;background:#f1f5f9;color:#475569;font-size:.7rem;font-weight:850;white-space:nowrap}
+  #wfAdminPanel .wf-admin-pill.active{background:#d1fae5;color:#065f46;border-color:#a7f3d0}
+  #wfAdminPanel .wf-table-action{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:8px 12px!important;margin:2px 3px 2px 0;border:1px solid #fecdd3!important;border-radius:10px!important;background:#fff1f2!important;color:#be123c!important;font-size:.76rem!important;font-weight:800!important;white-space:nowrap;transition:all .2s ease}
+  #wfAdminPanel .wf-table-action:hover{background:#ffe4e6!important;transform:translateY(-1px)}
+  .dark #wfTeacherRegisterPanel .wf-action-view{background:#12304a!important;color:#bae6fd!important;border-color:#285575!important}
+  .dark #wfTeacherRegisterPanel .wf-action-edit{background:#443316!important;color:#fde68a!important;border-color:#765a23!important}
+  .dark #wfTeacherRegisterPanel .wf-action-primary{background:#020617!important;color:#fff!important;border-color:#b88d32!important}
+  .dark #wfTeacherRegisterPanel .wf-action-danger,#wfAdminPanel .wf-table-action{background:#4c1d2b!important;color:#fecdd3!important;border-color:#87334b!important}
+  .dark #wfTeacherRegisterPanel .wf-teacher-status{background:#123b32;color:#a7f3d0;border-color:#17634f}
+  .dark #wfTeacherRegisterPanel .wf-teacher-status.inactive,#wfAdminPanel .wf-admin-pill{background:#26364a;color:#cbd5e1;border-color:#475569}
+  .dark #wfAdminPanel .wf-admin-pill.active{background:#123b32;color:#a7f3d0;border-color:#17634f}
+  .dark #wfAdminPanel .wf-table-action:hover{background:#64263a!important}
   .dark #wfTeacherRegisterPanel .wf-rank-badge{background:#172f52;color:#93c5fd;border-color:#315987}
   .dark #wfTeacherRegisterPanel .wf-class-accent{color:#fbbf24}
   .dark #wfTeacherRegisterPanel .wf-membership-badge{background:#123b32;color:#6ee7b7;border-color:#17634f}
@@ -940,7 +965,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  };
  ensureTeacherTableAccentStyles();
  const renderTeacherTables=()=>{const q=String($('wfTeacherSearch')?.value||'').trim().toLowerCase();const visible=teachers.filter(t=>[t.id,t.name,t.phone,t.rank,t.class_name,t.membership_type,t.employer].some(v=>String(v||'').toLowerCase().includes(q)));
- $('wfManageTeacherRows').innerHTML=visible.length?visible.map(t=>'<tr><td>'+esc(t.id)+'</td><td class="teacher-name-cell">'+esc(t.name)+'</td><td>'+esc(t.phone||'—')+'</td><td class="wf-accent-cell wf-rank-cell"><span class="wf-rank-badge">'+esc(t.rank||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-class-accent">'+esc(t.class_name||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-membership-badge">'+esc(t.membership_type||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-employer-badge">'+esc(t.employer||'—')+'</span></td><td><span class="wf-teacher-status '+(t.is_active===false?'inactive':'active')+'">'+(t.is_active===false?'Inactive':'Active')+'</span></td><td><button type="button" class="secondary" data-view-profile="'+esc(t.id)+'">View profile</button> <button type="button" class="secondary" data-wf-edit="'+esc(t.id)+'">Edit</button> '+'<button type="button" data-wf-activate="'+esc(t.id)+'">Activate / reset login</button> '+(t.is_active===false?'<button type="button" data-wf-restore="'+esc(t.id)+'">Restore</button>':'<button type="button" class="secondary" data-wf-remove="'+esc(t.id)+'">Deactivate</button>')+'</td></tr>').join(''):'<tr><td colspan="9">No matching teachers.</td></tr>';};
+ $('wfManageTeacherRows').innerHTML=visible.length?visible.map(t=>'<tr><td>'+esc(t.id)+'</td><td class="teacher-name-cell">'+esc(t.name)+'</td><td>'+esc(t.phone||'—')+'</td><td class="wf-accent-cell wf-rank-cell"><span class="wf-rank-badge">'+esc(t.rank||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-class-accent">'+esc(t.class_name||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-membership-badge">'+esc(t.membership_type||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-employer-badge">'+esc(t.employer||'—')+'</span></td><td><span class="wf-teacher-status '+(t.is_active===false?'inactive':'active')+'">'+(t.is_active===false?'Inactive':'Active')+'</span></td><td><button type="button" class="wf-table-action wf-action-view" data-view-profile="'+esc(t.id)+'">View profile</button> <button type="button" class="wf-table-action wf-action-edit" data-wf-edit="'+esc(t.id)+'">Edit</button> '+'<button type="button" class="wf-table-action wf-action-primary" data-wf-activate="'+esc(t.id)+'">Activate / reset login</button> '+(t.is_active===false?'<button type="button" class="wf-table-action wf-action-primary" data-wf-restore="'+esc(t.id)+'">Restore</button>':'<button type="button" class="wf-table-action wf-action-danger" data-wf-remove="'+esc(t.id)+'">Deactivate</button>')+'</td></tr>').join(''):'<tr><td colspan="9">No matching teachers.</td></tr>';};
  renderTeacherTables();
  $('wfTeacherSearch').addEventListener('input',renderTeacherTables);
  $('wfManageTeacherRows').addEventListener('click',async e=>{
@@ -1055,7 +1080,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  };
  const renderSchoolAdmins=admins=>{
    const rows=$('wfAdminUsersRows');
-   rows.innerHTML=admins.length?admins.map(a=>'<tr><td>'+esc(a.username||'—')+'</td><td class="teacher-name-cell">'+esc(a.name||'—')+'</td><td>'+(a.active?'<span class="wf-admin-pill active">Active</span>':'<span class="wf-admin-pill">Inactive</span>')+'</td><td>'+(a.active&&a.user_id!==undefined?'<button type="button" class="secondary" data-wf-admin-deactivate="'+esc(a.id)+'" '+(String(a.user_id)===String((awaitUserId)||'')?'disabled title="You cannot deactivate your own account"':'')+'>Deactivate</button>':'—')+'</td></tr>').join(''):'<tr><td colspan="4">No administrator accounts are linked to this school.</td></tr>';
+   rows.innerHTML=admins.length?admins.map(a=>'<tr><td>'+esc(a.username||'—')+'</td><td class="teacher-name-cell">'+esc(a.name||'—')+'</td><td>'+(a.active?'<span class="wf-admin-pill active">Active</span>':'<span class="wf-admin-pill">Inactive</span>')+'</td><td>'+(a.active&&a.user_id!==undefined?'<button type="button" class="wf-table-action" data-wf-admin-deactivate="'+esc(a.id)+'" '+(String(a.user_id)===String((awaitUserId)||'')?'disabled title="You cannot deactivate your own account"':'')+'>Deactivate</button>':'—')+'</td></tr>').join(''):'<tr><td colspan="4">No administrator accounts are linked to this school.</td></tr>';
  };
  let awaitUserId='';
  const loadSchoolAdmins=async()=>{
