@@ -2164,7 +2164,17 @@ async function renderTeacherDashboard(profile,school){
   const reversedFlag=[row.is_reversed,row.isReversed,row.reversed].some(value=>value===true||['true','t','1','yes'].includes(String(value).trim().toLowerCase()));
   return status!=='reversed'&&!reversedFlag&&!row.reversed_at&&!row.reversedAt;
  };
- let activeTeacherContributionRows=teacherContributionRows.filter(isActiveTeacherContribution);
+ const loggedInTeacherStaffId=String(profile.staff_id||profile.staffId||teacherRecord?.staff_id||'').trim().toLowerCase();
+ const loggedInTeacherEmail=String(user?.email||profile.email||profile.email_address||'').trim().toLowerCase();
+ const loggedInTeacherKeys=[teacherId,loggedInTeacherStaffId,loggedInTeacherEmail].filter(Boolean);
+ const isMyTeacherContribution=row=>{
+  if(!row||typeof row!=='object')return false;
+  const rowKeys=[row.teacher_id,row.teacherId,row.staff_id,row.staffId,row.teacher_email,row.email,row.email_address]
+   .filter(value=>value!==null&&value!==undefined&&String(value).trim()!=='')
+   .map(value=>String(value).trim().toLowerCase());
+  return !rowKeys.length||rowKeys.some(key=>loggedInTeacherKeys.includes(key));
+ };
+ let activeTeacherContributionRows=teacherContributionRows.filter(row=>isMyTeacherContribution(row)&&isActiveTeacherContribution(row));
  const activeTeacherContributionCount=()=>activeTeacherContributionRows.length;
  const totalC=activeTeacherContributionRows.reduce((sum,x)=>sum+Number(x.amount||0),0);
  const totalP=payouts.reduce((sum,x)=>sum+Number(x.amount||0),0);
@@ -2172,7 +2182,7 @@ async function renderTeacherDashboard(profile,school){
  const schoolRegisteredMemberCount=registeredMemberCountError?null:Number(registeredMemberCount||0);
  const nowForMonth=new Date();
  const monthKey=nowForMonth.getFullYear()+'-'+String(nowForMonth.getMonth()+1).padStart(2,'0');
- const monthC=activeTeacherContributionRows.filter(x=>String(x.contribution_date||x.date||'').slice(0,7)===monthKey).reduce((sum,x)=>sum+Number(x.amount||0),0);
+ const monthC=activeTeacherContributionRows.filter(x=>String(x.payment_date||x.contribution_date||x.date||'').slice(0,7)===monthKey).reduce((sum,x)=>sum+Number(x.amount||0),0);
  const money=n=>Number(n||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
  const metricLabels=document.querySelectorAll('#schoolOverview .dashboard-metrics .metric-compact .metric-label');
  if(metricLabels[0])metricLabels[0].textContent='Registered Members';
@@ -2213,10 +2223,16 @@ async function renderTeacherDashboard(profile,school){
   const monthlyDues=Number(teacherStandardDues||window.schoolSettings?.monthly_dues||20);
   const safeMonthlyDues=Number.isFinite(monthlyDues)&&monthlyDues>0?monthlyDues:20;
   const currentYear=now.getFullYear();
-  const yearPaid=activeTeacherContributionRows.reduce((sum,row)=>{
-   const raw=String(row.contribution_date||row.date||'').slice(0,10);
-   return /^\\d{4}-\\d{2}-\\d{2}$/.test(raw)&&Number(raw.slice(0,4))===currentYear?sum+Math.max(0,Number(row.amount)||0):sum;
-  },0);
+  const calculateProgress=()=>{
+   const ledgerRows=teacherContributionRows.filter(row=>isMyTeacherContribution(row)&&isActiveTeacherContribution(row));
+   activeTeacherContributionRows=ledgerRows;
+   const yearPaid=ledgerRows.reduce((sum,row)=>{
+    const raw=String(row.payment_date||row.contribution_date||row.date||'').slice(0,10);
+    return /^\\d{4}-\\d{2}-\\d{2}$/.test(raw)&&Number(raw.slice(0,4))===currentYear?sum+Math.max(0,Number(row.amount)||0):sum;
+   },0);
+   return {yearPaid,ledgerRows};
+  };
+  const {yearPaid}=calculateProgress();
   const expected=safeMonthlyDues*elapsedMonths;
   const ratio=expected>0?yearPaid/expected:0;
   const percent=Number.isFinite(ratio)?Math.round(ratio*100):0;
@@ -2233,7 +2249,7 @@ async function renderTeacherDashboard(profile,school){
   const reminder=$('teacherProgressReminder');
   if(reminder){
    const monthKeyNow=currentYear+'-'+String(now.getMonth()+1).padStart(2,'0');
-   const currentMonthPaid=activeTeacherContributionRows.reduce((sum,row)=>String(row.contribution_date||row.date||'').slice(0,7)===monthKeyNow?sum+Math.max(0,Number(row.amount)||0):sum,0);
+   const currentMonthPaid=activeTeacherContributionRows.reduce((sum,row)=>String(row.payment_date||row.contribution_date||row.date||'').slice(0,7)===monthKeyNow?sum+Math.max(0,Number(row.amount)||0):sum,0);
    const outstanding=Math.max(0,safeMonthlyDues-currentMonthPaid);
    reminder.classList.toggle('is-paid',outstanding<=0);
    reminder.textContent=outstanding>0?'Monthly dues reminder: '+cash(outstanding)+' remains for '+now.toLocaleDateString('en-GH',{month:'long'})+'. Please submit your contribution.':'Your current-month standard dues are up to date. Thank you for supporting your school welfare fund.';
@@ -2298,13 +2314,13 @@ async function renderTeacherDashboard(profile,school){
    if(!freshContributionFeed.error){teacherContributionRows=freshContributionFeed.data||[];contributionLoadError=false;}else contributionLoadError=true;
    if(!freshSchoolFundSummary.error){schoolFundBalance=Number(freshSchoolFundSummary.data?.[0]?.total_fund_balance||0);schoolFundSummaryError=false;}else schoolFundSummaryError=true;
    if(!freshRegisteredMemberCount.error){$('teacherCount').textContent=String(Number(freshRegisteredMemberCount.data||0));}else $('teacherCount').textContent='Unavailable';
-   activeTeacherContributionRows=teacherContributionRows.filter(isActiveTeacherContribution);
+   activeTeacherContributionRows=teacherContributionRows.filter(row=>isMyTeacherContribution(row)&&isActiveTeacherContribution(row));
    scheduleTeacherProgressUpdate();
    const refreshedConTotal=activeTeacherContributionRows.reduce((sum,row)=>sum+Number(row.amount||0),0);
    const refreshedOwnPayoutTotal=payouts.reduce((sum,row)=>sum+Number(row.amount||0),0);
    const refreshedMonthDate=new Date();
    const refreshedMonthKey=refreshedMonthDate.getFullYear()+'-'+String(refreshedMonthDate.getMonth()+1).padStart(2,'0');
-   const refreshedMonthTotal=activeTeacherContributionRows.filter(row=>String(row.contribution_date||row.date||'').slice(0,7)===refreshedMonthKey).reduce((sum,row)=>sum+Number(row.amount||0),0);
+   const refreshedMonthTotal=activeTeacherContributionRows.filter(row=>String(row.payment_date||row.contribution_date||row.date||'').slice(0,7)===refreshedMonthKey).reduce((sum,row)=>sum+Number(row.amount||0),0);
    if(!contributionLoadError){
     $('contributionTotal').textContent=money(refreshedConTotal);
     $('monthlyContributionTotal').textContent=money(refreshedMonthTotal);
