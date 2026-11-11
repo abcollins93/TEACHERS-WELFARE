@@ -1581,6 +1581,40 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
 }
 </style>
 
+
+<style id="teacher-name-table-hierarchy">
+/* Clear teacher/member name hierarchy across tenant and admin data tables. */
+#dashboard .teacher-name-cell,
+#dashboard #wfManageTeacherRows td:nth-child(2),
+#dashboard #wfAdminUsersPanel tbody td:nth-child(2),
+#dashboard #schoolTeachers table tbody td:nth-child(2){
+  font-weight:600!important;
+  padding:12px 14px!important;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  word-break:normal;
+}
+#dashboard #wfManageTeacherRows td:not(:nth-child(2)),
+#dashboard #wfAdminUsersPanel tbody td:not(:nth-child(2)),
+#dashboard #schoolTeachers table tbody td:not(:nth-child(2)){
+  font-weight:400;
+}
+.dark #dashboard .teacher-name-cell,
+.dark #dashboard #wfManageTeacherRows td:nth-child(2),
+.dark #dashboard #wfAdminUsersPanel tbody td:nth-child(2),
+.dark #dashboard #schoolTeachers table tbody td:nth-child(2){
+  color:#f1f5f9!important;
+}
+@media(max-width:640px){
+  #dashboard .teacher-name-cell,
+  #dashboard #wfManageTeacherRows td:nth-child(2),
+  #dashboard #wfAdminUsersPanel tbody td:nth-child(2),
+  #dashboard #schoolTeachers table tbody td:nth-child(2){
+    padding:10px 9px!important;
+    min-width:112px;
+  }
+}
+</style>
 </head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading Teachers Welfare Portal" aria-hidden="false">
