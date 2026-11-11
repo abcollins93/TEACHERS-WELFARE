@@ -1820,7 +1820,7 @@ function blockTenantAccess(title, message){
 }
 async function loadGatewayIdentity(){
  if(!code){blockTenantAccess('School gateway unavailable','A valid school code is required. Please use the official gateway link.');return;}
- const {data:directory,error:directoryError}=await client.from('platform_schools').select('status').eq('school_code',code).maybeSingle();
+ const {data:directory,error:directoryError}=await client.from('platform_schools').select('name,status').eq('school_code',code).maybeSingle();
  if(directoryError||!directory){
   blockTenantAccess('School gateway unavailable','This school’s access status could not be verified. For security, sign-in is blocked. Please contact the platform administrator.');
   return;
@@ -1829,12 +1829,7 @@ async function loadGatewayIdentity(){
   blockTenantAccess('School account suspended','Access to this school portal has been suspended. Administrator and teacher sign-in are disabled. Please contact your platform administrator.');
   return;
  }
- const {data,error}=await client.from('schools').select('name,school_code,status').eq('school_code',code).maybeSingle();
- if(error||!data||data.status!=='active'){
-  blockTenantAccess('School gateway unavailable','The operational school record is inactive or could not be verified. Sign-in is blocked. Please contact the platform administrator.');
-  return;
- }
- const name=String(data.name||'').trim();if(!name){blockTenantAccess('School gateway unavailable','The school identity could not be verified. Sign-in is blocked.');return;}
+ const name=String(directory.name||'').trim();if(!name){blockTenantAccess('School gateway unavailable','The school identity could not be verified. Sign-in is blocked.');return;}
  $('brand').textContent=name;$('loginSchoolName').textContent=name;$('documentTitle').textContent=name+' | Teachers Welfare Fund';
 }
 tenantIdentityReady=loadGatewayIdentity().catch(()=>{
