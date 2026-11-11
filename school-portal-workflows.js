@@ -392,6 +392,126 @@ function addUI(){
 #wfBroadcastPanel,#wfSettingsPanel,#wfAdminAccessPanel,#wfAdminUsersPanel,#wfResetDataPanel{scroll-margin-top:calc(var(--unified-header-height,140px) + 18px)}
 @media(max-width:640px){#wfAdminPanel .wf-admin-quick-actions{padding:12px;border-radius:16px}#wfAdminPanel .wf-admin-quick-pills{gap:8px}#wfAdminPanel .wf-admin-quick-pill{font-size:.67rem;padding:9px 11px}#wfAdminPanel .wf-admin-quick-hint{font-size:.6rem}}
 
+
+/* Unified elevated control cards with section-specific top accents. */
+#wfAdminPanel > #wfBroadcastPanel,
+#wfAdminPanel > #wfSettingsPanel,
+#wfAdminPanel > #wfAdminAccessPanel,
+#wfAdminPanel > #wfAdminUsersPanel,
+#wfAdminPanel > #wfResetDataPanel,
+#wfAdminPanel > .grid > .panel{
+ --wf-card-accent:#2563eb;
+ position:relative!important;isolation:isolate;
+ overflow:hidden;
+ padding:clamp(17px,2.2vw,24px)!important;
+ border:1px solid rgba(148,163,184,.22)!important;
+ border-top:4px solid var(--wf-card-accent)!important;
+ border-radius:20px!important;
+ background:linear-gradient(155deg,#fff 0%,#fbfdff 72%,#f5f8fc 100%)!important;
+ box-shadow:0 14px 30px rgba(15,23,42,.09),0 4px 10px rgba(15,23,42,.045),inset 0 1px 0 rgba(255,255,255,.95)!important;
+ transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
+}
+#wfAdminPanel > #wfBroadcastPanel{--wf-card-accent:#0d9488}
+#wfAdminPanel > #wfSettingsPanel{--wf-card-accent:#d6a637}
+#wfAdminPanel > #wfAdminAccessPanel{--wf-card-accent:#7c3aed}
+#wfAdminPanel > #wfAdminUsersPanel{--wf-card-accent:#2563eb}
+#wfAdminPanel > #wfResetDataPanel{--wf-card-accent:#dc4758}
+#wfAdminPanel > .grid > .panel{--wf-card-accent:#16a34a}
+#wfAdminPanel > #wfBroadcastPanel:before,
+#wfAdminPanel > #wfSettingsPanel:before,
+#wfAdminPanel > #wfAdminAccessPanel:before,
+#wfAdminPanel > #wfAdminUsersPanel:before,
+#wfAdminPanel > #wfResetDataPanel:before,
+#wfAdminPanel > .grid > .panel:before{
+ content:"";position:absolute;z-index:-1;inset:0 0 auto;height:54px;
+ background:linear-gradient(180deg,color-mix(in srgb,var(--wf-card-accent) 8%,transparent),transparent);
+ pointer-events:none;
+}
+#wfAdminPanel > #wfBroadcastPanel h3,
+#wfAdminPanel > #wfSettingsPanel h3,
+#wfAdminPanel > #wfAdminAccessPanel h3,
+#wfAdminPanel > #wfAdminUsersPanel h3,
+#wfAdminPanel > #wfResetDataPanel h3{margin-top:2px!important;letter-spacing:-.025em}
+#wfAdminPanel > #wfBroadcastPanel p,
+#wfAdminPanel > #wfSettingsPanel p,
+#wfAdminPanel > #wfAdminAccessPanel p,
+#wfAdminPanel > #wfAdminUsersPanel p,
+#wfAdminPanel > #wfResetDataPanel p{line-height:1.65}
+#wfAdminPanel .wf-dues-reminder-control,
+#wfAdminPanel .wf-data-protection{
+ position:relative;overflow:hidden;
+ border-top:3px solid #d6a637!important;
+ border-radius:14px!important;
+ background:linear-gradient(145deg,rgba(255,249,230,.92),rgba(255,255,255,.94))!important;
+ box-shadow:0 7px 16px rgba(15,23,42,.055),inset 0 1px rgba(255,255,255,.9)!important;
+ padding:15px 16px!important;
+}
+#wfAdminPanel .wf-data-protection{border-top-color:#7c3aed!important;background:linear-gradient(145deg,#f5f0ff,#fff)!important}
+#wfAdminPanel input:not([type=checkbox]):not([type=radio]),
+#wfAdminPanel textarea,#wfAdminPanel select{
+ box-sizing:border-box;max-width:100%;
+ border:1px solid #cbd5e1!important;border-radius:11px!important;
+ background:#fff!important;color:#17243a!important;
+ box-shadow:inset 0 1px 2px rgba(15,23,42,.045)!important;
+}
+#wfAdminPanel input:focus,#wfAdminPanel textarea:focus,#wfAdminPanel select:focus{
+ outline:3px solid rgba(59,130,246,.16)!important;border-color:#4f86d9!important;
+}
+#wfAdminPanel button{
+ border-radius:12px!important;
+ transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;
+}
+#wfAdminPanel button:hover{transform:translateY(-1px);box-shadow:0 7px 16px rgba(15,23,42,.13)}
+.dark #wfAdminPanel > #wfBroadcastPanel,
+.dark #wfAdminPanel > #wfSettingsPanel,
+.dark #wfAdminPanel > #wfAdminAccessPanel,
+.dark #wfAdminPanel > #wfAdminUsersPanel,
+.dark #wfAdminPanel > #wfResetDataPanel,
+.dark #wfAdminPanel > .grid > .panel{
+ background:linear-gradient(155deg,#14243a 0%,#101d30 72%,#0d192b 100%)!important;
+ border-color:rgba(100,116,139,.35)!important;
+ border-top-color:var(--wf-card-accent)!important;
+ box-shadow:0 16px 34px rgba(0,0,0,.28),0 4px 12px rgba(0,0,0,.2),inset 0 1px rgba(255,255,255,.045)!important;
+ color:#e7eef8!important;
+}
+.dark #wfAdminPanel > #wfBroadcastPanel h3,
+.dark #wfAdminPanel > #wfSettingsPanel h3,
+.dark #wfAdminPanel > #wfAdminAccessPanel h3,
+.dark #wfAdminPanel > #wfAdminUsersPanel h3,
+.dark #wfAdminPanel > #wfResetDataPanel h3{color:#f1f5fb!important}
+.dark #wfAdminPanel > #wfBroadcastPanel p,
+.dark #wfAdminPanel > #wfSettingsPanel p,
+.dark #wfAdminPanel > #wfAdminAccessPanel p,
+.dark #wfAdminPanel > #wfAdminUsersPanel p,
+.dark #wfAdminPanel > #wfResetDataPanel p{color:#aebed1}
+.dark #wfAdminPanel .wf-dues-reminder-control,
+.dark #wfAdminPanel .wf-data-protection{background:linear-gradient(145deg,#263247,#1a293e)!important;border-color:#66552d!important;color:#e8eef7}
+.dark #wfAdminPanel .wf-data-protection{border-top-color:#a78bfa!important;border-color:#4c3b70!important}
+.dark #wfAdminPanel input:not([type=checkbox]):not([type=radio)],
+.dark #wfAdminPanel textarea,#wfAdminPanel select{
+ background:#0b1728!important;color:#edf3fb!important;border-color:#3a4b63!important;
+}
+.dark #wfAdminPanel input::placeholder,#wfAdminPanel textarea::placeholder{color:#91a2b8!important}
+@media(hover:hover) and (min-width:700px){
+ #wfAdminPanel > #wfBroadcastPanel:hover,
+ #wfAdminPanel > #wfSettingsPanel:hover,
+ #wfAdminPanel > #wfAdminAccessPanel:hover,
+ #wfAdminPanel > #wfAdminUsersPanel:hover,
+ #wfAdminPanel > #wfResetDataPanel:hover,
+ #wfAdminPanel > .grid > .panel:hover{
+  transform:translateY(-2px);
+  box-shadow:0 20px 38px rgba(15,23,42,.12),0 6px 14px rgba(15,23,42,.055),inset 0 1px 0 rgba(255,255,255,.95)!important;
+ }
+}
+@media(max-width:640px){
+ #wfAdminPanel > #wfBroadcastPanel,
+ #wfAdminPanel > #wfSettingsPanel,
+ #wfAdminPanel > #wfAdminAccessPanel,
+ #wfAdminPanel > #wfAdminUsersPanel,
+ #wfAdminPanel > #wfResetDataPanel,
+ #wfAdminPanel > .grid > .panel{padding:17px!important;border-radius:17px!important}
+}
+
 </style>
  <section class="wf-admin-hub" id="wfAdminPanel"><div class="panel wf-admin-intro"><div class="wf-admin-intro-top"><div><div class="wf-admin-eyebrow"><i class="fa-solid fa-shield-heart"></i> Official Welfare Hub</div><h2>Empowering Our Educators Through Solidarity <span class="wf-restricted-badge"><i class="fa-solid fa-lock"></i> Restricted Access</span></h2><p>Providing mutual financial support, social welfare benefits, and transparent record-keeping through a secure, organised school workspace.</p></div><span class="wf-admin-status"><i class="fa-solid fa-circle-check"></i> Admin mode active</span></div><div class="wf-admin-shortcuts"><span><i class="fa-solid fa-users"></i> Members</span><span><i class="fa-solid fa-coins"></i> Contributions</span><span><i class="fa-solid fa-hand-holding-heart"></i> Welfare</span></div></div>
  <nav class="wf-admin-quick-actions" aria-label="Administration quick actions">
