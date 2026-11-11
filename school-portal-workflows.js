@@ -957,6 +957,46 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   .dark #wfTeacherRegisterPanel .wf-class-accent{color:#fbbf24}
   .dark #wfTeacherRegisterPanel .wf-membership-badge{background:#123b32;color:#6ee7b7;border-color:#17634f}
   .dark #wfTeacherRegisterPanel .wf-employer-badge{background:#26364a;color:#cbd5e1;border-color:#475569}
+  /* Signature styling for teacher registration controls and photo upload. */
+  #wfTeacherRegisterPanel #wfTeacherSave{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    min-height:44px;padding:11px 20px!important;border:1px solid #b88d32!important;
+    border-radius:12px!important;background:linear-gradient(115deg,#0f172a 0%,#172554 58%,#8a6825 150%)!important;
+    color:#fff!important;font-weight:850!important;letter-spacing:.01em;
+    box-shadow:0 4px 12px rgba(0,0,0,.15)!important;
+    transition:all .2s ease;cursor:pointer
+  }
+  #wfTeacherRegisterPanel #wfTeacherSave:hover{
+    transform:translateY(-2px);box-shadow:0 7px 18px rgba(15,23,42,.24)!important;
+    background:linear-gradient(115deg,#172554 0%,#1e3a5f 58%,#a78332 150%)!important
+  }
+  #wfTeacherRegisterPanel #wfTeacherSave:active{transform:translateY(0);box-shadow:0 2px 6px rgba(0,0,0,.16)!important}
+  #wfTeacherRegisterPanel #wfTeacherSave:focus-visible,#wfTeacherRegisterPanel #wfTeacherCancel:focus-visible{outline:3px solid #d6a637;outline-offset:3px}
+  #wfTeacherRegisterPanel #wfTeacherCancel{
+    display:inline-flex;align-items:center;justify-content:center;min-height:44px;
+    padding:11px 18px!important;border:1px solid #cbd5e1!important;border-radius:12px!important;
+    background:#f1f5f9!important;color:#334155!important;font-weight:750!important;
+    transition:all .2s ease;cursor:pointer
+  }
+  #wfTeacherRegisterPanel #wfTeacherCancel:hover{background:#e2e8f0!important;transform:translateY(-1px)}
+  #wfTeacherRegisterPanel #wfPassport{
+    display:block;width:100%;max-width:100%;box-sizing:border-box;padding:9px 10px;
+    border:1px solid #cbd5e1;border-radius:12px;background:#f8fafc;color:#334155;
+    font:inherit;transition:border-color .2s ease,box-shadow .2s ease,background .2s ease
+  }
+  #wfTeacherRegisterPanel #wfPassport::file-selector-button{
+    margin:0 12px 0 0;padding:8px 12px;border:1px solid #cbd5e1;border-radius:9px;
+    background:#e2e8f0;color:#334155;font:inherit;font-weight:750;cursor:pointer;
+    transition:all .2s ease
+  }
+  #wfTeacherRegisterPanel #wfPassport::file-selector-button:hover{background:#cbd5e1}
+  #wfTeacherRegisterPanel #wfPassport:focus-visible{outline:0;border-color:#d6a637;box-shadow:0 0 0 3px rgba(214,166,55,.2)}
+  .dark #wfTeacherRegisterPanel #wfTeacherCancel{background:#26364a!important;color:#e2e8f0!important;border-color:#475569!important}
+  .dark #wfTeacherRegisterPanel #wfTeacherCancel:hover{background:#334155!important}
+  .dark #wfTeacherRegisterPanel #wfPassport{background:#172033;color:#e2e8f0;border-color:#475569}
+  .dark #wfTeacherRegisterPanel #wfPassport::file-selector-button{background:#26364a;color:#e2e8f0;border-color:#475569}
+  .dark #wfTeacherRegisterPanel #wfPassport::file-selector-button:hover{background:#334155}
+  .dark #wfTeacherRegisterPanel #wfTeacherSave{background:linear-gradient(115deg,#020617 0%,#172554 58%,#8a6825 150%)!important}
   @media(max-width:640px){
     #wfTeacherRegisterPanel .wf-accent-cell{padding-left:9px;padding-right:9px}
     #wfTeacherRegisterPanel .wf-rank-badge,#wfTeacherRegisterPanel .wf-membership-badge,#wfTeacherRegisterPanel .wf-employer-badge{padding:4px 8px;font-size:.72rem}
