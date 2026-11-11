@@ -42,7 +42,7 @@ function wfDialog({kind='confirm',title='Please confirm',message='',confirmText=
  });
 }
 const wfNotice=message=>wfDialog({kind:'alert',title:'Notice',message:String(message??'')});
-const wfConfirm=message=>wfDialog({kind:'confirm',title:'Confirm action',message:String(message??'')});
+const wfConfirm=message=>{const body=String(message??'');const title=/deactivat/i.test(body)?'Deactivate teacher':/delete|permanently/i.test(body)?'Confirm permanent deletion':/payout|withdrawal/i.test(body)?'Confirm welfare payout':/reversal/i.test(body)?'Confirm transaction reversal':/contribution/i.test(body)?'Confirm contribution':/announcement/i.test(body)?'Confirm announcement':'Confirm action';return wfDialog({kind:'confirm',title,message:body,confirmText:'Confirm',cancelText:'Cancel'});};
 const wfPrompt=message=>wfDialog({kind:'prompt',title:'Additional information required',message:String(message??''),confirmText:'Confirm'});
 
 // Branded, accessible reason dialog used by contribution and payout reversals.
