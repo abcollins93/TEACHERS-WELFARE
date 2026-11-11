@@ -184,20 +184,18 @@ body:has(#login:not(.hidden)) main{max-width:760px;margin:0 auto;padding:clamp(1
 .password-toggle i{font-size:16px}
 
 
-/* Animated page-loading overlay */
-#page-loader{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(3,10,22,.94);backdrop-filter:blur(8px);opacity:1;visibility:visible;transition:opacity .28s ease,visibility .28s ease}
+/* Branded PWA launch splash and accessible loading state */
+#page-loader{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:24px;background:radial-gradient(ellipse at 50% 38%,rgba(31,65,111,.72),transparent 48%),linear-gradient(145deg,#071326 0%,#0b1d3a 58%,#030a16 100%);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);opacity:1;visibility:visible;pointer-events:auto;transition:opacity .55s ease,visibility 0s linear .55s}
 #page-loader.is-hidden{opacity:0;visibility:hidden;pointer-events:none}
-.page-loader-card{display:flex;flex-direction:column;align-items:center;gap:16px;padding:28px 34px;border:1px solid rgba(214,166,55,.3);border-radius:22px;background:linear-gradient(145deg,#0b1d3a,#071326);box-shadow:0 24px 70px #0007;color:#fff;min-width:190px}
-.page-loader-mark{width:58px;height:58px;border:3px solid rgba(214,166,55,.2);border-top-color:#f1c64d;border-right-color:#f1c64d;border-radius:50%;animation:portal-spin .85s linear infinite;position:relative}
-.page-loader-mark:after{content:"";position:absolute;inset:9px;border:2px solid rgba(255,255,255,.14);border-bottom-color:#fff;border-radius:50%;animation:portal-spin 1.3s linear infinite reverse}
-.page-loader-title{font-size:.92rem;font-weight:850;letter-spacing:.02em}
-.page-loader-subtitle{font-size:.75rem;color:#aab8ce;margin-top:-12px}
-.page-loader-dots{display:flex;gap:5px}
-.page-loader-dots span{width:5px;height:5px;border-radius:50%;background:#e4b94d;animation:portal-pulse 1s ease-in-out infinite}
-.page-loader-dots span:nth-child(2){animation-delay:.15s}.page-loader-dots span:nth-child(3){animation-delay:.3s}
-@keyframes portal-spin{to{transform:rotate(360deg)}}
-@keyframes portal-pulse{0%,80%,100%{opacity:.3;transform:scale(.75)}40%{opacity:1;transform:scale(1.15)}}
-@media(prefers-reduced-motion:reduce){#page-loader,.page-loader-mark,.page-loader-mark:after,.page-loader-dots span{animation:none!important;transition:none!important}}
+.page-loader-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:15px;width:min(100%,340px);min-width:0;padding:34px 26px 30px;border:1px solid rgba(214,166,55,.3);border-radius:26px;background:linear-gradient(150deg,rgba(15,39,72,.92),rgba(5,17,35,.94));box-shadow:0 28px 80px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.1);color:#fff;text-align:center}
+.page-loader-logo{display:block;width:clamp(86px,24vw,112px);height:auto;aspect-ratio:1;object-fit:contain;filter:drop-shadow(0 10px 22px rgba(0,0,0,.35))}
+.page-loader-title{margin:2px 0 0;color:#f3d477;font-size:clamp(.9rem,3.8vw,1.08rem);font-weight:900;letter-spacing:.105em;line-height:1.45;text-align:center;text-wrap:balance}
+.page-loader-title span{color:#fff}
+.page-loader-subtitle{font-size:.76rem;color:#b8c6d9;letter-spacing:.035em;margin-top:-7px}
+.page-loader-progress{position:relative;width:min(100%,190px);height:4px;margin-top:3px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.14);box-shadow:inset 0 1px 2px rgba(0,0,0,.35)}
+.page-loader-progress:after{content:"";position:absolute;inset:0 auto 0 0;width:42%;border-radius:inherit;background:linear-gradient(90deg,#c18b24,#ffe7a0,#fff);box-shadow:0 0 12px rgba(243,212,119,.48);animation:portal-progress 1.35s ease-in-out infinite}
+@keyframes portal-progress{0%{transform:translateX(-110%)}55%{transform:translateX(135%)}100%{transform:translateX(360%)}}
+@media(prefers-reduced-motion:reduce){#page-loader{transition:none!important}.page-loader-progress:after{animation:none!important;width:65%;transform:none}}
 
 
 /* Shared responsive tenant navigation drawer */
@@ -1585,12 +1583,12 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
 
 </head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
-<div id="page-loader" role="status" aria-live="polite" aria-label="Loading page">
+<div id="page-loader" role="status" aria-live="polite" aria-label="Loading Teachers Welfare Portal" aria-hidden="false">
  <div class="page-loader-card">
-  <div class="page-loader-mark" aria-hidden="true"></div>
-  <div class="page-loader-title" id="page-loader-title">Loading your portal</div>
-  <div class="page-loader-subtitle">Please wait a moment</div>
-  <div class="page-loader-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+  <img class="page-loader-logo" src="./icons/welfare-portal.svg" alt="Teachers Welfare Portal shield logo" width="112" height="112" fetchpriority="high">
+  <div class="page-loader-title" id="page-loader-title">TEACHERS WELFARE <span>PORTAL</span></div>
+  <div class="page-loader-subtitle">Preparing your school workspace</div>
+  <div class="page-loader-progress" role="progressbar" aria-label="Loading portal" aria-valuetext="Initializing"></div>
  </div>
 </div>
 <header class="top">
@@ -1703,7 +1701,7 @@ const SUPABASE_URL='https://jlwdtlhlztbgpogqdabu.supabase.co';
 const SUPABASE_KEY='sb_publishable_-idvZBti_BY5Xn8xDxhqqw_p_Me6X8O';
 const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const params=new URLSearchParams(location.search);
-const requestedCode=(params.get('school')||params.get('code')||params.get('school_code')||'').trim().toUpperCase();
+const requestedCode=(params.get('school')||params.get('c')||params.get('code')||params.get('school_code')||'').trim().toUpperCase();
 // Normalize the legacy Ntonso code to the code actually registered in Supabase.
 const code=requestedCode==='NTONSO-A-0'?'NTONSO-A-01':requestedCode;
 const $=id=>document.getElementById(id);
@@ -1720,7 +1718,12 @@ function hidePageLoader(){
  pageLoader.classList.add('is-hidden');
  pageLoader.setAttribute('aria-hidden','true');
 }
-window.addEventListener('load',()=>{pageLoaderTimer=setTimeout(hidePageLoader,350);},{once:true});
+let tenantIdentityReady=Promise.resolve();
+window.addEventListener('load',()=>{
+ Promise.resolve(tenantIdentityReady).finally(()=>{
+  pageLoaderTimer=setTimeout(hidePageLoader,420);
+ });
+},{once:true});
 
 const applyTheme=dark=>{document.documentElement.classList.toggle('dark',dark);const b=$('themeToggle');if(b)b.innerHTML=dark?'<i class="fa-solid fa-sun"></i> Light mode':'<i class="fa-solid fa-moon"></i> Dark mode';};
 applyTheme(false);
@@ -1782,7 +1785,9 @@ async function loadGatewayIdentity(){
  const name=String(data.name||'').trim();if(!name){$('loginSchoolName').textContent='School gateway unavailable';return;}
  $('brand').textContent=name;$('loginSchoolName').textContent=name;$('documentTitle').textContent=name+' | Teachers Welfare Fund';
 }
-loadGatewayIdentity().catch(()=>{$('loginSchoolName').textContent='School gateway unavailable';});
+tenantIdentityReady=loadGatewayIdentity().catch(()=>{
+ $('loginSchoolName').textContent='School gateway unavailable';
+});
 if(!/^[A-Z0-9-]{3,32}$/.test(code)){ $('loginError').textContent='This gateway link is missing a valid school code. Please use the link provided by your school platform administrator.';$('loginBtn').disabled=true; }
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 async function escapeTeacherText(v){return String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
