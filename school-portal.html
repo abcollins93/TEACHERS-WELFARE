@@ -4710,7 +4710,12 @@ body.sidebar-open{overflow:hidden}
 
 <style id="constant-css-rolling-banner-motion">
 /* One CSS-only, linear marquee timeline for all rolling portal banners. */
-.rolling-banner-track,
+.rolling-banner-track{
+  display:flex!important;
+  width:max-content!important;
+  animation:smoothRoll 55s linear infinite!important;
+  will-change:transform;
+}
 #teacherLiveTicker .ticker-track{
   display:flex!important;
   width:max-content!important;
