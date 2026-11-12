@@ -4484,5 +4484,55 @@ body.sidebar-open{overflow:hidden}
 }
 </style>
 
+
+<style id="teachers-members-desktop-container-width-fix">
+/* Let Teachers & Members and its dynamically mounted Teacher Register use the full content grid track. */
+@media (min-width:768px){
+  body:not(:has(#login:not(.hidden))) #dashboard .dash-layout> :not(.sidebar),
+  body:not(:has(#login:not(.hidden))) #dashboard #schoolTeachers,
+  body:not(:has(#login:not(.hidden))) #dashboard #wfTeacherRegisterPanel,
+  body:not(:has(#login:not(.hidden))) #dashboard #schoolTeachers .panel,
+  body:not(:has(#login:not(.hidden))) #dashboard #wfTeacherRegisterPanel .panel{
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+  body:not(:has(#login:not(.hidden))) #dashboard #schoolTeachers,
+  body:not(:has(#login:not(.hidden))) #dashboard #wfTeacherRegisterPanel{
+    justify-self:stretch!important;
+    align-self:stretch!important;
+  }
+  body:not(:has(#login:not(.hidden))) #dashboard #schoolTeachers .table-wrap,
+  body:not(:has(#login:not(.hidden))) #dashboard #schoolTeachers .wf-teacher-register-table,
+  body:not(:has(#login:not(.hidden))) #dashboard #wfTeacherRegisterPanel .table-wrap,
+  body:not(:has(#login:not(.hidden))) #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table,
+  body:not(:has(#login:not(.hidden))) #dashboard #wfTeacherRegisterPanel .table-responsive{
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+  body:not(:has(#login:not(.hidden))) #dashboard #schoolTeachers table,
+  body:not(:has(#login:not(.hidden))) #dashboard #wfTeacherRegisterPanel table,
+  body:not(:has(#login:not(.hidden))) #dashboard #schoolTeachers form,
+  body:not(:has(#login:not(.hidden))) #dashboard #wfTeacherRegisterPanel form{
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+  body:not(:has(#login:not(.hidden))) #dashboard #schoolTeachers input,
+  body:not(:has(#login:not(.hidden))) #dashboard #schoolTeachers select,
+  body:not(:has(#login:not(.hidden))) #dashboard #schoolTeachers textarea,
+  body:not(:has(#login:not(.hidden))) #dashboard #wfTeacherRegisterPanel input,
+  body:not(:has(#login:not(.hidden))) #dashboard #wfTeacherRegisterPanel select,
+  body:not(:has(#login:not(.hidden))) #dashboard #wfTeacherRegisterPanel textarea{
+    max-width:100%!important;
+    box-sizing:border-box!important;
+  }
+}
+</style>
+
 </body>
 </html>
