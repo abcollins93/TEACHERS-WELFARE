@@ -4650,5 +4650,64 @@ body.sidebar-open{overflow:hidden}
 }
 </style>
 
+
+<style id="teachers-members-desktop-width-and-form-grid-final">
+/* Final desktop sizing for the actual Teachers & Members root and its registration card. */
+@media (min-width:768px){
+  html body #dashboard > #schoolTeachers,
+  html body #dashboard > #schoolTeachers.panel,
+  html body #dashboard #schoolTeachers #wfTeacherRegisterPanel,
+  html body #dashboard #schoolTeachers #wfTeacherRegisterPanel.panel{
+    display:block!important;
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    margin-left:0!important;
+    margin-right:0!important;
+  }
+  html body #dashboard #schoolTeachers #wfTeacherRegisterPanel #wfTeacher{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    align-items:start!important;
+    gap:18px 20px!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+  html body #dashboard #schoolTeachers #wfTeacherRegisterPanel #wfTeacher>div,
+  html body #dashboard #schoolTeachers #wfTeacherRegisterPanel .wf-teacher-register-table,
+  html body #dashboard #schoolTeachers .table-wrap,
+  html body #dashboard #schoolTeachers .table-responsive{
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+  html body #dashboard #schoolTeachers #wfTeacherRegisterPanel #wfTeacher input,
+  html body #dashboard #schoolTeachers #wfTeacherRegisterPanel #wfTeacher select,
+  html body #dashboard #schoolTeachers #wfTeacherRegisterPanel #wfTeacher .wf-passport-upload{
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+  html body #dashboard #schoolTeachers #wfTeacherRegisterPanel table,
+  html body #dashboard #schoolTeachers table{
+    max-width:none!important;
+  }
+}
+@media (min-width:1200px){
+  html body #dashboard #schoolTeachers #wfTeacherRegisterPanel #wfTeacher{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+}
+@media (max-width:767px){
+  html body #dashboard #schoolTeachers #wfTeacherRegisterPanel #wfTeacher{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+}
+</style>
+
 </body>
 </html>
