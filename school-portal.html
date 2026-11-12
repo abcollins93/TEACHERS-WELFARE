@@ -4734,5 +4734,131 @@ body.sidebar-open{overflow:hidden}
 }
 </style>
 
+
+<style id="member-contributions-welfare-card-layout">
+/* Match the individual member Contributions metrics to the Welfare & Payouts card treatment. */
+#wfContributionPanel{
+  box-sizing:border-box!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+}
+#wfContributionPanel .wf-teacher-contrib-metrics{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:13px!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0 0 20px!important;
+  align-items:stretch!important;
+}
+#wfContributionPanel .wf-contrib-metric{
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:46px minmax(0,1fr)!important;
+  grid-template-rows:auto auto!important;
+  align-content:center!important;
+  align-items:center!important;
+  gap:5px 13px!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:112px!important;
+  padding:17px 18px!important;
+  border:1px solid #e7edf5!important;
+  border-left:5px solid var(--metric-accent,#2563eb)!important;
+  border-radius:16px!important;
+  background:#fff!important;
+  box-shadow:0 7px 22px rgba(15,23,42,.065)!important;
+}
+#wfContributionPanel .wf-contrib-metric:before{
+  content:var(--metric-glyph,"◆")!important;
+  grid-column:1!important;
+  grid-row:1 / span 2!important;
+  display:grid!important;
+  place-items:center!important;
+  width:46px!important;
+  height:46px!important;
+  border-radius:13px!important;
+  background:var(--metric-icon-bg,#eaf2ff)!important;
+  color:var(--metric-accent,#2563eb)!important;
+  font-size:21px!important;
+  font-weight:800!important;
+}
+#wfContributionPanel .wf-contrib-metric small{
+  grid-column:2!important;
+  grid-row:1!important;
+  align-self:end!important;
+  margin:0!important;
+  color:#778196!important;
+  font-size:.67rem!important;
+  font-weight:800!important;
+  letter-spacing:.055em!important;
+  line-height:1.4!important;
+  text-transform:uppercase!important;
+}
+#wfContributionPanel .wf-contrib-metric strong{
+  grid-column:2!important;
+  grid-row:2!important;
+  align-self:start!important;
+  margin:0!important;
+  color:#182235!important;
+  font-size:clamp(1.2rem,2.2vw,1.55rem)!important;
+  font-weight:900!important;
+  line-height:1.2!important;
+  letter-spacing:-.025em!important;
+  overflow-wrap:anywhere!important;
+  font-variant-numeric:tabular-nums!important;
+}
+#wfContributionPanel .wf-contrib-green{--metric-accent:#23945f;--metric-icon-bg:#e2f7eb;--metric-glyph:"↗"}
+#wfContributionPanel .wf-contrib-red{--metric-accent:#db2777;--metric-icon-bg:#fce7f3;--metric-glyph:"♥"}
+#wfContributionPanel .wf-contrib-blue{--metric-accent:#2878d0;--metric-icon-bg:#e7f2ff;--metric-glyph:"▤"}
+#wfContributionPanel .wf-contrib-log{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  border:1px solid var(--line)!important;
+  border-radius:15px!important;
+  overflow:hidden!important;
+  background:var(--surface,#fff)!important;
+  box-shadow:0 8px 24px rgba(11,29,58,.045)!important;
+}
+#wfContributionPanel .wf-contrib-log-head{
+  width:100%!important;
+  min-width:0!important;
+}
+#wfContributionPanel .wf-contrib-table-wrap{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow-x:auto!important;
+  -webkit-overflow-scrolling:touch;
+}
+#wfContributionPanel .wf-contrib-table-wrap table{
+  width:100%!important;
+  min-width:720px!important;
+}
+#wfContributionPanel #teacherContributionsState{
+  margin:10px 2px 0!important;
+  font-size:.82rem!important;
+}
+.dark #wfContributionPanel .wf-contrib-metric{
+  background:#0b1d3a!important;
+  border-color:#26364d!important;
+  border-left-color:var(--metric-accent)!important;
+}
+.dark #wfContributionPanel .wf-contrib-metric small{color:#a8b5c8!important}
+.dark #wfContributionPanel .wf-contrib-metric strong{color:#e6edf7!important}
+.dark #wfContributionPanel .wf-contrib-log{background:#0b1d3a!important;border-color:#26364d!important}
+@media(max-width:640px){
+  #wfContributionPanel .wf-contrib-metric{min-height:98px!important;padding:13px!important}
+}
+</style>
+
 </body>
 </html>
