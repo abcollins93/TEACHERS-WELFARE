@@ -4252,5 +4252,120 @@ body.sidebar-open{overflow:hidden}
 }
 </style>
 
+
+<style id="desktop-portal-container-and-text-wrap-fix">
+/* Desktop-only workspace sizing and readable text flow; mobile rules remain unchanged. */
+@media (min-width:768px){
+  body:not(:has(#login:not(.hidden))) main{
+    width:100%!important;
+    max-width:100%!important;
+    padding-left:clamp(20px,2.4vw,42px)!important;
+    padding-right:clamp(20px,2.4vw,42px)!important;
+  }
+  body:not(:has(#login:not(.hidden))) #dashboard,
+  body:not(:has(#login:not(.hidden))) #dashboard .dash-layout,
+  body:not(:has(#login:not(.hidden))) #dashboard .dash-layout>div,
+  body:not(:has(#login:not(.hidden))) #dashboard .dash-layout>div>section,
+  body:not(:has(#login:not(.hidden))) #dashboard .dash-layout>div>div,
+  body:not(:has(#login:not(.hidden))) #dashboard #workflows,
+  body:not(:has(#login:not(.hidden))) #dashboard #schoolOverview,
+  body:not(:has(#login:not(.hidden))) #dashboard #schoolTeachers,
+  body:not(:has(#login:not(.hidden))) #dashboard #wfTeacherRegisterPanel,
+  body:not(:has(#login:not(.hidden))) #dashboard #wfAdminPanel,
+  body:not(:has(#login:not(.hidden))) #dashboard #wfAuditPanel,
+  body:not(:has(#login:not(.hidden))) #dashboard #wfReportsPanel,
+  body:not(:has(#login:not(.hidden))) #dashboard #wfContributionPanel,
+  body:not(:has(#login:not(.hidden))) #dashboard #wfPayoutPanel,
+  body:not(:has(#login:not(.hidden))) #dashboard .wf-admin-section,
+  body:not(:has(#login:not(.hidden))) #dashboard .wf-section{
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+  body:not(:has(#login:not(.hidden))) #dashboard .dash-layout{
+    grid-template-columns:minmax(205px,230px) minmax(0,1fr)!important;
+    column-gap:clamp(18px,2vw,28px)!important;
+    align-items:start!important;
+  }
+  body:not(:has(#login:not(.hidden))) #dashboard .dash-layout>div,
+  body:not(:has(#login:not(.hidden))) #dashboard .dash-layout>div>*,
+  body:not(:has(#login:not(.hidden))) #dashboard #workflows>*,
+  body:not(:has(#login:not(.hidden))) #dashboard .panel,
+  body:not(:has(#login:not(.hidden))) #dashboard .card,
+  body:not(:has(#login:not(.hidden))) #dashboard .wf-section,
+  body:not(:has(#login:not(.hidden))) #dashboard .wf-admin-section{
+    min-width:0!important;
+    box-sizing:border-box!important;
+  }
+  body:not(:has(#login:not(.hidden))) #dashboard .grid,
+  body:not(:has(#login:not(.hidden))) #dashboard .dashboard-metrics,
+  body:not(:has(#login:not(.hidden))) #dashboard .wf-metrics,
+  body:not(:has(#login:not(.hidden))) #dashboard .wf-admin-grid{
+    grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));
+    min-width:0!important;
+    width:100%!important;
+  }
+  /* Titles should wrap at word boundaries, never one character per line. */
+  body:not(:has(#login:not(.hidden))) #dashboard h1,
+  body:not(:has(#login:not(.hidden))) #dashboard h2,
+  body:not(:has(#login:not(.hidden))) #dashboard h3,
+  body:not(:has(#login:not(.hidden))) #dashboard h4,
+  body:not(:has(#login:not(.hidden))) #dashboard .dashhead,
+  body:not(:has(#login:not(.hidden))) #dashboard .wf-panel-title,
+  body:not(:has(#login:not(.hidden))) #dashboard .wf-section-title,
+  body:not(:has(#login:not(.hidden))) #dashboard [class*="section-heading"],
+  body:not(:has(#login:not(.hidden))) #dashboard [class*="panel-heading"]{
+    min-width:0!important;
+    max-width:100%!important;
+    word-break:normal!important;
+    overflow-wrap:normal!important;
+    hyphens:manual!important;
+  }
+  body:not(:has(#login:not(.hidden))) #dashboard .dashhead h2,
+  body:not(:has(#login:not(.hidden))) #dashboard #wfTeacherRegisterPanel h2,
+  body:not(:has(#login:not(.hidden))) #dashboard #schoolTeachers h2{
+    white-space:nowrap!important;
+  }
+  /* Keep tabular labels and values horizontal; table wrappers provide scrolling if needed. */
+  body:not(:has(#login:not(.hidden))) #dashboard .table-wrap,
+  body:not(:has(#login:not(.hidden))) #dashboard .wf-teacher-register-table,
+  body:not(:has(#login:not(.hidden))) #dashboard .wf-payout-table-wrap,
+  body:not(:has(#login:not(.hidden))) #dashboard .teacher-dashboard-table-wrap{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    overflow-x:auto!important;
+    overflow-y:visible!important;
+  }
+  body:not(:has(#login:not(.hidden))) #dashboard table{
+    max-width:100%!important;
+    word-break:normal!important;
+  }
+  body:not(:has(#login:not(.hidden))) #dashboard table th,
+  body:not(:has(#login:not(.hidden))) #dashboard table td{
+    word-break:normal!important;
+    overflow-wrap:normal!important;
+    hyphens:manual!important;
+    vertical-align:middle;
+  }
+  body:not(:has(#login:not(.hidden))) #dashboard table th{
+    white-space:nowrap!important;
+  }
+  body:not(:has(#login:not(.hidden))) #dashboard table td{
+    white-space:nowrap!important;
+  }
+  body:not(:has(#login:not(.hidden))) #dashboard .metric,
+  body:not(:has(#login:not(.hidden))) #dashboard .metric-card,
+  body:not(:has(#login:not(.hidden))) #dashboard .stat-card,
+  body:not(:has(#login:not(.hidden))) #dashboard .wf-contrib-metric,
+  body:not(:has(#login:not(.hidden))) #dashboard .wf-payout-metric,
+  body:not(:has(#login:not(.hidden))) #dashboard .twf-metric{
+    min-width:0!important;
+    max-width:100%!important;
+  }
+}
+</style>
+
 </body>
 </html>
