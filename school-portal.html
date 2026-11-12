@@ -4367,5 +4367,66 @@ body.sidebar-open{overflow:hidden}
 }
 </style>
 
+
+<style id="desktop-sidebar-content-offset-fix">
+/* Match the desktop grid track to the real sidebar width so the content never sits beneath it. */
+@media (min-width:951px){
+  body:not(:has(#login:not(.hidden))) main,
+  body:not(:has(#login:not(.hidden))) #dashboard{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+  }
+  body:not(:has(#login:not(.hidden))) #dashboard .dash-layout{
+    display:grid!important;
+    grid-template-columns:280px minmax(0,1fr)!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    align-items:start!important;
+    column-gap:clamp(18px,2vw,28px)!important;
+  }
+  body:not(:has(#login:not(.hidden))) #dashboard .dash-layout:has(>.sidebar.is-collapsed){
+    grid-template-columns:82px minmax(0,1fr)!important;
+  }
+  body:not(:has(#login:not(.hidden))) #dashboard .dash-layout>.sidebar{
+    position:sticky!important;
+    top:16px!important;
+    left:auto!important;
+    width:280px!important;
+    min-width:280px!important;
+    max-width:280px!important;
+    height:calc(100vh - 32px)!important;
+    max-height:calc(100vh - 32px)!important;
+    min-height:0!important;
+    transform:none!important;
+    z-index:1!important;
+    box-sizing:border-box!important;
+  }
+  body:not(:has(#login:not(.hidden))) #dashboard .dash-layout:has(>.sidebar.is-collapsed)>.sidebar,
+  body:not(:has(#login:not(.hidden))) #dashboard .dash-layout>.sidebar.is-collapsed{
+    width:82px!important;
+    min-width:82px!important;
+    max-width:82px!important;
+  }
+  body:not(:has(#login:not(.hidden))) #dashboard .dash-layout> :not(.sidebar){
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    margin-left:0!important;
+    box-sizing:border-box!important;
+  }
+  body:not(:has(#login:not(.hidden))) #dashboard .dash-layout> :not(.sidebar) .panel,
+  body:not(:has(#login:not(.hidden))) #dashboard .dash-layout> :not(.sidebar) #schoolOverview,
+  body:not(:has(#login:not(.hidden))) #dashboard .dash-layout> :not(.sidebar) #schoolTeachers,
+  body:not(:has(#login:not(.hidden))) #dashboard .dash-layout> :not(.sidebar) [id^="wf"]{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+}
+</style>
+
 </body>
 </html>
