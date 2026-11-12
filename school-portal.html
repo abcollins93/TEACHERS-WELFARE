@@ -4084,5 +4084,101 @@ body.sidebar-open{overflow:hidden}
  #dashboard #schoolOverview .dashboard-metrics>.metric:active{transform:none!important}
 }
 </style>
+
+<style id="teacher-register-desktop-table-layout-fix">
+/* Teacher Register: restore a full-width desktop workspace and predictable table columns. */
+@media (min-width:768px){
+  #dashboard .dash-layout,
+  #dashboard .dash-layout>div,
+  #dashboard #workflows,
+  #dashboard #wfTeacherRegisterPanel{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+  #dashboard #wfTeacherRegisterPanel{
+    box-sizing:border-box!important;
+  }
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table{
+    display:block!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    overflow-x:auto!important;
+    overflow-y:visible!important;
+    -webkit-overflow-scrolling:touch;
+  }
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table table{
+    display:table!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:1100px!important;
+    table-layout:fixed!important;
+    border-collapse:collapse!important;
+  }
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table th,
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table td{
+    box-sizing:border-box!important;
+    word-break:normal!important;
+    overflow-wrap:normal!important;
+    vertical-align:middle!important;
+  }
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table th{
+    white-space:nowrap!important;
+    text-overflow:ellipsis;
+    overflow:hidden;
+  }
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table td{
+    white-space:normal!important;
+    line-height:1.4;
+  }
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table .wf-staff-id-cell,
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table .wf-phone-cell,
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table .wf-rank-cell{
+    white-space:nowrap!important;
+  }
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table .teacher-name-cell{
+    min-width:0!important;
+    white-space:normal!important;
+    overflow-wrap:break-word!important;
+  }
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table td:last-child{
+    white-space:normal!important;
+  }
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table td:last-child .wf-table-action{
+    max-width:100%;
+    white-space:normal!important;
+    vertical-align:middle;
+  }
+}
+@media (min-width:1200px){
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table{
+    overflow-x:visible!important;
+  }
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table table{
+    min-width:0!important;
+    table-layout:fixed!important;
+  }
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table th:nth-child(1),
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table td:nth-child(1){width:10%}
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table th:nth-child(2),
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table td:nth-child(2){width:15%}
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table th:nth-child(3),
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table td:nth-child(3){width:11%}
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table th:nth-child(4),
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table td:nth-child(4){width:12%}
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table th:nth-child(5),
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table td:nth-child(5){width:9%}
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table th:nth-child(6),
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table td:nth-child(6){width:11%}
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table th:nth-child(7),
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table td:nth-child(7){width:8%}
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table th:nth-child(8),
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table td:nth-child(8){width:8%}
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table th:nth-child(9),
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table td:nth-child(9){width:16%}
+}
+</style>
+
 </body>
 </html>
