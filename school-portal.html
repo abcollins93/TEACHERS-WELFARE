@@ -2146,7 +2146,6 @@ async function renderTeacherDashboard(profile,school){
  host.appendChild(workspace);
  // Persistent teacher-only ticker: the server RPC returns school notices and only this
  // authenticated teacher's targeted administrative activity.
- if(window.__teacherTickerTimer){clearInterval(window.__teacherTickerTimer);window.__teacherTickerTimer=null;}
  document.body.classList.add('teacher-ticker-active');
  let tickerStyles=document.getElementById('teacherLiveTickerStyles');
  if(!tickerStyles){
@@ -2208,7 +2207,6 @@ async function renderTeacherDashboard(profile,school){
   if(primary&&clone){primary.innerHTML=items;clone.innerHTML=items;}
  };
  await refreshTeacherTicker();
- window.__teacherTickerTimer=setInterval(refreshTeacherTicker,30000);
  document.querySelectorAll('.teacher-workspace-panel').forEach(panel=>panel.classList.add('hidden'));
  $('schoolOverview').classList.remove('hidden');
  const [{data:cs,error:ce},{data:ps,error:pe},{data:schoolPayoutData,error:spe},{data:personalContributionFeed,error:pcfe},{data:schoolFundRows,error:sfse},{data:registeredMemberCount,error:registeredMemberCountError},{data:teacherStandardDues,error:teacherStandardDuesError}]=await Promise.all([
@@ -4705,6 +4703,33 @@ body.sidebar-open{overflow:hidden}
 @media (max-width:767px){
   html body #dashboard #schoolTeachers #wfTeacherRegisterPanel #wfTeacher{
     grid-template-columns:minmax(0,1fr)!important;
+  }
+}
+</style>
+
+
+<style id="constant-css-rolling-banner-motion">
+/* One CSS-only, linear marquee timeline for all rolling portal banners. */
+.rolling-banner-track,
+#teacherLiveTicker .ticker-track{
+  display:flex!important;
+  width:max-content!important;
+  animation:smoothRoll 25s linear infinite!important;
+  will-change:transform;
+}
+#teacherBroadcast.is-long .teacher-broadcast-message{
+  animation:smoothRoll 25s linear infinite!important;
+  will-change:transform;
+}
+@keyframes smoothRoll{
+  0%{transform:translateX(0)}
+  100%{transform:translateX(-50%)}
+}
+@media(prefers-reduced-motion:reduce){
+  .rolling-banner-track,
+  #teacherLiveTicker .ticker-track,
+  #teacherBroadcast .teacher-broadcast-message{
+    animation:none!important;
   }
 }
 </style>
