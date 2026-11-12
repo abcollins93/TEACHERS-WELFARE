@@ -4713,21 +4713,16 @@ body.sidebar-open{overflow:hidden}
 
 
 <style id="constant-css-rolling-banner-motion">
-/* One CSS-only, linear marquee timeline for all rolling portal banners. */
-.rolling-banner-track{
-  display:flex!important;
-  width:max-content!important;
-  animation:smoothRoll 60s linear infinite!important;
-  will-change:transform;
-}
+/* Keep a consistent physical scrolling speed; JS sets duration from each track's measured travel distance. */
+.rolling-banner-track,
 #teacherLiveTicker .ticker-track{
   display:flex!important;
   width:max-content!important;
-  animation:smoothRoll 60s linear infinite!important;
+  animation:smoothRoll var(--marquee-duration,60s) linear infinite!important;
   will-change:transform;
 }
 #teacherBroadcast.is-long .teacher-broadcast-message{
-  animation:smoothRoll 60s linear infinite!important;
+  animation:smoothRoll var(--marquee-duration,60s) linear infinite!important;
   will-change:transform;
 }
 @keyframes smoothRoll{
@@ -4742,6 +4737,49 @@ body.sidebar-open{overflow:hidden}
   }
 }
 </style>
+<script id="consistent-portal-marquee-speed">
+(function(){
+  const PIXELS_PER_SECOND = 18;
+  const SELECTOR = '.rolling-banner-track, #teacherLiveTicker .ticker-track, #teacherBroadcast.is-long .teacher-broadcast-message';
+  let framePending = false;
+  function updateMarqueeSpeeds(){
+    framePending = false;
+    document.querySelectorAll(SELECTOR).forEach(function(track){
+      const measuredWidth = Math.max(track.scrollWidth || 0, track.getBoundingClientRect().width || 0);
+      const travelDistance = measuredWidth / 2;
+      if (travelDistance > 0){
+        const duration = Math.max(1, travelDistance / PIXELS_PER_SECOND);
+        track.style.setProperty('--marquee-duration', duration.toFixed(2) + 's');
+      }
+    });
+  }
+  function scheduleUpdate(){
+    if (framePending) return;
+    framePending = true;
+    requestAnimationFrame(updateMarqueeSpeeds);
+  }
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', scheduleUpdate, {once:true});
+  } else {
+    scheduleUpdate();
+  }
+  const observer = new MutationObserver(scheduleUpdate);
+  observer.observe(document.body, {childList:true, subtree:true});
+  if ('ResizeObserver' in window){
+    const resizeObserver = new ResizeObserver(scheduleUpdate);
+    resizeObserver.observe(document.documentElement);
+    document.querySelectorAll(SELECTOR).forEach(function(track){resizeObserver.observe(track);});
+    const contentObserver = new MutationObserver(function(){
+      document.querySelectorAll(SELECTOR).forEach(function(track){
+        try{resizeObserver.observe(track);}catch(_){}
+      });
+    });
+    contentObserver.observe(document.body, {childList:true, subtree:true});
+  }
+  window.addEventListener('load', scheduleUpdate, {once:true});
+  window.addEventListener('resize', scheduleUpdate, {passive:true});
+})();
+</script>
 
 
 <style id="member-contributions-welfare-card-layout">
