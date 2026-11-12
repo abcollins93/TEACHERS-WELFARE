@@ -4534,5 +4534,57 @@ body.sidebar-open{overflow:hidden}
 }
 </style>
 
+
+<style id="teachers-members-desktop-root-width-correction">
+/* The roster is a direct child of #dashboard, outside .dash-layout.
+   Give that actual parent/child path a full-width desktop layout. */
+@media (min-width:768px){
+  body:not(:has(#login:not(.hidden))) main,
+  body:not(:has(#login:not(.hidden))) #dashboard{
+    display:block!important;
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+  }
+  body:not(:has(#login:not(.hidden))) #dashboard > #schoolTeachers{
+    display:block;
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    margin-left:0!important;
+    margin-right:0!important;
+    float:none!important;
+    position:relative!important;
+    left:auto!important;
+    right:auto!important;
+    transform:none!important;
+  }
+  body:not(:has(#login:not(.hidden))) #dashboard > #schoolTeachers > #wfTeacherRegisterPanel,
+  body:not(:has(#login:not(.hidden))) #dashboard #schoolTeachers #wfTeacherRegisterPanel{
+    box-sizing:border-box!important;
+    display:block;
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    margin-left:0!important;
+    margin-right:0!important;
+    float:none!important;
+    position:relative!important;
+    left:auto!important;
+    right:auto!important;
+    transform:none!important;
+  }
+  body:not(:has(#login:not(.hidden))) #dashboard #schoolTeachers #wfTeacherRegisterPanel #wfTeacher,
+  body:not(:has(#login:not(.hidden))) #dashboard #schoolTeachers #wfTeacherRegisterPanel .wf-teacher-register-table{
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+}
+</style>
+
 </body>
 </html>
