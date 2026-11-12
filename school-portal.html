@@ -4586,5 +4586,69 @@ body.sidebar-open{overflow:hidden}
 }
 </style>
 
+
+<style id="teachers-members-register-card-form-width-fix">
+/* Override the generic .panel max-width on this specific register workspace.
+   Keep the full register card centered in the dashboard content column. */
+@media (min-width:768px){
+  html body #dashboard #schoolTeachers,
+  html body #dashboard #schoolTeachers.panel{
+    display:block!important;
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    margin-left:0!important;
+    margin-right:0!important;
+  }
+  html body #dashboard #schoolTeachers #wfTeacherRegisterPanel,
+  html body #dashboard #schoolTeachers #wfTeacherRegisterPanel.panel{
+    display:block!important;
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    margin:18px auto!important;
+  }
+  html body #dashboard #schoolTeachers #wfTeacherRegisterPanel #wfTeacher{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    align-items:start!important;
+    gap:18px 20px!important;
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    margin:0!important;
+  }
+  html body #dashboard #schoolTeachers #wfTeacherRegisterPanel #wfTeacher>div{
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+  html body #dashboard #schoolTeachers #wfTeacherRegisterPanel #wfTeacher input:not([type=file]),
+  html body #dashboard #schoolTeachers #wfTeacherRegisterPanel #wfTeacher select,
+  html body #dashboard #schoolTeachers #wfTeacherRegisterPanel #wfTeacher .wf-passport-upload,
+  html body #dashboard #schoolTeachers #wfTeacherRegisterPanel #wfTeacher .wf-passport-upload input[type=file]{
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+  html body #dashboard #schoolTeachers #wfTeacherRegisterPanel .wf-teacher-register-table{
+    display:block!important;
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    overflow-x:auto!important;
+  }
+}
+@media (max-width:767px){
+  html body #dashboard #schoolTeachers #wfTeacherRegisterPanel #wfTeacher{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+}
+</style>
+
 </body>
 </html>
