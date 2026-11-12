@@ -4713,12 +4713,16 @@ body.sidebar-open{overflow:hidden}
 
 
 <style id="constant-css-rolling-banner-motion">
-/* One CSS-only, linear marquee timeline for all rolling portal banners. */
+/* Slow, continuous, hardware-accelerated marquee for rolling portal banners. */
 .rolling-banner-track{
   display:flex!important;
   width:max-content!important;
-  animation:smoothRoll 55s linear infinite!important;
+  animation:smoothRoll 75s linear infinite!important;
+  animation-duration:75s!important;
+  animation-timing-function:linear!important;
+  animation-iteration-count:infinite!important;
   will-change:transform;
+  transform:translate3d(0,0,0);
 }
 #teacherLiveTicker .ticker-track{
   display:flex!important;
@@ -4731,8 +4735,8 @@ body.sidebar-open{overflow:hidden}
   will-change:transform;
 }
 @keyframes smoothRoll{
-  0%{transform:translateX(0)}
-  100%{transform:translateX(-50%)}
+  0%{transform:translate3d(0,0,0)}
+  100%{transform:translate3d(-50%,0,0)}
 }
 @media(prefers-reduced-motion:reduce){
   .rolling-banner-track,
