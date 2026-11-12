@@ -297,7 +297,7 @@ footer.tenant-portal-footer{
 @media(prefers-reduced-motion:reduce){.teacher-dashboard-profile,.teacher-dashboard-ledger-card{transition:none!important}}
 </style>
 <style id="teacher-broadcast-motion">
-#teacherBroadcast{white-space:nowrap}#teacherBroadcast .teacher-broadcast-message{display:inline-block;white-space:normal;overflow-wrap:anywhere;vertical-align:middle;max-width:100%}@media (prefers-reduced-motion:no-preference){#teacherBroadcast.is-long .teacher-broadcast-message{white-space:nowrap;max-width:none;padding-left:100%;animation:teacherBroadcastScroll 22s linear infinite}}@keyframes teacherBroadcastScroll{from{transform:translateX(0)}to{transform:translateX(-100%)}}@media(prefers-reduced-motion:reduce){#teacherBroadcast .teacher-broadcast-message{animation:none!important}}
+#teacherBroadcast{white-space:nowrap}#teacherBroadcast .teacher-broadcast-message{display:inline-block;white-space:normal;overflow-wrap:anywhere;vertical-align:middle;max-width:100%}@media (prefers-reduced-motion:no-preference){#teacherBroadcast.is-long .teacher-broadcast-message{white-space:nowrap;max-width:none;padding-left:100%;animation:teacherBroadcastScroll 25s linear infinite}}@keyframes teacherBroadcastScroll{from{transform:translateX(0)}to{transform:translateX(-100%)}}@media(prefers-reduced-motion:reduce){#teacherBroadcast .teacher-broadcast-message{animation:none!important}}
 </style>
 
 <style id="ntonso-dashboard-reference-layout">
@@ -2162,7 +2162,7 @@ async function renderTeacherDashboard(profile,school){
    #teacherLiveTicker .ticker-brand-copy small{font-size:.58rem;letter-spacing:.08em;color:#aebed2;font-weight:700}
    #teacherLiveTicker .ticker-live{width:6px;height:6px;border-radius:50%;background:#50dfa8;box-shadow:0 0 0 4px rgba(80,223,168,.13);animation:teacherTickerPulse 2.6s ease-in-out infinite}
    #teacherLiveTicker .ticker-window{position:relative;z-index:1;min-width:0;flex:1;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent)}
-   #teacherLiveTicker .ticker-track{display:flex;width:max-content;align-items:center;animation:teacherTickerMove 58s linear infinite;will-change:transform}
+   #teacherLiveTicker .ticker-track{display:flex;width:max-content;align-items:center;animation:rollAnimation 25s linear infinite;will-change:transform}
    #teacherLiveTicker.is-paused .ticker-track{animation-play-state:paused}
    #teacherLiveTicker .ticker-group{display:flex;flex:0 0 auto;align-items:center;gap:38px;padding-right:38px;white-space:nowrap}
    #teacherLiveTicker .ticker-item{display:inline-flex;align-items:center;gap:10px;color:#f7f9fd;font-size:.8rem}
@@ -2175,7 +2175,7 @@ async function renderTeacherDashboard(profile,school){
    #teacherLiveTicker .ticker-control:hover{background:rgba(255,255,255,.16)}
    body.teacher-ticker-active{padding-bottom:64px}
    body.teacher-ticker-active .sidebar{padding-bottom:68px}
-   @keyframes teacherTickerMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+   @keyframes rollAnimation{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
    @keyframes teacherTickerPulse{50%{opacity:.55;transform:scale(.82)}}
    @media(max-width:600px){#teacherLiveTicker{min-height:48px;padding:5px 8px calc(5px + env(safe-area-inset-bottom));gap:7px}#teacherLiveTicker .ticker-brand{gap:7px;padding:7px 8px}#teacherLiveTicker .ticker-brand-icon{width:25px;height:25px}#teacherLiveTicker .ticker-brand-copy strong{font-size:.59rem}#teacherLiveTicker .ticker-brand-copy small{display:none}#teacherLiveTicker .ticker-group{gap:25px;padding-right:25px}#teacherLiveTicker .ticker-item{font-size:.72rem}#teacherLiveTicker .ticker-item b{font-size:.55rem;padding:4px 6px}#teacherLiveTicker .ticker-time{font-size:.6rem}#teacherLiveTicker .ticker-control{width:20px;height:20px;min-width:20px;min-height:20px;flex-basis:20px}}
    @media(max-width:360px){#teacherLiveTicker .ticker-brand-copy{display:none}#teacherLiveTicker .ticker-brand{padding:6px}}
@@ -4177,6 +4177,78 @@ body.sidebar-open{overflow:hidden}
   #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table td:nth-child(8){width:8%}
   #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table th:nth-child(9),
   #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table td:nth-child(9){width:16%}
+}
+</style>
+
+
+<style id="desktop-dashboard-container-width-fix">
+/* Desktop workspace width: allow member, teacher and administration panels to use the available canvas. */
+@media (min-width:768px){
+  main{
+    width:100%!important;
+    max-width:100%!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+  #dashboard,
+  #dashboard .dash-layout{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+  #dashboard .dash-layout{
+    grid-template-columns:minmax(190px,210px) minmax(0,1fr)!important;
+    align-items:start;
+  }
+  #dashboard .dash-layout>div,
+  #dashboard .dash-layout>div>section,
+  #dashboard .dash-layout>div>.panel,
+  #dashboard #schoolOverview,
+  #dashboard #schoolTeachers,
+  #dashboard #wfTeacherRegisterPanel,
+  #dashboard #wfAdminPanel,
+  #dashboard #wfAuditPanel,
+  #dashboard #wfReportsPanel,
+  #dashboard #wfContributionPanel,
+  #dashboard #wfPayoutPanel{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+  }
+  #dashboard .dash-layout>div{
+    overflow-wrap:normal;
+  }
+  #dashboard #schoolTeachers .table-wrap,
+  #dashboard #schoolTeachers .wf-teacher-register-table,
+  #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+}
+/* One consistent CSS-only marquee speed for rolling banners on member and admin views. */
+.rolling-banner-track,
+#teacherLiveTicker .ticker-track{
+  display:flex;
+  width:max-content;
+  animation:rollAnimation 25s linear infinite;
+  will-change:transform;
+}
+@keyframes rollAnimation{
+  0%{transform:translateX(0)}
+  100%{transform:translateX(-50%)}
+}
+#teacherBroadcast.is-long .teacher-broadcast-message{
+  animation-duration:25s!important;
+  animation-timing-function:linear!important;
+}
+@media(prefers-reduced-motion:reduce){
+  .rolling-banner-track,
+  #teacherLiveTicker .ticker-track,
+  #teacherBroadcast .teacher-broadcast-message{
+    animation:none!important;
+  }
 }
 </style>
 
