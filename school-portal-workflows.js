@@ -547,7 +547,7 @@ function addUI(){
  <form id="wfTeacher" class="grid">
  <div><label for="wfTid">Staff ID</label><input id="wfTid" required maxlength="80"></div><div><label for="wfName">Full name</label><input id="wfName" required maxlength="160"></div>
  <div><label for="wfPhone">Phone</label><input id="wfPhone" maxlength="40"></div><div><label for="wfRank">Rank / Grade</label><select id="wfRank" style="width:100%;min-height:44px;padding:10px 12px;border:1px solid #dbe2ec;border-radius:10px;background:#fff;color:#0f172a;box-sizing:border-box">${rankOptionsMarkup()}</select></div>
- <div><label for="wfClass">Class / Subject / Responsibility</label><input id="wfClass" maxlength="100" placeholder="e.g. Primary 6, Mathematics"></div><div><label for="wfMembershipType">Membership Type</label><select id="wfMembershipType"><option value="">Select membership type</option><option value="Permanent">Permanent</option><option value="Temporal">Temporal</option></select></div><div><label for="wfEmployer">Employer</label><select id="wfEmployer"><option value="">Select employer</option><option value="GES">GES</option><option value="NGO">NGO</option><option value="NSA">NSA</option></select></div><div><label for="wfPassport">Passport photograph (optional)</label><div class="wf-passport-upload"><input id="wfPassport" type="file" accept="image/jpeg,image/png,image/webp"></div><small class="muted wf-passport-help">JPEG, PNG or WebP; maximum 1 MB. Leave blank to keep the current photo.</small><div id="wfPassportPreview" class="muted" aria-live="polite"></div></div><div style="align-self:end;display:flex;gap:8px;flex-wrap:wrap"><button id="wfTeacherSave" type="submit">Register teacher</button><button id="wfTeacherCancel" class="secondary" type="button">Cancel edit</button></div></form><p id="wfTeacherMsg" class="muted" role="status" aria-live="polite"></p><div class="wf-teacher-register-table" style="overflow:auto"><table><thead><tr><th>Staff ID</th><th>Name</th><th>Phone</th><th>Rank</th><th>Class</th><th>Membership Type</th><th>Employer</th><th>Status</th><th>Profile actions</th></tr></thead><tbody id="wfManageTeacherRows"></tbody></table></div></div>
+ <div><label for="wfClass">Class / Subject / Responsibility</label><input id="wfClass" maxlength="100" placeholder="e.g. Primary 6, Mathematics"></div><div><label for="wfMembershipType">Membership Type</label><select id="wfMembershipType"><option value="">Select membership type</option><option value="Permanent">Permanent</option><option value="Temporal">Temporal</option></select></div><div><label for="wfEmployer">Employer</label><select id="wfEmployer"><option value="">Select employer</option><option value="GES">GES</option><option value="NGO">NGO</option><option value="NSA">NSA</option></select></div><div><label for="wfPassport">Passport photograph (optional)</label><div class="wf-passport-upload"><input id="wfPassport" type="file" accept="image/jpeg,image/png,image/webp"></div><small class="muted wf-passport-help">JPEG, PNG or WebP; maximum 3 MB. Leave blank to keep the current photo.</small><div id="wfPassportPreview" class="muted" aria-live="polite"></div></div><div style="align-self:end;display:flex;gap:8px;flex-wrap:wrap"><button id="wfTeacherSave" type="submit">Register teacher</button><button id="wfTeacherCancel" class="secondary" type="button">Cancel edit</button></div></form><p id="wfTeacherMsg" class="muted" role="status" aria-live="polite"></p><div class="wf-teacher-register-table" style="overflow:auto"><table><thead><tr><th>Staff ID</th><th>Name</th><th>Phone</th><th>Rank</th><th>Class</th><th>Membership Type</th><th>Employer</th><th>Status</th><th>Profile actions</th></tr></thead><tbody id="wfManageTeacherRows"></tbody></table></div></div>
  
  <section class="wf-reports-view hidden" id="wfReportsPanel"><header class="wf-reports-heading"><div><h2>Statements &amp; Reports</h2><p>Generate individual member statements or executive fund summary reports instantly.</p></div><span class="wf-reports-admin-status"><i class="fa-solid fa-shield-check"></i> Administrator access active</span></header><div class="wf-report-cards"><article class="wf-report-card"><div class="wf-report-card-icon wf-report-icon-blue"><i class="fa-solid fa-file-lines"></i></div><div class="wf-report-card-content"><h3>Individual Statement</h3><p>Generate a comprehensive, print-ready official A4 statement for the selected member account.</p><label for="wfStatementTeacher">Select Member Account</label><select id="wfStatementTeacher" aria-label="Select Member Account"></select><button id="wfStatementPdf" type="button" class="wf-report-button wf-report-button-dark"><i class="fa-solid fa-file-pdf"></i> Download Member Statement</button><p id="wfStatementMsg" class="wf-report-message" role="status" aria-live="polite"></p></div></article><article class="wf-report-card"><div class="wf-report-card-icon wf-report-icon-orange"><i class="fa-solid fa-calendar-days"></i></div><div class="wf-report-card-content"><h3>Monthly Summary Report</h3><p>Administrator access active. Select target month to generate report.</p><div class="wf-month-year-picker" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:560px;margin-bottom:13px"><div><label for="wfReportMonth">Select Month</label><select id="wfReportMonth" aria-label="Select reporting month"></select></div><div><label for="wfReportYear">Select Year</label><select id="wfReportYear" aria-label="Select reporting year"></select></div></div><button id="wfMonthlyPdf" type="button" class="wf-report-button wf-report-button-orange"><i class="fa-solid fa-file-pdf"></i> Download Monthly Summary (Admin)</button></div></article><article class="wf-report-card"><div class="wf-report-card-icon wf-report-icon-purple"><i class="fa-solid fa-calendar-check"></i></div><div class="wf-report-card-content"><h3>Yearly Summary Report</h3><p>Select a calendar year to download that year’s school-wide contribution and welfare payout summary.</p><label for="wfAnnualYear">Select Year</label><select id="wfAnnualYear" aria-label="Select annual report year"></select><button id="wfAnnualPdf" type="button" class="wf-report-button wf-report-button-purple"><i class="fa-solid fa-file-pdf"></i> Download Yearly Summary (Admin)</button></div></article><article class="wf-report-card"><div class="wf-report-card-icon wf-report-icon-green"><i class="fa-solid fa-chart-column"></i></div><div class="wf-report-card-content"><h3>Complete Fund Summary</h3><p>Administrator access is active. You can generate the complete fund report.</p><button id="wfCompletePdf" type="button" class="wf-report-button wf-report-button-green"><i class="fa-solid fa-file-pdf"></i> Download Complete Summary (Admin)</button></div></article></div><div class="wf-report-footer"><p id="wfReportMsg" class="muted" role="status" aria-live="polite">Reports include records visible to this authenticated school administrator only.</p><button id="wfExportCsv" type="button" class="wf-report-csv"><i class="fa-solid fa-file-csv"></i> Export ledgers CSV</button></div></section>`;
  // Financial workspaces are independent sidebar destinations, not admin-panel cards.
@@ -1330,18 +1330,86 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  
  let editingTeacherId=null;
  let selectedPassportData=null;
- $('wfPassport').addEventListener('change',()=>{
+ let passportReadPending=false;
+ const PASSPORT_MAX_BYTES=3*1024*1024;
+ const PASSPORT_MAX_DIMENSION=600;
+ function setPassportReadState(pending,message){
+   passportReadPending=!!pending;
+   const saveButton=$('wfTeacherSave');
+   if(saveButton)saveButton.disabled=passportReadPending;
+   if(message!==undefined)$('wfPassportPreview').textContent=message;
+ }
+ function readAndCompressPassport(file){
+   return new Promise((resolve,reject)=>{
+     let reader=null,image=null,settled=false,readerTimer=null,imageTimer=null;
+     const cleanup=()=>{
+       if(readerTimer)clearTimeout(readerTimer);
+       if(imageTimer)clearTimeout(imageTimer);
+       if(reader){reader.onload=null;reader.onerror=null;reader.onabort=null;}
+       if(image){image.onload=null;image.onerror=null;}
+     };
+     const fail=error=>{
+       if(settled)return;
+       settled=true;cleanup();
+       reject(error instanceof Error?error:new Error('The photo could not be read. Please choose it again.'));
+     };
+     const succeed=value=>{
+       if(settled)return;
+       settled=true;cleanup();resolve(value);
+     };
+     try{
+       reader=new FileReader();
+       reader.onerror=()=>fail(new Error('The photo could not be read. Please choose it again.'));
+       reader.onabort=()=>fail(new Error('Photo reading was interrupted. Please choose it again.'));
+       reader.onload=()=>{
+         try{
+           const source=typeof reader.result==='string'?reader.result:'';
+           if(!/^data:image\/(?:jpeg|png|webp);base64,/i.test(source))return fail(new Error('The selected photo could not be decoded. Please choose a JPEG, PNG or WebP image.'));
+           image=new Image();
+           image.onerror=()=>fail(new Error('The photo could not be decoded. Please choose it again.'));
+           image.onload=()=>{
+             try{
+               const width=Number(image.naturalWidth||image.width),height=Number(image.naturalHeight||image.height);
+               if(!width||!height)return fail(new Error('The selected photo has invalid dimensions. Please choose another image.'));
+               const scale=Math.min(1,PASSPORT_MAX_DIMENSION/Math.max(width,height));
+               const canvas=document.createElement('canvas');
+               canvas.width=Math.max(1,Math.round(width*scale));
+               canvas.height=Math.max(1,Math.round(height*scale));
+               const context=canvas.getContext('2d');
+               if(!context)return fail(new Error('This device could not prepare the photo. Please choose another image.'));
+               context.drawImage(image,0,0,canvas.width,canvas.height);
+               const compressed=canvas.toDataURL('image/jpeg',0.85);
+               if(!/^data:image\/jpeg;base64,/i.test(compressed))return fail(new Error('The photo could not be compressed. Please choose another image.'));
+               succeed(compressed);
+             }catch(canvasError){fail(canvasError);}
+           };
+           imageTimer=setTimeout(()=>fail(new Error('The photo took too long to load. Please choose it again.')),12000);
+           image.src=source;
+         }catch(imageSetupError){fail(imageSetupError);}
+       };
+       readerTimer=setTimeout(()=>fail(new Error('The photo could not be read in time. Please choose it again.')),12000);
+       reader.readAsDataURL(file);
+     }catch(readError){fail(readError);}
+   });
+ }
+ $('wfPassport').addEventListener('change',async()=>{
    selectedPassportData=null;
    const file=$('wfPassport').files?.[0];
-   const preview=$('wfPassportPreview');
-   if(!file){preview.textContent='';return;}
-   if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>1024*1024){
-     $('wfPassport').value='';preview.textContent='Choose a JPEG, PNG or WebP image no larger than 1 MB.';return;
+   if(!file){setPassportReadState(false,'');return;}
+   if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>PASSPORT_MAX_BYTES){
+     $('wfPassport').value='';
+     setPassportReadState(false,'Choose a JPEG, PNG or WebP image no larger than 3 MB.');
+     return;
    }
-   const reader=new FileReader();
-   reader.onload=()=>{selectedPassportData=String(reader.result||'');preview.textContent='Photo ready to save.';};
-   reader.onerror=()=>{selectedPassportData=null;preview.textContent='The photo could not be read. Please choose it again.';};
-   reader.readAsDataURL(file);
+   setPassportReadState(true,'Preparing photo…');
+   try{
+     selectedPassportData=await readAndCompressPassport(file);
+     setPassportReadState(false,'Photo ready to save (resized and compressed).');
+   }catch(photoError){
+     selectedPassportData=null;
+     $('wfPassport').value='';
+     setPassportReadState(false,photoError?.message||'The photo could not be read. Please choose it again.');
+   }
  });
  function resetTeacherForm(){editingTeacherId=null;selectedPassportData=null;$('wfTeacher').reset();$('wfPassportPreview').textContent='';$('wfTid').disabled=false;$('wfTeacherSave').textContent='Register teacher';msg('wfTeacherMsg','');}
  $('wfTeacherCancel').onclick=resetTeacherForm;
@@ -1360,7 +1428,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    if(restore){const t=teachers.find(x=>String(x.id)===restore.dataset.wfRestore);if(!t)return;if(!await wfConfirm('Restore '+t.name+' to the active register?'))return;const {error}=await client.from('teachers').update({is_active:true}).eq('id',t.id).eq('school_id',ctx.id);if(error)return wfNotice('Teacher could not be restored. Check school permissions.');const ok=await audit(client,ctx,'Restore teacher profile',t.name,t.id);await refreshWorkflow();if(!ok)wfNotice('Teacher restored, but audit logging failed.');return;}
    const b=e.target.closest('[data-wf-edit]');if(!b)return;const t=teachers.find(x=>String(x.id)===b.dataset.wfEdit);if(!t)return;editingTeacherId=t.id;$('wfTid').value=t.id;$('wfTid').disabled=true;$('wfName').value=t.name||'';$('wfPhone').value=t.phone||'';$('wfRank').value=t.rank||'';$('wfClass').value=t.class_name||'';$('wfMembershipType').value=t.membership_type||'';$('wfEmployer').value=t.employer||'';selectedPassportData=null;$('wfPassport').value='';$('wfPassportPreview').textContent=t.passport?'Existing passport photo saved. Choose a new image to replace it.':'';$('wfTeacherSave').textContent='Save changes';msg('wfTeacherMsg','Editing '+t.name+'.');$('wfTid').scrollIntoView({behavior:'smooth',block:'center'});
  });
- $('wfTeacher').onsubmit=async e=>{e.preventDefault();if($('wfPassport').files?.length&&!selectedPassportData)return msg('wfTeacherMsg','Wait for the photo to finish loading, or remove it and save again.',true);const row={id:$('wfTid').value.trim(),name:$('wfName').value.trim(),phone:$('wfPhone').value.trim()||null,rank:$('wfRank').value.trim()||null,class_name:$('wfClass').value.trim()||null,membership_type:$('wfMembershipType').value||null,employer:$('wfEmployer').value||null,school_id:ctx.id};if(selectedPassportData)row.passport=selectedPassportData;msg('wfTeacherMsg','Saving…');
+ $('wfTeacher').onsubmit=async e=>{e.preventDefault();if(passportReadPending)return msg('wfTeacherMsg','Please wait for the photo to finish processing before saving.',true);if($('wfPassport').files?.length&&!selectedPassportData)return msg('wfTeacherMsg','The selected photo was not processed. Choose it again or clear the photo field before saving.',true);const row={id:$('wfTid').value.trim(),name:$('wfName').value.trim(),phone:$('wfPhone').value.trim()||null,rank:$('wfRank').value.trim()||null,class_name:$('wfClass').value.trim()||null,membership_type:$('wfMembershipType').value||null,employer:$('wfEmployer').value||null,school_id:ctx.id};if(selectedPassportData)row.passport=selectedPassportData;msg('wfTeacherMsg','Saving…');
    const result=editingTeacherId?await client.from('teachers').update({name:row.name,phone:row.phone,rank:row.rank,class_name:row.class_name,membership_type:row.membership_type,employer:row.employer,...(selectedPassportData?{passport:selectedPassportData}:{})}).eq('id',editingTeacherId).eq('school_id',ctx.id):await client.from('teachers').insert(row);
    if(result.error){msg('wfTeacherMsg',editingTeacherId?'Changes were not saved. Check school permissions.':'Not saved. Check the staff ID and school permissions.',true);return;}
    const wasEditing=!!editingTeacherId;
