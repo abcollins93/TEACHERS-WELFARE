@@ -1585,7 +1585,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    const input=String(value||'').trim();if(!input)return {months:[],error:'Enter the month or months covered.'};
    const tokens=input.split(',').map(x=>x.trim()).filter(Boolean),indexes=[];
    for(const token of tokens){
-     const range=token.split(/\\s*(?:-|–|—|\\bto\\b)\\s*/i);
+     const range=token.split(/\s*(?:-|–|—|\bto\b)\s*/i);
      if(range.length>2)return {months:[],error:'Use a clear month range such as Jan - Mar.'};
      const start=contributionMonthIndex(range[0]),end=contributionMonthIndex(range[1]||range[0]);
      if(start<0||end<0)return {months:[],error:'Unrecognized month in "'+token+'".'};
@@ -1595,7 +1595,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    return {months:indexes.sort((a,b)=>a-b),error:null};
  };
  const contributionDateForMonth=(year,monthIndex)=>{const day=new Date(year,monthIndex+1,0).getDate();return year+'-'+String(monthIndex+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');};
- const contributionHeaderKey=value=>String(value??'').replace(/^\\uFEFF/,'').trim().toLowerCase().replace(/\\s+/g,' ').replace(/[’]/g,"'");
+ const contributionHeaderKey=value=>String(value??'').replace(/^\uFEFF/,'').trim().toLowerCase().replace(/\s+/g,' ').replace(/[’]/g,"'");
  const contributionHeaderAliases={
    staff:['staff id','staffid','staff_id','teacher id','teacher_id'],
    name:['full name','name','teacher name'],
@@ -1659,7 +1659,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    try{
      const year=Number(bulkContributionYear.value);if(!Number.isInteger(year)||year<1900||year>9999)throw new Error('Choose a valid reporting year.');
      let matrix;
-     if(/\\.csv$/i.test(file.name)){matrix=bulkParseCsv(await file.text());}
+     if(/\.csv$/i.test(file.name)){matrix=bulkParseCsv(await file.text());}
      else{const XLSX=await bulkLoadXlsx(),buffer=await file.arrayBuffer(),book=XLSX.read(buffer,{type:'array',cellText:true,cellDates:false});const sheet=book.Sheets[book.SheetNames[0]];matrix=XLSX.utils.sheet_to_json(sheet,{header:1,raw:false,defval:''});}
      if(!matrix?.length||matrix.length<2)throw new Error('The uploaded file does not contain contribution rows.');
      const headers=matrix[0],columns={};Object.keys(contributionHeaderAliases).forEach(key=>columns[key]=contributionFindColumn(headers,key));
