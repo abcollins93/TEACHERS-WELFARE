@@ -1425,15 +1425,32 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  
  // Bulk teacher import. Role is informational only; administrator access remains
  // exclusively controlled by the secure administrator invitation workflow.
- const bulkColumns=['Full Name','Staff ID','Phone Number','Rank / Grade','Class / Subject Assigned','Role'];
+ const bulkColumns=['Staff ID','Full name','Phone','Rank / Grade','Class / Subject / Responsibility','Membership Type','Employer'];
+ const bulkRankOptions=[...RANK_OPTIONS];
+ const bulkMembershipOptions=['Permanent','Temporal'];
+ const bulkEmployerOptions=['GES','NGO','NSA'];
  const bulkEscape=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
  const bulkCsvCell=value=>{const s=String(value??'');return /[",\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
- const bulkDownloadTemplate=()=>{
-  const sample=['Ama Mensah','001234','0241234567','Principal Superintendent','Primary 6','Member'];
-  const csv='\ufeff'+[bulkColumns,sample].map(row=>row.map(bulkCsvCell).join(',')).join('\r\n');
-  const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
-  const link=document.createElement('a');link.href=url;link.download='Teacher_Bulk_Registration_Template.csv';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
-  msg('wfBulkTeacherMsg','CSV template downloaded. Keep Staff ID and Phone Number columns formatted as Text.');
+ let bulkExcelPromise=null;
+ const bulkLoadExcelJs=()=>{
+  if(window.ExcelJS)return Promise.resolve(window.ExcelJS);if(bulkExcelPromise)return bulkExcelPromise;
+  bulkExcelPromise=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';script.onload=()=>window.ExcelJS?resolve(window.ExcelJS):reject(new Error('Excel workbook generator did not initialize.'));script.onerror=()=>reject(new Error('Could not load the Excel workbook generator. Check your connection and try again.'));document.head.appendChild(script);});
+  return bulkExcelPromise;
+ };
+ const bulkDownloadTemplate=async()=>{
+  const ExcelJS=await bulkLoadExcelJs(),workbook=new ExcelJS.Workbook(),sheet=workbook.addWorksheet('Teacher Register');
+  sheet.columns=bulkColumns.map((header,index)=>({header,key:'c'+index,width:[18,28,20,30,34,22,18][index]}));
+  sheet.getRow(1).font={bold:true,color:{argb:'FFFFFFFF'}};sheet.getRow(1).fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF17365D'}};sheet.getRow(1).alignment={vertical:'middle',wrapText:true};
+  sheet.views=[{state:'frozen',ySplit:1}];sheet.autoFilter={from:'A1',to:'G200'};
+  for(let row=2;row<=200;row++){
+   sheet.getCell(row,1).numFmt='@';sheet.getCell(row,3).numFmt='@';
+   sheet.getCell(row,4).dataValidation={type:'list',allowBlank:true,formulae:['"'+bulkRankOptions.join(',')+'"'],showErrorMessage:true,errorTitle:'Choose a listed rank',error:'Select a Rank / Grade from the dropdown.'};
+   sheet.getCell(row,6).dataValidation={type:'list',allowBlank:true,formulae:['"'+bulkMembershipOptions.join(',')+'"'],showErrorMessage:true,errorTitle:'Choose a membership type',error:'Select a Membership Type from the dropdown.'};
+   sheet.getCell(row,7).dataValidation={type:'list',allowBlank:true,formulae:['"'+bulkEmployerOptions.join(',')+'"'],showErrorMessage:true,errorTitle:'Choose an employer',error:'Select an Employer from the dropdown.'};
+  }
+  const buffer=await workbook.xlsx.writeBuffer(),blob=new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='Teacher_Bulk_Registration_Template.xlsx';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  msg('wfBulkTeacherMsg','Excel template downloaded with blank rows, Text-formatted Staff ID and Phone columns, and dropdowns through row 200.');
  };
  const bulkParseCsv=source=>{
   const rows=[];let row=[],field='',quoted=false;
@@ -1450,15 +1467,15 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const bulkShowPreview=(records,databaseIds)=>{
   document.getElementById('wfBulkTeacherPreview')?.remove();
   const existingIds=new Set(teachers.map(t=>String(t.id).trim().toLowerCase())),seenIds=new Set();
-  const reviewed=records.map((record,index)=>{const missing=[];if(!String(record.name||'').trim())missing.push('Full Name');if(!String(record.id||'').trim())missing.push('Staff ID');const key=String(record.id||'').trim().toLowerCase();const duplicate=!!key&&(existingIds.has(key)||databaseIds?.has(key)||seenIds.has(key));if(key)seenIds.add(key);return {...record,rowNumber:index+2,missing,duplicate,valid:!missing.length&&!duplicate};});
+  const reviewed=records.map((record,index)=>{const missing=[];if(!String(record.name||'').trim())missing.push('Full name');if(!String(record.id||'').trim())missing.push('Staff ID');const key=String(record.id||'').trim().toLowerCase();const duplicate=!!key&&(existingIds.has(key)||databaseIds?.has(key)||seenIds.has(key));if(key)seenIds.add(key);return {...record,rowNumber:index+2,missing,duplicate,valid:!missing.length&&!duplicate};});
   const validCount=reviewed.filter(x=>x.valid).length,modal=document.createElement('div');modal.id='wfBulkTeacherPreview';modal.style.cssText='position:fixed;inset:0;z-index:10050;background:rgba(2,8,23,.72);display:flex;align-items:center;justify-content:center;padding:14px;overflow:auto';
-  const tableRows=reviewed.map(row=>'<tr style="background:'+(row.valid?'transparent':'rgba(239,68,68,.08)')+'"><td>'+row.rowNumber+'</td><td>'+bulkEscape(row.name||'—')+'</td><td>'+bulkEscape(row.id||'—')+'</td><td>'+bulkEscape(row.phone||'—')+'</td><td>'+bulkEscape(row.rank||'—')+'</td><td>'+bulkEscape(row.class_name||'—')+'</td><td>'+bulkEscape(row.role||'Member')+'</td><td style="color:'+(row.valid?'#15803d':'#dc2626')+';font-weight:750">'+(row.valid?'Ready':bulkEscape([...row.missing.map(x=>'Missing '+x),...(row.duplicate?['Duplicate Staff ID']:[])].join('; ')))+'</td></tr>').join('');
-  modal.innerHTML='<div role="dialog" aria-modal="true" aria-labelledby="wfBulkPreviewTitle" style="width:min(1100px,100%);max-height:92vh;overflow:auto;background:var(--surface,#fff);color:var(--text,#14213d);border-radius:18px;padding:clamp(16px,3vw,26px);box-shadow:0 24px 80px rgba(0,0,0,.35)"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><h2 id="wfBulkPreviewTitle" style="margin:0 0 6px">Preview &amp; Confirmation</h2><p class="muted" style="margin:0 0 14px">Rows with missing required fields or duplicate Staff IDs will be skipped. Role is informational only and does not grant administrator access.</p></div><button type="button" id="wfBulkPreviewClose" class="secondary" aria-label="Close preview">✕</button></div><p style="font-weight:800;margin:0 0 12px">'+validCount+' valid · '+(reviewed.length-validCount)+' skipped · '+reviewed.length+' detected</p><div style="overflow:auto;max-height:55vh;border:1px solid var(--line);border-radius:12px"><table style="width:100%;min-width:850px;border-collapse:collapse"><thead><tr>'+['Row','Full Name','Staff ID','Phone','Rank / Grade','Class / Subject','Role','Validation'].map(x=>'<th style="position:sticky;top:0;background:var(--surface,#fff);padding:10px;text-align:left;border-bottom:1px solid var(--line)">'+x+'</th>').join('')+'</tr></thead><tbody>'+tableRows+'</tbody></table></div><div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:16px"><button type="button" id="wfBulkPreviewCancel" class="secondary">Cancel</button><button type="button" id="wfBulkPreviewConfirm" '+(validCount?'':'disabled')+'>Confirm &amp; Register '+validCount+' Teachers</button></div><p id="wfBulkPreviewStatus" class="muted" role="status" aria-live="polite" style="margin:10px 0 0"></p></div>';
+  const tableRows=reviewed.map(row=>'<tr style="background:'+(row.valid?'transparent':'rgba(239,68,68,.08)')+'"><td>'+row.rowNumber+'</td>'+[row.id,row.name,row.phone,row.rank,row.class_name,row.membership_type,row.employer].map(value=>'<td>'+bulkEscape(value||'—')+'</td>').join('')+'<td style="color:'+(row.valid?'#15803d':'#dc2626')+';font-weight:750">'+(row.valid?'Ready':bulkEscape([...row.missing.map(x=>'Missing '+x),...(row.duplicate?['Duplicate Staff ID']:[])].join('; ')))+'</td></tr>').join('');
+  modal.innerHTML='<div role="dialog" aria-modal="true" aria-labelledby="wfBulkPreviewTitle" style="width:min(1100px,100%);max-height:92vh;overflow:auto;background:var(--surface,#fff);color:var(--text,#14213d);border-radius:18px;padding:clamp(16px,3vw,26px);box-shadow:0 24px 80px rgba(0,0,0,.35)"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><h2 id="wfBulkPreviewTitle" style="margin:0 0 6px">Preview &amp; Confirmation</h2><p class="muted" style="margin:0 0 14px">Rows with missing required fields or duplicate Staff IDs will be skipped. Role is informational only and does not grant administrator access.</p></div><button type="button" id="wfBulkPreviewClose" class="secondary" aria-label="Close preview">✕</button></div><p style="font-weight:800;margin:0 0 12px">'+validCount+' valid · '+(reviewed.length-validCount)+' skipped · '+reviewed.length+' detected</p><div style="overflow:auto;max-height:55vh;border:1px solid var(--line);border-radius:12px"><table style="width:100%;min-width:850px;border-collapse:collapse"><thead><tr>'+['Row',...bulkColumns,'Validation'].map(x=>'<th style="position:sticky;top:0;background:var(--surface,#fff);padding:10px;text-align:left;border-bottom:1px solid var(--line)">'+x+'</th>').join('')+'</tr></thead><tbody>'+tableRows+'</tbody></table></div><div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:16px"><button type="button" id="wfBulkPreviewCancel" class="secondary">Cancel</button><button type="button" id="wfBulkPreviewConfirm" '+(validCount?'':'disabled')+'>Confirm &amp; Register '+validCount+' Teachers</button></div><p id="wfBulkPreviewStatus" class="muted" role="status" aria-live="polite" style="margin:10px 0 0"></p></div>';
   document.body.appendChild(modal);const close=()=>modal.remove();modal.querySelector('#wfBulkPreviewClose').onclick=close;modal.querySelector('#wfBulkPreviewCancel').onclick=close;
   modal.querySelector('#wfBulkPreviewConfirm').onclick=async()=>{
    const button=modal.querySelector('#wfBulkPreviewConfirm'),cancel=modal.querySelector('#wfBulkPreviewCancel'),status=modal.querySelector('#wfBulkPreviewStatus');button.disabled=true;cancel.disabled=true;
    const validRows=reviewed.filter(x=>x.valid);status.textContent='Registering '+validRows.length+' teacher records…';
-   const payload=validRows.map(x=>({id:String(x.id).trim(),name:String(x.name).trim(),phone:String(x.phone||'').trim()||null,rank:String(x.rank||'').trim()||null,class_name:String(x.class_name||'').trim()||null,school_id:ctx.id}));
+   const payload=validRows.map(x=>({id:String(x.id).trim(),name:String(x.name).trim(),phone:String(x.phone||'').trim()||null,rank:String(x.rank||'').trim()||null,class_name:String(x.class_name||'').trim()||null,membership_type:String(x.membership_type||'').trim()||null,employer:String(x.employer||'').trim()||null,school_id:ctx.id}));
    try{
     const {data:inserted,error}=await client.from('teachers').insert(payload).select('id,name');if(error)throw new Error(error.message||'Teacher records could not be saved.');
     let activated=0,activationFailures=[];
@@ -1478,7 +1495,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   if(!matrix?.length)throw new Error('The selected file is empty.');
   const headers=matrix[0].map(bulkNormalizeHeader),columnIndex=bulkColumns.map(column=>headers.indexOf(bulkNormalizeHeader(column))),missingHeaders=bulkColumns.filter((column,i)=>columnIndex[i]<0);
   if(missingHeaders.length)throw new Error('Missing template columns: '+missingHeaders.join(', '));
-  const records=matrix.slice(1).filter(row=>row.some(cell=>String(cell??'').trim()!=='')).map(row=>({name:String(row[columnIndex[0]]??'').trim(),id:String(row[columnIndex[1]]??'').trim(),phone:String(row[columnIndex[2]]??'').trim(),rank:String(row[columnIndex[3]]??'').trim(),class_name:String(row[columnIndex[4]]??'').trim(),role:String(row[columnIndex[5]]??'Member').trim()||'Member'}));
+  const records=matrix.slice(1).filter(row=>row.some(cell=>String(cell??'').trim()!=='')).map(row=>({id:String(row[columnIndex[0]]??'').trim(),name:String(row[columnIndex[1]]??'').trim(),phone:String(row[columnIndex[2]]??'').trim(),rank:String(row[columnIndex[3]]??'').trim(),class_name:String(row[columnIndex[4]]??'').trim(),membership_type:String(row[columnIndex[5]]??'').trim(),employer:String(row[columnIndex[6]]??'').trim()}));
   if(!records.length)throw new Error('No teacher rows were found beneath the header.');
   const {data:latest,error}=await client.from('teachers').select('id').eq('school_id',ctx.id);if(error)throw new Error('Could not verify existing Staff IDs for this school. Try again.');
   const latestIds=new Set((latest||[]).map(t=>String(t.id).trim().toLowerCase()));bulkShowPreview(records,latestIds);
