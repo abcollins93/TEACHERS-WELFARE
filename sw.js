@@ -61,7 +61,7 @@ self.addEventListener('fetch',event=>{
      const cached=await cache.match(request);
      if(cached)return cached;
      try{
-       const response=await fetch(request,{cache:'no-store'});
+       const response=await fetch(request);
        if(response&&(response.ok||response.type==='opaque'))cache.put(request,response.clone()).catch(()=>{});
        return response;
      }catch(_){return cached||Response.error();}
@@ -73,7 +73,7 @@ self.addEventListener('fetch',event=>{
    event.respondWith((async()=>{
      const cache=await caches.open(CACHE_VERSION);
      try{
-       const response=await fetch(request);
+       const response=await fetch(request,{cache:'no-store'});
        if(response&&response.ok)cache.put(request,response.clone()).catch(()=>{});
        return response;
      }catch(_){
