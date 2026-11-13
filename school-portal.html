@@ -1912,6 +1912,7 @@ tenantIdentityReady=loadGatewayIdentity().catch(()=>{
  blockTenantAccess('School gateway unavailable','We could not verify this school’s access status. For security, sign-in is blocked.');
 });
 if(!/^[A-Z0-9-]{3,32}$/.test(code)){ $('loginError').textContent='This gateway link is missing a valid school code. Please use the link provided by your school platform administrator.';$('loginBtn').disabled=true; }
+function displayWelfareReason(value){return String(value??'').replace(/^Bereavement Assistance$/i,'Condolence Support');}
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 async function escapeTeacherText(v){return String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
 function setTenantFooter(school){
@@ -3386,7 +3387,6 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
 (function(){
 'use strict';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const displayWelfareReason=value=>String(value??'').replace(/^Bereavement Assistance$/i,'Condolence Support');
 const cash=v=>'GHS '+Number(v||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
 const date=v=>{if(!v)return '—';const d=new Date(String(v).slice(0,10)+'T00:00:00');return Number.isNaN(d.getTime())?esc(v):d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});};
 const sum=rows=>(rows||[]).reduce((a,x)=>a+Number(x.amount||0),0);
