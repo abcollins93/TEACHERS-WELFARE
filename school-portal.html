@@ -3504,17 +3504,27 @@ window.generateTenantWelfarePdf=async function(o){
   const expectedDues=Number(o.standardMonthlyDues||0)*elapsedMonths;
   const yearStart=year+'-01-01',yearEnd=year+'-12-31';
   const yearContributions=cs.filter(x=>{const d=String(x.date||'').slice(0,10);return d>=yearStart&&d<=yearEnd;});
+  const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const activeMembers=ts.filter(t=>t&&t.is_active!==false).map(t=>{
-   const paid=yearContributions.filter(x=>String(x.teacher_id)===String(t.id)).reduce((total,x)=>total+Number(x.amount||0),0);
+   const memberContributions=yearContributions.filter(x=>String(x.teacher_id)===String(t.id));
+   const paid=memberContributions.reduce((total,x)=>total+Number(x.amount||0),0);
    const percentage=expectedDues>0?(paid/expectedDues)*100:null;
    const monthlyRate=Number(o.standardMonthlyDues||0),monthsPaid=monthlyRate>0?Math.min(Math.max(paid/monthlyRate,0),12):0;
-   return {name:String(t.name||t.full_name||'Unnamed member'),paid,percentage,monthsPaid};
+   const coveredMonths=[...new Set(memberContributions.map(x=>{const date=String(x.date||'').slice(0,10),month=Number(date.slice(5,7));return date.slice(0,4)===String(year)&&month>=1&&month<=12?month:null;}).filter(Boolean))].sort((a,b)=>a-b);
+   let monthSummary='0m';
+   if(coveredMonths.length===1)monthSummary=monthNames[coveredMonths[0]-1];
+   else if(coveredMonths.length>1){
+    const continuous=coveredMonths.every((month,index)=>index===0||month===coveredMonths[index-1]+1);
+    monthSummary=continuous?monthNames[coveredMonths[0]-1]+'–'+monthNames[coveredMonths[coveredMonths.length-1]-1]:coveredMonths.map(month=>monthNames[month-1]).join(', ');
+   }
+   return {name:String(t.name||t.full_name||'Unnamed member'),paid,percentage,monthsPaid,monthSummary};
   }).sort((a,b)=>(a.percentage??-1)-(b.percentage??-1)||a.name.localeCompare(b.name));
   const chartRows=activeMembers.map(member=>{
    const pct=member.percentage,barWidth=Math.min((Number(member.monthsPaid||0)/12)*100,100);
-   const label=pct===null?'Not due':pct.toLocaleString('en-GH',{maximumFractionDigits:1})+'%';
+   const percentageLabel=pct===null?'Not due':pct.toLocaleString('en-GH',{maximumFractionDigits:1})+'%';
+   const label=percentageLabel+' ('+member.monthSummary+')';
    const tone=pct!==null&&pct>=100?'emerald':pct!==null&&pct<50?'amber':'blue';
-   const inside=pct!==null&&barWidth>=15;
+   const inside=pct!==null&&barWidth>=35;
    return '<div class="twf-payment-row"><div class="twf-payment-name">'+esc(member.name)+'</div><div class="twf-payment-track"><div class="twf-payment-bar '+tone+'" style="width:'+barWidth.toFixed(2)+'%">'+(inside?'<span>'+esc(label)+'</span>':'')+'</div>'+(inside?'':'<strong class="twf-payment-outside">'+esc(label)+'</strong>')+'</div></div>';
   }).join('');
   const totalCollected=yearContributions.reduce((total,x)=>total+Number(x.amount||0),0);
