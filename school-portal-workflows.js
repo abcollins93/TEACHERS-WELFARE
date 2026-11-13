@@ -1676,7 +1676,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
        if(amount===null||amount===0){review.push({rowNumber:index+2,staffId,fullName:String(values[columns.name]??''),amount,period,valid:false,skipped:true,error:'Blank or zero amount — skipped',entries:[]});return;}
        const member=roster.get(staffId.toLowerCase()),problems=[];
        if(!member)problems.push('Unrecognized or inactive Staff ID');
-       if(!Number.isFinite(amount)||amount<0)problems.push('Amount must be a positive number');
+       if(!Number.isFinite(amount)||amount<0.01)problems.push('Amount must be at least GHS 0.01');else if(Math.abs(amount*100-Math.round(amount*100))>0.0001)problems.push('Amount must not have more than two decimal places');
        const parsed=contributionParseMonths(period);if(parsed.error)problems.push(parsed.error);
        if(!period)problems.push('Missing month / period');
        if(!parsed.error&&parsed.months.length&&Number.isFinite(amount)&&amount>0){
