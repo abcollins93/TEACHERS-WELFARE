@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_VERSION='twf-pwa-shell-v12';
+const CACHE_VERSION='twf-pwa-shell-v13';
 const SHELL_ASSETS=[
  './',
  './index.html',
@@ -61,7 +61,7 @@ self.addEventListener('fetch',event=>{
      const cached=await cache.match(request);
      if(cached)return cached;
      try{
-       const response=await fetch(request);
+       const response=await fetch(request,{cache:'no-store'});
        if(response&&(response.ok||response.type==='opaque'))cache.put(request,response.clone()).catch(()=>{});
        return response;
      }catch(_){return cached||Response.error();}
