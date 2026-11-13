@@ -2161,7 +2161,7 @@ async function renderTeacherDashboard(profile,school){
    #teacherLiveTicker .ticker-brand-copy small{font-size:.58rem;letter-spacing:.08em;color:#aebed2;font-weight:700}
    #teacherLiveTicker .ticker-live{width:6px;height:6px;border-radius:50%;background:#50dfa8;box-shadow:0 0 0 4px rgba(80,223,168,.13);animation:teacherTickerPulse 2.6s ease-in-out infinite}
    #teacherLiveTicker .ticker-window{position:relative;z-index:1;min-width:0;flex:1;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent)}
-   #teacherLiveTicker .ticker-track{display:flex;width:max-content;align-items:center;animation:rollAnimation 60s linear infinite;will-change:transform}
+   #teacherLiveTicker .ticker-track{display:flex;flex:0 0 auto;flex-wrap:nowrap;width:max-content;min-width:max-content;align-items:center;transform:translate3d(0,0,0);animation:rollAnimation 80s linear infinite;animation-timing-function:linear;animation-iteration-count:infinite;will-change:transform}
    #teacherLiveTicker.is-paused .ticker-track{animation-play-state:paused}
    #teacherLiveTicker .ticker-group{display:flex;flex:0 0 auto;align-items:center;gap:38px;padding-right:38px;white-space:nowrap}
    #teacherLiveTicker .ticker-item{display:inline-flex;align-items:center;gap:10px;color:#f7f9fd;font-size:.8rem}
@@ -2174,7 +2174,7 @@ async function renderTeacherDashboard(profile,school){
    #teacherLiveTicker .ticker-control:hover{background:rgba(255,255,255,.16)}
    body.teacher-ticker-active{padding-bottom:64px}
    body.teacher-ticker-active .sidebar{padding-bottom:68px}
-   @keyframes rollAnimation{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+   @keyframes rollAnimation{0%{transform:translate3d(0,0,0)}100%{transform:translate3d(-50%,0,0)}}
    @keyframes teacherTickerPulse{50%{opacity:.55;transform:scale(.82)}}
    @media(max-width:600px){#teacherLiveTicker{min-height:48px;padding:5px 8px calc(5px + env(safe-area-inset-bottom));gap:7px}#teacherLiveTicker .ticker-brand{gap:7px;padding:7px 8px}#teacherLiveTicker .ticker-brand-icon{width:25px;height:25px}#teacherLiveTicker .ticker-brand-copy strong{font-size:.59rem}#teacherLiveTicker .ticker-brand-copy small{display:none}#teacherLiveTicker .ticker-group{gap:25px;padding-right:25px}#teacherLiveTicker .ticker-item{font-size:.72rem}#teacherLiveTicker .ticker-item b{font-size:.55rem;padding:4px 6px}#teacherLiveTicker .ticker-time{font-size:.6rem}#teacherLiveTicker .ticker-control{width:20px;height:20px;min-width:20px;min-height:20px;flex-basis:20px}}
    @media(max-width:360px){#teacherLiveTicker .ticker-brand-copy{display:none}#teacherLiveTicker .ticker-brand{padding:6px}}
@@ -4234,12 +4234,18 @@ body.sidebar-open{overflow:hidden}
 #teacherLiveTicker .ticker-track{
   display:flex;
   width:max-content;
-  animation:rollAnimation 60s linear infinite;
+  flex:0 0 auto;
+  flex-wrap:nowrap;
+  min-width:max-content;
+  transform:translate3d(0,0,0);
+  animation:rollAnimation 80s linear infinite;
+  animation-timing-function:linear;
+  animation-iteration-count:infinite;
   will-change:transform;
 }
 @keyframes rollAnimation{
-  0%{transform:translateX(0)}
-  100%{transform:translateX(-50%)}
+  0%{transform:translate3d(0,0,0)}
+  100%{transform:translate3d(-50%,0,0)}
 }
 #teacherBroadcast.is-long .teacher-broadcast-message{
   animation-duration:60s!important;
@@ -4726,8 +4732,8 @@ body.sidebar-open{overflow:hidden}
   will-change:transform;
 }
 @keyframes smoothRoll{
-  0%{transform:translateX(0)}
-  100%{transform:translateX(-50%)}
+  0%{transform:translate3d(0,0,0)}
+  100%{transform:translate3d(-50%,0,0)}
 }
 @media(prefers-reduced-motion:reduce){
   .rolling-banner-track,
