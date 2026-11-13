@@ -333,22 +333,15 @@ body {
 }
 
 @keyframes continuousScroll {
-    0% { transform: translate3d(0, 0, 0); }
-    100% { transform: translate3d(-50%, 0, 0); }
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
 }
 
 .animate-continuous-ticker {
     display: flex;
-    flex: 0 0 auto;
-    flex-wrap: nowrap;
     white-space: nowrap;
     width: max-content;
-    min-width: max-content;
-    transform: translate3d(0, 0, 0);
-    animation: continuousScroll 80s linear infinite;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-    will-change: transform;
+    animation: continuousScroll 600s linear infinite;
 }
 
 .animate-continuous-ticker:hover {
@@ -1078,7 +1071,7 @@ try {
 
     <div id="memberTickerBanner" class="mb-6 bg-sdaNavy-900/90 dark:bg-[#071328]/90 backdrop-blur-md border border-amber-500/30 rounded-2xl text-white text-xs py-3 px-4 shadow-lg overflow-hidden hidden">
         <div class="overflow-hidden whitespace-nowrap relative w-full">
-            <div id="memberTickerContent" class="animate-continuous-ticker flex items-center gap-12 font-medium" style="animation-duration: 80s; animation-timing-function: linear; animation-iteration-count: infinite;">
+            <div id="memberTickerContent" class="animate-continuous-ticker flex items-center gap-12 font-medium" style="animation-duration: 600s;">
             </div>
         </div>
     </div>
@@ -2072,7 +2065,7 @@ try {
 ========================================================= -->
 <div id="liveTickerBanner" class="fixed bottom-0 left-0 right-0 z-40 bg-sdaNavy-900/95 dark:bg-[#071328]/95 backdrop-blur-md border-t border-amber-500/30 text-white text-xs py-2.5 px-4 shadow-2xl overflow-hidden hidden">
     <div class="overflow-hidden whitespace-nowrap relative w-full">
-        <div id="tickerContent" class="animate-continuous-ticker flex items-center gap-12 font-medium" style="animation-duration: 80s; animation-timing-function: linear; animation-iteration-count: infinite;">
+        <div id="tickerContent" class="animate-continuous-ticker flex items-center gap-12 font-medium" style="animation-duration: 600s;">
         </div>
     </div>
 </div>
