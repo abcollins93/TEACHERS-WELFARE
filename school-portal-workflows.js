@@ -1451,9 +1451,9 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   sheet.views=[{state:'frozen',ySplit:1}];sheet.autoFilter={from:'A1',to:'G200'};
   for(let row=2;row<=200;row++){
    sheet.getCell(row,1).numFmt='@';sheet.getCell(row,3).numFmt='@';
-   sheet.getCell(row,4).dataValidation={type:'list',allowBlank:true,formulae:['"'+bulkRankOptions.join(',')+'"'],showErrorMessage:true,errorTitle:'Choose a listed rank',error:'Select a Rank / Grade from the dropdown.'};
-   sheet.getCell(row,6).dataValidation={type:'list',allowBlank:true,formulae:['"'+bulkMembershipOptions.join(',')+'"'],showErrorMessage:true,errorTitle:'Choose a membership type',error:'Select a Membership Type from the dropdown.'};
-   sheet.getCell(row,7).dataValidation={type:'list',allowBlank:true,formulae:['"'+bulkEmployerOptions.join(',')+'"'],showErrorMessage:true,errorTitle:'Choose an employer',error:'Select an Employer from the dropdown.'};
+   sheet.getCell(row,4).dataValidation={type:'list',allowBlank:true,formulae:['=RankGradeOptions'],showErrorMessage:true,errorTitle:'Choose a listed rank',error:'Select a Rank / Grade from the dropdown.'};
+   sheet.getCell(row,6).dataValidation={type:'list',allowBlank:true,formulae:['=MembershipTypeOptions'],showErrorMessage:true,errorTitle:'Choose a membership type',error:'Select a Membership Type from the dropdown.'};
+   sheet.getCell(row,7).dataValidation={type:'list',allowBlank:true,formulae:['=EmployerOptions'],showErrorMessage:true,errorTitle:'Choose an employer',error:'Select an Employer from the dropdown.'};
   }
   const buffer=await workbook.xlsx.writeBuffer(),blob=new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='Teacher_Bulk_Registration_Template.xlsx';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
