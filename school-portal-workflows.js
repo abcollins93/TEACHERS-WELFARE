@@ -1641,17 +1641,16 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      if(error)throw new Error(error.message||'Could not load the active school roster.');
      if(!members?.length)throw new Error('No active members were found for this school.');
      const ExcelJS=await bulkLoadExcelJs(),workbook=new ExcelJS.Workbook(),sheet=workbook.addWorksheet('Contributions');
-     const headers=['Staff ID','Full Name','Amount Paid (GHS)','Months Covered / Period','Payment Reference / Receipt'];
-     sheet.columns=headers.map((header,index)=>({header,key:'c'+index,width:[20,32,22,32,48][index]}));
-     sheet.getRow(1).font={bold:true,color:{argb:'FFFFFFFF'}};sheet.getRow(1).fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF17365D'}};sheet.getRow(1).alignment={vertical:'middle',wrapText:true};sheet.views=[{state:'frozen',ySplit:1}];sheet.autoFilter={from:'A1',to:'E'+(members.length+1)};
-     members.forEach((member,index)=>{const row=sheet.getRow(index+2);row.getCell(1).value=String(member.id??'');row.getCell(1).numFmt='@';row.getCell(2).value=member.name||'';row.getCell(3).value=null;row.getCell(4).value=null;row.getCell(5).value=null;row.alignment={vertical:'middle'};});
+     const headers=['Staff ID','Full Name','Amount Paid (GHS)','Months Covered / Period'];
+     sheet.columns=headers.map((header,index)=>({header,key:'c'+index,width:[20,32,22,32][index]}));
+     sheet.getRow(1).font={bold:true,color:{argb:'FFFFFFFF'}};sheet.getRow(1).fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF17365D'}};sheet.getRow(1).alignment={vertical:'middle',wrapText:true};sheet.views=[{state:'frozen',ySplit:1}];sheet.autoFilter={from:'A1',to:'D'+(members.length+1)};
+     members.forEach((member,index)=>{const row=sheet.getRow(index+2);row.getCell(1).value=String(member.id??'');row.getCell(1).numFmt='@';row.getCell(2).value=member.name||'';row.getCell(3).value=null;row.getCell(4).value=null;row.alignment={vertical:'middle'};});
      sheet.getColumn(1).numFmt='@';sheet.getColumn(3).numFmt='#,##0.00';
      sheet.getCell('C1').note='Enter the total amount paid for the months covered. For multiple months, the portal splits the total evenly to the nearest pesewa.';
      sheet.getCell('D1').note='Examples: January; March; Jan - Dec; January to March; Jan, Feb, Mar.';
-     sheet.getCell('E1').note='Leave blank. The portal generates the ledger reference automatically during import.';
      const buffer=await workbook.xlsx.writeBuffer(),blob=new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
      const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='Welfare_Contributions_Template_'+year+'.xlsx';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
-     msg('wfBulkContributionMsg',members.length+' active members pre-filled. Staff IDs are stored as Text. Complete Amount and Months Covered, then upload the workbook.');
+     msg('wfBulkContributionMsg',members.length+' active members pre-filled. Staff IDs are stored as Text. Complete Amount and Months Covered, then upload the workbook. References are generated automatically.');
    }catch(error){msg('wfBulkContributionMsg',error.message||'Template download failed.',true);}
    finally{button.disabled=false;}
  });
@@ -1686,7 +1685,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
          // Other entered amounts retain the existing total-lump-sum allocation behaviour.
          const useStandardRatePerMonth=standardRateCents>0&&totalCents===standardRateCents;
          const base=Math.floor(totalCents/parsed.months.length),remainder=totalCents%parsed.months.length;
-         const entries=parsed.months.map((monthIndex,monthPosition)=>{const cents=useStandardRatePerMonth?standardRateCents:base+(monthPosition<remainder?1:0),datePaid=contributionDateForMonth(year,monthIndex),reference='CONTRIBUTION FOR '+contributionMonthNames[monthIndex].toUpperCase()+' '+year;return {staffId:member?.id||staffId,amount:Number((cents/100).toFixed(2)),datePaid,reference,month:contributionMonthNames[monthIndex]};});
+         const customReference=columns.reference>=0?String(values[columns.reference]??'').trim():'';
+         const entries=parsed.months.map((monthIndex,monthPosition)=>{const cents=useStandardRatePerMonth?standardRateCents:base+(monthPosition<remainder?1:0),datePaid=contributionDateForMonth(year,monthIndex),reference=customReference||('CONTRIBUTION FOR '+contributionMonthNames[monthIndex].toUpperCase()+' '+year);return {staffId:member?.id||staffId,amount:Number((cents/100).toFixed(2)),datePaid,reference,month:contributionMonthNames[monthIndex]};});
          const amountSum=entries.reduce((sum,entry)=>sum+entry.amount,0);
          if(!useStandardRatePerMonth&&Math.abs(amountSum-amount)>0.001)problems.push('Amount could not be allocated exactly.');
          review.push({rowNumber:index+2,staffId,fullName:member?.name||String(values[columns.name]??''),amount,amountRaw:rawAmount,period,datePaid:entries.map(x=>x.datePaid).join(', '),reference:entries.map(x=>x.reference).join('; '),valid:!problems.length,skipped:false,error:problems.join('; '),entries:problems.length?[]:entries});
