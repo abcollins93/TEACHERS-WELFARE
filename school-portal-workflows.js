@@ -784,14 +784,17 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  }else{
    tr.data=tr.data.map(t=>({...t,is_active:typeof t.is_active==='boolean'?t.is_active:true,passport:t.passport??null}));
  }
- let [cr,pr,rr]=await Promise.all([
+ let [cr,pr,rr,ar]=await Promise.all([
    loadSource('contribution ledger',()=>client.from('contributions').select('id,teacher_id,amount,date,reference').eq('school_id',school.id).order('date',{ascending:false})),
    loadSource('payout ledger',()=>client.from('payouts').select('id,teacher_id,amount,date,reason,reference').eq('school_id',school.id).order('date',{ascending:false})),
-   loadSource('transaction reversals',()=>client.from('transaction_reversals').select('transaction_type,transaction_id,reason,created_at').eq('school_id',school.id))
+   loadSource('transaction reversals',()=>client.from('transaction_reversals').select('transaction_type,transaction_id,reason,created_at').eq('school_id',school.id)),
+   loadSource('teacher login accounts',()=>client.from('teacher_accounts').select('auth_user_id,teacher_id,school_id,must_change_password,active').eq('school_id',school.id).eq('active',true))
  ]);
- const teachers=(tr.data||[]).map(t=>typeof window.normalizeTeacherProfileRecord==='function'?window.normalizeTeacherProfileRecord(t):t);let cons=cr.data||[], pays=pr.data||[], reversals=rr.data||[];
+ const loginAccounts=new Map((ar.data||[]).map(account=>[String(account.teacher_id),account]));
+ const teachers=(tr.data||[]).map(t=>{const normalized=typeof window.normalizeTeacherProfileRecord==='function'?window.normalizeTeacherProfileRecord(t):t;const account=loginAccounts.get(String(normalized.id));return {...normalized,auth_user_id:account?.auth_user_id||null,login_activated:!!account?.auth_user_id,must_change_password:account?.must_change_password??null};});let cons=cr.data||[], pays=pr.data||[], reversals=rr.data||[];
  const sourceWarnings=[];
  if(tr.error)sourceWarnings.push('Teacher register unavailable');
+ if(ar.error)sourceWarnings.push('Teacher login status unavailable');
  if(cr.error)sourceWarnings.push('Contribution ledger unavailable');
  if(pr.error)sourceWarnings.push('Payout ledger unavailable');
  if(rr.error)sourceWarnings.push('Reversal status unavailable');
@@ -1030,7 +1033,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  ensureTeacherTableAccentStyles();
  const teacherLoginState=t=>{
    const activated=!!(t?.auth_user_id||t?.login_activated===true||String(t?.login_activated||'').toLowerCase()==='true');
-   const passwordSet=activated&&!!(t?.password_changed_at||t?.password_set_at||t?.first_login_completed_at||t?.password_reset_completed_at||t?.password_set===true||t?.first_login_completed===true||t?.must_change_password===false);
+   const passwordSet=activated&&t?.must_change_password===false;
    return {activated,label:passwordSet?'Password Set':activated?'Login Active':'Not Activated'};
  };
  const renderTeacherTables=()=>{const q=String($('wfTeacherSearch')?.value||'').trim().toLowerCase();const visible=teachers.filter(t=>[t.id,t.name,t.phone,t.rank,t.class_name,t.membership_type,t.employer].some(v=>String(v||'').toLowerCase().includes(q)));
@@ -1075,6 +1078,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      await audit(client,ctx,'Activate/reset teacher sign-in','Secure teacher account activated/reset for Staff ID '+teacher.id+'.',teacher.id);
      teacher.login_activated=true;
      if(data.auth_user_id)teacher.auth_user_id=data.auth_user_id;
+     teacher.must_change_password=true;
      renderTeacherTables();
      msg('wfTeacherMsg','Sign-in activated for '+teacher.name+'. The Staff ID is the temporary login password.');
      wfNotice('TEACHER SIGN-IN ACTIVATED\\nSchool: '+ctx.name+'\\nTeacher: '+data.teacher_name+'\\nStaff ID: '+data.staff_id+'\\nTemporary login password (Staff ID): '+data.initial_password+'\\n\\nShare the Staff ID privately. The teacher must change it after signing in.');
