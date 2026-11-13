@@ -604,7 +604,7 @@ function addUI(){
  {
    const reportMonthNow=new Date();
    const monthNames=Array.from({length:12},(_,i)=>new Date(2000,i,1).toLocaleDateString('en-GH',{month:'long'}));
-   const reportYears=Array.from({length:13},(_,i)=>reportMonthNow.getFullYear()-10+i);
+   const reportYears=Array.from({length:11},(_,i)=>reportMonthNow.getFullYear()-i),paymentStatsYears=Array.from({length:13},(_,i)=>reportMonthNow.getFullYear()-10+i);
    if(reportMonthSelect&&reportYearSelect){
      reportMonthSelect.replaceChildren(...monthNames.map((name,i)=>new Option(name,String(i+1).padStart(2,'0'))));
      reportYearSelect.replaceChildren(...reportYears.map(year=>new Option(String(year),String(year))));
@@ -618,7 +618,7 @@ function addUI(){
      annualYearSelect.value=String(reportMonthNow.getFullYear());
    }
    if(paymentStatsYearSelect){
-     paymentStatsYearSelect.replaceChildren(...reportYears.map(year=>new Option(String(year),String(year))));
+     paymentStatsYearSelect.replaceChildren(...paymentStatsYears.map(year=>new Option(String(year),String(year))));
      paymentStatsYearSelect.disabled=false;
      paymentStatsYearSelect.value=String(reportMonthNow.getFullYear());
    }
