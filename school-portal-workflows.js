@@ -1446,7 +1446,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   bulkXlsxPromise=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';script.onload=()=>window.XLSX?resolve(window.XLSX):reject(new Error('Excel parser did not initialize.'));script.onerror=()=>reject(new Error('Could not load the Excel parser. Please try a CSV template instead.'));document.head.appendChild(script);});
   return bulkXlsxPromise;
  };
- const bulkNormalizeHeader=value=>String(value??'').trim().toLowerCase().replace(/\s+/g,' ').replace(/[’]/g,"'");
+ const bulkNormalizeHeader=value=>String(value??'').replace(/^\\uFEFF/,'').trim().toLowerCase().replace(/\\s+/g,' ').replace(/[’]/g,"'");
  const bulkShowPreview=(records,databaseIds)=>{
   document.getElementById('wfBulkTeacherPreview')?.remove();
   const existingIds=new Set(teachers.map(t=>String(t.id).trim().toLowerCase())),seenIds=new Set();
