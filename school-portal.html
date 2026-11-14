@@ -2411,12 +2411,12 @@ async function renderTeacherDashboard(profile,school){
    const refreshedMonthKey=refreshedMonthDate.getFullYear()+'-'+String(refreshedMonthDate.getMonth()+1).padStart(2,'0');
    const refreshedMonthTotal=activeTeacherContributionRows.filter(row=>String(row.payment_date||row.contribution_date||row.date||'').slice(0,7)===refreshedMonthKey).reduce((sum,row)=>sum+Number(row.amount||0),0);
    if(!contributionLoadError){
-    $('contributionTotal').textContent=money(refreshedConTotal);
-    $('monthlyContributionTotal').textContent=money(refreshedMonthTotal);
+    $('contributionTotal').textContent='GHS '+money(refreshedConTotal);
+    $('monthlyContributionTotal').textContent='GHS '+money(refreshedMonthTotal);
     $('teacherConTotal').textContent=cash(refreshedConTotal);
     if($('standardDuesMetric'))$('standardDuesMetric').textContent=String(activeTeacherContributionCount());
    }
-   if(!freshOwnPay.error){$('payoutTotal').textContent=money(refreshedOwnPayoutTotal);$('teacherConDisbursement').textContent=cash(refreshedOwnPayoutTotal);}
+   if(!freshOwnPay.error){$('payoutTotal').textContent='GHS '+money(refreshedOwnPayoutTotal);$('teacherConDisbursement').textContent=cash(refreshedOwnPayoutTotal);}
    if(!schoolFundSummaryError){$('netTotal').textContent='GHS '+money(schoolFundBalance);$('teacherConNet').textContent=cash(schoolFundBalance);$('teacherCurrentFund').textContent=cash(schoolFundBalance);}
    renderTeacherDashboardLedgers();
   }catch(error){console.warn('[Teacher dashboard] Ledger refresh failed:',error?.message||error);}
@@ -2767,7 +2767,7 @@ async function showDashboard(){
  const c=contributions.filter(r=>!reversedContributions.has(String(r.id))).reduce((sum,r)=>sum+Number(r.amount||0),0);
   const now=new Date();const monthKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');const monthContributions=contributions.filter(r=>!reversedContributions.has(String(r.id))&&String(r.date||'').slice(0,7)===monthKey).reduce((sum,r)=>sum+Number(r.amount||0),0);
  const p=payouts.filter(r=>!reversedPayouts.has(String(r.id))).reduce((sum,r)=>sum+Number(r.amount||0),0);
- $('teacherCount').textContent=teachers.length;if($('monthlyContributionTotal'))$('monthlyContributionTotal').textContent=money(monthContributions);$('contributionTotal').textContent=money(c);$('payoutTotal').textContent=money(p);$('netTotal').textContent=money(c-p);$('lastActivity').textContent='Loading…';
+ $('teacherCount').textContent=teachers.length;if($('monthlyContributionTotal'))$('monthlyContributionTotal').textContent='GHS '+money(monthContributions);$('contributionTotal').textContent='GHS '+money(c);$('payoutTotal').textContent='GHS '+money(p);$('netTotal').textContent='GHS '+money(c-p);$('lastActivity').textContent='Loading…';
  // The Teachers & Members workflow owns roster rendering and teacher-login
  // provisioning. The retired #teacherRows element is intentionally not used.
 const latestActivity=await Promise.all([
