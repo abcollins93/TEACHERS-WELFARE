@@ -2536,7 +2536,7 @@ async function renderTeacherDashboard(profile,school){
    const generatedStatement=await window.generateTenantWelfarePdf({
     type:'individual',
     school:{name:school.name,school_code:school.school_code,district:school.district,region:school.region},
-    teacher:{id:verifiedTeacherId,name:teacherRecord?.name||teacherName,phone:teacherRecord?.phone||'',rank:teacherRecord?.rank||profile.rank||'',class_name:teacherRecord?.class_name||profile.class_name||'',passport:teacherAvatar||teacherRecord?.passport||''},
+    teacher:{id:verifiedTeacherId,staff_id:profile.staff_id||profile.staffId||teacherRecord?.staff_id||'',user_id:verifiedUser.id,auth_user_id:verifiedUser.id,name:teacherRecord?.name||teacherName,phone:teacherRecord?.phone||'',rank:teacherRecord?.rank||profile.rank||'',class_name:teacherRecord?.class_name||profile.class_name||'',passport:teacherAvatar||teacherRecord?.passport||''},
     contributions:personalContributions,
     payouts:personalPayouts,
     personalContributionTotal:activePersonalContributionTotal,
