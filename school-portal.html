@@ -3309,17 +3309,50 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
     if(icon){icon.classList.toggle('fa-eye',!visible);icon.classList.toggle('fa-eye-slash',visible);}
     input.focus({preventScroll:true});
   });
-  document.querySelectorAll('.password-toggle').forEach(function(toggle){
-    const id=toggle.getAttribute('data-password-target');
-    const input=id&&document.getElementById(id);
-    if(input){
-      const visible=input.type==='text';
-      toggle.setAttribute('aria-label',visible?'Hide password':'Show password');
-      toggle.setAttribute('title',visible?'Hide password':'Show password');
-      toggle.setAttribute('aria-pressed',String(visible));
+  function initializePasswordField(input){
+    if(!input||input.type!=='password'||input.dataset.visibilityToggleReady==='true')return;
+    if(input.closest('.password-field')?.querySelector('.password-toggle')){
+      input.dataset.visibilityToggleReady='true';return;
     }
-    if(toggle.tagName==='BUTTON'&&!toggle.hasAttribute('type'))toggle.type='button';
+    const wrapper=document.createElement('div');
+    wrapper.className='password-field';
+    input.parentNode.insertBefore(wrapper,input);
+    wrapper.appendChild(input);
+    const toggle=document.createElement('button');
+    toggle.type='button';
+    toggle.className='password-toggle';
+    toggle.setAttribute('aria-label','Show password');
+    toggle.setAttribute('title','Show password');
+    toggle.setAttribute('aria-pressed','false');
+    toggle.innerHTML='<i class="fa-solid fa-eye" aria-hidden="true"></i>';
+    wrapper.appendChild(toggle);
+    input.dataset.visibilityToggleReady='true';
+  }
+  function initializePasswordFields(root){
+    if(root.matches?.('input[type="password"]'))initializePasswordField(root);
+    root.querySelectorAll?.('input[type="password"]').forEach(initializePasswordField);
+  }
+  initializePasswordFields(document);
+  const passwordObserver=new MutationObserver(records=>{
+    records.forEach(record=>record.addedNodes.forEach(node=>{
+      if(node.nodeType===1)initializePasswordFields(node);
+    }));
   });
+  passwordObserver.observe(document.documentElement,{childList:true,subtree:true});
+  document.addEventListener('submit',function(event){
+    event.target.querySelectorAll?.('.password-field input').forEach(input=>{
+      input.type='password';
+      const toggle=input.closest('.password-field')?.querySelector('.password-toggle');
+      if(toggle){toggle.setAttribute('aria-label','Show password');toggle.setAttribute('title','Show password');toggle.setAttribute('aria-pressed','false');const icon=toggle.querySelector('i');if(icon){icon.classList.add('fa-eye');icon.classList.remove('fa-eye-slash');}}
+    });
+  },true);
+  document.addEventListener('reset',function(event){
+    requestAnimationFrame(()=>event.target.querySelectorAll?.('.password-field input').forEach(input=>{
+      input.type='password';
+      const toggle=input.closest('.password-field')?.querySelector('.password-toggle');
+      if(toggle){toggle.setAttribute('aria-label','Show password');toggle.setAttribute('title','Show password');toggle.setAttribute('aria-pressed','false');const icon=toggle.querySelector('i');if(icon){icon.classList.add('fa-eye');icon.classList.remove('fa-eye-slash');}}
+    }));
+  },true);
 })();
 </script>
 
