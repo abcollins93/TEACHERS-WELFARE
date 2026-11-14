@@ -1994,6 +1994,7 @@ window.getLoggedInTeacherData=async function(profile,school){
 };
 async function renderTeacherDashboard(profile,school){
  window.__welfareCurrentRole='teacher';
+ window.__welfareCurrentSchool=school;
  const {data:{user}}=await client.auth.getUser();
  const teacherId=String(profile.teacher_id||profile.id||'');
  let teacherName=window.__welfareTeacherDisplayName||profile.name||profile.full_name||profile.fullName||user?.user_metadata?.full_name||teacherId;
@@ -2580,6 +2581,8 @@ async function renderTeacherDashboard(profile,school){
   if(error||!changed?.ok)return say(changed?.error||'Password update failed. Please try again.',true);
   form.reset();say('Password updated successfully. Use your new password next time you sign in.');
  });
+ for(let attempt=0;attempt<40&&typeof window.initSchoolPdfSettings!=='function';attempt++)await new Promise(resolve=>setTimeout(resolve,50));
+ if(typeof window.initSchoolPdfSettings==='function')await window.initSchoolPdfSettings(client,school,'teacher');
  showLoginWelcome(teacherName,'Teacher',school.name);
  window.finishTenantSkeletons?.();
  resetInactivityTimer();
@@ -5080,12 +5083,7 @@ body.sidebar-open{overflow:hidden}
   const form=document.getElementById('schoolPdfSignatoryForm');
   form?.addEventListener('submit',async event=>{event.preventDefault();const button=form.querySelector('button[type="submit"]');button.disabled=true;showMessage('Saving school PDF signatories…',false);const next={financial_secretary_name:document.getElementById('pdfFinancialSecretaryName').value.trim(),financial_secretary_signature:pending.financial_secretary_signature,headteacher_name:document.getElementById('pdfHeadteacherName').value.trim(),headteacher_signature:pending.headteacher_signature};const rows=[{school_id:school.id,key:KEYS[0],value:next.financial_secretary_name},{school_id:school.id,key:KEYS[1],value:next.financial_secretary_signature},{school_id:school.id,key:KEYS[2],value:next.headteacher_name},{school_id:school.id,key:KEYS[3],value:next.headteacher_signature}];try{const {error}=await client.from('system_settings').upsert(rows,{onConflict:'school_id,key'});if(error)throw error;window.__welfarePdfSignatories=next;showMessage('PDF signatories saved successfully for this school.',false);}catch(error){showMessage('PDF signatories were not saved. '+(error.message||'Check school settings permissions.'),true);}finally{button.disabled=false;}});
  }
- const attach=()=>{
-  if(window.initSchoolWorkflows&&!window.initSchoolWorkflows.__pdfSettingsWrapped){const original=window.initSchoolWorkflows;const wrapped=async function(client,school,refresh){const result=await original.apply(this,arguments);await setup(client,school,'admin');return result;};wrapped.__pdfSettingsWrapped=true;window.initSchoolWorkflows=wrapped;}
-  if(window.renderTeacherDashboard&&!window.renderTeacherDashboard.__pdfSettingsWrapped){const original=window.renderTeacherDashboard;const wrapped=async function(profile,school){const result=await original.apply(this,arguments);await setup(typeof client!=='undefined'?client:null,school,'teacher');return result;};wrapped.__pdfSettingsWrapped=true;window.renderTeacherDashboard=wrapped;}
-  if((!window.initSchoolWorkflows||!window.initSchoolWorkflows.__pdfSettingsWrapped||!window.renderTeacherDashboard||!window.renderTeacherDashboard.__pdfSettingsWrapped))setTimeout(attach,100);
- };
- attach();
+ window.initSchoolPdfSettings=setup;
 })();
 </script>
 </body>
