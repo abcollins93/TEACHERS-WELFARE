@@ -2784,17 +2784,56 @@ try {
  const schoolPdfButton=$('downloadSchoolPdf'); if(schoolPdfButton)schoolPdfButton.onclick=async()=>{
   if(schoolPdfButton.disabled)return;
   if(!window.html2pdf){window.showWelfareDialog('alert','PDF library is unavailable. Please check your internet connection.');return;}
-  const teacherTable=document.querySelector('#schoolTeachers table');
-  if(!teacherTable){window.showWelfareDialog('alert','The teacher register is still loading. Please try again in a moment.');return;}
+  const sourceTable=document.querySelector('#schoolTeachers table');
+  if(!sourceTable){window.showWelfareDialog('alert','The teacher register is still loading. Please try again in a moment.');return;}
   const originalButtonHtml=schoolPdfButton.innerHTML;
   let progress=document.getElementById('schoolPdfProgress');
   if(!progress){progress=document.createElement('p');progress.id='schoolPdfProgress';progress.className='muted';progress.setAttribute('role','status');progress.setAttribute('aria-live','polite');schoolPdfButton.insertAdjacentElement('afterend',progress);}
-  schoolPdfButton.disabled=true;schoolPdfButton.setAttribute('aria-busy','true');progress.textContent='Generating school PDF summary…';
+  schoolPdfButton.disabled=true;schoolPdfButton.setAttribute('aria-busy','true');progress.textContent='Generating executive school PDF summary…';
   try{
-   const report=document.createElement('div');report.style.cssText='padding:24px;color:#182235;font-family:Arial,sans-serif;background:white';
-   report.innerHTML='<h1 style="color:#0b1d3a">'+escapeHtml(school.name)+'</h1><p>School Welfare Fund — Summary Statement</p><p>School code: '+escapeHtml(school.school_code)+' | Generated: '+new Date().toLocaleString()+'</p><hr><h2>Fund summary</h2><p>Registered teachers: '+escapeHtml($('teacherCount').textContent)+'</p><p>Total contributions: GHS '+escapeHtml($('contributionTotal').textContent)+'</p><p>Total welfare payouts: GHS '+escapeHtml($('payoutTotal').textContent)+'</p><p><strong>Net fund balance: GHS '+escapeHtml($('netTotal').textContent)+'</strong></p><h2>Teacher register</h2>'+teacherTable.outerHTML;
-   const blob=await window.html2pdf().set({margin:10,filename:(school.school_code||'school')+'-welfare-summary.pdf',image:{type:'jpeg',quality:.99},html2canvas:{scale:3,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:'landscape'}}).from(report).outputPdf('blob');
-   window.downloadWelfareBlob(blob,(school.school_code||'school')+'-welfare-summary.pdf',progress,'School PDF summary is ready.');
+   const report=document.createElement('div');
+   const issued=new Date(),documentId='TWF-SUM-'+issued.toISOString().replace(/\\D/g,'').slice(0,14)+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
+   const code=String(school.school_code||'—'),schoolName=String(school.name||'School Welfare Fund');
+   const escPdf=value=>String(value??'—').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+   const table=sourceTable.cloneNode(true);
+   const headerCells=Array.from(table.querySelectorAll('thead tr:first-child th'));
+   headerCells.forEach((cell,index)=>{
+    const label=(cell.textContent||'').trim().toLowerCase();
+    if(/profile|view|action|edit|login|activate|deactivate/.test(label)||cell.querySelector('button,a'))table.querySelectorAll('tr').forEach(row=>row.children[index]?.remove());
+   });
+   table.querySelectorAll('button,a,input,select').forEach(node=>node.remove());
+   table.querySelectorAll('tr').forEach(row=>{row.style.breakInside='avoid';row.style.pageBreakInside='avoid';});
+   table.querySelectorAll('th').forEach(cell=>{cell.style.cssText+=';padding:5px 4px;background:#eaf0f7;color:#193451;border:1px solid #cbd5e1;font-size:8px;line-height:1.15;font-weight:800;text-align:left;white-space:normal;overflow-wrap:anywhere;';});
+   table.querySelectorAll('td').forEach(cell=>{cell.style.cssText+=';padding:4px 4px;border:1px solid #d8e0e9;color:#26364a;font-size:8px;line-height:1.2;vertical-align:middle;white-space:normal;overflow-wrap:anywhere;';});
+   table.querySelectorAll('tr:nth-child(even) td').forEach(cell=>cell.style.background='#f8fafc');
+   table.style.cssText='width:100%;max-width:100%;table-layout:fixed;border-collapse:collapse;border-spacing:0;font-family:Arial,sans-serif;';
+   const widths=['11%','18%','11%','13%','10%','13%','13%','11%'];
+   table.querySelectorAll('tr').forEach(row=>Array.from(row.children).forEach((cell,index)=>{if(widths[index])cell.style.width=widths[index];}));
+   const totalTeachers=String($('teacherCount')?.textContent||'0');
+   const contributions=String($('contributionTotal')?.textContent||'0.00');
+   const payouts=String($('payoutTotal')?.textContent||'0.00');
+   const balance=String($('netTotal')?.textContent||'0.00');
+   const qrId='schoolSummaryQr'+Date.now();
+   report.className='school-welfare-summary-pdf';
+   report.style.cssText='width:297mm;min-height:210mm;box-sizing:border-box;padding:8mm 9mm;background:#fff;color:#172235;font-family:Arial,sans-serif;font-size:9px;line-height:1.25;';
+   report.innerHTML='<style>'+
+    '.school-welfare-summary-pdf *{box-sizing:border-box}.sws-head{text-align:center;border-bottom:2px solid #17365d;padding:0 0 3mm;margin:0 0 2.5mm}.sws-head h2{font-size:15px;letter-spacing:.7px;color:#17365d;margin:0 0 2px}.sws-head h1{font-size:20px;line-height:1.15;color:#153c78;margin:0 0 2px}.sws-brand{font-size:9px;font-weight:800;letter-spacing:1.4px;color:#a97810}.sws-title{font-size:10px;font-weight:700;color:#526176;margin-top:3px}.sws-meta{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px;padding:0 0 2mm;margin-bottom:2mm;border-bottom:1px solid #d9e1eb;color:#334155;font-size:8px}.sws-meta b{color:#172b4d}.sws-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:0 0 3mm}.sws-kpi{border:1px solid #dbe3ee;border-left:3px solid #2878d0;border-radius:5px;background:#f8fbff;padding:6px 8px;min-width:0}.sws-kpi:nth-child(2){border-left-color:#23945f}.sws-kpi:nth-child(3){border-left-color:#db2777}.sws-kpi:nth-child(4){border-left-color:#b88925;background:#fffbeb}.sws-kpi small{display:block;font-size:7px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:#64748b}.sws-kpi strong{display:block;margin-top:2px;font-size:12px;color:#142d52;white-space:nowrap}.sws-section{display:flex;align-items:center;justify-content:space-between;margin:0 0 1.5mm;color:#17365d}.sws-section h3{margin:0;font-size:10px;letter-spacing:.3px;text-transform:uppercase}.sws-section span{font-size:7px;color:#64748b}.sws-signatures{display:grid;grid-template-columns:1fr 24mm 1fr;gap:8mm;align-items:end;margin-top:4mm;break-inside:avoid;page-break-inside:avoid}.sws-sign{text-align:center;font-size:8px;color:#334155}.sws-line{height:8mm;border-bottom:1px solid #64748b;margin-bottom:2mm}.sws-sign b{color:#172b4d;font-size:8px}.sws-qr{text-align:center;font-size:6px;color:#64748b}.sws-qr img,.sws-qr canvas{display:block;width:19mm!important;height:19mm!important;margin:0 auto 1mm}.sws-footer{border-top:1px solid #d9e1eb;margin-top:2mm;padding-top:1.5mm;text-align:center;color:#64748b;font-size:7px}.school-welfare-summary-pdf table thead{display:table-header-group}.school-welfare-summary-pdf table tr{break-inside:avoid!important;page-break-inside:avoid!important}.school-welfare-summary-pdf table th,.school-welfare-summary-pdf table td{max-width:0}@media print{.school-welfare-summary-pdf{width:297mm!important;min-height:210mm!important;padding:8mm 9mm!important}}'+
+    '</style>'+
+    '<header class="sws-head"><h2>GHANA EDUCATION SERVICE</h2><h1>'+escPdf(schoolName)+'</h1><div class="sws-brand">TEACHERS WELFARE FUND</div><div class="sws-title">SCHOOL WELFARE FUND — SUMMARY STATEMENT</div></header>'+
+    '<div class="sws-meta"><div><b>Document ID:</b> '+escPdf(documentId)+'<br><b>School code:</b> '+escPdf(code)+'</div><div><b>District:</b> '+escPdf(school.district||'—')+'<br><b>Region:</b> '+escPdf(school.region||'—')+'</div><div style="text-align:right"><b>Date issued:</b> '+escPdf(issued.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}))+'</div></div>'+
+    '<div class="sws-kpis"><div class="sws-kpi"><small>Registered teachers</small><strong>'+escPdf(totalTeachers)+'</strong></div><div class="sws-kpi"><small>Total contributions</small><strong>GHS '+escPdf(contributions)+'</strong></div><div class="sws-kpi"><small>Total welfare payouts</small><strong>GHS '+escPdf(payouts)+'</strong></div><div class="sws-kpi"><small>Net fund balance</small><strong>GHS '+escPdf(balance)+'</strong></div></div>'+
+    '<div class="sws-section"><h3>Teacher register</h3><span>Official school membership register</span></div>'+table.outerHTML+
+    '<div class="sws-signatures"><div class="sws-sign"><div class="sws-line"></div><b>Welfare Financial Secretary</b><br>Signature &amp; Date</div><div class="sws-qr"><div id="'+qrId+'"></div>Verification QR</div><div class="sws-sign"><div class="sws-line"></div><b>Headteacher / Patron</b><br>'+escPdf(schoolName)+'</div></div>'+
+    '<div class="sws-footer">'+escPdf(schoolName)+' Teachers Welfare Fund · '+escPdf(documentId)+' · Generated electronically</div>';
+   document.body.appendChild(report);
+   try{
+    const qrNode=report.querySelector('#'+qrId);
+    if(window.QRCode&&qrNode)new window.QRCode(qrNode,{text:'TWF DOCUMENT '+documentId+' | SCHOOL '+code,width:180,height:180,colorDark:'#030a16',colorLight:'#ffffff',correctLevel:window.QRCode.CorrectLevel.M});
+    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    const filename=(code.replace(/[^a-z0-9_-]/gi,'_')||'school')+'-welfare-summary.pdf';
+    const blob=await window.html2pdf().set({margin:0,filename,image:{type:'jpeg',quality:.98},html2canvas:{scale:2,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0},jsPDF:{unit:'mm',format:'a4',orientation:'landscape',compress:true},pagebreak:{mode:['css'],avoid:['tr','.sws-kpi','.sws-signatures']}}).from(report).outputPdf('blob');
+    window.downloadWelfareBlob(blob,filename,progress,'Executive school PDF summary is ready.');
+   }finally{report.remove();}
   }catch(error){console.error('[School Welfare] School summary PDF failed:',error);progress.textContent=error?.message||'The school PDF could not be generated. Please try again.';progress.className='error';}
   finally{schoolPdfButton.disabled=false;schoolPdfButton.removeAttribute('aria-busy');schoolPdfButton.innerHTML=originalButtonHtml;}
  };
