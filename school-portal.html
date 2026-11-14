@@ -2498,12 +2498,11 @@ async function renderTeacherDashboard(profile,school){
    ]);
    if(contributionError||payoutError||statementFundError||statementContributionFeedError||!statementFundRows?.length)throw new Error('Your financial records and school fund balance could not be retrieved securely. No PDF was generated.');
    const personalContributionsAll=(ownContributions||[]).filter(x=>String(x.teacher_id)===verifiedTeacherId&&String(x.school_id)===String(school.id));
-   const teacherPayoutKeys=new Set([verifiedTeacherId,profile.staff_id,profile.staffId,teacherRecord?.staff_id,verifiedUser.id,profile.auth_user_id].filter(value=>value!==null&&value!==undefined&&String(value).trim()!=='').map(value=>String(value).trim().toLowerCase()));
-   const personalPayouts=(ownPayouts||[]).filter(row=>{
-    const rowKeys=[row.teacher_id,row.member_id,row.staff_id,row.user_id,row.auth_user_id,row.teacher_user_id].filter(value=>value!==null&&value!==undefined&&String(value).trim()!=='').map(value=>String(value).trim().toLowerCase());
-    const sameSchool=!row.school_id||String(row.school_id)===String(school.id);
-    return sameSchool&&(!rowKeys.length||rowKeys.some(key=>teacherPayoutKeys.has(key)));
-   });
+   // get_my_teacher_payouts() is already secured to auth.uid() through
+   // teacher_accounts; the payout table's authoritative owner key is teacher_id.
+   const personalPayouts=(ownPayouts||[]).filter(row=>
+    String(row.teacher_id||'')===verifiedTeacherId&&String(row.school_id||'')===String(school.id)
+   ).sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||String(a.id||'').localeCompare(String(b.id||'')));
    if(personalContributionsAll.length!==(ownContributions||[]).length)throw new Error('A contribution record did not match your authenticated teacher account. Please contact your school administrator.');
    // This RPC intentionally returns only reference, amount, contribution_date and is_reversed.
    // Match the authenticated feed to the base contribution rows using those actual fields;
@@ -3568,12 +3567,10 @@ window.generateTenantWelfarePdf=async function(o){
  const type=o.type,school=o.school&&typeof o.school==='object'?o.school:{},teacher=o.teacher&&typeof o.teacher==='object'?o.teacher:{},cs=(Array.isArray(o.contributions)?o.contributions:[]).filter(x=>x&&x.is_reversed!==true&&String(x.status||'').toLowerCase()!=='reversed'),ps=Array.isArray(o.payouts)?o.payouts.slice():[],ts=Array.isArray(o.teachers)?o.teachers.slice():[],month=String(o.month||'');
  const formatStatementWelfareReason=reason=>{const value=String(reason??'').trim();return value?value.replace(/^Bereavement Assistance$/i,'Condolence Support'):'—';};
  if(type==='individual'){
-  const payoutKeys=new Set([teacher.id,teacher.member_id,teacher.staff_id,teacher.staffId,teacher.user_id,teacher.auth_user_id].filter(value=>value!==null&&value!==undefined&&String(value).trim()!=='').map(value=>String(value).trim().toLowerCase()));
-  const targetPayouts=ps.filter(row=>{
-   const keys=[row.teacher_id,row.member_id,row.staff_id,row.user_id,row.auth_user_id,row.teacher_user_id].filter(value=>value!==null&&value!==undefined&&String(value).trim()!=='').map(value=>String(value).trim().toLowerCase());
-   return !keys.length||keys.some(key=>payoutKeys.has(key));
-  });
-  ps.splice(0,ps.length,...targetPayouts.sort((a,b)=>String(a.date||a.payout_date||'').localeCompare(String(b.date||b.payout_date||''))||String(a.id||'').localeCompare(String(b.id||''))));
+  // Both statement entry points pass an already member-scoped payout array.
+  // Do not apply a second, speculative identifier filter here: payouts.teacher_id
+  // is the canonical staff/member ID and the caller has already verified ownership.
+  ps.sort((a,b)=>String(a.date||a.payout_date||'').localeCompare(String(b.date||b.payout_date||''))||String(a.id||'').localeCompare(String(b.id||'')));
  }
  const reportYear=String(o.year||'');
  if(type==='annual'){
