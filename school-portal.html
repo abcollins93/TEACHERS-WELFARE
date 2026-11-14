@@ -2205,7 +2205,7 @@ async function renderTeacherDashboard(profile,school){
  });
  const refreshTeacherTicker=async()=>{
   const {data:feed,error:feedError}=await client.rpc('get_my_teacher_ticker_feed');
-  if(feedError){console.warn('[Teacher live ticker] Feed unavailable:',feedError.message);return;}
+  if(feedError){ticker.classList.add('hidden');console.warn('[Teacher live ticker] Feed unavailable:',feedError.message);return;}
   const rows=Array.isArray(feed)?feed:[];
   const primary=document.getElementById('teacherTickerItems'),clone=document.getElementById('teacherTickerItemsClone');
   if(!rows.length){ticker.classList.add('hidden');if(primary)primary.innerHTML='';if(clone)clone.innerHTML='';return;}
