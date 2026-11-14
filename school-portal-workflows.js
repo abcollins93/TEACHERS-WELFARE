@@ -799,7 +799,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  }
  let [cr,pr,rr,ar]=await Promise.all([
    loadSource('contribution ledger',()=>client.from('contributions').select('id,teacher_id,amount,date,reference').eq('school_id',school.id).order('date',{ascending:false})),
-   loadSource('payout ledger',()=>client.from('payouts').select('id,teacher_id,amount,date,reason,reference').eq('school_id',school.id).order('date',{ascending:false})),
+   loadSource('payout ledger',()=>client.from('payouts').select('*').eq('school_id',school.id).order('date',{ascending:false})),
    loadSource('transaction reversals',()=>client.from('transaction_reversals').select('transaction_type,transaction_id,reason,created_at').eq('school_id',school.id)),
    loadSource('teacher login accounts',()=>client.from('teacher_accounts').select('auth_user_id,teacher_id,school_id,must_change_password,active').eq('school_id',school.id).eq('active',true))
  ]);
@@ -1283,7 +1283,11 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    return runWelfarePdf($('wfStatementPdf'),'wfStatementMsg','Member statement PDF downloaded successfully.',()=>({
      type:'individual',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},
      teacher,contributions:activeCons.filter(x=>String(x.teacher_id)===String(tid)),
-     payouts:activePays.filter(x=>String(x.teacher_id)===String(tid)),
+     payouts:pays.filter(row=>{
+      const keys=[row.teacher_id,row.member_id,row.staff_id,row.user_id,row.auth_user_id,row.teacher_user_id].filter(value=>value!==null&&value!==undefined&&String(value).trim()!=='').map(value=>String(value).trim().toLowerCase());
+      const targetKeys=[teacher.id,teacher.member_id,teacher.staff_id,teacher.staffId,teacher.user_id,teacher.auth_user_id].filter(value=>value!==null&&value!==undefined&&String(value).trim()!=='').map(value=>String(value).trim().toLowerCase());
+      return !keys.length||keys.some(key=>targetKeys.includes(key));
+     }).sort((a,b)=>String(a.date||a.payout_date||'').localeCompare(String(b.date||b.payout_date||''))||String(a.id||'').localeCompare(String(b.id||''))),
      personalContributionTotal:activeCons.filter(x=>String(x.teacher_id)===String(tid)).reduce((sum,row)=>sum+Number(row.amount||0),0),
      schoolFundBalance:activeCons.reduce((sum,row)=>sum+Number(row.amount||0),0)-activePays.reduce((sum,row)=>sum+Number(row.amount||0),0),
      academicYear:window.getCurrentAcademicYear(),
