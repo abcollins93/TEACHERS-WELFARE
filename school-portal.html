@@ -5048,7 +5048,8 @@ body.sidebar-open{overflow:hidden}
     '<label for="pdfHeadteacherName">Headteacher / Patron Name</label><input id="pdfHeadteacherName" type="text" maxlength="120" placeholder="Enter headteacher or patron name">'+
     '<label for="pdfHeadteacherSignature">Headteacher / Patron Signature</label><input id="pdfHeadteacherSignature" type="file" accept="image/png,image/jpeg,image/webp"><div id="pdfHeadteacherPreview" aria-live="polite"></div><button type="button" class="secondary" id="clearPdfHeadteacherSignature">Remove signature</button>'+
     '<p id="schoolPdfSignatoryMessage" class="muted" role="status" aria-live="polite"></p><button type="submit"><i class="fa-solid fa-floppy-disk"></i> Save PDF signatories</button></form>'
-    :'<section class="panel" id="memberPasswordSettings" style="margin:0;padding:18px"><h3><i class="fa-solid fa-lock"></i> Security settings</h3><p class="muted">Change your account password securely.</p></section>');
+    :role==='teacher'?'<section class="panel" id="memberPasswordSettings" style="margin:0;padding:18px"><h3><i class="fa-solid fa-lock"></i> Security settings</h3><p class="muted">Change your account password securely.</p></section>'
+    :'<section class="panel" style="margin:0;padding:18px"><h3><i class="fa-solid fa-gear"></i> Settings</h3><p class="muted">Your account settings are loading…</p></section>');
   const theme=document.getElementById('settingsThemeToggle');
   if(theme&&!theme.dataset.bound){theme.dataset.bound='1';theme.addEventListener('click',()=>document.getElementById('themeToggle')?.click());}
   return panel;
@@ -5083,6 +5084,10 @@ body.sidebar-open{overflow:hidden}
   const form=document.getElementById('schoolPdfSignatoryForm');
   form?.addEventListener('submit',async event=>{event.preventDefault();const button=form.querySelector('button[type="submit"]');button.disabled=true;showMessage('Saving school PDF signatories…',false);const next={financial_secretary_name:document.getElementById('pdfFinancialSecretaryName').value.trim(),financial_secretary_signature:pending.financial_secretary_signature,headteacher_name:document.getElementById('pdfHeadteacherName').value.trim(),headteacher_signature:pending.headteacher_signature};const rows=[{school_id:school.id,key:KEYS[0],value:next.financial_secretary_name},{school_id:school.id,key:KEYS[1],value:next.financial_secretary_signature},{school_id:school.id,key:KEYS[2],value:next.headteacher_name},{school_id:school.id,key:KEYS[3],value:next.headteacher_signature}];try{const {error}=await client.from('system_settings').upsert(rows,{onConflict:'school_id,key'});if(error)throw error;window.__welfarePdfSignatories=next;showMessage('PDF signatories saved successfully for this school.',false);}catch(error){showMessage('PDF signatories were not saved. '+(error.message||'Check school settings permissions.'),true);}finally{button.disabled=false;}});
  }
+ // Mount a real destination immediately, before a user can click Settings.
+ // Authenticated initialization replaces this neutral placeholder with the
+ // correct administrator or member controls.
+ ensurePanel('pending');
  window.initSchoolPdfSettings=setup;
 })();
 </script>
