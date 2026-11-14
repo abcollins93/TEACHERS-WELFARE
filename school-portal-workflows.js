@@ -710,7 +710,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     #adminActivityTicker .admin-ticker-brand-copy small{font-size:.58rem;letter-spacing:.08em;color:#aebed2;font-weight:700}
     #adminActivityTicker .admin-ticker-indicator{width:6px;height:6px;border-radius:50%;background:#50dfa8;box-shadow:0 0 0 4px rgba(80,223,168,.13);animation:adminTickerPulse 2.6s ease-in-out infinite}
     #adminActivityTicker .admin-ticker-window{position:relative;z-index:1;min-width:0;flex:1;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent)}
-    #adminActivityTicker .admin-ticker-track{display:flex;width:max-content;align-items:center;animation:adminTickerMove 90s linear infinite;will-change:transform}
+    #adminActivityTicker .admin-ticker-track{display:flex;width:max-content;align-items:center;animation:continuousScroll 240s linear infinite!important;will-change:transform}
+    #adminActivityTicker .admin-ticker-track:hover{animation-play-state:paused!important}
     #adminActivityTicker.is-paused .admin-ticker-track{animation-play-state:paused}
     #adminActivityTicker .admin-ticker-group{display:flex;flex:0 0 auto;align-items:center;gap:38px;padding-right:38px;white-space:nowrap}
     #adminActivityTicker .admin-ticker-item{display:inline-flex;align-items:center;gap:9px;color:#f7f9fd;font-size:.8rem}
@@ -721,7 +722,6 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     #adminActivityTicker .admin-ticker-control:hover{background:rgba(255,255,255,.16)}
     body.admin-activity-ticker-active{padding-bottom:64px}
     body.admin-activity-ticker-active .sidebar{padding-bottom:68px}
-    @keyframes adminTickerMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
     @keyframes adminTickerPulse{50%{opacity:.55;transform:scale(.82)}}
     @media(max-width:600px){#adminActivityTicker{min-height:48px;padding:5px 8px calc(5px + env(safe-area-inset-bottom));gap:7px}#adminActivityTicker .admin-ticker-brand{gap:7px;padding:7px 8px}#adminActivityTicker .admin-ticker-brand-icon{width:25px;height:25px}#adminActivityTicker .admin-ticker-brand-copy strong{font-size:.59rem}#adminActivityTicker .admin-ticker-brand-copy small{display:none}#adminActivityTicker .admin-ticker-group{gap:25px;padding-right:25px}#adminActivityTicker .admin-ticker-item{font-size:.72rem}#adminActivityTicker .admin-ticker-time{font-size:.6rem}#adminActivityTicker .admin-ticker-control{width:20px;height:20px;min-width:20px;min-height:20px;flex-basis:20px}}
     @media(max-width:360px){#adminActivityTicker .admin-ticker-brand-copy{display:none}#adminActivityTicker .admin-ticker-brand{padding:6px}}
