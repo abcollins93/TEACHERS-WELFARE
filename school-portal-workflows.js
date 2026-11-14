@@ -1286,7 +1286,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      payouts:pays.filter(row=>{
       const keys=[row.teacher_id,row.member_id,row.staff_id,row.user_id,row.auth_user_id,row.teacher_user_id].filter(value=>value!==null&&value!==undefined&&String(value).trim()!=='').map(value=>String(value).trim().toLowerCase());
       const targetKeys=[teacher.id,teacher.member_id,teacher.staff_id,teacher.staffId,teacher.user_id,teacher.auth_user_id].filter(value=>value!==null&&value!==undefined&&String(value).trim()!=='').map(value=>String(value).trim().toLowerCase());
-      return !keys.length||keys.some(key=>targetKeys.includes(key));
+      return keys.length>0&&keys.some(key=>targetKeys.includes(key));
      }).sort((a,b)=>String(a.date||a.payout_date||'').localeCompare(String(b.date||b.payout_date||''))||String(a.id||'').localeCompare(String(b.id||''))),
      personalContributionTotal:activeCons.filter(x=>String(x.teacher_id)===String(tid)).reduce((sum,row)=>sum+Number(row.amount||0),0),
      schoolFundBalance:activeCons.reduce((sum,row)=>sum+Number(row.amount||0),0)-activePays.reduce((sum,row)=>sum+Number(row.amount||0),0),
