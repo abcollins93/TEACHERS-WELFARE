@@ -731,7 +731,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  }
  const adminTicker=document.createElement('aside');
  adminTicker.id='adminActivityTicker';adminTicker.setAttribute('aria-label','Administrator activity');
- adminTicker.innerHTML='<div class="admin-ticker-brand"><span class="admin-ticker-brand-copy"><strong>ADMIN ACTIVITY</strong><small>SCHOOL OPERATIONS</small></span><span class="admin-ticker-indicator" aria-hidden="true"></span></div><div class="admin-ticker-window"><div class="admin-ticker-track"><div class="admin-ticker-group" id="adminTickerItems"></div><div class="admin-ticker-group" id="adminTickerItemsClone" aria-hidden="true"></div></div></div><button type="button" class="admin-ticker-control" aria-label="Pause scrolling" aria-pressed="false" title="Pause scrolling"><i class="fa-solid fa-pause" aria-hidden="true"></i></button>';
+ adminTicker.innerHTML='<div class="admin-ticker-brand"><span class="admin-ticker-brand-copy"><strong>ADMIN ACTIVITY</strong><small>SCHOOL OPERATIONS</small></span><span class="admin-ticker-indicator" aria-hidden="true"></span></div><div class="admin-ticker-window"><div class="admin-ticker-track animate-continuous-ticker"><div class="admin-ticker-group" id="adminTickerItems"></div><div class="admin-ticker-group" id="adminTickerItemsClone" aria-hidden="true"></div></div></div><button type="button" class="admin-ticker-control" aria-label="Pause scrolling" aria-pressed="false" title="Pause scrolling"><i class="fa-solid fa-pause" aria-hidden="true"></i></button>';
  document.body.appendChild(adminTicker);
  const adminTickerControl=adminTicker.querySelector('.admin-ticker-control');
  adminTickerControl?.addEventListener('click',()=>{
@@ -746,12 +746,14 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      .select('created_at,time_string,actor_name,action,details,status')
      .eq('school_id',ctx.id).order('created_at',{ascending:false}).limit(50);
    if(error){console.warn('[Administrator activity ticker] Feed unavailable:',error.message);return;}
-   const items=rows?.length?rows.map(row=>{
+   const primary=document.getElementById('adminTickerItems'),clone=document.getElementById('adminTickerItemsClone');
+   if(!rows?.length){adminTicker.classList.add('hidden');if(primary)primary.innerHTML='';if(clone)clone.innerHTML='';return;}
+   adminTicker.classList.remove('hidden');
+   const items=rows.map(row=>{
      const stamp=row.created_at?new Date(row.created_at).toLocaleString('en-GH',{dateStyle:'medium',timeStyle:'short'}):(row.time_string||'');
      const detail=String(row.details||'').trim();
      return '<span class="admin-ticker-item"><b>'+esc(row.actor_name||'Administrator')+'</b><span>'+esc(row.action||'Activity recorded')+(detail?' · '+esc(detail):'')+'</span><time class="admin-ticker-time">'+esc(stamp)+'</time></span>';
-   }).join(''):'<span class="admin-ticker-item"><b>ACTIVITY</b><span>No administrator activity has been recorded yet.</span></span>';
-   const primary=document.getElementById('adminTickerItems'),clone=document.getElementById('adminTickerItemsClone');
+   }).join('');
    if(primary&&clone){primary.innerHTML=items;clone.innerHTML=items;}
  };
  await refreshAdminActivityTicker();
