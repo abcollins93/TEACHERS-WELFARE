@@ -1,0 +1,117 @@
+name: Daily encrypted Supabase backup
+
+on:
+  schedule:
+    # 00:00 Africa/Accra (UTC; Ghana has no daylight-saving time)
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-daily-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      RCLONE_CONFIG: ${{ secrets.RCLONE_CONFIG }}
+      AGE_RECIPIENT: ${{ secrets.AGE_RECIPIENT }}
+      SUPABASE_STORAGE_BUCKET: profile-photos
+
+    steps:
+      - name: Check required secrets are configured
+        id: preflight
+        shell: bash
+        run: |
+          missing=()
+          for name in SUPABASE_DB_URL SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY RCLONE_CONFIG AGE_RECIPIENT; do
+            if [ -z "${!name}" ]; then missing+=("$name"); fi
+          done
+          if [ "${#missing[@]}" -gt 0 ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Backup not started. Add the required GitHub Actions secrets: ${missing[*]}"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check out backup scripts
+        if: steps.preflight.outputs.ready == 'true'
+        uses: actions/checkout@v4
+
+      - name: Install encryption and container tools
+        if: steps.preflight.outputs.ready == 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y age curl ca-certificates
+          docker --version
+
+      - name: Install rclone
+        if: steps.preflight.outputs.ready == 'true'
+        run: |
+          curl --proto '=https' --tlsv1.2 -fsS https://rclone.org/install.sh | sudo bash
+          rclone version
+
+      - name: Configure private Google Drive remote
+        if: steps.preflight.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.config/rclone"
+          printf '%s' "$RCLONE_CONFIG" > "$HOME/.config/rclone/rclone.conf"
+          chmod 600 "$HOME/.config/rclone/rclone.conf"
+          rclone lsd gdrive:
+
+      - name: Export complete PostgreSQL database
+        if: steps.preflight.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p backup
+          docker run --rm \
+            -v "$PWD/backup:/backup" \
+            postgres:17 \
+            pg_dump --dbname="$SUPABASE_DB_URL" --format=custom --no-owner --no-acl --file=/backup/supabase-full.dump
+
+      - name: Export private profile photos
+        if: steps.preflight.outputs.ready == 'true'
+        run: python3 scripts/backup_supabase_storage.py
+
+      - name: Encrypt backup archive
+        if: steps.preflight.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          stamp="$(date -u +%Y-%m-%dT%H-%M-%SZ)"
+          archive="school-welfare-${stamp}.tar.gz"
+          tar -czf "$archive" backup
+          age --recipient "$AGE_RECIPIENT" --output "${archive}.age" "$archive"
+          rm -f "$archive"
+          echo "BACKUP_FILE=${archive}.age" >> "$GITHUB_ENV"
+
+      - name: Upload encrypted archive and apply 30-day retention
+        if: steps.preflight.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          rclone copyto "$BACKUP_FILE" "gdrive:School-Welfare-Backups/$BACKUP_FILE" --immutable
+          rclone delete "gdrive:School-Welfare-Backups" --min-age 720h
+          rclone size "gdrive:School-Welfare-Backups"
+
+      - name: Verify uploaded archive size
+        if: steps.preflight.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          local_size="$(stat -c '%s' "$BACKUP_FILE")"
+          remote_size="$(rclone lsjson "gdrive:School-Welfare-Backups/$BACKUP_FILE" --stat | python3 -c 'import json,sys; print(json.load(sys.stdin)["Size"])')"
+          test "$local_size" = "$remote_size"
+          echo "Encrypted archive verified: $local_size bytes"
+
+      - name: Remove local backup data
+        if: always()
+        run: rm -rf backup school-welfare-*.tar.gz school-welfare-*.tar.gz.age
