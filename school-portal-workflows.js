@@ -19,6 +19,7 @@ function wfDialog({kind='confirm',title='Please confirm',message='',confirmText=
 #wfGlobalDialog h2{margin:0 0 10px;color:#fff;font-size:1.2rem;font-weight:850}
 #wfGlobalDialog .wfg-message{color:#c1ccdc;line-height:1.65;font-size:.9rem;white-space:pre-wrap;overflow-wrap:anywhere}
 #wfGlobalDialog textarea{display:block;width:100%;min-height:105px;margin-top:15px;padding:12px;border:1px solid #435570;border-radius:11px;background:#071326;color:#fff;font:inherit;box-sizing:border-box}
+#wfGlobalDialog textarea[hidden]{display:none!important}
 #wfGlobalDialog textarea:focus{outline:0;border-color:#d6a637;box-shadow:0 0 0 3px rgba(214,166,55,.18)}
 #wfGlobalDialog .wfg-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
 #wfGlobalDialog button{min-height:42px;padding:9px 16px;border-radius:10px;font:inherit;font-weight:800;cursor:pointer}
