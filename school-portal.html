@@ -2810,8 +2810,8 @@ try {
     if(!statusCell)return;
     const primary=statusCell.querySelector('.wf-teacher-status');
     const statusText=String(primary?.textContent||statusCell.textContent||'').trim();
-    const match=statusText.match(/\\b(inactive|active)\\b/i);
-    statusCell.textContent=match?match[1].charAt(0).toUpperCase()+match[1].slice(1).toLowerCase():'—';
+    const match=statusText.match(/\b(inactive|active)\b/i);
+    statusCell.textContent=match?match[1].charAt(0).toUpperCase()+match[1].slice(1).toLowerCase():'Active';
    });
    // Emphasize member names in the exported register without changing the live table.
    if(nameColumnIndex>=0)table.querySelectorAll('tbody tr').forEach(row=>{
