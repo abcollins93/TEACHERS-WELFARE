@@ -2131,7 +2131,7 @@ async function renderTeacherDashboard(profile,school){
   </article>
   <article class="panel teacher-profile-accent teacher-profile-accent-blue" style="margin:0;padding:22px"><h3><i class="fa-solid fa-address-card"></i> Personal &amp; Contact Information</h3><div id="teacherOwnPersonalRows" class="teacher-own-profile-fields"></div><p class="muted">To update official personal or contact information, contact your school administrator.</p></article>
   <article class="panel teacher-profile-accent teacher-profile-accent-gold" style="margin:0;padding:22px"><h3><i class="fa-solid fa-briefcase"></i> Professional &amp; Employment Details</h3><div id="teacherOwnProfessionalRows" class="teacher-own-profile-fields"></div></article>
-  <article class="panel teacher-profile-accent teacher-profile-accent-purple" style="margin:0;padding:22px"><h3><i class="fa-solid fa-hand-holding-heart"></i> Welfare Membership &amp; Financial Summary</h3><div id="teacherOwnFinanceRows"></div></article>
+  <article class="panel teacher-profile-accent teacher-profile-accent-purple" style="margin:0;padding:22px"><h3><i class="fa-solid fa-wallet" aria-hidden="true"></i> Welfare Membership &amp; Financial Summary</h3><div id="teacherOwnFinanceRows" class="teacher-own-finance-rows"></div></article>
  </div>
  <details class="panel" style="margin-top:16px"><summary style="cursor:pointer;font-weight:800">Security settings · Change password</summary><p class="muted">Use at least 6 characters.</p><form id="teacherVoluntaryPasswordForm"><label for="teacherCurrentPassword">Current password</label><input id="teacherCurrentPassword" type="password" autocomplete="current-password" minlength="1" maxlength="128" required><label for="teacherVoluntaryNewPassword">New password</label><input id="teacherVoluntaryNewPassword" type="password" autocomplete="new-password" minlength="6" maxlength="128" required><label for="teacherVoluntaryConfirmPassword">Confirm new password</label><input id="teacherVoluntaryConfirmPassword" type="password" autocomplete="new-password" minlength="6" maxlength="128" required><p id="teacherVoluntaryPasswordMessage" class="muted" role="status" aria-live="polite"></p><button type="submit">Update my password</button></form></details>
  <style>
@@ -2145,7 +2145,15 @@ async function renderTeacherDashboard(profile,school){
   #wfTeacherPanel .teacher-own-profile-fields .tp-field{border:1px solid var(--line);background:rgba(120,130,150,.06);border-radius:12px;padding:11px 13px}
   #wfTeacherPanel .teacher-own-profile-fields .tp-field small{display:block;color:var(--muted);font-size:.68rem;font-weight:850;letter-spacing:.06em;margin-bottom:5px}
   #wfTeacherPanel .teacher-own-profile-fields .tp-field strong{display:block;overflow-wrap:anywhere;font-size:.92rem}
-  #wfTeacherPanel .tp-finance{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+  #wfTeacherPanel .teacher-own-finance-rows{display:grid;gap:10px}
+  #wfTeacherPanel .teacher-own-finance-rows .tp-finance{display:flex;align-items:center;justify-content:space-between;gap:14px;min-width:0;padding:15px 14px;border:1px solid var(--line);border-radius:13px;background:rgba(120,130,150,.045);box-shadow:0 1px 2px rgba(15,23,42,.035)}
+  #wfTeacherPanel .teacher-own-finance-rows .tp-finance span{min-width:0;color:var(--muted);font-size:.86rem;font-weight:650;line-height:1.4}
+  #wfTeacherPanel .teacher-own-finance-rows .tp-finance strong{flex:0 0 auto;margin-left:auto;text-align:right;font-size:.94rem;font-weight:850;font-variant-numeric:tabular-nums;white-space:nowrap}
+  #wfTeacherPanel .teacher-own-finance-rows .tp-finance .finance-positive{color:#059669!important}
+  #wfTeacherPanel .teacher-own-finance-rows .tp-finance .finance-payout{color:#e05b5b!important}
+  #wfTeacherPanel .teacher-own-finance-rows .tp-finance .finance-empty{color:var(--muted)!important}
+  .dark #wfTeacherPanel .teacher-own-finance-rows .tp-finance{background:rgba(148,163,184,.055);border-color:var(--line)}
+  @media(max-width:420px){#wfTeacherPanel .teacher-own-finance-rows .tp-finance{gap:8px;padding:12px 10px}#wfTeacherPanel .teacher-own-finance-rows .tp-finance span{font-size:.79rem}#wfTeacherPanel .teacher-own-finance-rows .tp-finance strong{font-size:.84rem}}
   @media(max-width:760px){#teacherOwnProfileContent{grid-template-columns:1fr!important}#teacherOwnProfilePrint{width:100%}}
   @media print{body *{visibility:hidden!important}#wfTeacherPanel,#wfTeacherPanel *{visibility:visible!important}#wfTeacherPanel{position:absolute;inset:0;width:100%;margin:0!important}#teacherOwnProfilePrint,#wfTeacherPanel details{display:none!important}}
  </style>
@@ -2442,11 +2450,14 @@ async function renderTeacherDashboard(profile,school){
  $('teacherOwnMembership').textContent=profileMembership||'Not specified';
  $('teacherOwnPersonalRows').innerHTML=profileFieldRows([['FULL NAME',teacherName,'Unnamed Teacher'],['PHONE NUMBER',profilePhone,'Not provided'],['SCHOOL / INSTITUTION',school.name],['DISTRICT & REGION',[school.district,school.region].filter(Boolean).join(' · ')]]);
  $('teacherOwnProfessionalRows').innerHTML=profileFieldRows([['Staff ID',teacherId],['Professional Rank',profileRank],['Class / Subject Assigned',profileClass,'Not assigned'],['Employer',firstProfileValue(teacherRecord?.employer,teacherRecord?.employer_name,profile.employer,profile.employer_name,school.name)]]);
+ const ownRecentContribution=activeTeacherContributionRows.length?[...activeTeacherContributionRows].sort((a,b)=>String(b.contribution_date||b.date||'').localeCompare(String(a.contribution_date||a.date||'')))[0]:null;
+ const ownRecentContributionDate=ownRecentContribution?profileDate(ownRecentContribution.contribution_date||ownRecentContribution.date):'—';
+ const ownPaymentCount=activeTeacherContributionCount();
  $('teacherOwnFinanceRows').innerHTML=[
-  '<div class="tp-finance"><span>Total Dues Contributed</span><strong style="color:#15803d">'+escapeHtml(cash(totalC))+'</strong></div>',
-  '<div class="tp-finance"><span>Total Welfare Payouts Received</span><strong style="color:#dc2626">'+escapeHtml(cash(totalP))+'</strong></div>',
-  '<div class="tp-finance"><span>Total Payments Recorded</span><strong>'+activeTeacherContributionCount()+'</strong></div>',
-  '<div class="tp-finance"><span>Most Recent Contribution</span><strong>'+escapeHtml(activeTeacherContributionRows.length?profileDate([...activeTeacherContributionRows].sort((a,b)=>String(b.contribution_date||b.date||'').localeCompare(String(a.contribution_date||a.date||'')))[0].contribution_date||[...activeTeacherContributionRows].sort((a,b)=>String(b.contribution_date||b.date||'').localeCompare(String(a.contribution_date||a.date||'')))[0].date):'—')+'</strong></div>'
+  '<div class="tp-finance"><span>Total Dues Contributed</span><strong class="finance-positive">'+escapeHtml(cash(totalC))+'</strong></div>',
+  '<div class="tp-finance"><span>Total Welfare Payouts Received</span><strong class="finance-payout">'+escapeHtml(cash(totalP))+'</strong></div>',
+  '<div class="tp-finance"><span>Total Payments Recorded</span><strong>'+(ownPaymentCount?String(ownPaymentCount):'0 Payments')+'</strong></div>',
+  '<div class="tp-finance"><span>Most Recent Contribution</span><strong'+(ownRecentContribution?'':' class="finance-empty"')+'>'+escapeHtml(ownRecentContributionDate)+'</strong></div>'
  ].join('');
  $('teacherOwnProfilePrint')?.addEventListener('click',()=>window.print());
 
