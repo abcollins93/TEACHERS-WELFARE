@@ -5039,11 +5039,12 @@ body.sidebar-open{overflow:hidden}
   const c=prefix==='sws'?'sws':'twf';
   return '<div class="'+c+'-sign"><div class="'+c+'-sign-image" style="height:16mm;display:flex;align-items:flex-end;justify-content:center;margin-bottom:1mm">'+safeImage+'</div><div class="'+(c==='sws'?'sws-line':'twf-line')+'"></div>'+(name?'<div class="'+c+'-sign-name" style="font-weight:800;color:#172b4d;font-size:8px;margin:1mm 0">'+esc(name)+'</div>':'')+'<b>'+label+'</b>'+(financial?'':'<br>'+esc(schoolName||''))+'</div>';
  };
- function dashboardHost(){const overview=document.getElementById('schoolOverview');return overview?.parentElement||null;}
+ function dashboardHost(){const overview=document.getElementById('schoolOverview');return overview?.parentElement||document.querySelector('#dashboard .dash-layout > div')||null;}
  function ensurePanel(role){
   const host=dashboardHost();if(!host)return null;
   let panel=document.getElementById('wfSettingsPanel');
-  if(!panel){panel=document.createElement('section');panel.id='wfSettingsPanel';panel.className='panel hidden';panel.style.cssText='margin:0 0 18px';host.appendChild(panel);}
+  if(!panel){panel=document.createElement('section');panel.id='wfSettingsPanel';panel.className='panel hidden';panel.style.cssText='margin:0 0 18px';}
+  if(panel.parentElement!==host)host.appendChild(panel);
   panel.innerHTML='<div class="eyebrow">Account preferences</div><h2 style="margin:5px 0 7px">Settings</h2><p class="muted" style="margin:0 0 18px">Manage your display preferences and school PDF signatories.</p>'+
    '<section class="panel" style="margin:0 0 16px;padding:18px"><h3><i class="fa-solid fa-circle-half-stroke"></i> Appearance</h3><p class="muted">Use the same theme preference as the portal header.</p><button type="button" id="settingsThemeToggle" class="secondary">Toggle light / dark theme</button></section>'+
    (role==='admin'?'<form id="schoolPdfSignatoryForm" class="panel" style="margin:0;padding:18px"><h3><i class="fa-solid fa-file-signature"></i> PDF signatories</h3><p class="muted">These details appear on member statements, the School Welfare Fund Summary Statement and Statistics of Payment.</p>'+
