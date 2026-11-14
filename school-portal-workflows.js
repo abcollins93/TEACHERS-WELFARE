@@ -1114,9 +1114,9 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     const q=String($('wfLedgerSearch')?.value||'').trim().toLowerCase(),month=$('wfLedgerMonth')?.value||'';
     const rows=cons.filter(x=>(!month||String(x.date||'').startsWith(month))&&[x.teacher_id,x.reference,teacherById.get(String(x.teacher_id))?.name].some(v=>String(v||'').toLowerCase().includes(q))).sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||String(a.id||'').localeCompare(String(b.id||'')));
     const totalCon=activeCons.reduce((n,x)=>n+Number(x.amount||0),0),totalPay=activePays.reduce((n,x)=>n+Number(x.amount||0),0);
-    $('wfConTotal').textContent=cr.error?'Unavailable':'GHS '+money(totalCon);
-    $('wfConDisbursement').textContent=pr.error?'Unavailable':'GHS '+money(totalPay);
-    $('wfConNet').textContent=(cr.error||pr.error)?'Unavailable':'GHS '+money(totalCon-totalPay);
+    $('wfConTotal').textContent=cr.error?'Unavailable':'GHS '+'GHS '+money(totalCon);
+    $('wfConDisbursement').textContent=pr.error?'Unavailable':'GHS '+'GHS '+money(totalPay);
+    $('wfConNet').textContent=(cr.error||pr.error)?'Unavailable':'GHS '+'GHS '+money(totalCon-totalPay);
     let runningTotal=0;
     $('wfConRows').innerHTML=cr.error?'<tr><td colspan="7">Contribution records could not be loaded. Check school account permissions and try again.</td></tr>':rows.length?rows.map(x=>{
      const d=String(x.date||''),monthYear=d.length>=7?new Date(d+'T00:00:00').toLocaleDateString('en-GB',{month:'short',year:'numeric'}):'—';
@@ -1153,11 +1153,11 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     activePays=pays.filter(item=>!reversed.has('payout:'+item.id));
     const totalCon=activeCons.reduce((sum,item)=>sum+Number(item.amount||0),0);
     const totalPay=activePays.reduce((sum,item)=>sum+Number(item.amount||0),0);
-    $('contributionTotal').textContent=cr.error?'Unavailable':money(totalCon);
-    $('payoutTotal').textContent=pr.error?'Unavailable':money(totalPay);
-    $('netTotal').textContent=(cr.error||pr.error)?'Unavailable':money(totalCon-totalPay);
+    $('contributionTotal').textContent=cr.error?'Unavailable':'GHS '+money(totalCon);
+    $('payoutTotal').textContent=pr.error?'Unavailable':'GHS '+money(totalPay);
+    $('netTotal').textContent=(cr.error||pr.error)?'Unavailable':'GHS '+money(totalCon-totalPay);
     const now=new Date(),monthKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-    if($('monthlyContributionTotal'))$('monthlyContributionTotal').textContent=cr.error?'Unavailable':money(activeCons.filter(item=>String(item.date||'').slice(0,7)===monthKey).reduce((sum,item)=>sum+Number(item.amount||0),0));
+    if($('monthlyContributionTotal'))$('monthlyContributionTotal').textContent=cr.error?'Unavailable':'GHS '+money(activeCons.filter(item=>String(item.date||'').slice(0,7)===monthKey).reduce((sum,item)=>sum+Number(item.amount||0),0));
     renderContributionLedger();
     renderPayoutLedger();
     renderSelectedTeacherProfile();
@@ -1165,9 +1165,9 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     return !cr.error&&!pr.error;
   };
   $('teacherCount').textContent=tr.error?'Unavailable':String(teachers.filter(t=>t.is_active!==false).length);
-  $('contributionTotal').textContent=cr.error?'Unavailable':money(activeCons.reduce((a,x)=>a+Number(x.amount||0),0));
-  $('payoutTotal').textContent=pr.error?'Unavailable':money(activePays.reduce((a,x)=>a+Number(x.amount||0),0));
-  $('netTotal').textContent=(cr.error||pr.error)?'Unavailable':money(activeCons.reduce((a,x)=>a+Number(x.amount||0),0)-activePays.reduce((a,x)=>a+Number(x.amount||0),0));
+  $('contributionTotal').textContent=cr.error?'Unavailable':'GHS '+money(activeCons.reduce((a,x)=>a+Number(x.amount||0),0));
+  $('payoutTotal').textContent=pr.error?'Unavailable':'GHS '+money(activePays.reduce((a,x)=>a+Number(x.amount||0),0));
+  $('netTotal').textContent=(cr.error||pr.error)?'Unavailable':'GHS '+money(activeCons.reduce((a,x)=>a+Number(x.amount||0),0)-activePays.reduce((a,x)=>a+Number(x.amount||0),0));
 
  $('wfResetExpected').textContent='Required phrase: RESET:'+ctx.school_code;
  $('wfResetConfirmation').placeholder='RESET:'+ctx.school_code;
