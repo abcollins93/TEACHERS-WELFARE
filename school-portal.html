@@ -2498,8 +2498,13 @@ async function renderTeacherDashboard(profile,school){
    ]);
    if(contributionError||payoutError||statementFundError||statementContributionFeedError||!statementFundRows?.length)throw new Error('Your financial records and school fund balance could not be retrieved securely. No PDF was generated.');
    const personalContributionsAll=(ownContributions||[]).filter(x=>String(x.teacher_id)===verifiedTeacherId&&String(x.school_id)===String(school.id));
-   const personalPayouts=(ownPayouts||[]).filter(x=>String(x.teacher_id)===verifiedTeacherId&&String(x.school_id)===String(school.id));
-   if(personalContributionsAll.length!==(ownContributions||[]).length||personalPayouts.length!==(ownPayouts||[]).length)throw new Error('A record did not match your authenticated teacher account. Please contact your school administrator.');
+   const teacherPayoutKeys=new Set([verifiedTeacherId,profile.staff_id,profile.staffId,teacherRecord?.staff_id,verifiedUser.id,profile.auth_user_id].filter(value=>value!==null&&value!==undefined&&String(value).trim()!=='').map(value=>String(value).trim().toLowerCase()));
+   const personalPayouts=(ownPayouts||[]).filter(row=>{
+    const rowKeys=[row.teacher_id,row.member_id,row.staff_id,row.user_id,row.auth_user_id,row.teacher_user_id].filter(value=>value!==null&&value!==undefined&&String(value).trim()!=='').map(value=>String(value).trim().toLowerCase());
+    const sameSchool=!row.school_id||String(row.school_id)===String(school.id);
+    return sameSchool&&(!rowKeys.length||rowKeys.some(key=>teacherPayoutKeys.has(key)));
+   });
+   if(personalContributionsAll.length!==(ownContributions||[]).length)throw new Error('A contribution record did not match your authenticated teacher account. Please contact your school administrator.');
    // This RPC intentionally returns only reference, amount, contribution_date and is_reversed.
    // Match the authenticated feed to the base contribution rows using those actual fields;
    // the feed does not expose contribution UUIDs or teacher_id.
@@ -3512,7 +3517,7 @@ window.generateTenantWelfarePdf=async function(o){
   body=meta+'<div class="twf-box member-info-section"><h3>Member Information</h3><div class="twf-details"><p><b>Name:</b> <strong class="twf-member-name">'+esc(teacherName)+'</strong></p><p><b>Staff ID:</b> '+esc(teacher.id||'—')+'</p><p><b>Phone:</b> '+esc(teacher.phone||'—')+'</p><p><b>Rank / Grade:</b> '+esc(teacher.rank||'—')+'</p><p><b>Class / Subject Assigned:</b> '+esc(teacher.class_name||teacher.className||'—')+'</p><p><b>School:</b> '+esc(schoolName)+'</p></div></div>'+
   '<div class="twf-summary-section"><div class="twf-metrics"><div class="twf-metric green"><small>Total Contributions</small><strong>'+cash(individualContributionTotal)+'</strong></div><div class="twf-metric red"><small>Total Welfare Payouts</small><strong>'+cash(totalP)+'</strong></div><div class="twf-metric blue"><small>Total Fund Balance</small><strong>'+(schoolFundBalance===null?'Unavailable':cash(schoolFundBalance))+'</strong></div><div class="twf-metric gold"><small>Standard Monthly Dues</small><strong>'+cash(o.standardMonthlyDues||0)+'</strong></div></div></div>'+
   '<h3 class="twf-section">1. Contribution History</h3><table class="twf-table twf-member-contributions"><thead><tr><th>#</th><th>Month / Year</th><th>DESCRIPTION</th><th>Date Paid</th><th class="amount">Amount</th><th class="amount">Cumulative</th></tr></thead><tbody>'+rows(cs,(x,i)=>{individualContributionRunningTotal+=Number(x.amount||0);return '<td>'+(i+1)+'</td><td>'+esc(x.date?new Date(String(x.date).slice(0,10)+'T00:00:00').toLocaleDateString('en-GB',{month:'short',year:'numeric'}):'—')+'</td><td>'+esc(x.reference||'—')+'</td><td>'+date(x.date)+'</td><td class="amount">'+cash(x.amount)+'</td><td class="amount">'+cash(individualContributionRunningTotal)+'</td>';},'No contribution records available.',6)+'</tbody></table>'+
-  '<h3 class="twf-section">2. Welfare Payouts / Fund Withdrawals</h3><table class="twf-table twf-member-payouts"><thead><tr><th>#</th><th>Beneficiary</th><th>Reason</th><th>Reference</th><th>Date</th><th class="amount">Amount</th></tr></thead><tbody>'+rows(ps,(x,i)=>'<td>'+(i+1)+'</td><td><strong class="twf-member-name">'+esc(teacherName)+'</strong></td><td>'+esc(window.displayWelfareReason(x.reason||'Welfare support'))+'</td><td>'+esc(x.reference||'—')+'</td><td>'+date(x.date)+'</td><td class="amount">'+cash(x.amount)+'</td>','No welfare payouts recorded.',6)+'</tbody></table>';
+  '<h3 class="twf-section">2. Welfare Payouts / Fund Withdrawals</h3><table class="twf-table twf-member-payouts"><thead><tr><th>Beneficiary</th><th>Reason</th><th>Reference</th><th>Date</th><th class="amount">Amount</th></tr></thead><tbody>'+rows(ps,(x)=>'<td><strong class="twf-member-name">'+esc(teacherName)+'</strong></td><td>'+esc((typeof window.displayWelfareReason==='function'?window.displayWelfareReason(x.reason):String(x.reason??'').trim()||'—'))+'</td><td>'+esc(x.reference||'—')+'</td><td>'+date(x.date||x.payout_date)+'</td><td class="amount">'+cash(x.amount)+'</td>','No welfare payouts recorded.',5)+'</tbody></table>';
  }else if(monthly){
   const mc=cs.filter(x=>String(x.date||'').slice(0,7)===month),mp=ps.filter(x=>String(x.date||'').slice(0,7)===month);
   body=meta+'<div class="twf-metrics"><div class="twf-metric green"><small>Monthly Contributions</small><strong>'+cash(sum(mc))+'</strong></div><div class="twf-metric red"><small>Monthly Payouts</small><strong>'+cash(sum(mp))+'</strong></div><div class="twf-metric blue"><small>Net Monthly Balance</small><strong>'+cash(sum(mc)-sum(mp))+'</strong></div><div class="twf-metric gold"><small>Standard Monthly Dues</small><strong>'+cash(o.standardMonthlyDues||0)+'</strong></div></div>'+
@@ -3561,6 +3566,15 @@ window.generateTenantWelfarePdf=async function(o){
  o=o&&typeof o==='object'?o:{};
  if(typeof window.html2pdf!=='function')throw new Error('PDF service is unavailable. Check your internet connection.');
  const type=o.type,school=o.school&&typeof o.school==='object'?o.school:{},teacher=o.teacher&&typeof o.teacher==='object'?o.teacher:{},cs=(Array.isArray(o.contributions)?o.contributions:[]).filter(x=>x&&x.is_reversed!==true&&String(x.status||'').toLowerCase()!=='reversed'),ps=Array.isArray(o.payouts)?o.payouts.slice():[],ts=Array.isArray(o.teachers)?o.teachers.slice():[],month=String(o.month||'');
+ const formatStatementWelfareReason=reason=>{const value=String(reason??'').trim();return value?value.replace(/^Bereavement Assistance$/i,'Condolence Support'):'—';};
+ if(type==='individual'){
+  const payoutKeys=new Set([teacher.id,teacher.member_id,teacher.staff_id,teacher.staffId,teacher.user_id,teacher.auth_user_id].filter(value=>value!==null&&value!==undefined&&String(value).trim()!=='').map(value=>String(value).trim().toLowerCase()));
+  const targetPayouts=ps.filter(row=>{
+   const keys=[row.teacher_id,row.member_id,row.staff_id,row.user_id,row.auth_user_id,row.teacher_user_id].filter(value=>value!==null&&value!==undefined&&String(value).trim()!=='').map(value=>String(value).trim().toLowerCase());
+   return !keys.length||keys.some(key=>payoutKeys.has(key));
+  });
+  ps.splice(0,ps.length,...targetPayouts.sort((a,b)=>String(a.date||a.payout_date||'').localeCompare(String(b.date||b.payout_date||''))||String(a.id||'').localeCompare(String(b.id||''))));
+ }
  const reportYear=String(o.year||'');
  if(type==='annual'){
   if(!/^\d{4}$/.test(reportYear))throw new Error('Choose a valid reporting year.');
