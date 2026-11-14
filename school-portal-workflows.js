@@ -745,7 +745,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    const {data:rows,error}=await client.from('audit_logs')
      .select('created_at,time_string,actor_name,action,details,status')
      .eq('school_id',ctx.id).order('created_at',{ascending:false}).limit(50);
-   if(error){console.warn('[Administrator activity ticker] Feed unavailable:',error.message);return;}
+   if(error){adminTicker.classList.add('hidden');console.warn('[Administrator activity ticker] Feed unavailable:',error.message);return;}
    const primary=document.getElementById('adminTickerItems'),clone=document.getElementById('adminTickerItemsClone');
    if(!rows?.length){adminTicker.classList.add('hidden');if(primary)primary.innerHTML='';if(clone)clone.innerHTML='';return;}
    adminTicker.classList.remove('hidden');
