@@ -1728,7 +1728,7 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
 <button id="teacherLoginButton" type="submit" class="secondary" style="width:100%">Secure Teacher Sign In</button><button id="teacherForgotPreview" type="button" class="secondary" style="width:100%;margin-top:8px">Forgot password?</button></form></section>
 </section>
 <section id="dashboard" class="hidden"><div class="dash-layout"><aside class="sidebar" id="schoolSidebar"><div class="sidebar-brand"><div class="sidebar-brand-mark"><i class="fa-solid fa-graduation-cap"></i></div><div class="sidebar-brand-copy"><strong id="sideSchoolName">School dashboard</strong><small>TEACHERS WELFARE FUND</small></div><button id="sidebarCollapse" class="sidebar-close" type="button" aria-label="Collapse sidebar" aria-expanded="true"><i class="fa-solid fa-xmark"></i></button></div><div class="sidebar-section-label">Main menu</div><button class="navbtn active" data-target="schoolOverview"><i class="fa-solid fa-chart-pie"></i><span>Dashboard</span></button><button class="navbtn" data-target="wfTeacherPanel"><i class="fa-solid fa-user-circle"></i><span>Teacher profile</span></button>
-<button class="navbtn" data-target="teacherProfileViewer"><i class="fa-solid fa-id-card"></i><span>Profile viewer</span></button><button class="navbtn" data-target="schoolTeachers"><i class="fa-solid fa-users"></i><span>Teachers &amp; Members</span></button><button class="navbtn" data-target="wfContributionPanel"><i class="fa-solid fa-money-bill-wave"></i><span>Contributions</span></button><button class="navbtn" data-target="wfPayoutPanel"><i class="fa-solid fa-hand-holding-heart"></i><span>Welfare &amp; Payouts</span></button><button class="navbtn" data-target="wfReportsPanel"><i class="fa-solid fa-file-invoice-dollar"></i><span>Statements &amp; Reports</span></button><div class="sidebar-section-label sidebar-admin-label">Administration</div><button class="navbtn" data-target="wfAdminPanel"><i class="fa-solid fa-user-shield"></i><span>Admin panel</span></button><button class="navbtn" data-target="wfAuditPanel"><i class="fa-solid fa-clipboard-list"></i><span>Audit trail dashboard</span></button><button type="button" class="navbtn" id="sidebarLogout"><i class="fa-solid fa-right-from-bracket"></i><span>Sign out</span></button><div class="sidebar-account"><div class="sidebar-account-mark"><i class="fa-solid fa-user-shield"></i></div><div class="sidebar-account-copy"><strong>School Administrator</strong><small id="sideSchoolCode">Verified school account</small></div></div></aside><div><div class="panel" id="schoolOverview">
+<button class="navbtn" data-target="teacherProfileViewer"><i class="fa-solid fa-id-card"></i><span>Profile viewer</span></button><button class="navbtn" data-target="schoolTeachers"><i class="fa-solid fa-users"></i><span>Teachers &amp; Members</span></button><button class="navbtn" data-target="wfContributionPanel"><i class="fa-solid fa-money-bill-wave"></i><span>Contributions</span></button><button class="navbtn" data-target="wfPayoutPanel"><i class="fa-solid fa-hand-holding-heart"></i><span>Welfare &amp; Payouts</span></button><button class="navbtn" data-target="wfReportsPanel"><i class="fa-solid fa-file-invoice-dollar"></i><span>Statements &amp; Reports</span></button><button class="navbtn" data-target="wfSettingsPanel"><i class="fa-solid fa-gear"></i><span>Settings</span></button><div class="sidebar-section-label sidebar-admin-label">Administration</div><button class="navbtn" data-target="wfAdminPanel"><i class="fa-solid fa-user-shield"></i><span>Admin panel</span></button><button class="navbtn" data-target="wfAuditPanel"><i class="fa-solid fa-clipboard-list"></i><span>Audit trail dashboard</span></button><button type="button" class="navbtn" id="sidebarLogout"><i class="fa-solid fa-right-from-bracket"></i><span>Sign out</span></button><div class="sidebar-account"><div class="sidebar-account-mark"><i class="fa-solid fa-user-shield"></i></div><div class="sidebar-account-copy"><strong>School Administrator</strong><small id="sideSchoolCode">Verified school account</small></div></div></aside><div><div class="panel" id="schoolOverview">
 <div class="portal-hero"><div class="dashboard-welcome-greeting"><span id="dashboardGreeting">HI, ADMIN!</span></div><div class="portal-hero-badge"><i class="fa-solid fa-shield-heart"></i> Official Welfare Hub</div><h1>Empowering Our Educators Through Solidarity</h1><p id="schoolDescription">Providing mutual financial support, social welfare benefits, and transparent monthly record-keeping for this school.</p></div>
 <section id="teacherDashboardProfile" class="teacher-dashboard-profile" hidden aria-label="Your teacher profile">
  <div class="teacher-dashboard-avatar" id="teacherDashboardAvatar">—</div>
@@ -2867,7 +2867,7 @@ try {
     '<div class="sws-meta"><div><b>Document ID:</b> '+escPdf(documentId)+'<br><b>School code:</b> '+escPdf(code)+'</div><div><b>District:</b> '+escPdf(school.district||'—')+'<br><b>Region:</b> '+escPdf(school.region||'—')+'</div><div style="text-align:right"><b>Date issued:</b> '+escPdf(issued.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}))+'</div></div>'+
     '<div class="sws-kpis"><div class="sws-kpi"><small>Registered teachers</small><strong>'+escPdf(totalTeachers)+'</strong></div><div class="sws-kpi"><small>Total contributions</small><strong>GHS '+escPdf(contributions)+'</strong></div><div class="sws-kpi"><small>Total welfare payouts</small><strong>GHS '+escPdf(payouts)+'</strong></div><div class="sws-kpi"><small>Net fund balance</small><strong>GHS '+escPdf(balance)+'</strong></div></div>'+
     '<div class="sws-section"><h3>Teacher register</h3><span>Official school membership register</span></div>'+table.outerHTML+
-    '<div class="sws-signatures"><div class="sws-sign"><div class="sws-line"></div><b>Welfare Financial Secretary</b><br>Signature &amp; Date</div><div class="sws-qr"><div id="'+qrId+'"></div>Verification QR</div><div class="sws-sign"><div class="sws-line"></div><b>Headteacher / Patron</b><br>'+escPdf(schoolName)+'</div></div>'+
+    '<div class="sws-signatures">'+window.getWelfarePdfSignatoryMarkup("financial","sws")+'<div class="sws-qr"><div id="'+qrId+'"></div>Verification QR</div>'+window.getWelfarePdfSignatoryMarkup("headteacher","sws",schoolName)+'</div>'+
     '<div class="sws-footer">'+escPdf(schoolName)+' Teachers Welfare Fund · '+escPdf(documentId)+' · Generated electronically</div>';
    document.body.appendChild(report);
    try{
@@ -3168,6 +3168,7 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
       wfPayoutPanel: 'Welfare & Payouts',
       wfStatementPanel: 'Statements & Reports',
       wfReportsPanel: 'Statements & Reports',
+      wfSettingsPanel: 'Settings',
       wfAdminPanel: 'Administration Panel',
       wfAuditPanel: 'Audit Trail Dashboard'
     };
@@ -3176,7 +3177,7 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
 
     const viewIds = [
       'schoolOverview','teacherProfileViewer','schoolTeachers','wfTeacherPanel','wfTeacherRegisterPanel',
-      'wfContributionPanel','wfPayoutPanel','wfStatementPanel','wfReportsPanel',
+      'wfContributionPanel','wfPayoutPanel','wfStatementPanel','wfReportsPanel','wfSettingsPanel',
       'wfAdminPanel','wfAuditView','teacherWorkspace','workflows'
     ];
     viewIds.forEach(function(id){
@@ -3684,7 +3685,7 @@ window.generateTenantWelfarePdf=async function(o){
   '<h3 class="twf-section">3. Fund Financial Summary</h3><div class="twf-finance"><div><span>Total Member Contributions</span><b>'+cash(totalC)+'</b></div><div><span>Total Welfare Payouts</span><b>'+cash(totalP)+'</b></div><div><span>Standard Monthly Dues</span><b>'+cash(o.standardMonthlyDues||0)+'</b></div><div><span>Total Fund Balance</span><b>'+cash(net)+'</b></div></div>';
  }
  const qr='twfqr'+id;
- const sign='<div class="twf-final-signoff"><div class="twf-signatures"><div class="twf-sign"><div class="twf-line"></div><b>Welfare Financial Secretary</b><br>Signature &amp; Date</div><div class="twf-qr"><div id="'+qr+'"></div>Document reference</div><div class="twf-sign"><div class="twf-line"></div><b>Headteacher / Patron</b><br>'+esc(schoolName)+'</div></div><div class="twf-footer">'+esc(schoolName)+' Teachers Welfare Fund · '+(individual?'Official Member Statement':monthly?'Monthly Summary Report':annual?'Yearly Summary Report':statistics?'Statistics of Payment':'Complete Financial Summary')+' · Generated electronically</div></div>';
+ const sign='<div class="twf-final-signoff"><div class="twf-signatures">'+window.getWelfarePdfSignatoryMarkup("financial","twf")+'<div class="twf-qr"><div id="'+qr+'"></div>Document reference</div>'+window.getWelfarePdfSignatoryMarkup("headteacher","twf",schoolName)+'</div><div class="twf-footer">'+esc(schoolName)+' Teachers Welfare Fund · '+(individual?'Official Member Statement':monthly?'Monthly Summary Report':annual?'Yearly Summary Report':statistics?'Statistics of Payment':'Complete Financial Summary')+' · Generated electronically</div></div>';
  const host=document.createElement('div');host.className='twf-pdf '+orientation+(statistics?' twf-payment-statistics':'');host.style.cssText='position:fixed;left:-100000px;top:0;z-index:-1;background:#fff';host.innerHTML='<style>'+style+'</style>'+head+body+sign;document.body.appendChild(host);
   const passportImage=host.querySelector('[data-twf-passport]');
   if(passportImage){
@@ -5015,5 +5016,77 @@ body.sidebar-open{overflow:hidden}
 #wfContributionPanel .wf-contrib-table-wrap td:nth-child(6){width:8%!important}
 </style>
 
+<script id="school-pdf-settings-module">
+(function(){
+ 'use strict';
+ const KEYS=['pdf_financial_secretary_name','pdf_financial_secretary_signature','pdf_headteacher_name','pdf_headteacher_signature'];
+ const blank=()=>({financial_secretary_name:'',financial_secretary_signature:'',headteacher_name:'',headteacher_signature:''});
+ const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+ window.__welfarePdfSignatories=window.__welfarePdfSignatories||blank();
+ window.getWelfarePdfSignatoryMarkup=function(role,prefix,schoolName){
+  const s=window.__welfarePdfSignatories||blank(),financial=role==='financial';
+  const name=String(financial?s.financial_secretary_name||'':s.headteacher_name||'').trim();
+  const signature=String(financial?s.financial_secretary_signature||'':s.headteacher_signature||'').trim();
+  const label=financial?'Welfare Financial Secretary':'Headteacher / Patron';
+  const safeImage=/^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(signature)?'<img src="'+signature+'" alt="" style="max-width:42mm;max-height:15mm;object-fit:contain">':'';
+  const c=prefix==='sws'?'sws':'twf';
+  return '<div class="'+c+'-sign"><div class="'+c+'-sign-image" style="height:16mm;display:flex;align-items:flex-end;justify-content:center;margin-bottom:1mm">'+safeImage+'</div><div class="'+(c==='sws'?'sws-line':'twf-line')+'"></div>'+(name?'<div class="'+c+'-sign-name" style="font-weight:800;color:#172b4d;font-size:8px;margin:1mm 0">'+esc(name)+'</div>':'')+'<b>'+label+'</b>'+(financial?'':'<br>'+esc(schoolName||''))+'</div>';
+ };
+ function dashboardHost(){const overview=document.getElementById('schoolOverview');return overview?.parentElement||null;}
+ function ensurePanel(role){
+  const host=dashboardHost();if(!host)return null;
+  let panel=document.getElementById('wfSettingsPanel');
+  if(!panel){panel=document.createElement('section');panel.id='wfSettingsPanel';panel.className='panel hidden';panel.style.cssText='margin:0 0 18px';host.appendChild(panel);}
+  panel.innerHTML='<div class="eyebrow">Account preferences</div><h2 style="margin:5px 0 7px">Settings</h2><p class="muted" style="margin:0 0 18px">Manage your display preferences and school PDF signatories.</p>'+
+   '<section class="panel" style="margin:0 0 16px;padding:18px"><h3><i class="fa-solid fa-circle-half-stroke"></i> Appearance</h3><p class="muted">Use the same theme preference as the portal header.</p><button type="button" id="settingsThemeToggle" class="secondary">Toggle light / dark theme</button></section>'+
+   (role==='admin'?'<form id="schoolPdfSignatoryForm" class="panel" style="margin:0;padding:18px"><h3><i class="fa-solid fa-file-signature"></i> PDF signatories</h3><p class="muted">These details appear on member statements, the School Welfare Fund Summary Statement and Statistics of Payment.</p>'+
+    '<label for="pdfFinancialSecretaryName">Welfare Financial Secretary Name</label><input id="pdfFinancialSecretaryName" type="text" maxlength="120" placeholder="Enter financial secretary name">'+
+    '<label for="pdfFinancialSecretarySignature">Welfare Financial Secretary Signature</label><input id="pdfFinancialSecretarySignature" type="file" accept="image/png,image/jpeg,image/webp"><div id="pdfFinancialSecretaryPreview" aria-live="polite"></div><button type="button" class="secondary" id="clearPdfFinancialSecretarySignature">Remove signature</button>'+
+    '<label for="pdfHeadteacherName">Headteacher / Patron Name</label><input id="pdfHeadteacherName" type="text" maxlength="120" placeholder="Enter headteacher or patron name">'+
+    '<label for="pdfHeadteacherSignature">Headteacher / Patron Signature</label><input id="pdfHeadteacherSignature" type="file" accept="image/png,image/jpeg,image/webp"><div id="pdfHeadteacherPreview" aria-live="polite"></div><button type="button" class="secondary" id="clearPdfHeadteacherSignature">Remove signature</button>'+
+    '<p id="schoolPdfSignatoryMessage" class="muted" role="status" aria-live="polite"></p><button type="submit"><i class="fa-solid fa-floppy-disk"></i> Save PDF signatories</button></form>'
+    :'<section class="panel" id="memberPasswordSettings" style="margin:0;padding:18px"><h3><i class="fa-solid fa-lock"></i> Security settings</h3><p class="muted">Change your account password securely.</p></section>');
+  const theme=document.getElementById('settingsThemeToggle');
+  if(theme&&!theme.dataset.bound){theme.dataset.bound='1';theme.addEventListener('click',()=>document.getElementById('themeToggle')?.click());}
+  return panel;
+ }
+ async function readSettings(client,schoolId){
+  const {data,error}=await client.from('system_settings').select('key,value').eq('school_id',schoolId).in('key',KEYS);
+  if(error)throw error;const s=blank();
+  (data||[]).forEach(row=>{if(row.key==='pdf_financial_secretary_name')s.financial_secretary_name=String(row.value||'');if(row.key==='pdf_financial_secretary_signature')s.financial_secretary_signature=String(row.value||'');if(row.key==='pdf_headteacher_name')s.headteacher_name=String(row.value||'');if(row.key==='pdf_headteacher_signature')s.headteacher_signature=String(row.value||'');});
+  return s;
+ }
+ function setPreview(id,data){const node=document.getElementById(id);if(!node)return;node.innerHTML=data?'<img alt="Signature preview" src="'+data+'" style="display:block;max-width:100%;max-height:105px;object-fit:contain;border:1px solid var(--line);border-radius:8px;padding:7px;background:#fff">':'<span class="muted">No signature image selected.</span>';}
+ function showMessage(text,bad){const node=document.getElementById('schoolPdfSignatoryMessage');if(node){node.textContent=text;node.className=bad?'error':'muted';}}
+ async function setup(client,school,role){
+  const panel=ensurePanel(role);if(!panel||!client||!school?.id)return;
+  const themeToggle=document.getElementById('themeToggle');
+  const syncTheme=()=>{const dark=document.body.classList.contains('dark')||document.documentElement.classList.contains('dark');const b=document.getElementById('settingsThemeToggle');if(b)b.innerHTML=dark?'<i class="fa-solid fa-sun"></i> Switch to light theme':'<i class="fa-solid fa-moon"></i> Switch to dark theme';};
+  if(themeToggle&&!themeToggle.dataset.settingsSync){themeToggle.dataset.settingsSync='1';themeToggle.addEventListener('click',syncTheme);}syncTheme();
+  if(role==='teacher'){
+   try{const {data,error}=await client.rpc('get_my_school_pdf_signatories');if(error)throw error;window.__welfarePdfSignatories={...blank(),...(data||{})};}
+   catch(error){console.warn('[PDF signatories] Member signatories could not be loaded:',error);window.__welfarePdfSignatories=blank();}
+   const details=document.querySelector('#wfTeacherPanel details:has(#teacherVoluntaryPasswordForm)');
+   const target=document.getElementById('memberPasswordSettings');if(details&&target&&!target.contains(details))target.appendChild(details);
+   return;
+  }
+  try{const values=await readSettings(client,school.id);window.__welfarePdfSignatories=values;document.getElementById('pdfFinancialSecretaryName').value=values.financial_secretary_name;document.getElementById('pdfHeadteacherName').value=values.headteacher_name;setPreview('pdfFinancialSecretaryPreview',values.financial_secretary_signature);setPreview('pdfHeadteacherPreview',values.headteacher_signature);}
+  catch(error){showMessage('Existing PDF signatories could not be loaded. '+(error.message||''),true);}
+  const pending={financial_secretary_signature:window.__welfarePdfSignatories.financial_secretary_signature,headteacher_signature:window.__welfarePdfSignatories.headteacher_signature};
+  const upload=(inputId,key,previewId)=>{const input=document.getElementById(inputId);input?.addEventListener('change',()=>{const file=input.files?.[0];if(!file)return;if(!/^image\/(png|jpeg|webp)$/i.test(file.type)||file.size>350*1024){showMessage('Use a PNG, JPG or WebP signature image no larger than 350 KB.',true);input.value='';return;}const reader=new FileReader();reader.onload=()=>{pending[key]=String(reader.result||'');setPreview(previewId,pending[key]);showMessage('Signature ready. Select Save PDF signatories to keep it.',false);};reader.onerror=()=>showMessage('The selected signature image could not be read.',true);reader.readAsDataURL(file);});};
+  upload('pdfFinancialSecretarySignature','financial_secretary_signature','pdfFinancialSecretaryPreview');upload('pdfHeadteacherSignature','headteacher_signature','pdfHeadteacherPreview');
+  document.getElementById('clearPdfFinancialSecretarySignature')?.addEventListener('click',()=>{pending.financial_secretary_signature='';document.getElementById('pdfFinancialSecretarySignature').value='';setPreview('pdfFinancialSecretaryPreview','');});
+  document.getElementById('clearPdfHeadteacherSignature')?.addEventListener('click',()=>{pending.headteacher_signature='';document.getElementById('pdfHeadteacherSignature').value='';setPreview('pdfHeadteacherPreview','');});
+  const form=document.getElementById('schoolPdfSignatoryForm');
+  form?.addEventListener('submit',async event=>{event.preventDefault();const button=form.querySelector('button[type="submit"]');button.disabled=true;showMessage('Saving school PDF signatories…',false);const next={financial_secretary_name:document.getElementById('pdfFinancialSecretaryName').value.trim(),financial_secretary_signature:pending.financial_secretary_signature,headteacher_name:document.getElementById('pdfHeadteacherName').value.trim(),headteacher_signature:pending.headteacher_signature};const rows=[{school_id:school.id,key:KEYS[0],value:next.financial_secretary_name},{school_id:school.id,key:KEYS[1],value:next.financial_secretary_signature},{school_id:school.id,key:KEYS[2],value:next.headteacher_name},{school_id:school.id,key:KEYS[3],value:next.headteacher_signature}];try{const {error}=await client.from('system_settings').upsert(rows,{onConflict:'school_id,key'});if(error)throw error;window.__welfarePdfSignatories=next;showMessage('PDF signatories saved successfully for this school.',false);}catch(error){showMessage('PDF signatories were not saved. '+(error.message||'Check school settings permissions.'),true);}finally{button.disabled=false;}});
+ }
+ const attach=()=>{
+  if(window.initSchoolWorkflows&&!window.initSchoolWorkflows.__pdfSettingsWrapped){const original=window.initSchoolWorkflows;const wrapped=async function(client,school,refresh){const result=await original.apply(this,arguments);await setup(client,school,'admin');return result;};wrapped.__pdfSettingsWrapped=true;window.initSchoolWorkflows=wrapped;}
+  if(window.renderTeacherDashboard&&!window.renderTeacherDashboard.__pdfSettingsWrapped){const original=window.renderTeacherDashboard;const wrapped=async function(profile,school){const result=await original.apply(this,arguments);await setup(typeof client!=='undefined'?client:null,school,'teacher');return result;};wrapped.__pdfSettingsWrapped=true;window.renderTeacherDashboard=wrapped;}
+  if((!window.initSchoolWorkflows||!window.initSchoolWorkflows.__pdfSettingsWrapped||!window.renderTeacherDashboard||!window.renderTeacherDashboard.__pdfSettingsWrapped))setTimeout(attach,100);
+ };
+ attach();
+})();
+</script>
 </body>
 </html>
