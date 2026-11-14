@@ -1282,9 +1282,10 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    if(!teacher)return msg('wfStatementMsg','Choose a teacher first.',true);
    return runWelfarePdf($('wfStatementPdf'),'wfStatementMsg','Member statement PDF downloaded successfully.',()=>({
      type:'individual',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},
-     teacher,contributions:activeCons.filter(x=>String(x.teacher_id)===String(tid)),
-     payouts:pays.filter(row=>String(row.teacher_id||'')===String(teacher.id||'')&&String(row.school_id||'')===String(ctx.id))
+     teacher,teachers,contributions:activeCons.filter(x=>String(x.teacher_id)===String(tid)),
+     payouts:pays.filter(row=>String(row.school_id||'')===String(ctx.id))
       .sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||String(a.id||'').localeCompare(String(b.id||''))),
+     personalPayoutTotal:pays.filter(row=>String(row.teacher_id||'')===String(teacher.id||'')&&String(row.school_id||'')===String(ctx.id)).reduce((sum,row)=>sum+Number(row.amount||0),0),
      personalContributionTotal:activeCons.filter(x=>String(x.teacher_id)===String(tid)).reduce((sum,row)=>sum+Number(row.amount||0),0),
      schoolFundBalance:activeCons.reduce((sum,row)=>sum+Number(row.amount||0),0)-activePays.reduce((sum,row)=>sum+Number(row.amount||0),0),
      academicYear:window.getCurrentAcademicYear(),
