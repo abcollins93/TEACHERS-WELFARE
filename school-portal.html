@@ -2193,7 +2193,7 @@ async function renderTeacherDashboard(profile,school){
   document.head.appendChild(tickerStyles);
  }
  const ticker=document.createElement('aside');ticker.id='teacherLiveTicker';ticker.setAttribute('aria-label','School announcements and your account activity');
- ticker.innerHTML='<div class="ticker-brand"><span class="ticker-brand-copy"><strong>SCHOOL FEED</strong><small>NOTICES & YOUR ACTIVITY</small></span><span class="ticker-live" aria-hidden="true"></span></div><div class="ticker-window"><div class="ticker-track"><div class="ticker-group" id="teacherTickerItems"></div><div class="ticker-group" id="teacherTickerItemsClone" aria-hidden="true"></div></div></div><button type="button" class="ticker-control" aria-label="Pause scrolling" aria-pressed="false" title="Pause scrolling"><i class="fa-solid fa-pause" aria-hidden="true"></i></button>';
+ ticker.innerHTML='<div class="ticker-brand"><span class="ticker-brand-copy"><strong>SCHOOL FEED</strong><small>NOTICES & YOUR ACTIVITY</small></span><span class="ticker-live" aria-hidden="true"></span></div><div class="ticker-window"><div class="ticker-track animate-continuous-ticker"><div class="ticker-group" id="teacherTickerItems"></div><div class="ticker-group" id="teacherTickerItemsClone" aria-hidden="true"></div></div></div><button type="button" class="ticker-control" aria-label="Pause scrolling" aria-pressed="false" title="Pause scrolling"><i class="fa-solid fa-pause" aria-hidden="true"></i></button>';
  workspace.appendChild(ticker);
  const teacherTickerControl=ticker.querySelector('.ticker-control');
  teacherTickerControl?.addEventListener('click',()=>{
@@ -2207,13 +2207,15 @@ async function renderTeacherDashboard(profile,school){
   const {data:feed,error:feedError}=await client.rpc('get_my_teacher_ticker_feed');
   if(feedError){console.warn('[Teacher live ticker] Feed unavailable:',feedError.message);return;}
   const rows=Array.isArray(feed)?feed:[];
-  const items=rows.length?rows.map(item=>{
+  const primary=document.getElementById('teacherTickerItems'),clone=document.getElementById('teacherTickerItemsClone');
+  if(!rows.length){ticker.classList.add('hidden');if(primary)primary.innerHTML='';if(clone)clone.innerHTML='';return;}
+  ticker.classList.remove('hidden');
+  const items=rows.map(item=>{
    const label=item.feed_type==='dues_reminder'?'MONTHLY DUES REMINDER':item.feed_type==='announcement'?'SCHOOL ANNOUNCEMENT':'YOUR ACCOUNT ACTIVITY';
    const itemClass=item.feed_type==='dues_reminder'?'ticker-item ticker-item-dues':'ticker-item';
    const time=item.published_at?new Date(item.published_at).toLocaleString('en-GH',{dateStyle:'medium',timeStyle:'short'}):'';
    return '<span class="'+itemClass+'"><b>'+label+'</b><span>'+escapeHtml(item.message||'')+'</span><time class="ticker-time">'+escapeHtml(time)+'</time></span>';
-  }).join(''):'<span class="ticker-item"><b>WELCOME</b><span>No announcements or recent account activity yet.</span></span>';
-  const primary=document.getElementById('teacherTickerItems'),clone=document.getElementById('teacherTickerItemsClone');
+  }).join('');
   if(primary&&clone){primary.innerHTML=items;clone.innerHTML=items;}
  };
  await refreshTeacherTicker();
@@ -4329,28 +4331,21 @@ body.sidebar-open{overflow:hidden}
     min-width:0!important;
   }
 }
-/* One consistent CSS-only marquee speed for rolling banners on member and admin views. */
-.rolling-banner-track,
-#teacherLiveTicker .ticker-track{
-  display:flex;
-  width:max-content;
-  animation:rollAnimation 60s linear infinite;
+/* Shared slow, seamless ticker motion for authenticated member and administrator feeds. */
+.animate-continuous-ticker{
+  display:flex!important;
+  width:max-content!important;
+  white-space:nowrap;
+  animation:continuousScroll 120s linear infinite!important;
   will-change:transform;
 }
-@keyframes rollAnimation{
+.animate-continuous-ticker:hover{animation-play-state:paused!important}
+@keyframes continuousScroll{
   0%{transform:translateX(0)}
   100%{transform:translateX(-50%)}
 }
-#teacherBroadcast.is-long .teacher-broadcast-message{
-  animation-duration:60s!important;
-  animation-timing-function:linear!important;
-}
 @media(prefers-reduced-motion:reduce){
-  .rolling-banner-track,
-  #teacherLiveTicker .ticker-track,
-  #teacherBroadcast .teacher-broadcast-message{
-    animation:none!important;
-  }
+  .animate-continuous-ticker{animation:none!important}
 }
 </style>
 
@@ -4812,74 +4807,7 @@ body.sidebar-open{overflow:hidden}
 </style>
 
 
-<style id="constant-css-rolling-banner-motion">
-/* Keep a consistent physical scrolling speed; JS sets duration from each track's measured travel distance. */
-.rolling-banner-track,
-#teacherLiveTicker .ticker-track{
-  display:flex!important;
-  width:max-content!important;
-  animation:smoothRoll var(--marquee-duration,60s) linear infinite!important;
-  will-change:transform;
-}
-#teacherBroadcast.is-long .teacher-broadcast-message{
-  animation:smoothRoll var(--marquee-duration,60s) linear infinite!important;
-  will-change:transform;
-}
-@keyframes smoothRoll{
-  0%{transform:translateX(0)}
-  100%{transform:translateX(-50%)}
-}
-@media(prefers-reduced-motion:reduce){
-  .rolling-banner-track,
-  #teacherLiveTicker .ticker-track,
-  #teacherBroadcast .teacher-broadcast-message{
-    animation:none!important;
-  }
-}
-</style>
-<script id="consistent-portal-marquee-speed">
-(function(){
-  const PIXELS_PER_SECOND = 18;
-  const SELECTOR = '.rolling-banner-track, #teacherLiveTicker .ticker-track, #teacherBroadcast.is-long .teacher-broadcast-message';
-  let framePending = false;
-  function updateMarqueeSpeeds(){
-    framePending = false;
-    document.querySelectorAll(SELECTOR).forEach(function(track){
-      const measuredWidth = Math.max(track.scrollWidth || 0, track.getBoundingClientRect().width || 0);
-      const travelDistance = measuredWidth / 2;
-      if (travelDistance > 0){
-        const duration = Math.max(1, travelDistance / PIXELS_PER_SECOND);
-        track.style.setProperty('--marquee-duration', duration.toFixed(2) + 's');
-      }
-    });
-  }
-  function scheduleUpdate(){
-    if (framePending) return;
-    framePending = true;
-    requestAnimationFrame(updateMarqueeSpeeds);
-  }
-  if (document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', scheduleUpdate, {once:true});
-  } else {
-    scheduleUpdate();
-  }
-  const observer = new MutationObserver(scheduleUpdate);
-  observer.observe(document.body, {childList:true, subtree:true});
-  if ('ResizeObserver' in window){
-    const resizeObserver = new ResizeObserver(scheduleUpdate);
-    resizeObserver.observe(document.documentElement);
-    document.querySelectorAll(SELECTOR).forEach(function(track){resizeObserver.observe(track);});
-    const contentObserver = new MutationObserver(function(){
-      document.querySelectorAll(SELECTOR).forEach(function(track){
-        try{resizeObserver.observe(track);}catch(_){}
-      });
-    });
-    contentObserver.observe(document.body, {childList:true, subtree:true});
-  }
-  window.addEventListener('load', scheduleUpdate, {once:true});
-  window.addEventListener('resize', scheduleUpdate, {passive:true});
-})();
-</script>
+
 
 
 <style id="member-contributions-welfare-card-layout">
