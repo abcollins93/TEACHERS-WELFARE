@@ -78,6 +78,7 @@ jobs:
             -v "$PWD/backup:/backup" \
             postgres:17 \
             pg_dump --dbname="$SUPABASE_DB_URL" --format=custom --no-owner --no-acl --file=/backup/supabase-full.dump
+          docker run --rm -v "$PWD/backup:/backup" postgres:17 pg_restore --list /backup/supabase-full.dump > /dev/null
 
       - name: Export private profile photos
         if: steps.preflight.outputs.ready == 'true'
@@ -91,7 +92,7 @@ jobs:
           stamp="$(date -u +%Y-%m-%dT%H-%M-%SZ)"
           archive="school-welfare-${stamp}.tar.gz"
           tar -czf "$archive" backup
-          age --recipient "$AGE_RECIPIENT" --output "${archive}.age" "$archive"
+          age -r "$AGE_RECIPIENT" --output "${archive}.age" "$archive"
           rm -f "$archive"
           echo "BACKUP_FILE=${archive}.age" >> "$GITHUB_ENV"
 
