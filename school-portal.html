@@ -2789,6 +2789,10 @@ try {
     // warning panel that users can mistake for lost data. Details remain in console.
     console.error('[School Welfare] Workflow initialization deferred/failed:',workflowError?.message||workflowError);
   }
+  // Settings is an independent destination: mount its authenticated admin content
+  // even if another optional workflow section failed to initialize.
+  for(let attempt=0;attempt<40&&typeof window.initSchoolPdfSettings!=='function';attempt++)await new Promise(resolve=>setTimeout(resolve,50));
+  if(typeof window.initSchoolPdfSettings==='function')await window.initSchoolPdfSettings(client,school,'admin');
   window.finishTenantSkeletons?.();
   const duesMetric=$('standardDuesMetric'),duesInput=$('wfMonthlyDues');if(duesMetric&&duesInput){const updateDues=()=>{duesMetric.textContent='GHS '+money(duesInput.value||0);};updateDues();duesInput.addEventListener('input',updateDues);}
  window.showWelfareDialog=window.showWelfareDialog||function(kind,message,title){
