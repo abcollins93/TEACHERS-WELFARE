@@ -2797,11 +2797,27 @@ try {
    const escPdf=value=>String(value??'—').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
    const table=sourceTable.cloneNode(true);
    const headerCells=Array.from(table.querySelectorAll('thead tr:first-child th'));
+   const nameColumnIndex=headerCells.findIndex(cell=>(cell.textContent||'').trim().toLowerCase()==='name');
+   const statusColumnIndex=headerCells.findIndex(cell=>(cell.textContent||'').trim().toLowerCase()==='status');
    headerCells.forEach((cell,index)=>{
     const label=(cell.textContent||'').trim().toLowerCase();
     if(/profile|view|action|edit|login|activate|deactivate/.test(label)||cell.querySelector('button,a'))table.querySelectorAll('tr').forEach(row=>row.children[index]?.remove());
    });
    table.querySelectorAll('button,a,input,select').forEach(node=>node.remove());
+   // Keep the audit copy limited to the primary membership status; login state remains in the live admin roster.
+   if(statusColumnIndex>=0)table.querySelectorAll('tbody tr').forEach(row=>{
+    const statusCell=row.children[statusColumnIndex];
+    if(!statusCell)return;
+    const primary=statusCell.querySelector('.wf-teacher-status');
+    const statusText=String(primary?.textContent||statusCell.textContent||'').trim();
+    const match=statusText.match(/\\b(inactive|active)\\b/i);
+    statusCell.textContent=match?match[1].charAt(0).toUpperCase()+match[1].slice(1).toLowerCase():'—';
+   });
+   // Emphasize member names in the exported register without changing the live table.
+   if(nameColumnIndex>=0)table.querySelectorAll('tbody tr').forEach(row=>{
+    const nameCell=row.children[nameColumnIndex];
+    if(nameCell){nameCell.style.fontWeight='700';nameCell.style.color='#172b4d';}
+   });
    table.querySelectorAll('tr').forEach(row=>{row.style.breakInside='avoid';row.style.pageBreakInside='avoid';});
    table.querySelectorAll('th').forEach(cell=>{cell.style.cssText+=';padding:5px 4px;background:#eaf0f7;color:#193451;border:1px solid #cbd5e1;font-size:8px;line-height:1.15;font-weight:800;text-align:left;white-space:normal;overflow-wrap:anywhere;';});
    table.querySelectorAll('td').forEach(cell=>{cell.style.cssText+=';padding:4px 4px;border:1px solid #d8e0e9;color:#26364a;font-size:8px;line-height:1.2;vertical-align:middle;white-space:normal;overflow-wrap:anywhere;';});
