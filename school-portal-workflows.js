@@ -864,7 +864,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     </article>
     <article class="panel teacher-profile-accent teacher-profile-accent-blue" style="margin:0;padding:22px"><h3><i class="fa-solid fa-address-card"></i> Personal &amp; Contact Information</h3><div id="tpPersonalRows" class="tp-fields"></div><p class="muted">To update your official personal or contact information, contact the Executive Administrator.</p><button type="button" class="secondary" id="tpEditContact">Edit Contact Info</button></article>
     <article class="panel teacher-profile-accent teacher-profile-accent-gold" style="margin:0;padding:22px"><h3><i class="fa-solid fa-briefcase"></i> Professional &amp; Employment Details</h3><div id="tpProfessionalRows" class="tp-fields"></div></article>
-    <article class="panel teacher-profile-accent teacher-profile-accent-purple" style="margin:0;padding:22px"><h3><i class="fa-solid fa-hand-holding-heart"></i> Welfare Membership &amp; Financial Summary</h3><div id="tpFinanceRows"></div></article>
+    <article class="panel teacher-profile-accent teacher-profile-accent-purple" style="margin:0;padding:22px"><h3><i class="fa-solid fa-wallet" aria-hidden="true"></i> Welfare Membership &amp; Financial Summary</h3><div id="tpFinanceRows"></div></article>
    </div>
    <style>
     /* Match the teacher's own profile cards: 5px thematic top accents, rounded top corners and consistent panel depth. */
@@ -883,7 +883,15 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     #teacherProfileViewer .tp-field{border:1px solid var(--line);background:rgba(120,130,150,.06);border-radius:12px;padding:11px 13px}
     #teacherProfileViewer .tp-field small{display:block;color:var(--muted);font-size:.68rem;font-weight:850;letter-spacing:.06em;margin-bottom:5px}
     #teacherProfileViewer .tp-field strong{display:block;overflow-wrap:anywhere;font-size:.92rem}
-    #teacherProfileViewer .tp-finance{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+    #teacherProfileViewer #tpFinanceRows{display:grid;gap:10px}
+    #teacherProfileViewer .tp-finance{display:flex;align-items:center;justify-content:space-between;gap:14px;min-width:0;padding:15px 14px;border:1px solid var(--line);border-radius:13px;background:rgba(120,130,150,.045);box-shadow:0 1px 2px rgba(15,23,42,.035)}
+    #teacherProfileViewer .tp-finance span{min-width:0;color:var(--muted);font-size:.86rem;font-weight:650;line-height:1.4}
+    #teacherProfileViewer .tp-finance strong{flex:0 0 auto;margin-left:auto;text-align:right;font-size:.94rem;font-weight:850;font-variant-numeric:tabular-nums;white-space:nowrap}
+    #teacherProfileViewer .tp-finance .finance-positive{color:#059669!important}
+    #teacherProfileViewer .tp-finance .finance-payout{color:#e05b5b!important}
+    #teacherProfileViewer .tp-finance .finance-empty{color:var(--muted)!important}
+    .dark #teacherProfileViewer .tp-finance{background:rgba(148,163,184,.055);border-color:var(--line)}
+    @media(max-width:420px){#teacherProfileViewer .tp-finance{gap:8px;padding:12px 10px}#teacherProfileViewer .tp-finance span{font-size:.79rem}#teacherProfileViewer .tp-finance strong{font-size:.84rem}}
     #teacherProfilePrint{background:linear-gradient(120deg,#ec4899,#db2777)!important;color:#fff!important;border:1px solid #db2777!important;border-radius:10px;box-shadow:0 6px 16px rgba(219,39,119,.22)}
     #teacherProfilePrint:hover:not(:disabled){background:linear-gradient(120deg,#db2777,#be185d)!important;border-color:#be185d!important}
     @media(max-width:760px){#teacherProfileContent{grid-template-columns:1fr!important}#teacherProfileViewer .teacher-profile-accent{border-top-left-radius:17px!important;border-top-right-radius:17px!important}#teacherProfilePrint{width:100%}}
@@ -921,10 +929,10 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   $('tpPersonalRows').innerHTML=profileRows([['FULL NAME',t.name],['PHONE NUMBER',t.phone],['SCHOOL / INSTITUTION',school.name],['DISTRICT & REGION',[school.district,school.region].filter(Boolean).join(' · ')]]);
   $('tpProfessionalRows').innerHTML=profileRows([['Staff ID',t.id],['Professional Rank',t.rank],['Class / Subject Assigned',t.class_name],['Employer',t.employer||school.employer]]);
   $('tpFinanceRows').innerHTML=[
-   '<div class="tp-finance"><span>Total Dues Contributed</span><strong style="color:#15803d">'+esc(profileMoney(dues))+'</strong></div>',
-   '<div class="tp-finance"><span>Total Welfare Payouts Received</span><strong style="color:#dc2626">'+esc(profileMoney(paid))+'</strong></div>',
-   '<div class="tp-finance"><span>Total Payments Recorded</span><strong>'+tc.length+'</strong></div>',
-   '<div class="tp-finance"><span>Most Recent Contribution</span><strong>'+esc(recent?profileDate(recent.date):'—')+'</strong></div>'
+   '<div class="tp-finance"><span>Total Dues Contributed</span><strong class="finance-positive">'+esc(profileMoney(dues))+'</strong></div>',
+   '<div class="tp-finance"><span>Total Welfare Payouts Received</span><strong class="finance-payout">'+esc(profileMoney(paid))+'</strong></div>',
+   '<div class="tp-finance"><span>Total Payments Recorded</span><strong>'+(tc.length?String(tc.length):'0 Payments')+'</strong></div>',
+   '<div class="tp-finance"><span>Most Recent Contribution</span><strong'+(recent?'':' class="finance-empty"')+'>'+esc(recent?profileDate(recent.date):'—')+'</strong></div>'
   ].join('');
  };
  if(profileSelect){profileSelect.innerHTML=teachers.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name||t.id)+' ('+esc(t.id)+')</option>').join('');profileSelect.value=selectedProfileTeacherId;profileSelect.addEventListener('change',()=>{selectedProfileTeacherId=profileSelect.value;renderSelectedTeacherProfile();});}
