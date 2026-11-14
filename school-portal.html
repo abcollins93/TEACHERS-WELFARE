@@ -2172,7 +2172,7 @@ async function renderTeacherDashboard(profile,school){
    #teacherLiveTicker .ticker-live{width:6px;height:6px;border-radius:50%;background:#50dfa8;box-shadow:0 0 0 4px rgba(80,223,168,.13);animation:teacherTickerPulse 2.6s ease-in-out infinite}
    #teacherLiveTicker .ticker-window{position:relative;z-index:1;min-width:0;flex:1;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent)}
    #teacherLiveTicker .ticker-track{display:flex;width:max-content;align-items:center;animation:rollAnimation 60s linear infinite;will-change:transform}
-   #teacherLiveTicker.is-paused .ticker-track{animation-play-state:paused}
+   #teacherLiveTicker.is-paused .ticker-track{animation-play-state:paused!important}
    #teacherLiveTicker .ticker-group{display:flex;flex:0 0 auto;align-items:center;gap:38px;padding-right:38px;white-space:nowrap}
    #teacherLiveTicker .ticker-item{display:inline-flex;align-items:center;gap:10px;color:#f7f9fd;font-size:.8rem}
    #teacherLiveTicker .ticker-item b{padding:5px 8px;border-radius:7px;background:rgba(214,166,55,.13);border:1px solid rgba(214,166,55,.22);color:#ffdf91;font-size:.59rem;letter-spacing:.09em}
