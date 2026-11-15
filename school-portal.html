@@ -1,6 +1,31 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title id="documentTitle">School Welfare Portal</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+<title id="documentTitle">School Welfare Portal</title><script id="welfare-pdf-signatory-renderer-bootstrap">
+/* Keep PDF exports safe even before the account-settings module finishes loading. */
+(function(){
+ 'use strict';
+ const blank={financial_secretary_name:'',financial_secretary_signature:'',headteacher_name:'',headteacher_signature:''};
+ window.__welfarePdfSignatories=window.__welfarePdfSignatories||Object.assign({},blank);
+ if(typeof window.getWelfarePdfSignatoryMarkup==='function')return;
+ const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+ window.getWelfarePdfSignatoryMarkup=function(role,prefix,schoolName){
+  const settings=window.__welfarePdfSignatories||blank;
+  const financial=role==='financial';
+  const name=String(financial?settings.financial_secretary_name||'':settings.headteacher_name||'').trim();
+  const signature=String(financial?settings.financial_secretary_signature||'':settings.headteacher_signature||'').trim();
+  const label=financial?'Welfare Financial Secretary':'Headteacher / Patron';
+  const safeImage=/^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(signature)
+   ?'<img src="'+signature+'" alt="" style="display:block;width:auto;height:auto;max-width:42mm;max-height:15mm;object-fit:contain;margin:0 auto">'
+   :'';
+  const kind=prefix==='sws'?'sws':'twf';
+  return '<div class="'+kind+'-sign" style="display:flex;flex-direction:column;justify-content:flex-end;align-items:center">'+
+   '<div class="'+kind+'-sign-image" style="height:16mm;min-height:16mm;flex:0 0 16mm;width:100%;display:flex;align-items:flex-end;justify-content:center;margin:0;padding:0">'+safeImage+'</div>'+
+   '<div class="'+(kind==='sws'?'sws-line':'twf-line')+'" style="width:100%;margin:0 0 2mm"></div>'+
+   (name?'<div class="'+kind+'-sign-name" style="font-weight:800;color:#172b4d;font-size:8px;margin:1mm 0">'+escapeHtml(name)+'</div>':'')+
+   '<b>'+label+'</b>'+(financial?'':'<br>'+escapeHtml(schoolName||''))+'</div>';
+ };
+})();
+</script><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
 document.addEventListener('click',event=>{
  const toggle=event.target.closest('.password-toggle');
  if(!toggle)return;
