@@ -1803,7 +1803,7 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
   <div class="teacher-dashboard-table-wrap"><table><thead><tr><th>REF NO.</th><th>BENEFICIARY</th><th>REASON</th><th>AMOUNT</th><th>DATE</th><th>ACTION</th></tr></thead><tbody id="teacherDashboardPayoutRows"><tr><td colspan="6">Loading school payout records…</td></tr></tbody></table></div>
  </article>
 </section>
-</div></div>
+</div><section id="wfAccountSettingsPanel" class="panel hidden" aria-label="Account settings" style="margin:0 0 18px"></section></div>
 <div class="panel hidden" id="schoolTeachers" style="margin-top:18px"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><h3><i class="fa-solid fa-address-book" style="color:var(--gold)"></i> Teachers &amp; Members</h3><button id="downloadSchoolPdf" type="button"><i class="fa-solid fa-file-pdf"></i> Download PDF summary</button></div><p class="muted">Verified teacher register, membership details and profile management for this school.</p></div></div></div>
 </section>
 </main>
@@ -5147,7 +5147,7 @@ body.sidebar-open{overflow:hidden}
   const c=prefix==='sws'?'sws':'twf';
   return '<div class="'+c+'-sign" style="display:flex;flex-direction:column;justify-content:flex-end;align-items:center"><div class="'+c+'-sign-image" style="height:16mm;min-height:16mm;flex:0 0 16mm;width:100%;display:flex;align-items:flex-end;justify-content:center;margin:0;padding:0">'+safeImage+'</div><div class="'+(c==='sws'?'sws-line':'twf-line')+'" style="width:100%;margin:0 0 2mm"></div>'+(name?'<div class="'+c+'-sign-name" style="font-weight:800;color:#172b4d;font-size:8px;margin:1mm 0">'+esc(name)+'</div>':'')+'<b>'+label+'</b>'+(financial?'':'<br>'+esc(schoolName||''))+'</div>';
  };
- function dashboardHost(){const dashboard=document.getElementById('dashboard');const layout=dashboard?.querySelector('.dash-layout');const content=layout?Array.from(layout.children).find(node=>node!==document.getElementById('schoolSidebar')&&node.contains(document.getElementById('schoolOverview'))):null;const overview=document.getElementById('schoolOverview');return content||overview?.parentElement||null;}
+ function dashboardHost(){const existing=document.getElementById('wfAccountSettingsPanel');if(existing?.parentElement)return existing.parentElement;const dashboard=document.getElementById('dashboard');const layout=dashboard?.querySelector('.dash-layout');const content=layout?Array.from(layout.children).find(node=>node!==document.getElementById('schoolSidebar')&&node.contains(document.getElementById('schoolOverview'))):null;const overview=document.getElementById('schoolOverview');return content||overview?.parentElement||null;}
  function ensurePanel(role,forceRebuild){
   const host=dashboardHost();if(!host)return null;
   let panel=document.getElementById('wfAccountSettingsPanel');
