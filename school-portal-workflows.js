@@ -1240,6 +1240,20 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  loadSchoolAdmins();
 
 
+ // Keep the global academic-year helper available to every administrator
+ // PDF export, even if a future page-shell change omits the early HTML bootstrap.
+ if(typeof window.getCurrentAcademicYear!=='function'){
+  window.getCurrentAcademicYear=function(){
+   const school=window.__welfareCurrentSchool||ctx||{},now=new Date();
+   const saved=[school.academic_year,school.academicYear,school.current_academic_year,school.currentAcademicYear,school.school_year,school.schoolYear]
+    .map(value=>String(value??'').trim()).find(value=>/^\\d{4}\\s*[/–-]\\s*\\d{4}$/.test(value));
+   if(saved)return saved.replace(/\\s+/g,'').replace(/[–-]/,'/');
+   const configuredMonth=Number(school.academic_year_start_month??school.academicYearStartMonth);
+   const startMonth=Number.isInteger(configuredMonth)&&configuredMonth>=1&&configuredMonth<=12?configuredMonth-1:8;
+   const startYear=now.getFullYear()-(now.getMonth()<startMonth?1:0);
+   return startYear+'/'+(startYear+1);
+  };
+ }
  // Bind report actions as soon as report controls and school-scoped data are ready.
  // Install these BEFORE optional settings requests so slow settings cannot leave
  // visible PDF buttons without click handlers.
