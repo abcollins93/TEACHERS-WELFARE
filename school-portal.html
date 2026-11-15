@@ -3142,6 +3142,11 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
     });
     const dashboardRoot = document.getElementById('dashboard');
     const requestedId = button.dataset.target;
+    // Settings is an account-level destination shared by both roles. Ensure its
+    // role-specific panel exists before resolving the destination node.
+    if(requestedId==='wfAccountSettingsPanel'&&typeof window.ensureWelfareAccountSettingsView==='function'){
+      window.ensureWelfareAccountSettingsView();
+    }
     // Clear legacy workspace CSS states when navigating to ordinary sections.
     // Those states otherwise force-hide the roster after strict navigation reveals it.
     if(dashboardRoot && requestedId !== 'wfAdminPanel' && requestedId !== 'wfAuditPanel'){
@@ -3276,12 +3281,14 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
       target.removeAttribute('aria-hidden');
     }
     if (requestedId === 'wfAccountSettingsPanel') {
-      // Settings is dynamically mounted beside the dashboard; explicitly clear
-      // stale hidden/inline states just as for the other standalone destinations.
+      // Settings is a standalone account destination for both administrators
+      // and individual members. Restore its visibility after all other views
+      // have been hidden, regardless of prior workspace or drawer state.
       target.classList.remove('hidden');
       target.style.setProperty('display','block','important');
       target.style.setProperty('visibility','visible','important');
       target.removeAttribute('aria-hidden');
+      target.setAttribute('aria-hidden','false');
     }
 
     if (requestedId === 'wfAuditPanel') {
@@ -5142,6 +5149,10 @@ body.sidebar-open{overflow:hidden}
   let panel=document.getElementById('wfAccountSettingsPanel');
   if(!panel){panel=document.createElement('section');panel.id='wfAccountSettingsPanel';panel.className='panel hidden';panel.style.cssText='margin:0 0 18px';}
   if(panel.parentElement!==host)host.appendChild(panel);
+  // Do not rebuild an already-mounted role-specific panel on every navigation:
+  // doing so would discard password/signatory form listeners and pending edits.
+  if(panel.dataset.settingsRole===role)return panel;
+  panel.dataset.settingsRole=role;
   panel.innerHTML='<div class="eyebrow">Account preferences</div><h2 style="margin:5px 0 7px">Settings</h2><p class="muted" style="margin:0 0 18px">Manage your display preferences and school PDF signatories.</p>'+
    '<section class="panel" style="margin:0 0 16px;padding:18px"><h3><i class="fa-solid fa-circle-half-stroke"></i> Appearance</h3><p class="muted">Use the same theme preference as the portal header.</p><button type="button" id="settingsThemeToggle" class="secondary">Toggle light / dark theme</button></section>'+
    (role==='admin'?'<form id="schoolPdfSignatoryForm" class="panel" style="margin:0;padding:18px"><h3><i class="fa-solid fa-file-signature"></i> PDF Signatories &amp; Scanned Signatures</h3><p class="muted">These details appear on member statements, the School Welfare Fund Summary Statement and Statistics of Payment.</p>'+
@@ -5167,6 +5178,7 @@ body.sidebar-open{overflow:hidden}
  function setPreview(id,data){const node=document.getElementById(id);if(!node)return;node.innerHTML=data?'<img alt="Signature preview" src="'+data+'" style="display:block;max-width:100%;max-height:105px;object-fit:contain;border:1px solid var(--line);border-radius:8px;padding:7px;background:#fff">':'<span class="muted">No signature image selected.</span>';}
  function showMessage(text,bad){const node=document.getElementById('schoolPdfSignatoryMessage');if(node){node.textContent=text;node.className=bad?'error':'muted';}}
  async function setup(client,school,role){
+  window.__welfareAccountSettingsContext={client,school,role};
   const panel=ensurePanel(role);if(!panel||!client||!school?.id)return;
   const themeToggle=document.getElementById('themeToggle');
   const syncTheme=()=>{const dark=document.body.classList.contains('dark')||document.documentElement.classList.contains('dark');const b=document.getElementById('settingsThemeToggle');if(b)b.innerHTML=dark?'<i class="fa-solid fa-sun"></i> Switch to light theme':'<i class="fa-solid fa-moon"></i> Switch to dark theme';};
@@ -5195,6 +5207,17 @@ body.sidebar-open{overflow:hidden}
  // Authenticated initialization replaces this neutral placeholder with the
  // correct administrator or member controls.
  ensurePanel('pending');
+ window.ensureWelfareAccountSettingsView=function(){
+  const context=window.__welfareAccountSettingsContext||{};
+  const role=context.role||(window.__welfareCurrentRole==='teacher'?'teacher':'admin');
+  const panel=ensurePanel(role);
+  if(!panel)return null;
+  panel.classList.remove('hidden');
+  panel.style.setProperty('display','block','important');
+  panel.style.setProperty('visibility','visible','important');
+  panel.setAttribute('aria-hidden','false');
+  return panel;
+ };
  window.initSchoolPdfSettings=setup;
 })();
 </script>
