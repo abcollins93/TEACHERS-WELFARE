@@ -3286,13 +3286,20 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
     }
     if (requestedId === 'wfAccountSettingsPanel') {
       // Settings is a standalone account destination for both administrators
-      // and individual members. Restore its visibility after all other views
-      // have been hidden, regardless of prior workspace or drawer state.
+      // and individual members. Reveal its container and every settings card.
       target.classList.remove('hidden');
+      target.removeAttribute('hidden');
       target.style.setProperty('display','block','important');
       target.style.setProperty('visibility','visible','important');
       target.removeAttribute('aria-hidden');
       target.setAttribute('aria-hidden','false');
+      target.querySelectorAll('.wf-settings-card').forEach(function(card){
+        card.classList.remove('hidden');
+        card.removeAttribute('hidden');
+        card.style.setProperty('display','block','important');
+        card.style.setProperty('visibility','visible','important');
+        card.removeAttribute('aria-hidden');
+      });
     }
 
     if (requestedId === 'wfAuditPanel') {
@@ -3322,7 +3329,12 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
     });
     closeSidebar();
     void target.offsetHeight;
-    target.scrollIntoView({behavior:'smooth',block:'start'});
+    if(requestedId==='wfAccountSettingsPanel'){
+      const mainContent=document.querySelector('#dashboard .dash-layout > div:not(#schoolSidebar)');
+      (mainContent||target).scrollIntoView({behavior:'smooth',block:'start'});
+    }else{
+      target.scrollIntoView({behavior:'smooth',block:'start'});
+    }
     if (typeof target.focus === 'function') {
       if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex','-1');
       target.focus({preventScroll:true});
