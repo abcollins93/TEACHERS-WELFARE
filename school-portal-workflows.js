@@ -667,7 +667,14 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const ctx=school;
  window.__welfareCurrentSchool=ctx;
  let standardMonthlyDues=0;
- const {data:initialDuesSetting,error:initialDuesError}=await client.from('system_settings').select('value').eq('school_id',ctx.id).eq('key','standard_dues').maybeSingle();
+ // This workflow-only preference read must not stall account Settings or the
+ // rest of the administrator workspace. Use the saved value when it responds;
+ // otherwise keep the safe zero/default and allow the workflow to finish mounting.
+ const initialDuesResult=await Promise.race([
+  client.from('system_settings').select('value').eq('school_id',ctx.id).eq('key','standard_dues').maybeSingle(),
+  new Promise(resolve=>setTimeout(()=>resolve({data:null,error:{message:'Timed out while loading standard monthly dues.'}}),8000))
+ ]);
+ const {data:initialDuesSetting,error:initialDuesError}=initialDuesResult||{};
  if(!initialDuesError&&initialDuesSetting){standardMonthlyDues=Number(initialDuesSetting.value||0);$('wfMonthlyDues').value=standardMonthlyDues;}
  else if(initialDuesError)console.warn('[School settings] Could not load saved standard monthly dues:',initialDuesError.message);
  // Capture the monthly dues form submit before any browser-level form navigation can occur.
