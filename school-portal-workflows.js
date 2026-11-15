@@ -684,9 +684,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  };
  if(logoCard&&logoCode){
   logoCard.hidden=false;renderSchoolLogo();
-  if(logoInput&&!logoInput.dataset.logoBound){
-   logoInput.dataset.logoBound='1';
-   logoInput.addEventListener('change',async event=>{
+  if(logoInput){
+   logoInput.onchange=async event=>{
     const file=event.target.files?.[0];if(!file)return;
     const allowed=['image/png','image/jpeg','image/webp','image/svg+xml'];
     if(!allowed.includes(String(file.type||'').toLowerCase())){if(logoStatus)logoStatus.textContent='Choose a PNG, JPEG, WebP or SVG image.';logoInput.value='';return;}
@@ -719,17 +718,16 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      if(image.close)image.close();
     }catch(error){if(logoStatus)logoStatus.textContent=error?.message||'The logo could not be saved.';}
     finally{if(objectUrl)URL.revokeObjectURL(objectUrl);logoInput.value='';}
-   });
+   };
   }
-  if(logoRemove&&!logoRemove.dataset.logoBound){
-   logoRemove.dataset.logoBound='1';
-   logoRemove.addEventListener('click',()=>{
+  if(logoRemove){
+   logoRemove.onclick=()=>{
     try{localStorage.removeItem(logoStorageKey);}catch(_){}
     delete ctx.logo_data_url;delete ctx.logoDataUrl;delete ctx.school_logo;delete ctx.logo;
     window.__welfareCurrentSchool=ctx;renderSchoolLogo();
     if(logoStatus)logoStatus.textContent='School logo removed. Future PDF exports will use the standard text-only header.';
     if(logoInput)logoInput.value='';
-   });
+   };
   }
  }
  let standardMonthlyDues=0;
