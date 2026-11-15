@@ -5256,15 +5256,24 @@ body.sidebar-open{overflow:hidden}
  window.ensureWelfareAccountSettingsView=function(){
   try{
    const context=window.__welfareAccountSettingsContext||{};
-   const role=context.role||(window.__welfareCurrentRole==='teacher'?'teacher':'admin');
-   const panel=ensurePanel(role);
+   const role=(window.__welfareCurrentRole==='teacher'||context.role==='teacher')?'teacher':'admin';
+   const panel=ensurePanel(role,true);
    if(!panel)throw new Error('Settings panel could not be mounted.');
    panel.classList.remove('hidden');panel.removeAttribute('hidden');
    panel.style.setProperty('display','block','important');
    panel.style.setProperty('visibility','visible','important');
    panel.setAttribute('aria-hidden','false');
-   if(context.client&&context.school?.id&&(panel.dataset.settingsRole!==role||panel.childElementCount===0)){
-    Promise.resolve(setup(context.client,context.school,role)).catch(error=>console.error('[Account Settings] View initialization failed:',error));
+   if(context.client&&context.school?.id){
+    panel.innerHTML='<div class="eyebrow">Account preferences</div><h2>Settings</h2><p class="muted" role="status">Loading your settings…</p>';
+    Promise.resolve(setup(context.client,context.school,role)).then(ok=>{
+     if(ok===false)throw new Error('Settings initialization did not complete.');
+    }).catch(error=>{
+     console.error('[Account Settings] View initialization failed:',error);
+     const current=document.getElementById('wfAccountSettingsPanel');
+     if(current){current.classList.remove('hidden');current.style.setProperty('display','block','important');current.innerHTML='<div class="eyebrow">Account preferences</div><h2>Settings</h2><p class="error" role="alert">Settings could not be loaded. Please refresh the portal and try again.</p>';}
+    });
+   }else{
+    panel.innerHTML='<div class="eyebrow">Account preferences</div><h2>Settings</h2><p class="muted" role="status">Your account settings are still initializing. Please wait a moment and open Settings again.</p>';
    }
    return panel;
   }catch(error){
