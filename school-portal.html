@@ -5235,6 +5235,15 @@ body.sidebar-open{overflow:hidden}
    const details=Array.from(document.querySelectorAll('#wfTeacherPanel details')).find(node=>node.querySelector('#teacherVoluntaryPasswordForm'));
    const target=document.getElementById('memberPasswordSettings');
    const loading=document.getElementById('memberPasswordSettingsLoading');
+   if(details){
+    ['teacherCurrentPassword','teacherVoluntaryNewPassword','teacherVoluntaryConfirmPassword'].forEach(id=>{
+     const input=details.querySelector('#'+id);
+     if(!input||input.parentElement?.classList.contains('password-field'))return;
+     const wrapper=document.createElement('div');wrapper.className='password-field';
+     input.parentNode.insertBefore(wrapper,input);wrapper.appendChild(input);
+     const toggle=document.createElement('button');toggle.type='button';toggle.className='password-toggle';toggle.dataset.passwordTarget=id;toggle.setAttribute('aria-label','Show password');toggle.setAttribute('title','Show password');toggle.setAttribute('aria-pressed','false');toggle.innerHTML='<i class="fa-solid fa-eye" aria-hidden="true"></i>';wrapper.appendChild(toggle);
+    });
+   }
    if(details&&target&&!target.contains(details)){if(loading)loading.remove();target.appendChild(details);}
    else if(!details&&target&&loading)loading.textContent='Password controls are temporarily unavailable. Please refresh the portal.';
    return;
