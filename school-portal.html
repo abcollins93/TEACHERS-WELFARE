@@ -5030,7 +5030,7 @@ body.sidebar-open{overflow:hidden}
  const blank=()=>({financial_secretary_name:'',financial_secretary_signature:'',headteacher_name:'',headteacher_signature:''});
  const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
  async function cleanSignatureImage(dataUrl){
-  if(!/^data:image\\/(?:png|jpeg|webp);base64,/i.test(String(dataUrl||'')))return String(dataUrl||'');
+  if(!/^data:image\/(?:png|jpeg|webp);base64,/i.test(String(dataUrl||'')))return String(dataUrl||'');
   return new Promise(resolve=>{
    const image=new Image();
    image.onload=()=>{
