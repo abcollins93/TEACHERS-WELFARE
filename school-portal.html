@@ -5029,6 +5029,33 @@ body.sidebar-open{overflow:hidden}
  const KEYS=['pdf_financial_secretary_name','pdf_financial_secretary_signature','pdf_headteacher_name','pdf_headteacher_signature'];
  const blank=()=>({financial_secretary_name:'',financial_secretary_signature:'',headteacher_name:'',headteacher_signature:''});
  const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+ async function cleanSignatureImage(dataUrl){
+  if(!/^data:image\\/(?:png|jpeg|webp);base64,/i.test(String(dataUrl||'')))return String(dataUrl||'');
+  return new Promise(resolve=>{
+   const image=new Image();
+   image.onload=()=>{
+    try{
+     const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d',{willReadFrequently:true});
+     if(!ctx){resolve(dataUrl);return;}
+     canvas.width=image.naturalWidth||image.width;canvas.height=image.naturalHeight||image.height;
+     if(!canvas.width||!canvas.height){resolve(dataUrl);return;}
+     ctx.drawImage(image,0,0);
+     const frame=ctx.getImageData(0,0,canvas.width,canvas.height),pixels=frame.data;
+     for(let i=0;i<pixels.length;i+=4){
+      if(pixels[i+3]===0)continue;
+      const red=pixels[i],green=pixels[i+1],blue=pixels[i+2];
+      const chroma=Math.max(red,green,blue)-Math.min(red,green,blue);
+      const ink=Math.max(0,Math.min(1,(chroma-7)/25));
+      pixels[i+3]=Math.round(pixels[i+3]*ink);
+     }
+     ctx.putImageData(frame,0,0);
+     resolve(canvas.toDataURL('image/png'));
+    }catch(error){console.warn('[PDF signatures] Background cleanup skipped:',error);resolve(dataUrl);}
+   };
+   image.onerror=()=>resolve(dataUrl);
+   image.src=dataUrl;
+  });
+ }
  window.__welfarePdfSignatories=window.__welfarePdfSignatories||blank();
  window.getWelfarePdfSignatoryMarkup=function(role,prefix,schoolName){
   const s=window.__welfarePdfSignatories||blank(),financial=role==='financial';
@@ -5063,6 +5090,8 @@ body.sidebar-open{overflow:hidden}
   const {data,error}=await client.from('system_settings').select('key,value').eq('school_id',schoolId).in('key',KEYS);
   if(error)throw error;const s=blank();
   (data||[]).forEach(row=>{if(row.key==='pdf_financial_secretary_name')s.financial_secretary_name=String(row.value||'');if(row.key==='pdf_financial_secretary_signature')s.financial_secretary_signature=String(row.value||'');if(row.key==='pdf_headteacher_name')s.headteacher_name=String(row.value||'');if(row.key==='pdf_headteacher_signature')s.headteacher_signature=String(row.value||'');});
+  s.financial_secretary_signature=await cleanSignatureImage(s.financial_secretary_signature);
+  s.headteacher_signature=await cleanSignatureImage(s.headteacher_signature);
   return s;
  }
  function setPreview(id,data){const node=document.getElementById(id);if(!node)return;node.innerHTML=data?'<img alt="Signature preview" src="'+data+'" style="display:block;max-width:100%;max-height:105px;object-fit:contain;border:1px solid var(--line);border-radius:8px;padding:7px;background:#fff">':'<span class="muted">No signature image selected.</span>';}
@@ -5073,7 +5102,7 @@ body.sidebar-open{overflow:hidden}
   const syncTheme=()=>{const dark=document.body.classList.contains('dark')||document.documentElement.classList.contains('dark');const b=document.getElementById('settingsThemeToggle');if(b)b.innerHTML=dark?'<i class="fa-solid fa-sun"></i> Switch to light theme':'<i class="fa-solid fa-moon"></i> Switch to dark theme';};
   if(themeToggle&&!themeToggle.dataset.settingsSync){themeToggle.dataset.settingsSync='1';themeToggle.addEventListener('click',syncTheme);}syncTheme();
   if(role==='teacher'){
-   try{const {data,error}=await client.rpc('get_my_school_pdf_signatories');if(error)throw error;window.__welfarePdfSignatories={...blank(),...(data||{})};}
+   try{const {data,error}=await client.rpc('get_my_school_pdf_signatories');if(error)throw error;window.__welfarePdfSignatories={...blank(),...(data||{})};window.__welfarePdfSignatories.financial_secretary_signature=await cleanSignatureImage(window.__welfarePdfSignatories.financial_secretary_signature);window.__welfarePdfSignatories.headteacher_signature=await cleanSignatureImage(window.__welfarePdfSignatories.headteacher_signature);}
    catch(error){console.warn('[PDF signatories] Member signatories could not be loaded:',error);window.__welfarePdfSignatories=blank();}
    const details=document.querySelector('#wfTeacherPanel details:has(#teacherVoluntaryPasswordForm)');
    const target=document.getElementById('memberPasswordSettings');if(details&&target&&!target.contains(details))target.appendChild(details);
@@ -5082,7 +5111,7 @@ body.sidebar-open{overflow:hidden}
   try{const values=await readSettings(client,school.id);window.__welfarePdfSignatories=values;document.getElementById('pdfFinancialSecretaryName').value=values.financial_secretary_name;document.getElementById('pdfHeadteacherName').value=values.headteacher_name;setPreview('pdfFinancialSecretaryPreview',values.financial_secretary_signature);setPreview('pdfHeadteacherPreview',values.headteacher_signature);}
   catch(error){showMessage('Existing PDF signatories could not be loaded. '+(error.message||''),true);}
   const pending={financial_secretary_signature:window.__welfarePdfSignatories.financial_secretary_signature,headteacher_signature:window.__welfarePdfSignatories.headteacher_signature};
-  const upload=(inputId,key,previewId)=>{const input=document.getElementById(inputId);input?.addEventListener('change',()=>{const file=input.files?.[0];if(!file)return;if(!/^image\/(png|jpeg|webp)$/i.test(file.type)||file.size>350*1024){showMessage('Use a PNG, JPG or WebP signature image no larger than 350 KB.',true);input.value='';return;}const reader=new FileReader();reader.onload=()=>{pending[key]=String(reader.result||'');setPreview(previewId,pending[key]);showMessage('Signature ready. Select Save PDF signatories to keep it.',false);};reader.onerror=()=>showMessage('The selected signature image could not be read.',true);reader.readAsDataURL(file);});};
+  const upload=(inputId,key,previewId)=>{const input=document.getElementById(inputId);input?.addEventListener('change',()=>{const file=input.files?.[0];if(!file)return;if(!/^image\/(png|jpeg|webp)$/i.test(file.type)||file.size>350*1024){showMessage('Use a PNG, JPG or WebP signature image no larger than 350 KB.',true);input.value='';return;}const reader=new FileReader();reader.onload=async()=>{pending[key]=await cleanSignatureImage(String(reader.result||''));setPreview(previewId,pending[key]);showMessage('Signature background cleaned. Select Save PDF signatories to keep it.',false);};reader.onerror=()=>showMessage('The selected signature image could not be read.',true);reader.readAsDataURL(file);});};
   upload('pdfFinancialSecretarySignature','financial_secretary_signature','pdfFinancialSecretaryPreview');upload('pdfHeadteacherSignature','headteacher_signature','pdfHeadteacherPreview');
   document.getElementById('clearPdfFinancialSecretarySignature')?.addEventListener('click',()=>{pending.financial_secretary_signature='';document.getElementById('pdfFinancialSecretarySignature').value='';setPreview('pdfFinancialSecretaryPreview','');});
   document.getElementById('clearPdfHeadteacherSignature')?.addEventListener('click',()=>{pending.headteacher_signature='';document.getElementById('pdfHeadteacherSignature').value='';setPreview('pdfHeadteacherPreview','');});
