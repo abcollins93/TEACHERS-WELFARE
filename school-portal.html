@@ -3249,6 +3249,15 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
       target.style.setProperty('visibility','visible','important');
       target.removeAttribute('aria-hidden');
     }
+    if (requestedId === 'wfSettingsPanel') {
+      // Settings is dynamically mounted beside the dashboard; explicitly clear
+      // stale hidden/inline states just as for the other standalone destinations.
+      target.classList.remove('hidden');
+      target.style.setProperty('display','block','important');
+      target.style.setProperty('visibility','visible','important');
+      target.removeAttribute('aria-hidden');
+    }
+
     if (requestedId === 'wfAuditPanel') {
       // Audit history is mounted inside its own wrapper, outside the admin hub.
       // Restore both wrapper and table panel explicitly so prior navigation
@@ -5030,6 +5039,7 @@ body.sidebar-open{overflow:hidden}
  const blank=()=>({financial_secretary_name:'',financial_secretary_signature:'',headteacher_name:'',headteacher_signature:''});
  const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
  async function cleanSignatureImage(dataUrl){
+  if(!String(dataUrl||'').trim())return '';
   if(!/^data:image\\/(?:png|jpeg|webp);base64,/i.test(String(dataUrl||'')))throw new Error('Choose a valid PNG, JPG or WebP image.');
   return new Promise((resolve,reject)=>{
    const image=new Image();
