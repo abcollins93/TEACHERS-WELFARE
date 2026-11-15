@@ -5291,17 +5291,28 @@ body.sidebar-open{overflow:hidden}
    panel.style.setProperty('display','block','important');
    panel.style.setProperty('visibility','visible','important');
    panel.setAttribute('aria-hidden','false');
+   // Never replace the actual Settings cards with a temporary loading-only
+   // placeholder. That placeholder was capable of becoming the only visible
+   // content when account context was still being restored during navigation.
    if(context.client&&context.school?.id){
-    panel.innerHTML='<div class="eyebrow">Account preferences</div><h2>Settings</h2><p class="muted" role="status">Loading your settings…</p>';
     Promise.resolve(setup(context.client,context.school,role)).then(ok=>{
      if(ok===false)throw new Error('Settings initialization did not complete.');
     }).catch(error=>{
      console.error('[Account Settings] View initialization failed:',error);
      const current=document.getElementById('wfAccountSettingsPanel');
-     if(current){current.classList.remove('hidden');current.style.setProperty('display','block','important');current.innerHTML='<div class="eyebrow">Account preferences</div><h2>Settings</h2><p class="error" role="alert">Settings could not be loaded. Please refresh the portal and try again.</p>';}
+     if(current){
+      current.classList.remove('hidden');current.removeAttribute('hidden');
+      current.style.setProperty('display','block','important');
+      current.style.setProperty('visibility','visible','important');
+      let notice=current.querySelector('#settingsViewError');
+      if(!notice){notice=document.createElement('p');notice.id='settingsViewError';notice.className='error';notice.setAttribute('role','alert');current.appendChild(notice);}
+      notice.textContent='Some saved settings could not be loaded. The available controls remain visible. '+(error?.message||'');
+     }
     });
    }else{
-    panel.innerHTML='<div class="eyebrow">Account preferences</div><h2>Settings</h2><p class="muted" role="status">Your account settings are still initializing. Please wait a moment and open Settings again.</p>';
+    let notice=panel.querySelector('#settingsInitNotice');
+    if(!notice){notice=document.createElement('p');notice.id='settingsInitNotice';notice.className='muted';notice.setAttribute('role','status');panel.appendChild(notice);}
+    notice.textContent='Your account settings are initializing. The available Settings controls are shown below.';
    }
    return panel;
   }catch(error){
