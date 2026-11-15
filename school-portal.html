@@ -2597,8 +2597,9 @@ async function renderTeacherDashboard(profile,school){
   if(error||!changed?.ok)return say(changed?.error||'Password update failed. Please try again.',true);
   form.reset();say('Password updated successfully. Use your new password next time you sign in.');
  });
- for(let attempt=0;attempt<40&&typeof window.initSchoolPdfSettings!=='function';attempt++)await new Promise(resolve=>setTimeout(resolve,50));
- if(typeof window.initSchoolPdfSettings==='function')await window.initSchoolPdfSettings(client,school,'teacher');
+ // The member Settings panel is initialized independently; do not hold the
+ // teacher dashboard or sign-in completion on PDF signatory/settings loading.
+ void startAccountSettingsInitialization(client,school,'teacher');
  showLoginWelcome(teacherName,'Teacher',school.name);
  window.finishTenantSkeletons?.();
  resetInactivityTimer();
@@ -2824,8 +2825,21 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
 try {
     const workflowsReady=await waitForSchoolWorkflows();
     if(!workflowsReady)throw new Error('Workflow bundle unavailable after waiting for script initialization.');
-    const initialized=await window.initSchoolWorkflows(client,school,showDashboard);
-    if(initialized===false)throw new Error('Workflow module reported incomplete initialization.');
+    // Workflow construction may perform several tenant-scoped reads. Bound this
+    // wait so a stalled workflow cannot hold the dashboard shell or Settings open.
+    const workflowPromise=Promise.resolve().then(()=>window.initSchoolWorkflows(client,school,showDashboard));
+    const workflowResult=await Promise.race([
+      workflowPromise,
+      new Promise(resolve=>window.setTimeout(()=>resolve('__wf_init_timeout__'),12000))
+    ]);
+    if(workflowResult==='__wf_init_timeout__'){
+      console.warn('[School Welfare] Workflow initialization is taking longer than expected; Settings remains available.');
+      workflowPromise.then(result=>{
+        if(result===false)console.error('[School Welfare] Workflow module reported incomplete initialization.');
+      }).catch(error=>console.error('[School Welfare] Workflow initialization failed:',error?.message||error));
+    }else if(workflowResult===false){
+      throw new Error('Workflow module reported incomplete initialization.');
+    }
   } catch (workflowError) {
     // Keep the dashboard and its existing sections mounted; never inject a generic
     // warning panel that users can mistake for lost data. Details remain in console.
