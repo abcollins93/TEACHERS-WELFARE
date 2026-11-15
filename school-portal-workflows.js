@@ -1013,7 +1013,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   $('tpName').textContent=t.name||'—';$('tpRank').textContent=t.rank||'—';$('tpStaffId').textContent='Staff ID: '+t.id;
   $('tpRegistration').textContent=profileDate(t.registration_date||t.created_at||t.date_registered);$('tpMembership').textContent=t.membership_type||t.membership||'—';
   $('tpPersonalRows').innerHTML=profileRows([['FULL NAME',t.name],['PHONE NUMBER',t.phone],['SCHOOL / INSTITUTION',school.name],['DISTRICT & REGION',[school.district,school.region].filter(Boolean).join(' · ')]]);
-  $('tpProfessionalRows').innerHTML=profileRows([['Staff ID',t.id],['Professional Rank',t.rank],['Class / Subject Assigned',t.class_name],['Employer',t.employer||school.employer]]);
+  $('tpProfessionalRows').innerHTML=profileRows([['Staff ID',t.id],['Professional Rank',t.rank],['CLASS / SUBJECT',t.class_name],['Employer',t.employer||school.employer]]);
   $('tpFinanceRows').innerHTML=[
    '<div class="tp-finance"><span>Total Dues Contributed</span><strong class="finance-positive">'+esc(profileMoney(dues))+'</strong></div>',
    '<div class="tp-finance"><span>Total Welfare Payouts Received</span><strong class="finance-payout">'+esc(profileMoney(paid))+'</strong></div>',
