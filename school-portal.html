@@ -3141,6 +3141,7 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
       item.setAttribute('aria-current', item === button ? 'location' : 'false');
     });
     const dashboardRoot = document.getElementById('dashboard');
+    if(dashboardRoot){dashboardRoot.classList.remove('hidden');dashboardRoot.removeAttribute('hidden');dashboardRoot.style.setProperty('display','block','important');dashboardRoot.style.setProperty('visibility','visible','important');dashboardRoot.removeAttribute('aria-hidden');}
     const requestedId = button.dataset.target;
     // Settings is an account-level destination shared by both roles. Ensure its
     // role-specific panel exists before resolving the destination node.
@@ -3243,11 +3244,13 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
     // Reveal the target and only the ancestors required to place it in the
     // dashboard layout. This also handles audit and dynamically mounted views.
     let ancestor = target;
-    while (ancestor && ancestor !== dashboardRoot) {
+    while (ancestor) {
       ancestor.classList.remove('hidden');
+      ancestor.removeAttribute('hidden');
       ancestor.style.removeProperty('display');
       ancestor.style.removeProperty('visibility');
       ancestor.removeAttribute('aria-hidden');
+      if(ancestor===dashboardRoot)break;
       ancestor = ancestor.parentElement;
     }
     if (requestedId === 'schoolTeachers') {
@@ -3255,6 +3258,7 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
       // navigation may have hidden the child panel independently of its parent.
       const registerPanel = document.getElementById('wfTeacherRegisterPanel');
       target.classList.remove('hidden');
+      target.removeAttribute('hidden');
       target.style.setProperty('display','block','important');
       target.style.setProperty('visibility','visible','important');
       target.removeAttribute('aria-hidden');
@@ -5143,12 +5147,12 @@ body.sidebar-open{overflow:hidden}
   const c=prefix==='sws'?'sws':'twf';
   return '<div class="'+c+'-sign" style="display:flex;flex-direction:column;justify-content:flex-end;align-items:center"><div class="'+c+'-sign-image" style="height:16mm;min-height:16mm;flex:0 0 16mm;width:100%;display:flex;align-items:flex-end;justify-content:center;margin:0;padding:0">'+safeImage+'</div><div class="'+(c==='sws'?'sws-line':'twf-line')+'" style="width:100%;margin:0 0 2mm"></div>'+(name?'<div class="'+c+'-sign-name" style="font-weight:800;color:#172b4d;font-size:8px;margin:1mm 0">'+esc(name)+'</div>':'')+'<b>'+label+'</b>'+(financial?'':'<br>'+esc(schoolName||''))+'</div>';
  };
- function dashboardHost(){const overview=document.getElementById('schoolOverview');return overview?.parentElement||document.querySelector('#dashboard .dash-layout > div')||null;}
+ function dashboardHost(){const dashboard=document.getElementById('dashboard');const layout=dashboard?.querySelector('.dash-layout');const content=layout?Array.from(layout.children).find(node=>node!==document.getElementById('schoolSidebar')&&node.contains(document.getElementById('schoolOverview'))):null;const overview=document.getElementById('schoolOverview');return content||overview?.parentElement||null;}
  function ensurePanel(role,forceRebuild){
   const host=dashboardHost();if(!host)return null;
   let panel=document.getElementById('wfAccountSettingsPanel');
   if(!panel){panel=document.createElement('section');panel.id='wfAccountSettingsPanel';panel.className='panel hidden';panel.style.cssText='margin:0 0 18px';}
-  if(panel.parentElement!==host)host.appendChild(panel);
+  if(panel.parentElement!==host)host.appendChild(panel);host.classList.remove('hidden');host.removeAttribute('hidden');host.style.removeProperty('display');host.style.removeProperty('visibility');
   // Do not rebuild an already-mounted role-specific panel on every navigation:
   // doing so would discard password/signatory form listeners and pending edits.
   if(!forceRebuild&&panel.dataset.settingsRole===role)return panel;
