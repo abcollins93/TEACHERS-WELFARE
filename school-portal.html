@@ -5044,9 +5044,14 @@ body.sidebar-open{overflow:hidden}
      for(let i=0;i<pixels.length;i+=4){
       if(pixels[i+3]===0)continue;
       const red=pixels[i],green=pixels[i+1],blue=pixels[i+2];
+      const luminance=.2126*red+.7152*green+.0722*blue;
       const chroma=Math.max(red,green,blue)-Math.min(red,green,blue);
-      const ink=Math.max(0,Math.min(1,(chroma-7)/25));
-      pixels[i+3]=Math.round(pixels[i+3]*ink);
+      // Remove light scan paper and shadows; retain dark blue/purple/black ink
+      // with a soft alpha ramp so anti-aliased pen edges remain smooth.
+      const darkness=Math.max(0,Math.min(1,(224-luminance)/76));
+      const inkColour=Math.max(0,Math.min(1,(chroma-3)/18));
+      const alpha=Math.max(darkness,inkColour*.82);
+      pixels[i+3]=Math.round(pixels[i+3]*alpha);
      }
      ctx.putImageData(frame,0,0);
      resolve(canvas.toDataURL('image/png'));
