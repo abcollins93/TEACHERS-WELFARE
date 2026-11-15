@@ -654,6 +654,8 @@ async function audit(client,ctx,action,details,teacherId){
  return true;
 }
 window.initSchoolWorkflows=async function(client,school,refresh){
+ window.__welfareCurrentRole='admin';
+ window.__welfareCurrentSchool=school;
  try{
  // Rebuild workflow markup on refresh so handlers always use the latest school-scoped data.
  const existingWorkflows=$('workflows');const retainedRoster=$('schoolTeachers');const overview=$('schoolOverview');if(existingWorkflows&&retainedRoster&&existingWorkflows.contains(retainedRoster)&&overview?.parentElement)overview.parentElement.insertBefore(retainedRoster,overview.nextElementSibling);retainedRoster?.querySelector('#wfTeacherRegisterPanel')?.remove();if(existingWorkflows)existingWorkflows.remove();
