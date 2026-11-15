@@ -5176,12 +5176,15 @@ body.sidebar-open{overflow:hidden}
   return '<div class="'+c+'-sign" style="display:flex;flex-direction:column;justify-content:flex-end;align-items:center"><div class="'+c+'-sign-image" style="height:16mm;min-height:16mm;flex:0 0 16mm;width:100%;display:flex;align-items:flex-end;justify-content:center;margin:0;padding:0">'+safeImage+'</div><div class="'+(c==='sws'?'sws-line':'twf-line')+'" style="width:100%;margin:0 0 2mm"></div>'+(name?'<div class="'+c+'-sign-name" style="font-weight:800;color:#172b4d;font-size:8px;margin:1mm 0">'+esc(name)+'</div>':'')+'<b>'+label+'</b>'+(financial?'':'<br>'+esc(schoolName||''))+'</div>';
  };
  function dashboardHost(){
-  const panel=document.getElementById('wfAccountSettingsPanel');
-  if(panel?.parentElement)return panel.parentElement;
+  // Always mount Settings in the dashboard's primary content column. Do not
+  // trust the panel's current parent: previous navigation/role transitions
+  // may have left it attached to a hidden workflow wrapper.
   const dashboard=document.getElementById('dashboard');
   const layout=dashboard?.querySelector('.dash-layout');
-  const content=layout?Array.from(layout.children).find(node=>node!==document.getElementById('schoolSidebar')&&node.contains(document.getElementById('schoolOverview'))):null;
-  return content||document.getElementById('schoolOverview')?.parentElement||null;
+  const sidebar=document.getElementById('schoolSidebar');
+  const overview=document.getElementById('schoolOverview');
+  const content=layout?Array.from(layout.children).find(node=>node!==sidebar&&node.contains(overview)):null;
+  return content||overview?.parentElement||null;
  }
  function ensurePanel(role,forceRebuild){
   try{
@@ -5196,6 +5199,10 @@ body.sidebar-open{overflow:hidden}
     panel.style.cssText='margin:0 0 18px';
     host.appendChild(panel);
    }else if(panel.parentElement!==host){host.appendChild(panel);}
+   // Re-assert a full-width, visible section shell before populating role cards.
+   panel.style.setProperty('width','100%');
+   panel.style.setProperty('box-sizing','border-box');
+   panel.style.setProperty('min-height','120px');
    host.classList.remove('hidden');host.removeAttribute('hidden');
    host.style.removeProperty('display');host.style.removeProperty('visibility');
    if(!forceRebuild&&panel.dataset.settingsRole===role&&panel.childElementCount>0)return panel;
