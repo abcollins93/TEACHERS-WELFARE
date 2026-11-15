@@ -5147,29 +5147,59 @@ body.sidebar-open{overflow:hidden}
   const c=prefix==='sws'?'sws':'twf';
   return '<div class="'+c+'-sign" style="display:flex;flex-direction:column;justify-content:flex-end;align-items:center"><div class="'+c+'-sign-image" style="height:16mm;min-height:16mm;flex:0 0 16mm;width:100%;display:flex;align-items:flex-end;justify-content:center;margin:0;padding:0">'+safeImage+'</div><div class="'+(c==='sws'?'sws-line':'twf-line')+'" style="width:100%;margin:0 0 2mm"></div>'+(name?'<div class="'+c+'-sign-name" style="font-weight:800;color:#172b4d;font-size:8px;margin:1mm 0">'+esc(name)+'</div>':'')+'<b>'+label+'</b>'+(financial?'':'<br>'+esc(schoolName||''))+'</div>';
  };
- function dashboardHost(){const existing=document.getElementById('wfAccountSettingsPanel');if(existing?.parentElement)return existing.parentElement;const dashboard=document.getElementById('dashboard');const layout=dashboard?.querySelector('.dash-layout');const content=layout?Array.from(layout.children).find(node=>node!==document.getElementById('schoolSidebar')&&node.contains(document.getElementById('schoolOverview'))):null;const overview=document.getElementById('schoolOverview');return content||overview?.parentElement||null;}
+ function dashboardHost(){
+  const panel=document.getElementById('wfAccountSettingsPanel');
+  if(panel?.parentElement)return panel.parentElement;
+  const dashboard=document.getElementById('dashboard');
+  const layout=dashboard?.querySelector('.dash-layout');
+  const content=layout?Array.from(layout.children).find(node=>node!==document.getElementById('schoolSidebar')&&node.contains(document.getElementById('schoolOverview'))):null;
+  return content||document.getElementById('schoolOverview')?.parentElement||null;
+ }
  function ensurePanel(role,forceRebuild){
-  const host=dashboardHost();if(!host)return null;
-  let panel=document.getElementById('wfAccountSettingsPanel');
-  if(!panel){panel=document.createElement('section');panel.id='wfAccountSettingsPanel';panel.className='panel hidden';panel.style.cssText='margin:0 0 18px';}
-  if(panel.parentElement!==host)host.appendChild(panel);host.classList.remove('hidden');host.removeAttribute('hidden');host.style.removeProperty('display');host.style.removeProperty('visibility');
-  // Do not rebuild an already-mounted role-specific panel on every navigation:
-  // doing so would discard password/signatory form listeners and pending edits.
-  if(!forceRebuild&&panel.dataset.settingsRole===role)return panel;
-  panel.dataset.settingsRole=role;
-  panel.innerHTML='<div class="eyebrow">Account preferences</div><h2 style="margin:5px 0 7px">Settings</h2><p class="muted" style="margin:0 0 18px">Manage your display preferences and school PDF signatories.</p>'+
-   '<section class="panel" style="margin:0 0 16px;padding:18px"><h3><i class="fa-solid fa-circle-half-stroke"></i> Appearance</h3><p class="muted">Use the same theme preference as the portal header.</p><button type="button" id="settingsThemeToggle" class="secondary">Toggle light / dark theme</button></section>'+
-   (role==='admin'?'<form id="schoolPdfSignatoryForm" class="panel" style="margin:0;padding:18px"><h3><i class="fa-solid fa-file-signature"></i> PDF Signatories &amp; Scanned Signatures</h3><p class="muted">These details appear on member statements, the School Welfare Fund Summary Statement and Statistics of Payment.</p>'+
-    '<label for="pdfFinancialSecretaryName">Welfare Financial Secretary Name</label><input id="pdfFinancialSecretaryName" type="text" maxlength="120" placeholder="Enter financial secretary name">'+
-    '<label for="pdfFinancialSecretarySignature">Welfare Financial Secretary Signature</label><input id="pdfFinancialSecretarySignature" type="file" accept="image/png,image/jpeg,image/webp"><div id="pdfFinancialSecretaryPreview" aria-live="polite"></div><button type="button" class="secondary" id="clearPdfFinancialSecretarySignature">Remove signature</button>'+
-    '<label for="pdfHeadteacherName">Headteacher / Patron Name</label><input id="pdfHeadteacherName" type="text" maxlength="120" placeholder="Enter headteacher or patron name">'+
-    '<label for="pdfHeadteacherSignature">Headteacher / Patron Signature</label><input id="pdfHeadteacherSignature" type="file" accept="image/png,image/jpeg,image/webp"><div id="pdfHeadteacherPreview" aria-live="polite"></div><button type="button" class="secondary" id="clearPdfHeadteacherSignature">Remove signature</button>'+
-    '<p id="schoolPdfSignatoryMessage" class="muted" role="status" aria-live="polite"></p><button type="submit"><i class="fa-solid fa-floppy-disk"></i> Save PDF signatories</button></form>'
-    :role==='teacher'?'<section class="panel" id="memberPasswordSettings" style="margin:0;padding:18px"><h3><i class="fa-solid fa-lock"></i> Security settings</h3><p class="muted">Change your account password securely.</p></section>'
-    :'<section class="panel" style="margin:0;padding:18px"><h3><i class="fa-solid fa-gear"></i> Settings</h3><p class="muted">Your account settings are loading…</p></section>');
-  const theme=document.getElementById('settingsThemeToggle');
-  if(theme&&!theme.dataset.bound){theme.dataset.bound='1';theme.addEventListener('click',()=>document.getElementById('themeToggle')?.click());}
-  return panel;
+  try{
+   role=role==='teacher'?'teacher':'admin';
+   const host=dashboardHost();
+   if(!host)throw new Error('The dashboard content container is not available.');
+   let panel=document.getElementById('wfAccountSettingsPanel');
+   if(!panel){
+    panel=document.createElement('section');
+    panel.id='wfAccountSettingsPanel';
+    panel.className='panel hidden';
+    panel.style.cssText='margin:0 0 18px';
+    host.appendChild(panel);
+   }else if(panel.parentElement!==host){host.appendChild(panel);}
+   host.classList.remove('hidden');host.removeAttribute('hidden');
+   host.style.removeProperty('display');host.style.removeProperty('visibility');
+   if(!forceRebuild&&panel.dataset.settingsRole===role&&panel.childElementCount>0)return panel;
+   panel.dataset.settingsRole=role;
+   panel.innerHTML='<div class="eyebrow">Account preferences</div><h2 style="margin:5px 0 7px">Settings</h2><p class="muted" style="margin:0 0 18px">Manage your display preferences and account security.</p>'+
+    '<section class="panel wf-settings-card" style="margin:0 0 16px;padding:18px"><h3><i class="fa-solid fa-circle-half-stroke"></i> Appearance</h3><p class="muted">Choose the light or dark appearance for the portal.</p><button type="button" id="settingsThemeToggle" class="secondary">Switch theme</button></section>'+
+    (role==='admin'?'<form id="schoolPdfSignatoryForm" class="panel wf-settings-card" style="margin:0;padding:18px"><h3><i class="fa-solid fa-file-signature"></i> PDF Signatories &amp; Scanned Signatures</h3><p class="muted">These details appear on member statements, the School Welfare Fund Summary Statement and Statistics of Payment.</p>'+
+     '<label for="pdfFinancialSecretaryName">Welfare Financial Secretary Name</label><input id="pdfFinancialSecretaryName" type="text" maxlength="120" placeholder="Enter financial secretary name">'+
+     '<label for="pdfFinancialSecretarySignature">Welfare Financial Secretary Signature</label><input id="pdfFinancialSecretarySignature" type="file" accept="image/png,image/jpeg,image/webp"><div id="pdfFinancialSecretaryPreview" aria-live="polite"></div><button type="button" class="secondary" id="clearPdfFinancialSecretarySignature">Remove signature</button>'+
+     '<label for="pdfHeadteacherName">Headteacher / Patron Name</label><input id="pdfHeadteacherName" type="text" maxlength="120" placeholder="Enter headteacher or patron name">'+
+     '<label for="pdfHeadteacherSignature">Headteacher / Patron Signature</label><input id="pdfHeadteacherSignature" type="file" accept="image/png,image/jpeg,image/webp"><div id="pdfHeadteacherPreview" aria-live="polite"></div><button type="button" class="secondary" id="clearPdfHeadteacherSignature">Remove signature</button>'+
+     '<p id="schoolPdfSignatoryMessage" class="muted" role="status" aria-live="polite"></p><button type="submit"><i class="fa-solid fa-floppy-disk"></i> Save PDF signatories</button></form>'
+     :'<section class="panel wf-settings-card" id="memberPasswordSettings" style="margin:0;padding:18px"><h3><i class="fa-solid fa-lock"></i> Security settings · Change password</h3><p class="muted">Change your account password securely.</p><p class="muted" id="memberPasswordSettingsLoading">Loading password settings…</p></section>');
+   const theme=document.getElementById('settingsThemeToggle');
+   const syncTheme=()=>{
+    const dark=document.body.classList.contains('dark')||document.documentElement.classList.contains('dark');
+    if(theme)theme.innerHTML=dark?'<i class="fa-solid fa-sun"></i> Switch to light mode':'<i class="fa-solid fa-moon"></i> Switch to dark mode';
+   };
+   if(theme&&!theme.dataset.bound){
+    theme.dataset.bound='1';
+    theme.addEventListener('click',()=>{document.getElementById('themeToggle')?.click();requestAnimationFrame(syncTheme);});
+   }
+   const header=document.getElementById('themeToggle');
+   if(header&&!header.dataset.settingsSync){header.dataset.settingsSync='1';header.addEventListener('click',()=>requestAnimationFrame(syncTheme));}
+   syncTheme();
+   return panel;
+  }catch(error){
+   console.error('[Account Settings] Renderer failed:',error);
+   const panel=document.getElementById('wfAccountSettingsPanel');
+   if(panel){panel.classList.remove('hidden');panel.style.setProperty('display','block','important');panel.innerHTML='<h2>Settings</h2><p class="error" role="alert">Settings could not be fully loaded. Please refresh the portal and try again.</p>';}
+   return panel||null;
+  }
  }
  async function readSettings(client,schoolId){
   const {data,error}=await client.from('system_settings').select('key,value').eq('school_id',schoolId).in('key',KEYS);
@@ -5190,8 +5220,11 @@ body.sidebar-open{overflow:hidden}
   if(role==='teacher'){
    try{const {data,error}=await client.rpc('get_my_school_pdf_signatories');if(error)throw error;window.__welfarePdfSignatories={...blank(),...(data||{})};window.__welfarePdfSignatories.financial_secretary_signature=await cleanSignatureImage(window.__welfarePdfSignatories.financial_secretary_signature);window.__welfarePdfSignatories.headteacher_signature=await cleanSignatureImage(window.__welfarePdfSignatories.headteacher_signature);}
    catch(error){console.warn('[PDF signatories] Member signatories could not be loaded:',error);window.__welfarePdfSignatories=blank();}
-   const details=document.querySelector('#wfTeacherPanel details:has(#teacherVoluntaryPasswordForm)');
-   const target=document.getElementById('memberPasswordSettings');if(details&&target&&!target.contains(details))target.appendChild(details);
+   const details=Array.from(document.querySelectorAll('#wfTeacherPanel details')).find(node=>node.querySelector('#teacherVoluntaryPasswordForm'));
+   const target=document.getElementById('memberPasswordSettings');
+   const loading=document.getElementById('memberPasswordSettingsLoading');
+   if(details&&target&&!target.contains(details)){if(loading)loading.remove();target.appendChild(details);}
+   else if(!details&&target&&loading)loading.textContent='Password controls are temporarily unavailable. Please refresh the portal.';
    return;
   }
   try{const values=await readSettings(client,school.id);window.__welfarePdfSignatories=values;document.getElementById('pdfFinancialSecretaryName').value=values.financial_secretary_name;document.getElementById('pdfHeadteacherName').value=values.headteacher_name;setPreview('pdfFinancialSecretaryPreview',values.financial_secretary_signature);setPreview('pdfHeadteacherPreview',values.headteacher_signature);}
@@ -5212,17 +5245,35 @@ body.sidebar-open{overflow:hidden}
  // correct administrator or member controls.
  ensurePanel('pending');
  window.ensureWelfareAccountSettingsView=function(){
-  const context=window.__welfareAccountSettingsContext||{};
-  const role=context.role||(window.__welfareCurrentRole==='teacher'?'teacher':'admin');
-  const panel=ensurePanel(role);
-  if(!panel)return null;
-  panel.classList.remove('hidden');
-  panel.style.setProperty('display','block','important');
-  panel.style.setProperty('visibility','visible','important');
-  panel.setAttribute('aria-hidden','false');
-  return panel;
+  try{
+   const context=window.__welfareAccountSettingsContext||{};
+   const role=context.role||(window.__welfareCurrentRole==='teacher'?'teacher':'admin');
+   const panel=ensurePanel(role);
+   if(!panel)throw new Error('Settings panel could not be mounted.');
+   panel.classList.remove('hidden');panel.removeAttribute('hidden');
+   panel.style.setProperty('display','block','important');
+   panel.style.setProperty('visibility','visible','important');
+   panel.setAttribute('aria-hidden','false');
+   if(context.client&&context.school?.id&&(panel.dataset.settingsRole!==role||panel.childElementCount===0)){
+    Promise.resolve(setup(context.client,context.school,role)).catch(error=>console.error('[Account Settings] View initialization failed:',error));
+   }
+   return panel;
+  }catch(error){
+   console.error('[Account Settings] View activation failed:',error);
+   const panel=document.getElementById('wfAccountSettingsPanel');
+   if(panel){panel.classList.remove('hidden');panel.style.setProperty('display','block','important');panel.innerHTML='<h2>Settings</h2><p class="error" role="alert">Settings could not be opened. Please refresh the portal.</p>';}
+   return panel||null;
+  }
  };
- window.initSchoolPdfSettings=setup;
+ window.initSchoolPdfSettings=async function(client,school,role){
+  try{return await setup(client,school,role);}
+  catch(error){
+   console.error('[Account Settings] Initialization failed:',error);
+   const panel=ensurePanel(role,true);
+   if(panel){panel.classList.remove('hidden');panel.style.setProperty('display','block','important');const note=document.createElement('p');note.className='error';note.setAttribute('role','alert');note.textContent='Settings cards are available, but some saved details could not be loaded. '+(error?.message||'');panel.appendChild(note);}
+   return false;
+  }
+ };
 })();
 </script>
 </body>
