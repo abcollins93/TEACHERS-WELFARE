@@ -5037,9 +5037,13 @@ body.sidebar-open{overflow:hidden}
     try{
      const source=document.createElement('canvas'),sourceCtx=source.getContext('2d',{willReadFrequently:true});
      if(!sourceCtx){resolve(dataUrl);return;}
-     source.width=image.naturalWidth||image.width;source.height=image.naturalHeight||image.height;
-     if(!source.width||!source.height){resolve(dataUrl);return;}
-     sourceCtx.drawImage(image,0,0);
+     const naturalWidth=Number(image.naturalWidth||image.width),naturalHeight=Number(image.naturalHeight||image.height);
+     if(!naturalWidth||!naturalHeight)throw new Error('The signature image has invalid dimensions.');
+     // Downsample camera originals before pixel scanning to keep memory use safe on phones.
+     const scanScale=Math.min(1,1800/Math.max(naturalWidth,naturalHeight));
+     source.width=Math.max(1,Math.round(naturalWidth*scanScale));source.height=Math.max(1,Math.round(naturalHeight*scanScale));
+     sourceCtx.imageSmoothingEnabled=true;sourceCtx.imageSmoothingQuality='high';
+     sourceCtx.drawImage(image,0,0,source.width,source.height);
      const frame=sourceCtx.getImageData(0,0,source.width,source.height),px=frame.data,edge=[];
      const stride=Math.max(1,Math.floor(Math.min(source.width,source.height)/180));
      const lumAt=(x,y)=>{const k=(y*source.width+x)*4;return .2126*px[k]+.7152*px[k+1]+.0722*px[k+2];};
@@ -5130,7 +5134,10 @@ body.sidebar-open{overflow:hidden}
   try{const values=await readSettings(client,school.id);window.__welfarePdfSignatories=values;document.getElementById('pdfFinancialSecretaryName').value=values.financial_secretary_name;document.getElementById('pdfHeadteacherName').value=values.headteacher_name;setPreview('pdfFinancialSecretaryPreview',values.financial_secretary_signature);setPreview('pdfHeadteacherPreview',values.headteacher_signature);}
   catch(error){showMessage('Existing PDF signatories could not be loaded. '+(error.message||''),true);}
   const pending={financial_secretary_signature:window.__welfarePdfSignatories.financial_secretary_signature,headteacher_signature:window.__welfarePdfSignatories.headteacher_signature};
-  const upload=(inputId,key,previewId)=>{const input=document.getElementById(inputId);input?.addEventListener('change',()=>{const file=input.files?.[0];if(!file)return;if(!/^image\/(png|jpeg|webp)$/i.test(file.type)||file.size>350*1024){showMessage('Use a PNG, JPG or WebP signature image no larger than 350 KB.',true);input.value='';return;}const reader=new FileReader();reader.onload=async()=>{pending[key]=await cleanSignatureImage(String(reader.result||''));setPreview(previewId,pending[key]);showMessage('Signature background cleaned. Select Save PDF signatories to keep it.',false);};reader.onerror=()=>showMessage('The selected signature image could not be read.',true);reader.readAsDataURL(file);});};
+  const SIGNATURE_MAX_BYTES=350*1024;
+  const signatureDataUrlBytes=value=>{const base64=String(value||'').split(',')[1]||'';const padding=(base64.match(/=*$/)||[''])[0].length;return Math.max(0,Math.floor(base64.length*3/4)-padding);};
+  const readSignatureFile=file=>new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(new Error('The selected signature image could not be read.'));reader.readAsDataURL(file);});
+  const upload=(inputId,key,previewId)=>{const input=document.getElementById(inputId);input?.addEventListener('change',async()=>{const file=input.files?.[0];if(!file)return;if(!/^image\\/(png|jpeg|webp)$/i.test(file.type)){showMessage('Choose a PNG, JPG or WebP signature image.',true);input.value='';return;}const previous=pending[key];input.disabled=true;showMessage('Scanning, cropping and resizing signature…',false);try{const original=await readSignatureFile(file);const processed=await cleanSignatureImage(original);if(!/^data:image\\/png;base64,/i.test(processed)||processed===original)throw new Error('The signature could not be scanned. Try a clearer PNG, JPG or WebP image.');const finalBytes=signatureDataUrlBytes(processed);if(!finalBytes||finalBytes>SIGNATURE_MAX_BYTES)throw new Error('The scanned signature is still larger than 350 KB. Choose a clearer or less detailed image.');pending[key]=processed;setPreview(previewId,processed);showMessage('Signature scanned and ready ('+Math.ceil(finalBytes/1024)+' KB). Select Save PDF signatories to keep it.',false);}catch(error){pending[key]=previous;input.value='';showMessage(error?.message||'The signature image could not be processed.',true);}finally{input.disabled=false;}});};
   upload('pdfFinancialSecretarySignature','financial_secretary_signature','pdfFinancialSecretaryPreview');upload('pdfHeadteacherSignature','headteacher_signature','pdfHeadteacherPreview');
   document.getElementById('clearPdfFinancialSecretarySignature')?.addEventListener('click',()=>{pending.financial_secretary_signature='';document.getElementById('pdfFinancialSecretarySignature').value='';setPreview('pdfFinancialSecretaryPreview','');});
   document.getElementById('clearPdfHeadteacherSignature')?.addEventListener('click',()=>{pending.headteacher_signature='';document.getElementById('pdfHeadteacherSignature').value='';setPreview('pdfHeadteacherPreview','');});
