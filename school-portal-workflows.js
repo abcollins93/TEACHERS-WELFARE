@@ -666,6 +666,72 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const roster=$('schoolTeachers'),teacherRegisterPanel=$('wfTeacherRegisterPanel');
  const ctx=school;
  window.__welfareCurrentSchool=ctx;
+ // Tenant crest is stored per verified school code; no shared/global logo key is used.
+ const logoCard=$('tenantSchoolLogoCard'),logoInput=$('tenantSchoolLogoFile'),logoPreview=$('tenantSchoolLogoPreview'),logoRemove=$('tenantSchoolLogoRemove'),logoStatus=$('tenantSchoolLogoStatus');
+ const logoCode=String(ctx.school_code||ctx.schoolCode||'').trim();
+ const logoStorageKey=logoCode?'welfare_logo_'+logoCode:'';
+ const readSchoolLogo=()=>{
+  let saved='';try{saved=logoStorageKey?localStorage.getItem(logoStorageKey)||'':'';}catch(_){}
+  const value=saved||ctx.logo_data_url||ctx.logoDataUrl||ctx.school_logo||ctx.logo||'';
+  return /^data:image\/png;base64,[a-z0-9+/=]+$/i.test(String(value))?String(value):'';
+ };
+ const renderSchoolLogo=()=>{
+  const value=readSchoolLogo();
+  if(logoPreview){if(value){logoPreview.src=value;logoPreview.hidden=false;}else{logoPreview.removeAttribute('src');logoPreview.hidden=true;}}
+  if(logoRemove)logoRemove.disabled=!value;
+  if($('tenantLogoSchoolName'))$('tenantLogoSchoolName').textContent=ctx.name||'School profile';
+  if($('tenantLogoSchoolCode'))$('tenantLogoSchoolCode').textContent=logoCode?'School code: '+logoCode:'School code unavailable';
+ };
+ if(logoCard&&logoCode){
+  logoCard.hidden=false;renderSchoolLogo();
+  if(logoInput&&!logoInput.dataset.logoBound){
+   logoInput.dataset.logoBound='1';
+   logoInput.addEventListener('change',async event=>{
+    const file=event.target.files?.[0];if(!file)return;
+    const allowed=['image/png','image/jpeg','image/webp','image/svg+xml'];
+    if(!allowed.includes(String(file.type||'').toLowerCase())){if(logoStatus)logoStatus.textContent='Choose a PNG, JPEG, WebP or SVG image.';logoInput.value='';return;}
+    if(file.size>2*1024*1024){if(logoStatus)logoStatus.textContent='The logo file must be 2 MB or smaller.';logoInput.value='';return;}
+    let objectUrl='';
+    try{
+     if(logoStatus)logoStatus.textContent='Preparing school crest…';
+     let image;
+     if(typeof createImageBitmap==='function'){
+      try{image=await createImageBitmap(file);}catch(_){}
+     }
+     if(!image){
+      objectUrl=URL.createObjectURL(file);
+      image=await new Promise((resolve,reject)=>{
+       const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error('The selected image could not be decoded.'));
+       img.src=objectUrl;
+      });
+     }
+     const width=Number(image.width||image.naturalWidth||0),height=Number(image.height||image.naturalHeight||0);
+     if(!width||!height||width>10000||height>10000)throw new Error('The image dimensions are invalid or too large.');
+     const scale=Math.min(1,256/Math.max(width,height)),canvas=document.createElement('canvas');
+     canvas.width=Math.max(1,Math.round(width*scale));canvas.height=Math.max(1,Math.round(height*scale));
+     const context=canvas.getContext('2d',{alpha:true});if(!context)throw new Error('Image processing is unavailable in this browser.');
+     context.clearRect(0,0,canvas.width,canvas.height);context.drawImage(image,0,0,canvas.width,canvas.height);
+     const dataUrl=canvas.toDataURL('image/png');
+     if(!/^data:image\/png;base64,/.test(dataUrl))throw new Error('The school logo could not be normalized.');
+     try{localStorage.setItem(logoStorageKey,dataUrl);}catch(_){throw new Error('This browser could not save the school logo. Free some device storage and try again.');}
+     ctx.logo_data_url=dataUrl;ctx.logoDataUrl=dataUrl;window.__welfareCurrentSchool=ctx;
+     renderSchoolLogo();if(logoStatus)logoStatus.textContent='School logo saved for '+logoCode+'. It will appear in future PDF reports and member statements.';
+     if(image.close)image.close();
+    }catch(error){if(logoStatus)logoStatus.textContent=error?.message||'The logo could not be saved.';}
+    finally{if(objectUrl)URL.revokeObjectURL(objectUrl);logoInput.value='';}
+   });
+  }
+  if(logoRemove&&!logoRemove.dataset.logoBound){
+   logoRemove.dataset.logoBound='1';
+   logoRemove.addEventListener('click',()=>{
+    try{localStorage.removeItem(logoStorageKey);}catch(_){}
+    delete ctx.logo_data_url;delete ctx.logoDataUrl;delete ctx.school_logo;delete ctx.logo;
+    window.__welfareCurrentSchool=ctx;renderSchoolLogo();
+    if(logoStatus)logoStatus.textContent='School logo removed. Future PDF exports will use the standard text-only header.';
+    if(logoInput)logoInput.value='';
+   });
+  }
+ }
  let standardMonthlyDues=0;
  // This workflow-only preference read must not stall account Settings or the
  // rest of the administrator workspace. Use the saved value when it responds;
