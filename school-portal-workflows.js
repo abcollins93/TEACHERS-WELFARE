@@ -522,6 +522,7 @@ function addUI(){
  <nav class="wf-admin-quick-actions" aria-label="Administration quick actions">
   <div class="wf-admin-quick-heading"><i class="fa-solid fa-arrow-right"></i><span>Quick Admin Actions</span><span class="wf-admin-quick-hint">Jump to a task</span></div>
   <div class="wf-admin-quick-pills">
+   <a class="wf-admin-quick-pill" href="#tenantSchoolLogoCard" data-wf-admin-target="tenantSchoolLogoCard"><i class="fa-solid fa-school"></i> School Profile</a>
    <a class="wf-admin-quick-pill" href="#wfBroadcastPanel" data-wf-admin-target="wfBroadcastPanel"><i class="fa-solid fa-bullhorn"></i> School Announcement</a>
    <a class="wf-admin-quick-pill" href="#wfSettingsPanel" data-wf-admin-target="wfSettingsPanel"><i class="fa-solid fa-coins"></i> School Settings · Monthly Dues</a>
    <a class="wf-admin-quick-pill" href="#wfAdminAccessPanel" data-wf-admin-target="wfAdminAccessPanel"><i class="fa-solid fa-key"></i> Administrator Access &amp; Recovery</a>
@@ -529,6 +530,13 @@ function addUI(){
    <a class="wf-admin-quick-pill wf-admin-quick-pill-danger" href="#wfResetDataPanel" data-wf-admin-target="wfResetDataPanel"><i class="fa-solid fa-triangle-exclamation"></i> Reset School's Welfare Data</a>
   </div>
  </nav>
+ <section id="tenantSchoolLogoCard" class="panel tenant-school-logo-card" hidden aria-label="School profile and logo">
+ <div class="tenant-school-logo-copy"><span class="tenant-school-logo-kicker">SCHOOL PROFILE</span><h2 id="tenantLogoSchoolName">School name</h2><p id="tenantLogoSchoolCode">School code</p></div>
+ <div class="tenant-school-logo-controls">
+  <div class="tenant-school-logo-preview" id="tenantLogoPreviewFrame"><img id="tenantSchoolLogoPreview" alt="Active school crest preview" hidden></div>
+  <div class="tenant-school-logo-actions"><label for="tenantSchoolLogoFile">School Logo / Crest</label><input id="tenantSchoolLogoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml"><small>PNG, JPEG, WebP or SVG · Maximum 3 MB · Transparent backgrounds supported</small><button id="tenantSchoolLogoRemove" class="secondary" type="button" disabled><i class="fa-solid fa-trash-can"></i> Remove Logo</button><p id="tenantSchoolLogoStatus" role="status" aria-live="polite"></p></div>
+ </div>
+</section>
  <div class="panel" id="wfBroadcastPanel"><h3>School announcement</h3><p class="muted">Publish a school-scoped message for the portal. The message is stored with this school’s settings.</p><form id="wfBroadcastForm"><label for="wfBroadcastText">Announcement message</label><textarea id="wfBroadcastText" maxlength="500" rows="3" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;font:inherit" placeholder="Enter an important welfare fund announcement"></textarea><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="submit">Publish announcement</button><button id="wfBroadcastClear" class="secondary" type="button">Clear announcement</button></div></form><p id="wfBroadcastMsg" class="muted" role="status"></p>
  <div class="wf-dues-reminder-control" style="margin-top:16px;padding:14px 15px;border:1px solid rgba(214,166,55,.28);border-radius:13px;background:rgba(214,166,55,.055)">
   <label for="wfAutomatedDuesReminderToggle" style="display:flex;align-items:center;gap:10px;margin:0 0 6px;font-weight:850">
@@ -689,7 +697,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     const file=event.target.files?.[0];if(!file)return;
     const allowed=['image/png','image/jpeg','image/webp','image/svg+xml'];
     if(!allowed.includes(String(file.type||'').toLowerCase())){if(logoStatus)logoStatus.textContent='Choose a PNG, JPEG, WebP or SVG image.';logoInput.value='';return;}
-    if(file.size>2*1024*1024){if(logoStatus)logoStatus.textContent='The logo file must be 2 MB or smaller.';logoInput.value='';return;}
+    if(file.size>3*1024*1024){if(logoStatus)logoStatus.textContent='The logo file must be 3 MB or smaller.';logoInput.value='';return;}
     let objectUrl='';
     try{
      if(logoStatus)logoStatus.textContent='Preparing school crest…';
