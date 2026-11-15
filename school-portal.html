@@ -5144,14 +5144,14 @@ body.sidebar-open{overflow:hidden}
   return '<div class="'+c+'-sign" style="display:flex;flex-direction:column;justify-content:flex-end;align-items:center"><div class="'+c+'-sign-image" style="height:16mm;min-height:16mm;flex:0 0 16mm;width:100%;display:flex;align-items:flex-end;justify-content:center;margin:0;padding:0">'+safeImage+'</div><div class="'+(c==='sws'?'sws-line':'twf-line')+'" style="width:100%;margin:0 0 2mm"></div>'+(name?'<div class="'+c+'-sign-name" style="font-weight:800;color:#172b4d;font-size:8px;margin:1mm 0">'+esc(name)+'</div>':'')+'<b>'+label+'</b>'+(financial?'':'<br>'+esc(schoolName||''))+'</div>';
  };
  function dashboardHost(){const overview=document.getElementById('schoolOverview');return overview?.parentElement||document.querySelector('#dashboard .dash-layout > div')||null;}
- function ensurePanel(role){
+ function ensurePanel(role,forceRebuild){
   const host=dashboardHost();if(!host)return null;
   let panel=document.getElementById('wfAccountSettingsPanel');
   if(!panel){panel=document.createElement('section');panel.id='wfAccountSettingsPanel';panel.className='panel hidden';panel.style.cssText='margin:0 0 18px';}
   if(panel.parentElement!==host)host.appendChild(panel);
   // Do not rebuild an already-mounted role-specific panel on every navigation:
   // doing so would discard password/signatory form listeners and pending edits.
-  if(panel.dataset.settingsRole===role)return panel;
+  if(!forceRebuild&&panel.dataset.settingsRole===role)return panel;
   panel.dataset.settingsRole=role;
   panel.innerHTML='<div class="eyebrow">Account preferences</div><h2 style="margin:5px 0 7px">Settings</h2><p class="muted" style="margin:0 0 18px">Manage your display preferences and school PDF signatories.</p>'+
    '<section class="panel" style="margin:0 0 16px;padding:18px"><h3><i class="fa-solid fa-circle-half-stroke"></i> Appearance</h3><p class="muted">Use the same theme preference as the portal header.</p><button type="button" id="settingsThemeToggle" class="secondary">Toggle light / dark theme</button></section>'+
@@ -5179,7 +5179,7 @@ body.sidebar-open{overflow:hidden}
  function showMessage(text,bad){const node=document.getElementById('schoolPdfSignatoryMessage');if(node){node.textContent=text;node.className=bad?'error':'muted';}}
  async function setup(client,school,role){
   window.__welfareAccountSettingsContext={client,school,role};
-  const panel=ensurePanel(role);if(!panel||!client||!school?.id)return;
+  const panel=ensurePanel(role,true);if(!panel||!client||!school?.id)return;
   const themeToggle=document.getElementById('themeToggle');
   const syncTheme=()=>{const dark=document.body.classList.contains('dark')||document.documentElement.classList.contains('dark');const b=document.getElementById('settingsThemeToggle');if(b)b.innerHTML=dark?'<i class="fa-solid fa-sun"></i> Switch to light theme':'<i class="fa-solid fa-moon"></i> Switch to dark theme';};
   if(themeToggle&&!themeToggle.dataset.settingsSync){themeToggle.dataset.settingsSync='1';themeToggle.addEventListener('click',syncTheme);}syncTheme();
