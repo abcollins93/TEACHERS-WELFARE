@@ -4,6 +4,30 @@
 /* Keep PDF exports safe even before the account-settings module finishes loading. */
 (function(){
  'use strict';
+ // Shared academic-year helper is installed in the document head so both
+ // administrator and self-service PDF exports can call it before dashboard
+ // workflows or tenant settings have finished initializing.
+ if(typeof window.getCurrentAcademicYear!=='function'){
+  window.getCurrentAcademicYear=function(referenceDate,schoolContext){
+   try{
+    const school=schoolContext&&typeof schoolContext==='object'?schoolContext:(window.__welfareCurrentSchool||{});
+    const saved=[school.academic_year,school.academicYear,school.current_academic_year,school.currentAcademicYear,school.school_year,school.schoolYear]
+     .map(value=>String(value??'').trim()).find(value=>/^\\d{4}\\s*[/–-]\\s*\\d{4}$/.test(value));
+    if(saved)return saved.replace(/\\s+/g,'').replace(/[–-]/,'/');
+    let date=referenceDate instanceof Date?referenceDate:new Date(referenceDate||Date.now());
+    if(Number.isNaN(date.getTime()))date=new Date();
+    const configuredMonth=Number(school.academic_year_start_month??school.academicYearStartMonth);
+    // Ghanaian school academic years normally begin in September. A tenant
+    // may override the start month with a 1–12 value in its school context.
+    const startMonth=Number.isInteger(configuredMonth)&&configuredMonth>=1&&configuredMonth<=12?configuredMonth-1:8;
+    const startYear=date.getFullYear()-(date.getMonth()<startMonth?1:0);
+    return startYear+'/'+(startYear+1);
+   }catch(_){
+    const now=new Date(),year=now.getFullYear()-(now.getMonth()<8?1:0);
+    return year+'/'+(year+1);
+   }
+  };
+ }
  const blank={financial_secretary_name:'',financial_secretary_signature:'',headteacher_name:'',headteacher_signature:''};
  window.__welfarePdfSignatories=window.__welfarePdfSignatories||Object.assign({},blank);
  if(typeof window.getWelfarePdfSignatoryMarkup==='function')return;
