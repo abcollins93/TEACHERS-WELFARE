@@ -1754,7 +1754,7 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
 <button id="teacherLoginButton" type="submit" class="secondary" style="width:100%">Secure Teacher Sign In</button><button id="teacherForgotPreview" type="button" class="secondary" style="width:100%;margin-top:8px">Forgot password?</button></form></section>
 </section>
 <section id="dashboard" class="hidden"><div class="dash-layout"><aside class="sidebar" id="schoolSidebar"><div class="sidebar-brand"><div class="sidebar-brand-mark"><i class="fa-solid fa-graduation-cap"></i></div><div class="sidebar-brand-copy"><strong id="sideSchoolName">School dashboard</strong><small>TEACHERS WELFARE FUND</small></div><button id="sidebarCollapse" class="sidebar-close" type="button" aria-label="Collapse sidebar" aria-expanded="true"><i class="fa-solid fa-xmark"></i></button></div><div class="sidebar-section-label">Main menu</div><button class="navbtn active" data-target="schoolOverview"><i class="fa-solid fa-chart-pie"></i><span>Dashboard</span></button><button class="navbtn" data-target="wfTeacherPanel"><i class="fa-solid fa-user-circle"></i><span>Teacher profile</span></button>
-<button class="navbtn" data-target="teacherProfileViewer"><i class="fa-solid fa-id-card"></i><span>Profile viewer</span></button><button class="navbtn" data-target="schoolTeachers"><i class="fa-solid fa-users"></i><span>Teachers &amp; Members</span></button><button class="navbtn" data-target="wfContributionPanel"><i class="fa-solid fa-money-bill-wave"></i><span>Contributions</span></button><button class="navbtn" data-target="wfPayoutPanel"><i class="fa-solid fa-hand-holding-heart"></i><span>Welfare &amp; Payouts</span></button><button class="navbtn" data-target="wfReportsPanel"><i class="fa-solid fa-file-invoice-dollar"></i><span>Statements &amp; Reports</span></button><div class="sidebar-section-label sidebar-admin-label">Administration</div><button class="navbtn" data-target="wfAdminPanel"><i class="fa-solid fa-user-shield"></i><span>Admin panel</span></button><button class="navbtn" data-target="wfAuditPanel"><i class="fa-solid fa-clipboard-list"></i><span>Audit trail dashboard</span></button><button type="button" class="navbtn" id="sidebarLogout"><i class="fa-solid fa-right-from-bracket"></i><span>Sign out</span></button><div class="sidebar-account"><div class="sidebar-account-mark"><i class="fa-solid fa-user-shield"></i></div><div class="sidebar-account-copy"><strong>School Administrator</strong><small id="sideSchoolCode">Verified school account</small></div></div></aside><div><div class="panel" id="schoolOverview">
+<button class="navbtn" data-target="teacherProfileViewer"><i class="fa-solid fa-id-card"></i><span>Profile viewer</span></button><button class="navbtn" data-target="schoolTeachers"><i class="fa-solid fa-users"></i><span>Teachers &amp; Members</span></button><button class="navbtn" data-target="wfContributionPanel"><i class="fa-solid fa-money-bill-wave"></i><span>Contributions</span></button><button class="navbtn" data-target="wfPayoutPanel"><i class="fa-solid fa-hand-holding-heart"></i><span>Welfare &amp; Payouts</span></button><button class="navbtn" data-target="wfReportsPanel"><i class="fa-solid fa-file-invoice-dollar"></i><span>Statements &amp; Reports</span></button><button class="navbtn" data-target="wfAccountSettingsPanel"><i class="fa-solid fa-gear"></i><span>Settings</span></button><div class="sidebar-section-label sidebar-admin-label">Administration</div><button class="navbtn" data-target="wfAdminPanel"><i class="fa-solid fa-user-shield"></i><span>Admin panel</span></button><button class="navbtn" data-target="wfAuditPanel"><i class="fa-solid fa-clipboard-list"></i><span>Audit trail dashboard</span></button><button type="button" class="navbtn" id="sidebarLogout"><i class="fa-solid fa-right-from-bracket"></i><span>Sign out</span></button><div class="sidebar-account"><div class="sidebar-account-mark"><i class="fa-solid fa-user-shield"></i></div><div class="sidebar-account-copy"><strong>School Administrator</strong><small id="sideSchoolCode">Verified school account</small></div></div></aside><div><div class="panel" id="schoolOverview">
 <div class="portal-hero"><div class="dashboard-welcome-greeting"><span id="dashboardGreeting">HI, ADMIN!</span></div><div class="portal-hero-badge"><i class="fa-solid fa-shield-heart"></i> Official Welfare Hub</div><h1>Empowering Our Educators Through Solidarity</h1><p id="schoolDescription">Providing mutual financial support, social welfare benefits, and transparent monthly record-keeping for this school.</p></div>
 <section id="teacherDashboardProfile" class="teacher-dashboard-profile" hidden aria-label="Your teacher profile">
  <div class="teacher-dashboard-avatar" id="teacherDashboardAvatar">—</div>
@@ -1803,7 +1803,7 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
   <div class="teacher-dashboard-table-wrap"><table><thead><tr><th>REF NO.</th><th>BENEFICIARY</th><th>REASON</th><th>AMOUNT</th><th>DATE</th><th>ACTION</th></tr></thead><tbody id="teacherDashboardPayoutRows"><tr><td colspan="6">Loading school payout records…</td></tr></tbody></table></div>
  </article>
 </section>
-</div></div>
+</div><section id="wfAccountSettingsPanel" class="panel hidden" aria-label="Account settings" style="margin:0 0 18px"></section></div>
 <div class="panel hidden" id="schoolTeachers" style="margin-top:18px"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><h3><i class="fa-solid fa-address-book" style="color:var(--gold)"></i> Teachers &amp; Members</h3><button id="downloadSchoolPdf" type="button"><i class="fa-solid fa-file-pdf"></i> Download PDF summary</button></div><p class="muted">Verified teacher register, membership details and profile management for this school.</p></div></div></div>
 </section>
 </main>
@@ -2607,8 +2607,8 @@ async function renderTeacherDashboard(profile,school){
   if(error||!changed?.ok)return say(changed?.error||'Password update failed. Please try again.',true);
   form.reset();say('Password updated successfully. Use your new password next time you sign in.');
  });
- for(let attempt=0;attempt<40&&typeof window.initWelfarePdfSignatories!=='function';attempt++)await new Promise(resolve=>setTimeout(resolve,50));
- if(typeof window.initWelfarePdfSignatories==='function')await window.initWelfarePdfSignatories(client,school,'teacher');
+ for(let attempt=0;attempt<40&&typeof window.initSchoolPdfSettings!=='function';attempt++)await new Promise(resolve=>setTimeout(resolve,50));
+ if(typeof window.initSchoolPdfSettings==='function')await window.initSchoolPdfSettings(client,school,'teacher');
  showLoginWelcome(teacherName,'Teacher',school.name);
  window.finishTenantSkeletons?.();
  resetInactivityTimer();
@@ -2815,9 +2815,9 @@ try {
     // warning panel that users can mistake for lost data. Details remain in console.
     console.error('[School Welfare] Workflow initialization deferred/failed:',workflowError?.message||workflowError);
   }
-  // Load existing school PDF signatories for exports without mounting a settings screen.
-  for(let attempt=0;attempt<40&&typeof window.initWelfarePdfSignatories!=='function';attempt++)await new Promise(resolve=>setTimeout(resolve,50));
-  if(typeof window.initWelfarePdfSignatories==='function')await window.initWelfarePdfSignatories(client,school,'admin');
+  // Mount authenticated administrator Settings and load the tenant's saved PDF signatories.
+  for(let attempt=0;attempt<40&&typeof window.initSchoolPdfSettings!=='function';attempt++)await new Promise(resolve=>setTimeout(resolve,50));
+  if(typeof window.initSchoolPdfSettings==='function')await window.initSchoolPdfSettings(client,school,'admin');
   window.finishTenantSkeletons?.();
   const duesMetric=$('standardDuesMetric'),duesInput=$('wfMonthlyDues');if(duesMetric&&duesInput){const updateDues=()=>{duesMetric.textContent='GHS '+money(duesInput.value||0);};updateDues();duesInput.addEventListener('input',updateDues);}
  window.showWelfareDialog=window.showWelfareDialog||function(kind,message,title){
@@ -3142,6 +3142,8 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
     const dashboardRoot = document.getElementById('dashboard');
     if(dashboardRoot){dashboardRoot.classList.remove('hidden');dashboardRoot.removeAttribute('hidden');dashboardRoot.style.setProperty('display','block','important');dashboardRoot.style.setProperty('visibility','visible','important');dashboardRoot.removeAttribute('aria-hidden');}
     const requestedId = button.dataset.target;
+    // Settings is an account-level destination shared by both roles. Ensure its role-specific panel exists before resolving it.
+    if(requestedId==='wfAccountSettingsPanel'&&typeof window.ensureWelfareAccountSettingsView==='function')window.ensureWelfareAccountSettingsView();
     // Clear legacy workspace CSS states when navigating to ordinary sections.
     // Those states otherwise force-hide the roster after strict navigation reveals it.
     if(dashboardRoot && requestedId !== 'wfAdminPanel' && requestedId !== 'wfAuditPanel'){
@@ -3200,6 +3202,7 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
       wfContributionPanel: 'Contributions',
       wfPayoutPanel: 'Welfare & Payouts',
       wfStatementPanel: 'Statements & Reports',
+      wfAccountSettingsPanel: 'Settings',
       wfReportsPanel: 'Statements & Reports',
       wfAdminPanel: 'Administration Panel',
       wfAuditPanel: 'Audit Trail Dashboard'
@@ -3209,7 +3212,7 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
 
     const viewIds = [
       'schoolOverview','teacherProfileViewer','schoolTeachers','wfTeacherPanel','wfTeacherRegisterPanel',
-      'wfContributionPanel','wfPayoutPanel','wfStatementPanel','wfReportsPanel',
+      'wfContributionPanel','wfPayoutPanel','wfStatementPanel','wfReportsPanel','wfAccountSettingsPanel',
       'wfAdminPanel','wfAuditView','teacherWorkspace','workflows'
     ];
     viewIds.forEach(function(id){
@@ -3278,6 +3281,17 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
       target.removeAttribute('aria-hidden');
     }
 
+    if (requestedId === 'wfAccountSettingsPanel') {
+      target.classList.remove('hidden');target.removeAttribute('hidden');
+      target.style.setProperty('display','block','important');target.style.setProperty('visibility','visible','important');
+      target.removeAttribute('aria-hidden');target.setAttribute('aria-hidden','false');
+      target.querySelectorAll('.wf-settings-card').forEach(card=>{
+        card.classList.remove('hidden');card.removeAttribute('hidden');
+        card.style.setProperty('display','block','important');card.style.setProperty('visibility','visible','important');
+        card.removeAttribute('aria-hidden');
+      });
+    }
+
     if (requestedId === 'wfAuditPanel') {
       // Audit history is mounted inside its own wrapper, outside the admin hub.
       // Restore both wrapper and table panel explicitly so prior navigation
@@ -3305,7 +3319,10 @@ client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
     });
     closeSidebar();
     void target.offsetHeight;
-    target.scrollIntoView({behavior:'smooth',block:'start'});
+    if(requestedId==='wfAccountSettingsPanel'){
+      const mainContent=document.querySelector('#dashboard .dash-layout > div:not(#schoolSidebar)');
+      (mainContent||target).scrollIntoView({behavior:'smooth',block:'start'});
+    }else target.scrollIntoView({behavior:'smooth',block:'start'});
     if (typeof target.focus === 'function') {
       if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex','-1');
       target.focus({preventScroll:true});
@@ -5130,32 +5147,143 @@ body.sidebar-open{overflow:hidden}
   const c=prefix==='sws'?'sws':'twf';
   return '<div class="'+c+'-sign" style="display:flex;flex-direction:column;justify-content:flex-end;align-items:center"><div class="'+c+'-sign-image" style="height:16mm;min-height:16mm;flex:0 0 16mm;width:100%;display:flex;align-items:flex-end;justify-content:center;margin:0;padding:0">'+safeImage+'</div><div class="'+(c==='sws'?'sws-line':'twf-line')+'" style="width:100%;margin:0 0 2mm"></div>'+(name?'<div class="'+c+'-sign-name" style="font-weight:800;color:#172b4d;font-size:8px;margin:1mm 0">'+esc(name)+'</div>':'')+'<b>'+label+'</b>'+(financial?'':'<br>'+esc(schoolName||''))+'</div>';
  };
- window.initWelfarePdfSignatories=async function(client,school,role){
-  const values=blank();
+ function dashboardHost(){
+  const panel=document.getElementById('wfAccountSettingsPanel');
+  if(panel?.parentElement)return panel.parentElement;
+  const dashboard=document.getElementById('dashboard');
+  const layout=dashboard?.querySelector('.dash-layout');
+  const content=layout?Array.from(layout.children).find(node=>node!==document.getElementById('schoolSidebar')&&node.contains(document.getElementById('schoolOverview'))):null;
+  return content||document.getElementById('schoolOverview')?.parentElement||null;
+ }
+ function ensurePanel(role,forceRebuild){
   try{
-   if(!client||!school?.id)return false;
-   if(role==='teacher'){
-    const {data,error}=await client.rpc('get_my_school_pdf_signatories');
-    if(error)throw error;
-    Object.assign(values,data||{});
-   }else{
-    const {data,error}=await client.from('system_settings').select('key,value').eq('school_id',school.id).in('key',KEYS);
-    if(error)throw error;
-    (data||[]).forEach(row=>{
-     if(row.key===KEYS[0])values.financial_secretary_name=String(row.value||'');
-     if(row.key===KEYS[1])values.financial_secretary_signature=String(row.value||'');
-     if(row.key===KEYS[2])values.headteacher_name=String(row.value||'');
-     if(row.key===KEYS[3])values.headteacher_signature=String(row.value||'');
+   role=role==='teacher'?'teacher':'admin';
+   const host=dashboardHost();
+   if(!host)throw new Error('The dashboard content container is not available.');
+   let panel=document.getElementById('wfAccountSettingsPanel');
+   if(!panel){
+    panel=document.createElement('section');
+    panel.id='wfAccountSettingsPanel';
+    panel.className='panel hidden';
+    panel.style.cssText='margin:0 0 18px';
+    host.appendChild(panel);
+   }else if(panel.parentElement!==host){host.appendChild(panel);}
+   host.classList.remove('hidden');host.removeAttribute('hidden');
+   host.style.removeProperty('display');host.style.removeProperty('visibility');
+   if(!forceRebuild&&panel.dataset.settingsRole===role&&panel.childElementCount>0)return panel;
+   panel.dataset.settingsRole=role;
+   panel.innerHTML='<div class="eyebrow">Account preferences</div><h2 style="margin:5px 0 7px">Settings</h2><p class="muted" style="margin:0 0 18px">Manage your display preferences and account security.</p>'+
+    '<section class="panel wf-settings-card" style="margin:0 0 16px;padding:18px"><h3><i class="fa-solid fa-circle-half-stroke"></i> Appearance</h3><p class="muted">Choose the light or dark appearance for the portal.</p><button type="button" id="settingsThemeToggle" class="secondary">Switch theme</button></section>'+
+    (role==='admin'?'<form id="schoolPdfSignatoryForm" class="panel wf-settings-card" style="margin:0;padding:18px"><h3><i class="fa-solid fa-file-signature"></i> PDF Signatories &amp; Scanned Signatures</h3><p class="muted">These details appear on member statements, the School Welfare Fund Summary Statement and Statistics of Payment.</p>'+
+     '<label for="pdfFinancialSecretaryName">Welfare Financial Secretary Name</label><input id="pdfFinancialSecretaryName" type="text" maxlength="120" placeholder="Enter financial secretary name">'+
+     '<label for="pdfFinancialSecretarySignature">Welfare Financial Secretary Signature</label><input id="pdfFinancialSecretarySignature" type="file" accept="image/png,image/jpeg,image/webp"><div id="pdfFinancialSecretaryPreview" aria-live="polite"></div><button type="button" class="secondary" id="clearPdfFinancialSecretarySignature">Remove signature</button>'+
+     '<label for="pdfHeadteacherName">Headteacher / Patron Name</label><input id="pdfHeadteacherName" type="text" maxlength="120" placeholder="Enter headteacher or patron name">'+
+     '<label for="pdfHeadteacherSignature">Headteacher / Patron Signature</label><input id="pdfHeadteacherSignature" type="file" accept="image/png,image/jpeg,image/webp"><div id="pdfHeadteacherPreview" aria-live="polite"></div><button type="button" class="secondary" id="clearPdfHeadteacherSignature">Remove signature</button>'+
+     '<p id="schoolPdfSignatoryMessage" class="muted" role="status" aria-live="polite"></p><button type="submit"><i class="fa-solid fa-floppy-disk"></i> Save PDF signatories</button></form>'
+     :'<section class="panel wf-settings-card" id="memberPasswordSettings" style="margin:0;padding:18px"><h3><i class="fa-solid fa-lock"></i> Security settings · Change password</h3><p class="muted">Change your account password securely.</p><p class="muted" id="memberPasswordSettingsLoading">Loading password settings…</p></section>');
+   const theme=document.getElementById('settingsThemeToggle');
+   const syncTheme=()=>{
+    const dark=document.body.classList.contains('dark')||document.documentElement.classList.contains('dark');
+    if(theme)theme.innerHTML=dark?'<i class="fa-solid fa-sun"></i> Switch to light mode':'<i class="fa-solid fa-moon"></i> Switch to dark mode';
+   };
+   if(theme&&!theme.dataset.bound){
+    theme.dataset.bound='1';
+    theme.addEventListener('click',()=>{document.getElementById('themeToggle')?.click();requestAnimationFrame(syncTheme);});
+   }
+   const header=document.getElementById('themeToggle');
+   if(header&&!header.dataset.settingsSync){header.dataset.settingsSync='1';header.addEventListener('click',()=>requestAnimationFrame(syncTheme));}
+   syncTheme();
+   return panel;
+  }catch(error){
+   console.error('[Account Settings] Renderer failed:',error);
+   const panel=document.getElementById('wfAccountSettingsPanel');
+   if(panel){panel.classList.remove('hidden');panel.style.setProperty('display','block','important');panel.innerHTML='<h2>Settings</h2><p class="error" role="alert">Settings could not be fully loaded. Please refresh the portal and try again.</p>';}
+   return panel||null;
+  }
+ }
+ async function readSettings(client,schoolId){
+  const {data,error}=await client.from('system_settings').select('key,value').eq('school_id',schoolId).in('key',KEYS);
+  if(error)throw error;const s=blank();
+  (data||[]).forEach(row=>{if(row.key==='pdf_financial_secretary_name')s.financial_secretary_name=String(row.value||'');if(row.key==='pdf_financial_secretary_signature')s.financial_secretary_signature=String(row.value||'');if(row.key==='pdf_headteacher_name')s.headteacher_name=String(row.value||'');if(row.key==='pdf_headteacher_signature')s.headteacher_signature=String(row.value||'');});
+  s.financial_secretary_signature=await cleanSignatureImage(s.financial_secretary_signature);
+  s.headteacher_signature=await cleanSignatureImage(s.headteacher_signature);
+  return s;
+ }
+ function setPreview(id,data){const node=document.getElementById(id);if(!node)return;node.innerHTML=data?'<img alt="Signature preview" src="'+data+'" style="display:block;max-width:100%;max-height:105px;object-fit:contain;border:1px solid var(--line);border-radius:8px;padding:7px;background:#fff">':'<span class="muted">No signature image selected.</span>';}
+ function showMessage(text,bad){const node=document.getElementById('schoolPdfSignatoryMessage');if(node){node.textContent=text;node.className=bad?'error':'muted';}}
+ async function setup(client,school,role){
+  window.__welfareAccountSettingsContext={client,school,role};
+  const panel=ensurePanel(role,true);if(!panel||!client||!school?.id)return;
+  const themeToggle=document.getElementById('themeToggle');
+  const syncTheme=()=>{const dark=document.body.classList.contains('dark')||document.documentElement.classList.contains('dark');const b=document.getElementById('settingsThemeToggle');if(b)b.innerHTML=dark?'<i class="fa-solid fa-sun"></i> Switch to light theme':'<i class="fa-solid fa-moon"></i> Switch to dark theme';};
+  if(themeToggle&&!themeToggle.dataset.settingsSync){themeToggle.dataset.settingsSync='1';themeToggle.addEventListener('click',syncTheme);}syncTheme();
+  if(role==='teacher'){
+   try{const {data,error}=await client.rpc('get_my_school_pdf_signatories');if(error)throw error;window.__welfarePdfSignatories={...blank(),...(data||{})};window.__welfarePdfSignatories.financial_secretary_signature=await cleanSignatureImage(window.__welfarePdfSignatories.financial_secretary_signature);window.__welfarePdfSignatories.headteacher_signature=await cleanSignatureImage(window.__welfarePdfSignatories.headteacher_signature);}
+   catch(error){console.warn('[PDF signatories] Member signatories could not be loaded:',error);window.__welfarePdfSignatories=blank();}
+   const details=Array.from(document.querySelectorAll('#wfTeacherPanel details')).find(node=>node.querySelector('#teacherVoluntaryPasswordForm'));
+   const target=document.getElementById('memberPasswordSettings');
+   const loading=document.getElementById('memberPasswordSettingsLoading');
+   if(details){
+    ['teacherCurrentPassword','teacherVoluntaryNewPassword','teacherVoluntaryConfirmPassword'].forEach(id=>{
+     const input=details.querySelector('#'+id);
+     if(!input||input.parentElement?.classList.contains('password-field'))return;
+     const wrapper=document.createElement('div');wrapper.className='password-field';
+     input.parentNode.insertBefore(wrapper,input);wrapper.appendChild(input);
+     const toggle=document.createElement('button');toggle.type='button';toggle.className='password-toggle';toggle.dataset.passwordTarget=id;toggle.setAttribute('aria-label','Show password');toggle.setAttribute('title','Show password');toggle.setAttribute('aria-pressed','false');toggle.innerHTML='<i class="fa-solid fa-eye" aria-hidden="true"></i>';wrapper.appendChild(toggle);
     });
    }
-   window.__welfarePdfSignatories={...blank(),...values};
-   return true;
+   if(details&&target&&!target.contains(details)){if(loading)loading.remove();target.appendChild(details);}
+   else if(!details&&target&&loading)loading.textContent='Password controls are temporarily unavailable. Please refresh the portal.';
+   return;
+  }
+  try{const values=await readSettings(client,school.id);window.__welfarePdfSignatories=values;document.getElementById('pdfFinancialSecretaryName').value=values.financial_secretary_name;document.getElementById('pdfHeadteacherName').value=values.headteacher_name;setPreview('pdfFinancialSecretaryPreview',values.financial_secretary_signature);setPreview('pdfHeadteacherPreview',values.headteacher_signature);}
+  catch(error){showMessage('Existing PDF signatories could not be loaded. '+(error.message||''),true);}
+  const pending={financial_secretary_signature:window.__welfarePdfSignatories.financial_secretary_signature,headteacher_signature:window.__welfarePdfSignatories.headteacher_signature};
+  const SIGNATURE_MAX_BYTES=350*1024;
+  const signatureDataUrlBytes=value=>{const base64=String(value||'').split(',')[1]||'';const padding=(base64.match(/=*$/)||[''])[0].length;return Math.max(0,Math.floor(base64.length*3/4)-padding);};
+  const readSignatureFile=file=>new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(new Error('The selected signature image could not be read.'));reader.readAsDataURL(file);});
+  const upload=(inputId,key,previewId)=>{const input=document.getElementById(inputId);input?.addEventListener('change',async()=>{const file=input.files?.[0];if(!file)return;if(!/^image\/(png|jpeg|webp)$/i.test(file.type)){showMessage('Choose a PNG, JPG or WebP signature image.',true);input.value='';return;}const previous=pending[key];input.disabled=true;showMessage('Scanning, cropping and resizing signature…',false);try{const original=await readSignatureFile(file);const processed=await cleanSignatureImage(original);if(!/^data:image\/png;base64,/i.test(processed)||processed===original)throw new Error('The signature could not be scanned. Try a clearer PNG, JPG or WebP image.');const finalBytes=signatureDataUrlBytes(processed);if(!finalBytes||finalBytes>SIGNATURE_MAX_BYTES)throw new Error('The scanned signature is still larger than 350 KB. Choose a clearer or less detailed image.');pending[key]=processed;setPreview(previewId,processed);showMessage('Signature scanned and ready ('+Math.ceil(finalBytes/1024)+' KB). Select Save PDF signatories to keep it.',false);}catch(error){pending[key]=previous;input.value='';showMessage(error?.message||'The signature image could not be processed.',true);}finally{input.disabled=false;}});};
+  upload('pdfFinancialSecretarySignature','financial_secretary_signature','pdfFinancialSecretaryPreview');upload('pdfHeadteacherSignature','headteacher_signature','pdfHeadteacherPreview');
+  document.getElementById('clearPdfFinancialSecretarySignature')?.addEventListener('click',()=>{pending.financial_secretary_signature='';document.getElementById('pdfFinancialSecretarySignature').value='';setPreview('pdfFinancialSecretaryPreview','');});
+  document.getElementById('clearPdfHeadteacherSignature')?.addEventListener('click',()=>{pending.headteacher_signature='';document.getElementById('pdfHeadteacherSignature').value='';setPreview('pdfHeadteacherPreview','');});
+  const form=document.getElementById('schoolPdfSignatoryForm');
+  form?.addEventListener('submit',async event=>{event.preventDefault();const button=form.querySelector('button[type="submit"]');button.disabled=true;showMessage('Saving school PDF signatories…',false);const next={financial_secretary_name:document.getElementById('pdfFinancialSecretaryName').value.trim(),financial_secretary_signature:pending.financial_secretary_signature,headteacher_name:document.getElementById('pdfHeadteacherName').value.trim(),headteacher_signature:pending.headteacher_signature};const rows=[{school_id:school.id,key:KEYS[0],value:next.financial_secretary_name},{school_id:school.id,key:KEYS[1],value:next.financial_secretary_signature},{school_id:school.id,key:KEYS[2],value:next.headteacher_name},{school_id:school.id,key:KEYS[3],value:next.headteacher_signature}];try{const {error}=await client.from('system_settings').upsert(rows,{onConflict:'school_id,key'});if(error)throw error;window.__welfarePdfSignatories=next;showMessage('PDF signatories saved successfully for this school.',false);}catch(error){showMessage('PDF signatories were not saved. '+(error.message||'Check school settings permissions.'),true);}finally{button.disabled=false;}});
+ }
+ // Mount a real destination immediately, before a user can click Settings.
+ // Authenticated initialization replaces this neutral placeholder with the
+ // correct administrator or member controls.
+ ensurePanel('pending');
+ window.ensureWelfareAccountSettingsView=function(){
+  try{
+   const context=window.__welfareAccountSettingsContext||{};
+   const role=context.role||(window.__welfareCurrentRole==='teacher'?'teacher':'admin');
+   const panel=ensurePanel(role);
+   if(!panel)throw new Error('Settings panel could not be mounted.');
+   panel.classList.remove('hidden');panel.removeAttribute('hidden');
+   panel.style.setProperty('display','block','important');
+   panel.style.setProperty('visibility','visible','important');
+   panel.setAttribute('aria-hidden','false');
+   if(context.client&&context.school?.id&&(panel.dataset.settingsRole!==role||panel.childElementCount===0)){
+    Promise.resolve(setup(context.client,context.school,role)).catch(error=>console.error('[Account Settings] View initialization failed:',error));
+   }
+   return panel;
   }catch(error){
-   console.warn('[PDF signatories] Existing school signatories could not be loaded:',error?.message||error);
-   window.__welfarePdfSignatories=blank();
+   console.error('[Account Settings] View activation failed:',error);
+   const panel=document.getElementById('wfAccountSettingsPanel');
+   if(panel){panel.classList.remove('hidden');panel.style.setProperty('display','block','important');panel.innerHTML='<h2>Settings</h2><p class="error" role="alert">Settings could not be opened. Please refresh the portal.</p>';}
+   return panel||null;
+  }
+ };
+ window.initSchoolPdfSettings=async function(client,school,role){
+  try{return await setup(client,school,role);}
+  catch(error){
+   console.error('[Account Settings] Initialization failed:',error);
+   const panel=ensurePanel(role,true);
+   if(panel){panel.classList.remove('hidden');panel.style.setProperty('display','block','important');const note=document.createElement('p');note.className='error';note.setAttribute('role','alert');note.textContent='Settings cards are available, but some saved details could not be loaded. '+(error?.message||'');panel.appendChild(note);}
    return false;
   }
  };
+})();
 })();
 </script>
 </body>
