@@ -2722,6 +2722,29 @@ async function waitForSchoolWorkflows(timeoutMs=10000){
  }
  return typeof window.initSchoolWorkflows==='function';
 }
+// Account Settings must initialize independently of dashboard data and workflow startup.
+// Keep one initialization promise per authenticated tenant/role to avoid duplicate setup.
+function startAccountSettingsInitialization(client,school,role){
+ const key=String(school?.id||'')+'::'+String(role||'');
+ if(!client||!school?.id||!role)return Promise.resolve(false);
+ if(window.__welfareAccountSettingsInitKey===key&&window.__welfareAccountSettingsInitPromise){
+  return window.__welfareAccountSettingsInitPromise;
+ }
+ window.__welfareAccountSettingsInitKey=key;
+ window.__welfareAccountSettingsInitPromise=(async()=>{
+  try{
+   for(let attempt=0;attempt<40&&typeof window.initSchoolPdfSettings!=='function';attempt++){
+    await new Promise(resolve=>window.setTimeout(resolve,50));
+   }
+   if(typeof window.initSchoolPdfSettings!=='function')throw new Error('Account Settings module was unavailable after waiting for initialization.');
+   return await window.initSchoolPdfSettings(client,school,role);
+  }catch(error){
+   console.error('[Account Settings] Independent initialization failed:',error?.message||error);
+   return false;
+  }
+ })();
+ return window.__welfareAccountSettingsInitPromise;
+}
 async function showDashboard(){
  await tenantIdentityReady;
  if(gatewayAccessBlocked){
@@ -2772,6 +2795,9 @@ async function showDashboard(){
  resetInactivityTimer();
  $('schoolName').textContent=school.name;$('brand').textContent=school.name;$('sideSchoolName').textContent=school.name;$('sideSchoolCode').textContent=[school.school_code,school.school_type,school.district,school.region].filter(Boolean).join(' · ');$('schoolDescription').textContent='Providing mutual financial support, social welfare benefits, and fully transparent monthly record-keeping for '+school.name+'.';
  $('schoolMeta').textContent=[school.school_code,school.school_type,school.district,school.region].filter(Boolean).join(' · ');
+ // Start Settings as soon as the authenticated tenant context is known. Do not await it:
+ // dashboard query failures or workflow startup must never prevent the Settings view mounting.
+ void startAccountSettingsInitialization(client,school,'admin');
  const [teachersRes,contribRes,payoutsRes,reversalsRes]=await Promise.all([
   client.from('teachers').select('id,name,phone,rank,class_name').eq('school_id',school.id).order('name'),
   client.from('contributions').select('id,amount,date').eq('school_id',school.id),
@@ -2805,9 +2831,7 @@ try {
     // warning panel that users can mistake for lost data. Details remain in console.
     console.error('[School Welfare] Workflow initialization deferred/failed:',workflowError?.message||workflowError);
   }
-  // Mount authenticated administrator Settings and load the tenant's saved PDF signatories.
-  for(let attempt=0;attempt<40&&typeof window.initSchoolPdfSettings!=='function';attempt++)await new Promise(resolve=>setTimeout(resolve,50));
-  if(typeof window.initSchoolPdfSettings==='function')await window.initSchoolPdfSettings(client,school,'admin');
+  // Settings was started independently above; finish dashboard mounting without waiting on it.
   window.finishTenantSkeletons?.();
   const duesMetric=$('standardDuesMetric'),duesInput=$('wfMonthlyDues');if(duesMetric&&duesInput){const updateDues=()=>{duesMetric.textContent='GHS '+money(duesInput.value||0);};updateDues();duesInput.addEventListener('input',updateDues);}
  window.showWelfareDialog=window.showWelfareDialog||function(kind,message,title){
