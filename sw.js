@@ -69,8 +69,15 @@ function isSensitiveRequest(url){
 }
 self.addEventListener('fetch',event=>{
  const request=event.request;
- if(request.method!=='GET')return;
  const url=new URL(request.url);
+ if(isSensitiveRequest(url)){
+   event.respondWith((async()=>{
+    try{return await timedFetch(request,NETWORK_TIMEOUT_MS);}
+    catch(_){return new Response(JSON.stringify({message:'Network unavailable or too slow. Cached portal statements may still be opened.'}),{status:504,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});}
+   })());
+   return;
+ }
+ if(request.method!=='GET')return;
  if(url.origin!==self.location.origin){
    const trustedStaticHosts=['cdnjs.cloudflare.com','cdn.jsdelivr.net','cdn.tailwindcss.com','fonts.googleapis.com','fonts.gstatic.com'];
    if(!trustedStaticHosts.includes(url.hostname)||!['script','style','font','image'].includes(request.destination))return;
