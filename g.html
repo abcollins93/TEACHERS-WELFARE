@@ -31,9 +31,18 @@
     <p><a id="continue" href="#">Continue to school sign in</a></p>
   </main>
   <script>
-    (async function(){
+    (function(){
       var params = new URLSearchParams(window.location.search);
-      var code = (params.get('c') || params.get('school') || '').trim().toUpperCase();
+      var hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+      function stored(key){try{return sessionStorage.getItem(key)||localStorage.getItem(key)||'';}catch(_){return '';}}
+      var code = (params.get('c') || params.get('school_code') || params.get('tenant') || params.get('school') ||
+        hashParams.get('c') || hashParams.get('school_code') || hashParams.get('tenant') || hashParams.get('school') ||
+        stored('invited_school_code') || stored('active_tenant_code') || '').trim().toUpperCase();
+      if (code && /^[A-Z0-9-]{2,32}$/.test(code)) {
+        try { localStorage.setItem('invited_school_code', code); localStorage.setItem('active_tenant_code', code); } catch (_) {}
+        try { sessionStorage.setItem('invited_school_code', code); sessionStorage.setItem('active_tenant_code', code); } catch (_) {}
+      }
+      (async function(){
       var message = document.getElementById('message');
       var link = document.getElementById('continue');
       var heading = document.querySelector('main h1');
@@ -69,6 +78,7 @@
       } catch (error) {
         block('School gateway unavailable', 'We could not verify this school’s access status. For security, sign-in is blocked. Please try again later or contact the platform administrator.');
       }
+      })();
     })();
   </script>
 </body>
