@@ -573,7 +573,23 @@ function addUI(){
  <div><label for="wfPhone">Phone</label><input id="wfPhone" maxlength="40"></div><div><label for="wfRank">Rank / Grade</label><select id="wfRank" style="width:100%;min-height:44px;padding:10px 12px;border:1px solid #dbe2ec;border-radius:10px;background:#fff;color:#0f172a;box-sizing:border-box">${rankOptionsMarkup()}</select></div>
  <div><label for="wfClass">Class / Subject / Responsibility</label><input id="wfClass" maxlength="100" placeholder="e.g. Primary 6, Mathematics"></div><div><label for="wfMembershipType">Membership Type</label><select id="wfMembershipType"><option value="">Select membership type</option><option value="Permanent">Permanent</option><option value="Temporal">Temporal</option></select></div><div><label for="wfEmployer">Employer</label><select id="wfEmployer"><option value="">Select employer</option><option value="GES">GES</option><option value="NGO">NGO</option><option value="NSA">NSA</option></select></div><div><label for="wfPassport">Passport photograph (optional)</label><div class="wf-passport-upload"><input id="wfPassport" type="file" accept="image/jpeg,image/png,image/webp"></div><small class="muted wf-passport-help">JPEG, PNG or WebP; maximum 3 MB. Leave blank to keep the current photo.</small><div id="wfPassportPreview" class="muted" aria-live="polite"></div></div><div style="align-self:end;display:flex;gap:8px;flex-wrap:wrap"><button id="wfTeacherSave" type="submit">Register teacher</button><button id="wfTeacherCancel" class="secondary" type="button">Cancel edit</button></div></form><p id="wfTeacherMsg" class="muted" role="status" aria-live="polite"></p><div class="wf-teacher-register-table" style="overflow:auto"><table><thead><tr><th>Staff ID</th><th>Name</th><th>Phone</th><th>Rank</th><th>Class</th><th>Membership Type</th><th>Employer</th><th>Status</th><th>Profile actions</th></tr></thead><tbody id="wfManageTeacherRows"></tbody></table></div></div>
  
- <section class="wf-reports-view hidden" id="wfReportsPanel"><header class="wf-reports-heading"><div><h2>Statements &amp; Reports</h2><p>Generate individual member statements or executive fund summary reports instantly.</p></div><span class="wf-reports-admin-status"><i class="fa-solid fa-shield-check"></i> Administrator access active</span></header><div class="wf-report-cards"><article class="wf-report-card wf-report-card-rose"><div class="wf-report-card-icon wf-report-icon-blue"><i class="fa-solid fa-file-lines"></i></div><div class="wf-report-card-content"><h3>Individual Statement</h3><p>Generate a comprehensive, print-ready official A4 statement for the selected member account.</p><label for="wfStatementTeacher">Select Member Account</label><select id="wfStatementTeacher" aria-label="Select Member Account"></select><div class="wf-report-actions"><button id="wfStatementPdf" type="button" class="wf-report-button wf-report-button-rose"><i class="fa-solid fa-file-pdf"></i> Download Member Statement</button><button id="wfStatementShare" type="button" class="wf-report-button wf-report-button-share wf-report-button-rose-share"><i class="fa-solid fa-share-nodes"></i> Share PDF</button></div><p id="wfStatementMsg" class="wf-report-message" role="status" aria-live="polite"></p></div></article><article class="wf-report-card wf-report-card-amber"><div class="wf-report-card-icon wf-report-icon-orange"><i class="fa-solid fa-calendar-days"></i></div><div class="wf-report-card-content"><h3>Monthly Summary Report</h3><p>Administrator access active. Select target month to generate report.</p><div class="wf-month-year-picker" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:560px;margin-bottom:13px"><div><label for="wfReportMonth">Select Month</label><select id="wfReportMonth" aria-label="Select reporting month"></select></div><div><label for="wfReportYear">Select Year</label><select id="wfReportYear" aria-label="Select reporting year"></select></div></div><div class="wf-report-actions"><button id="wfMonthlyPdf" type="button" class="wf-report-button wf-report-button-orange"><i class="fa-solid fa-file-pdf"></i> Download Monthly Summary (Admin)</button><button id="wfMonthlyShare" type="button" class="wf-report-button wf-report-button-share wf-report-button-orange-share"><i class="fa-solid fa-share-nodes"></i> Share PDF</button></div></div></article><article class="wf-report-card wf-report-card-violet"><div class="wf-report-card-icon wf-report-icon-purple"><i class="fa-solid fa-calendar-check"></i></div><div class="wf-report-card-content"><h3>Yearly Summary Report</h3><p>Select a calendar year to download that year’s school-wide contribution and welfare payout summary.</p><label for="wfAnnualYear">Select Year</label><select id="wfAnnualYear" aria-label="Select annual report year"></select><div class="wf-report-actions"><button id="wfAnnualPdf" type="button" class="wf-report-button wf-report-button-purple"><i class="fa-solid fa-file-pdf"></i> Download Yearly Summary (Admin)</button><button id="wfAnnualShare" type="button" class="wf-report-button wf-report-button-share wf-report-button-purple-share"><i class="fa-solid fa-share-nodes"></i> Share PDF</button></div></div></article><article class="wf-report-card wf-report-card-emerald"><div class="wf-report-card-icon wf-report-icon-green"><i class="fa-solid fa-chart-column"></i></div><div class="wf-report-card-content"><h3>Complete Fund Summary</h3><p>Administrator access is active. You can generate the complete fund report.</p><div class="wf-report-actions"><button id="wfCompletePdf" type="button" class="wf-report-button wf-report-button-green"><i class="fa-solid fa-file-pdf"></i> Download Complete Summary (Admin)</button><button id="wfCompleteShare" type="button" class="wf-report-button wf-report-button-share wf-report-button-green-share"><i class="fa-solid fa-share-nodes"></i> Share PDF</button></div></div></article><article class="wf-report-card wf-report-card-indigo"><div class="wf-report-card-icon wf-report-icon-blue"><i class="fa-solid fa-chart-bar"></i></div><div class="wf-report-card-content"><h3>Statistics of Payment</h3><p>View each active member’s payment completion for the selected calendar year.</p><label for="wfPaymentStatsYear">Select Year</label><select id="wfPaymentStatsYear" aria-label="Select payment statistics year"></select><button id="wfPaymentStatsPdf" type="button" class="wf-report-button wf-report-button-indigo"><i class="fa-solid fa-file-pdf"></i> Download Statistics PDF</button></div></article></div><div class="wf-report-footer"><p id="wfReportMsg" class="muted" role="status" aria-live="polite">Reports include records visible to this authenticated school administrator only.</p><button id="wfExportCsv" type="button" class="wf-report-csv"><i class="fa-solid fa-file-csv"></i> Export ledgers CSV</button></div></section>`;
+ <section class="wf-reports-view hidden" id="wfReportsPanel"><header class="wf-reports-heading"><div><h2>Statements &amp; Reports</h2><p>Generate individual member statements or executive fund summary reports instantly.</p></div><span class="wf-reports-admin-status"><i class="fa-solid fa-shield-check"></i> Administrator access active</span></header><div class="wf-report-cards"><article class="wf-report-card wf-report-card-rose"><div class="wf-report-card-icon wf-report-icon-blue"><i class="fa-solid fa-file-lines"></i></div><div class="wf-report-card-content"><h3>Individual Statement</h3><p>Generate a comprehensive, print-ready official A4 statement for the selected member account.</p><label for="wfStatementTeacher">Select Member Account</label><select id="wfStatementTeacher" aria-label="Select Member Account"></select><div class="wf-report-actions"><button id="wfStatementPdf" type="button" class="wf-report-button wf-report-button-rose"><i class="fa-solid fa-file-pdf"></i> Download Member Statement</button><button id="wfStatementShare" type="button" class="wf-report-button wf-report-button-share wf-report-button-rose-share"><i class="fa-solid fa-share-nodes"></i> Share PDF</button></div><p id="wfStatementMsg" class="wf-report-message" role="status" aria-live="polite"></p></div></article><article class="wf-report-card wf-report-card-amber"><div class="wf-report-card-icon wf-report-icon-orange"><i class="fa-solid fa-calendar-days"></i></div><div class="wf-report-card-content"><h3>Monthly Summary Report</h3><p>Administrator access active. Select target month to generate report.</p><div class="wf-month-year-picker" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:560px;margin-bottom:13px"><div><label for="wfReportMonth">Select Month</label><select id="wfReportMonth" aria-label="Select reporting month"></select></div><div><label for="wfReportYear">Select Year</label><select id="wfReportYear" aria-label="Select reporting year"></select></div></div><div class="wf-report-actions"><button id="wfMonthlyPdf" type="button" class="wf-report-button wf-report-button-orange"><i class="fa-solid fa-file-pdf"></i> Download Monthly Summary (Admin)</button><button id="wfMonthlyShare" type="button" class="wf-report-button wf-report-button-share wf-report-button-orange-share"><i class="fa-solid fa-share-nodes"></i> Share PDF</button></div></div></article><article class="wf-report-card wf-report-card-violet"><div class="wf-report-card-icon wf-report-icon-purple"><i class="fa-solid fa-calendar-check"></i></div><div class="wf-report-card-content"><h3>Yearly Summary Report</h3><p>Select a calendar year to download that year’s school-wide contribution and welfare payout summary.</p><label for="wfAnnualYear">Select Year</label><select id="wfAnnualYear" aria-label="Select annual report year"></select><div class="wf-report-actions"><button id="wfAnnualPdf" type="button" class="wf-report-button wf-report-button-purple"><i class="fa-solid fa-file-pdf"></i> Download Yearly Summary (Admin)</button><button id="wfAnnualShare" type="button" class="wf-report-button wf-report-button-share wf-report-button-purple-share"><i class="fa-solid fa-share-nodes"></i> Share PDF</button></div></div></article><article class="wf-report-card wf-report-card-emerald"><div class="wf-report-card-icon wf-report-icon-green"><i class="fa-solid fa-chart-column"></i></div><div class="wf-report-card-content"><h3>Complete Fund Summary</h3><p>Administrator access is active. You can generate the complete fund report.</p><div class="wf-report-actions"><button id="wfCompletePdf" type="button" class="wf-report-button wf-report-button-green"><i class="fa-solid fa-file-pdf"></i> Download Complete Summary (Admin)</button><button id="wfCompleteShare" type="button" class="wf-report-button wf-report-button-share wf-report-button-green-share"><i class="fa-solid fa-share-nodes"></i> Share PDF</button></div></div></article><article class="wf-report-card wf-report-card-indigo"><div class="wf-report-card-icon wf-report-icon-blue"><i class="fa-solid fa-chart-bar"></i></div><div class="wf-report-card-content"><h3>Statistics of Payment</h3><p>View each active member’s payment completion for the selected calendar year.</p><label for="wfPaymentStatsYear">Select Year</label><select id="wfPaymentStatsYear" aria-label="Select payment statistics year"></select><button id="wfPaymentStatsPdf" type="button" class="wf-report-button wf-report-button-indigo"><i class="fa-solid fa-file-pdf"></i> Download Statistics PDF</button></div></article></div>
+<article class="wf-report-card wf-report-card-emerald wf-dues-matrix-card" id="wfDuesMatrixCard">
+ <div class="wf-report-card-content">
+  <h3><i class="fa-solid fa-table-cells-large" aria-hidden="true"></i> Month-by-Month Dues Matrix</h3>
+  <p>Teacher-by-month contribution overview for the selected calendar year. Only active, non-reversed contributions are counted.</p>
+  <div class="wf-dues-matrix-controls">
+   <div><label for="wfDuesMatrixYear">Select Year</label><select id="wfDuesMatrixYear" aria-label="Select dues matrix year"></select></div>
+   <div><label for="wfDuesMatrixSearch">Find Teacher / Staff ID</label><input id="wfDuesMatrixSearch" type="search" placeholder="Search name or Staff ID" autocomplete="off"></div>
+  </div>
+  <p class="wf-dues-matrix-legend"><span class="wf-dues-matrix-paid">✓ Paid</span><span class="wf-dues-matrix-unpaid">— Unpaid / missing</span><span class="muted">Amounts are shown in GHS.</span></p>
+  <div class="wf-dues-matrix-scroll" role="region" aria-label="Teacher by month dues matrix" tabindex="0">
+   <table class="wf-dues-matrix-table"><thead><tr><th scope="col">Teacher / Staff ID</th><th scope="col">Jan</th><th scope="col">Feb</th><th scope="col">Mar</th><th scope="col">Apr</th><th scope="col">May</th><th scope="col">Jun</th><th scope="col">Jul</th><th scope="col">Aug</th><th scope="col">Sep</th><th scope="col">Oct</th><th scope="col">Nov</th><th scope="col">Dec</th></tr></thead><tbody id="wfDuesMatrixRows"><tr><td colspan="13">Loading dues matrix…</td></tr></tbody></table>
+  </div>
+  <p id="wfDuesMatrixStatus" class="wf-report-message" role="status" aria-live="polite"></p>
+ </div>
+</article>
+<div class="wf-report-footer"><p id="wfReportMsg" class="muted" role="status" aria-live="polite">Reports include records visible to this authenticated school administrator only.</p><button id="wfExportCsv" type="button" class="wf-report-csv"><i class="fa-solid fa-file-csv"></i> Export ledgers CSV</button></div></section>`;
  // Financial workspaces are independent sidebar destinations, not admin-panel cards.
  const contributionWorkspace=d.querySelector('#wfContributionPanel');
  const payoutWorkspace=d.querySelector('#wfPayoutPanel');
@@ -618,6 +634,7 @@ function addUI(){
  // Populate the monthly report selectors immediately after mounting the report
  // view. This keeps Month and Year available even if later optional setup is slow.
  const reportMonthSelect=$('wfReportMonth'),reportYearSelect=$('wfReportYear'),annualYearSelect=$('wfAnnualYear'),paymentStatsYearSelect=$('wfPaymentStatsYear');
+ const duesMatrixYearSelect=$('wfDuesMatrixYear');
  {
    const reportMonthNow=new Date();
    const monthNames=Array.from({length:12},(_,i)=>new Date(2000,i,1).toLocaleDateString('en-GH',{month:'long'}));
@@ -638,6 +655,12 @@ function addUI(){
      paymentStatsYearSelect.replaceChildren(...paymentStatsYears.map(year=>new Option(String(year),String(year))));
      paymentStatsYearSelect.disabled=false;
      paymentStatsYearSelect.value=String(reportMonthNow.getFullYear());
+   }
+   if(duesMatrixYearSelect){
+     const matrixYears=Array.from({length:16},(_,i)=>reportMonthNow.getFullYear()-10+i);
+     duesMatrixYearSelect.replaceChildren(...matrixYears.map(year=>new Option(String(year),String(year))));
+     duesMatrixYearSelect.value=String(reportMonthNow.getFullYear());
+     duesMatrixYearSelect.disabled=false;
    }
  }
  // Keep audit history in its own view, outside the restricted management workspace.
@@ -930,6 +953,37 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  @media(min-width:900px){#wfLedgerPanel .wf-contrib-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}
  @media(max-width:600px){#wfLedgerPanel .wf-contrib-filters,#wfLedgerPanel .wf-contrib-filters input{width:100%;max-width:none}}
  `;
+ contribStyle.textContent+=`
+ #wfDuesMatrixCard{grid-column:1/-1;position:relative;overflow:hidden;border:1px solid var(--line);border-top:5px solid #16a779!important;border-radius:17px;background:var(--surface,#fff);color:var(--text,var(--ink));box-shadow:0 10px 28px rgba(7,19,40,.06);padding:clamp(15px,2.2vw,22px)}
+ #wfDuesMatrixCard .wf-report-card-content{width:100%}
+ #wfDuesMatrixCard h3{display:flex;align-items:center;gap:9px;margin:0 0 5px;color:var(--text,var(--ink))}
+ #wfDuesMatrixCard h3 i{color:#16a779}
+ #wfDuesMatrixCard p{margin:5px 0 14px;color:var(--muted)}
+ #wfDuesMatrixCard .wf-dues-matrix-controls{display:grid;grid-template-columns:minmax(150px,190px) minmax(220px,1fr);gap:12px;max-width:620px;margin:10px 0 12px}
+ #wfDuesMatrixCard .wf-dues-matrix-controls label{display:block;margin:0 0 5px;font-size:.76rem;font-weight:800}
+ #wfDuesMatrixCard .wf-dues-matrix-controls input,#wfDuesMatrixCard .wf-dues-matrix-controls select{width:100%;min-width:0;min-height:42px;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:var(--surface,#fff);color:var(--text,var(--ink))}
+ #wfDuesMatrixCard .wf-dues-matrix-legend{display:flex;align-items:center;gap:13px;flex-wrap:wrap;font-size:.76rem;margin:9px 0 12px}
+ #wfDuesMatrixCard .wf-dues-matrix-paid,#wfDuesMatrixCard .wf-dues-matrix-unpaid{display:inline-flex;align-items:center;gap:4px;font-weight:850}
+ #wfDuesMatrixCard .wf-dues-matrix-paid{color:#13865f}
+ #wfDuesMatrixCard .wf-dues-matrix-unpaid{color:#9aa5b5}
+ #wfDuesMatrixCard .wf-dues-matrix-scroll{width:100%;max-width:100%;overflow-x:auto;border:1px solid var(--line);border-radius:12px;overscroll-behavior-x:contain}
+ #wfDuesMatrixCard .wf-dues-matrix-table{width:100%;min-width:900px;border-collapse:separate;border-spacing:0;font-size:.76rem}
+ #wfDuesMatrixCard .wf-dues-matrix-table th{position:sticky;top:0;z-index:1;padding:11px 9px;text-align:center;background:#edf4f2;color:#29443c;border-bottom:1px solid var(--line);white-space:nowrap}
+ #wfDuesMatrixCard .wf-dues-matrix-table th:first-child{left:0;z-index:2;min-width:190px;text-align:left}
+ #wfDuesMatrixCard .wf-dues-matrix-table td{padding:9px 8px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
+ #wfDuesMatrixCard .wf-dues-matrix-table td:first-child{position:sticky;left:0;z-index:1;text-align:left;background:var(--surface,#fff);font-weight:800;min-width:190px}
+ #wfDuesMatrixCard .wf-dues-matrix-teacher small{display:block;color:var(--muted);font-size:.68rem;font-weight:650}
+ #wfDuesMatrixCard .wf-dues-matrix-cell-paid{display:inline-block;padding:4px 7px;border-radius:7px;background:#dcfce7;color:#166534;font-weight:850}
+ #wfDuesMatrixCard .wf-dues-matrix-cell-unpaid{color:#9aa5b5;font-weight:750}
+ #wfDuesMatrixCard .wf-dues-matrix-table tbody tr:last-child td{border-bottom:0}
+ .dark #wfDuesMatrixCard{background:#0b1d3a;color:#e6edf7;border-color:#26364d}
+ .dark #wfDuesMatrixCard .wf-dues-matrix-controls input,.dark #wfDuesMatrixCard .wf-dues-matrix-controls select{background:#071328;color:#e6edf7;border-color:#354862}
+ .dark #wfDuesMatrixCard .wf-dues-matrix-table th{background:#173a37;color:#e3f5ee}
+ .dark #wfDuesMatrixCard .wf-dues-matrix-table td:first-child{background:#0b1d3a}
+ .dark #wfDuesMatrixCard .wf-dues-matrix-cell-paid{background:#14532d;color:#bbf7d0}
+ .dark #wfDuesMatrixCard .wf-dues-matrix-cell-unpaid{color:#8291a6}
+ @media(max-width:600px){#wfDuesMatrixCard .wf-dues-matrix-controls{grid-template-columns:1fr}#wfDuesMatrixCard .wf-dues-matrix-table{min-width:850px}}
+ `;
  document.head.appendChild(contribStyle);
  const teacherById=new Map(teachers.map(t=>[String(t.id),t]));
  let selectedProfileTeacherId=teachers[0]?String(teachers[0].id):'';
@@ -1219,6 +1273,51 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     }).join(''):'<tr><td colspan="7">No matching contributions.</td></tr>';
   };
   renderContributionLedger();$('wfLedgerSearch').addEventListener('input',renderContributionLedger);$('wfLedgerMonth').addEventListener('change',renderContributionLedger);
+  const renderDuesMatrix=()=>{
+    const rowsHost=$('wfDuesMatrixRows'),status=$('wfDuesMatrixStatus');
+    if(!rowsHost)return;
+    if(tr.error||cr.error||rr.error){
+      rowsHost.innerHTML='<tr><td colspan="13">The teacher register, contribution ledger, or reversal status could not be verified. The matrix is unavailable to avoid showing incorrect paid status.</td></tr>';
+      if(status)status.textContent='Unavailable — check school data access and refresh.';
+      return;
+    }
+    const year=String($('wfDuesMatrixYear')?.value||'');
+    if(!/^\d{4}$/.test(year)){
+      rowsHost.innerHTML='<tr><td colspan="13">Choose a valid reporting year.</td></tr>';
+      if(status)status.textContent='';
+      return;
+    }
+    const query=String($('wfDuesMatrixSearch')?.value||'').trim().toLowerCase();
+    const roster=teachers.filter(teacher=>teacher.is_active!==false&&[
+      teacher.name,teacher.id,teacher.staff_id,teacher.staffId
+    ].some(value=>String(value??'').toLowerCase().includes(query)));
+    const totals=new Map();
+    activeCons.forEach(item=>{
+      const date=String(item.date||'').slice(0,10),match=date.match(/^(\d{4})-(\d{2})-/);
+      if(!match||match[1]!==year)return;
+      const month=Number(match[2]);if(month<1||month>12)return;
+      const key=String(item.teacher_id)+'|'+month;
+      totals.set(key,(totals.get(key)||0)+Number(item.amount||0));
+    });
+    if(!roster.length){
+      rowsHost.innerHTML='<tr><td colspan="13">'+(query?'No active members match this search.':'No active members are registered for this school.')+'</td></tr>';
+      if(status)status.textContent='0 teachers shown · '+year;
+      return;
+    }
+    rowsHost.innerHTML=roster.map(teacher=>{
+      const name=esc(teacher.name||'Unnamed member'),staffId=esc(teacher.staff_id||teacher.staffId||teacher.id||'—');
+      const cells=Array.from({length:12},(_,index)=>{
+        const amount=totals.get(String(teacher.id)+'|'+(index+1))||0;
+        return amount>0?'<td><span class="wf-dues-matrix-cell-paid" title="Active contributions recorded: GHS '+money(amount)+'">✓ GHS '+money(amount)+'</span></td>':'<td><span class="wf-dues-matrix-cell-unpaid" aria-label="Unpaid or missing">—</span></td>';
+      }).join('');
+      return '<tr><td><span class="wf-dues-matrix-teacher">'+name+'<small>Staff ID: '+staffId+'</small></span></td>'+cells+'</tr>';
+    }).join('');
+    const yearRecords=activeCons.filter(item=>String(item.date||'').slice(0,4)===year).length;
+    if(status)status.textContent=roster.length+' active member'+(roster.length===1?'':'s')+' shown · '+year+' · '+yearRecords+' active contribution record'+(yearRecords===1?'':'s');
+  };
+  renderDuesMatrix();
+  $('wfDuesMatrixYear')?.addEventListener('change',renderDuesMatrix);
+  $('wfDuesMatrixSearch')?.addEventListener('input',renderDuesMatrix);
   const renderPayoutLedger=()=>{
     const q=String($('wfPayoutSearch')?.value||'').trim().toLowerCase();
     const rows=pays.filter(x=>[x.teacher_id,window.displayWelfareReason(x.reason),x.reference,teacherById.get(String(x.teacher_id))?.name].some(v=>String(v||'').toLowerCase().includes(q)));
@@ -1253,6 +1352,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     const now=new Date(),monthKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
     if($('monthlyContributionTotal'))$('monthlyContributionTotal').textContent=cr.error?'Unavailable':'GHS '+money(activeCons.filter(item=>String(item.date||'').slice(0,7)===monthKey).reduce((sum,item)=>sum+Number(item.amount||0),0));
     renderContributionLedger();
+    renderDuesMatrix();
     renderPayoutLedger();
     renderSelectedTeacherProfile();
     await refreshAdminActivityTicker();
