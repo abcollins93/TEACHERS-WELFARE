@@ -2506,6 +2506,92 @@ async function renderTeacherDashboard(profile,school){
  if(existingStandardCard)existingStandardCard.insertAdjacentElement('afterend',teacherDuesCard);
  $('teacherStandardMonthlyDuesAmount').textContent=teacherStandardDuesError?'Unavailable':'GHS '+money(teacherStandardDues||0);
 
+ // Member-only contribution gap card. It uses the authenticated personal feed,
+ // the member's registration month (or their first active contribution month),
+ // and the school's configured monthly dues rate. Reversed entries are excluded.
+ const teacherGapCard=document.createElement('div');
+ teacherGapCard.id='teacherContributionGap';
+ teacherGapCard.className='metric metric-featured metric-member-arrears';
+ teacherGapCard.innerHTML='<div class="metric-icon" aria-hidden="true"><i id="teacherContributionGapIcon" class="fa-solid fa-scale-balanced"></i></div><div class="metric-content"><span class="metric-label">CONTRIBUTION STATUS</span><strong id="teacherContributionGapValue">Checking…</strong><span class="metric-note" id="teacherContributionGapNote">Checking your active contribution records</span></div>';
+ const existingGapCard=$('teacherContributionGap');if(existingGapCard)existingGapCard.remove();
+ teacherGapCard.style.setProperty('--metric-accent','#d97706');
+ teacherGapCard.style.setProperty('--metric-icon-bg','#fff3d6');
+ const teacherGapAnchor=$('teacherStandardMonthlyDues');
+ if(teacherGapAnchor)teacherGapAnchor.insertAdjacentElement('afterend',teacherGapCard);
+
+ const renderTeacherContributionGap=()=>{
+  const card=$('teacherContributionGap');
+  const value=$('teacherContributionGapValue');
+  const note=$('teacherContributionGapNote');
+  const icon=$('teacherContributionGapIcon');
+  if(!card||!value||!note)return;
+  const setGapState=(kind,main,detail)=>{
+   card.classList.remove('is-up-to-date','is-behind','is-unavailable');
+   card.classList.add(kind);
+   value.textContent=main;
+   note.textContent=detail;
+   if(icon)icon.className='fa-solid '+(kind==='is-up-to-date'?'fa-circle-check':kind==='is-behind'?'fa-triangle-exclamation':'fa-circle-question');
+  };
+  if(contributionLoadError){
+   setGapState('is-unavailable','Unavailable','Your personal contribution records could not be verified');
+   return;
+  }
+  const monthlyRate=Number(teacherStandardDues);
+  if(teacherStandardDuesError||!Number.isFinite(monthlyRate)||monthlyRate<=0){
+   setGapState('is-unavailable','Unavailable','The school standard monthly dues rate is not configured');
+   return;
+  }
+  const monthKeyFromDate=rawValue=>{
+   const raw=String(rawValue??'').trim();
+   if(!raw)return '';
+   const match=raw.match(/^(\\d{4})-(\\d{1,2})(?:-\\d{1,2})?/);
+   let year,month;
+   if(match){year=Number(match[1]);month=Number(match[2]);}
+   else{
+    const parsed=new Date(raw);
+    if(Number.isNaN(parsed.getTime()))return '';
+    year=parsed.getFullYear();month=parsed.getMonth()+1;
+   }
+   return Number.isInteger(year)&&month>=1&&month<=12?year+'-'+String(month).padStart(2,'0'):'';
+  };
+  const now=new Date();
+  const currentMonthKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  const activeRows=teacherContributionRows.filter(row=>isMyTeacherContribution(row)&&isActiveTeacherContribution(row));
+  const membershipDateCandidates=[
+   teacherRecord?.registration_date,teacherRecord?.registered_at,teacherRecord?.created_at,teacherRecord?.date_registered,
+   profile?.registration_date,profile?.registered_at,profile?.created_at,profile?.date_registered
+  ];
+  let startMonthKey=membershipDateCandidates.map(monthKeyFromDate).find(Boolean)||'';
+  if(!startMonthKey){
+   const firstActiveMonth=activeRows.map(row=>monthKeyFromDate(row.payment_date||row.contribution_date||row.date)).filter(Boolean).sort()[0];
+   startMonthKey=firstActiveMonth||'';
+  }
+  if(!startMonthKey){
+   setGapState('is-unavailable','Start date unavailable','Membership date or first active contribution month is not available');
+   return;
+  }
+  if(startMonthKey>currentMonthKey){
+   setGapState('is-up-to-date','Up to date','No monthly dues have fallen due yet');
+   return;
+  }
+  const [startYear,startMonth]=startMonthKey.split('-').map(Number);
+  const expectedMonths=(now.getFullYear()-startYear)*12+(now.getMonth()+1-startMonth)+1;
+  const periodRows=activeRows.filter(row=>{
+   const rowMonth=monthKeyFromDate(row.payment_date||row.contribution_date||row.date);
+   return rowMonth&&rowMonth>=startMonthKey&&rowMonth<=currentMonthKey;
+  });
+  const paidTotal=periodRows.reduce((sum,row)=>sum+Math.max(0,Number(row.amount)||0),0);
+  const expectedTotal=expectedMonths*monthlyRate;
+  const arrears=Math.max(0,Math.round((expectedTotal-paidTotal)*100)/100);
+  const paidMonths=arrears<=0.005?expectedMonths:Math.min(expectedMonths,Math.floor((paidTotal+0.005)/monthlyRate));
+  const missedMonths=Math.max(0,expectedMonths-paidMonths);
+  if(arrears<=0.005){
+   setGapState('is-up-to-date','Up to date','Paid: '+paidMonths+' mos | Missed: 0 mos');
+  }else{
+   setGapState('is-behind','GHS '+money(arrears),'Arrears · Paid: '+paidMonths+' mos | Missed: '+missedMonths+' mos');
+  }
+ };
+
  // Fast local-only progress calculation: uses the authenticated teacher feed already loaded above.
  const renderTeacherContributionProgress=()=>{
   const card=$('teacherContributionProgress');
@@ -5607,6 +5693,18 @@ body.sidebar-open{overflow:hidden}
  .tenant-school-logo-actions button{grid-column:1;grid-row:auto;justify-self:start;max-width:100%}
  .tenant-school-logo-actions small,.tenant-school-logo-actions p{grid-column:1;min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
 }
+</style>
+<style id="member-contribution-gap-card">
+#schoolOverview .dashboard-metrics .metric-member-arrears{--metric-accent:#d97706;--metric-icon-bg:#fff3d6;border-top:4px solid var(--metric-accent);border-left-color:var(--metric-accent)}
+#schoolOverview .dashboard-metrics .metric-member-arrears .metric-icon{background:var(--metric-icon-bg);color:var(--metric-accent)}
+#schoolOverview .dashboard-metrics .metric-member-arrears.is-up-to-date{--metric-accent:#16804a;--metric-icon-bg:#e2f7eb}
+#schoolOverview .dashboard-metrics .metric-member-arrears.is-behind{--metric-accent:#c2410c;--metric-icon-bg:#ffedd5}
+#schoolOverview .dashboard-metrics .metric-member-arrears.is-unavailable{--metric-accent:#64748b;--metric-icon-bg:#eef2f7}
+.dark #schoolOverview .dashboard-metrics .metric-member-arrears{background:#0b1d3a;border-color:#26364d;border-top-color:var(--metric-accent);border-left-color:var(--metric-accent)}
+.dark #schoolOverview .dashboard-metrics .metric-member-arrears .metric-icon{background:#26364d;color:#fbbf24}
+.dark #schoolOverview .dashboard-metrics .metric-member-arrears.is-up-to-date .metric-icon{background:#123d32;color:#6ee7a3}
+.dark #schoolOverview .dashboard-metrics .metric-member-arrears.is-behind .metric-icon{background:#4a2818;color:#fdba74}
+.dark #schoolOverview .dashboard-metrics .metric-member-arrears.is-unavailable .metric-icon{background:#26364d;color:#cbd5e1}
 </style>
 </body>
 </html>
