@@ -378,7 +378,7 @@ function addUI(){
 @media(max-width:640px){#wfAdminPanel .wf-admin-intro{border-radius:1.5rem!important;padding:1.5rem 1.25rem!important}}
 
 /* Compact, horizontally scrollable Administration Panel quick actions. */
-#wfAdminPanel .wf-admin-quick-actions{margin:0 0 18px;padding:14px 15px;border:1px solid rgba(214,166,55,.24);border-radius:18px;background:linear-gradient(135deg,#fff 0%,#f7f9fc 100%);box-shadow:0 9px 24px rgba(15,23,42,.06)}
+#wfAdminPanel .wf-admin-quick-actions{margin:0 0 18px;padding:14px 15px;border:1px solid rgba(214,166,55,.24);border-radius:18px;background:linear-gradient(135deg,#fff 0%,#f7f9fc 100%);box-shadow:0 9px 24px rgba(15,23,42,.06)}#wfAdminPanel .wf-admin-quick-actions{border-top:5px solid #d6a637!important;padding-top:10px!important}
 .dark #wfAdminPanel .wf-admin-quick-actions{background:linear-gradient(135deg,#0f1f37,#0a172b);border-color:rgba(214,166,55,.25)}
 #wfAdminPanel .wf-admin-quick-heading{display:flex;align-items:center;gap:9px;margin:0 0 11px;color:#334155;font-size:.72rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
 .dark #wfAdminPanel .wf-admin-quick-heading{color:#e2e8f0}
