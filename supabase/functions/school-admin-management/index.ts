@@ -112,8 +112,13 @@ Deno.serve(async (req: Request) => {
       if (duplicate) return respond({ error: "That username is already registered. Choose a different username." }, 409);
 
       const { data: invited, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
-        data: { full_name: fullName, account_type: "school_admin" },
-        redirectTo: "https://abcollins93.github.io/TEACHERS-WELFARE/set-password.html",
+        data: {
+          full_name: fullName,
+          account_type: "school_admin",
+          school_code: school.school_code,
+          school_id: schoolId,
+        },
+        redirectTo: `https://abcollins93.github.io/TEACHERS-WELFARE/set-password.html?c=${encodeURIComponent(school.school_code)}`,
       });
       if (inviteError || !invited.user) {
         return respond({ error: "Invitation failed. The email may already be registered, or the invitation service needs attention." }, 400);
