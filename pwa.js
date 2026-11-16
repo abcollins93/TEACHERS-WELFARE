@@ -61,14 +61,14 @@ function showPwaInstallNotice(tenantLabel){
  }
  function injectTenantManifest(){
    var label=safeTenantLabel();
-   var shortLabel='welfare';
+   var shortLabel='Welfare';
    var appScope=new URL('./',pageUrl).href;
    var launchUrl=new URL('./g.html',pageUrl);
    if(schoolCode)launchUrl.searchParams.set('c',schoolCode);
    var manifest={
      id:launchUrl.href,
-     name:'welfare',
-     short_name:'welfare',
+     name:'Welfare',
+     short_name:'Welfare',
      description:'School welfare portal for '+label+'.',
      lang:'en-GH',
      start_url:launchUrl.href,
