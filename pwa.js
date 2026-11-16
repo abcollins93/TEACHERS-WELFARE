@@ -22,6 +22,15 @@ function showPwaInstallNotice(tenantLabel){
  var schoolCode=(params.get('c')||params.get('school_code')||params.get('tenant')||params.get('school')||params.get('code')||
    hashParams.get('c')||hashParams.get('school_code')||hashParams.get('tenant')||hashParams.get('school')||storedCode||'').trim().toUpperCase();
  var tenantName='';
+ try{tenantName=sessionStorage.getItem('active_tenant_name')||localStorage.getItem('active_tenant_name')||sessionStorage.getItem('invited_school_name')||localStorage.getItem('invited_school_name')||'';}catch(_){}
+ function persistTenantName(value){
+   var normalized=String(value||'').replace(/[\\x00-\\x1F\\x7F]/g,' ').replace(/\\s+/g,' ').trim();
+   if(!normalized)return '';
+   tenantName=normalized;
+   try{localStorage.setItem('active_tenant_name',normalized);localStorage.setItem('invited_school_name',normalized);}catch(_){}
+   try{sessionStorage.setItem('active_tenant_name',normalized);sessionStorage.setItem('invited_school_name',normalized);}catch(_){}
+   return normalized;
+ }
  function persistSchoolCode(value){
    var normalized=String(value||'').trim().toUpperCase();
    if(!/^[A-Z0-9-]{2,32}$/.test(normalized))return '';
@@ -75,7 +84,7 @@ function showPwaInstallNotice(tenantLabel){
  }
  window.updateWelfarePwaTenant=function(name,code){
    if(code)persistSchoolCode(code);
-   if(name)tenantName=String(name).trim();
+   if(name)persistTenantName(name);
    injectTenantManifest();
    if(installButton){
      var label='Install '+safeTenantLabel()+' Portal';
@@ -93,7 +102,7 @@ function showPwaInstallNotice(tenantLabel){
        var update=function(){
          var value=(node.textContent||'').trim();
          if(value&&value!=='School gateway unavailable'&&value!=='Loading...'){
-           tenantName=value;
+           persistTenantName(value);
            injectTenantManifest();
            var labelNode=installButton&&installButton.querySelector('.welfare-pwa-install-label');
            if(labelNode){
