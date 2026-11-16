@@ -599,6 +599,18 @@ function addUI(){
  if(contributionWorkspace)d.appendChild(contributionWorkspace);
  if(payoutWorkspace)d.appendChild(payoutWorkspace);
  const dash=$('dashboard');if(dash)dash.appendChild(d);
+ // Ensure the dues-matrix export control is present in the live, mounted card.
+ // This is intentionally idempotent so repeated Admin Panel renders cannot duplicate it.
+ const duesMatrixCard=d.querySelector('#wfDuesMatrixCard');
+ const duesMatrixContent=duesMatrixCard?.querySelector('.wf-report-card-content');
+ if(duesMatrixContent&&!duesMatrixContent.querySelector('#wfDuesMatrixPdf')){
+  const exportActions=document.createElement('div');
+  exportActions.className='wf-dues-matrix-export-actions';
+  exportActions.style.cssText='display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin:0 0 12px';
+  exportActions.innerHTML='<button id="wfDuesMatrixPdf" type="button" class="wf-report-button wf-report-button-green" style="display:inline-flex!important;visibility:visible!important;opacity:1!important;background:linear-gradient(135deg,#10b981,#047857)!important;border:1px solid #047857!important;color:#fff!important;min-height:46px;padding:11px 17px;border-radius:11px;font-weight:850;box-shadow:0 5px 14px rgba(5,150,105,.18)!important"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i> Download Dues Matrix (PDF)</button>';
+  const legend=duesMatrixContent.querySelector('.wf-dues-matrix-legend');
+  if(legend)legend.insertAdjacentElement('afterend',exportActions);else duesMatrixContent.appendChild(exportActions);
+ }
 
  // Bind the Admin Panel quick-action navigation after its workflow markup is mounted.
  const adminQuickNav=d.querySelector('.wf-admin-quick-actions');
