@@ -583,6 +583,9 @@ function addUI(){
    <div><label for="wfDuesMatrixSearch">Find Teacher / Staff ID</label><input id="wfDuesMatrixSearch" type="search" placeholder="Search name or Staff ID" autocomplete="off"></div>
   </div>
   <p class="wf-dues-matrix-legend"><span class="wf-dues-matrix-paid">✓ Paid</span><span class="wf-dues-matrix-unpaid">— Unpaid / missing</span><span class="muted">Amounts are shown in GHS.</span></p>
+  <div class="wf-dues-matrix-export-actions" style="display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin:0 0 12px">
+   <button id="wfDuesMatrixPdf" type="button" class="wf-report-button wf-report-button-green" style="background:linear-gradient(135deg,#10b981,#047857)!important;border:1px solid #047857!important;color:#fff!important;box-shadow:0 5px 14px rgba(5,150,105,.18)!important"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i> Download Dues Matrix (PDF)</button>
+  </div>
   <div class="wf-dues-matrix-scroll" role="region" aria-label="Teacher by month dues matrix" tabindex="0">
    <table class="wf-dues-matrix-table"><thead><tr><th scope="col">Teacher / Staff ID</th><th scope="col">Jan</th><th scope="col">Feb</th><th scope="col">Mar</th><th scope="col">Apr</th><th scope="col">May</th><th scope="col">Jun</th><th scope="col">Jul</th><th scope="col">Aug</th><th scope="col">Sep</th><th scope="col">Oct</th><th scope="col">Nov</th><th scope="col">Dec</th></tr></thead><tbody id="wfDuesMatrixRows"><tr><td colspan="13">Loading dues matrix…</td></tr></tbody></table>
   </div>
@@ -1318,6 +1321,116 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   renderDuesMatrix();
   $('wfDuesMatrixYear')?.addEventListener('change',renderDuesMatrix);
   $('wfDuesMatrixSearch')?.addEventListener('input',renderDuesMatrix);
+  const duesMatrixPdfButton=$('wfDuesMatrixPdf');
+  if(duesMatrixPdfButton){
+   duesMatrixPdfButton.addEventListener('click',async()=>{
+    const button=duesMatrixPdfButton,status=$('wfDuesMatrixStatus');
+    if(button.disabled)return;
+    const original=button.innerHTML;button.disabled=true;button.setAttribute('aria-busy','true');
+    button.innerHTML='<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Preparing PDF…';
+    const reportHostId='wfDuesMatrixPdfHost';
+    let report=null;
+    try{
+     if(tr.error||cr.error||rr.error)throw new Error('The school roster, contribution ledger, and reversal status must all be available before this official report can be issued.');
+     if(typeof window.html2pdf!=='function')throw new Error('The PDF library is unavailable. Check your connection and try again.');
+     if(typeof window.registerTenantStatementVerification!=='function')throw new Error('The official statement verification service is unavailable. The PDF was not issued.');
+     if(typeof window.QRCode!=='function')throw new Error('The QR verification library is unavailable. The PDF was not issued.');
+     const selectedYear=String($('wfDuesMatrixYear')?.value||'');
+     if(!/^\\d{4}$/.test(selectedYear))throw new Error('Choose a valid reporting year.');
+     const searchTerm=String($('wfDuesMatrixSearch')?.value||'').trim().toLowerCase();
+     const roster=teachers.filter(teacher=>teacher.is_active!==false&&[
+      teacher.name,teacher.id,teacher.staff_id,teacher.staffId
+     ].some(value=>String(value??'').toLowerCase().includes(searchTerm)));
+     if(!roster.length)throw new Error(searchTerm?'No active members match the current search.':'No active members are registered for this school.');
+     const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+     const monthTotals=Array(12).fill(0),matrixRows=roster.map(teacher=>{
+      const amounts=Array(12).fill(0);
+      activeCons.forEach(item=>{
+       if(String(item.teacher_id)!==String(teacher.id))return;
+       const date=String(item.date||'').slice(0,10),match=date.match(/^(\\d{4})-(\\d{2})-/);
+       if(!match||match[1]!==selectedYear)return;
+       const month=Number(match[2]);if(month<1||month>12)return;
+       amounts[month-1]+=Number(item.amount||0);
+      });
+      amounts.forEach((amount,index)=>monthTotals[index]+=amount);
+      return {teacher,amounts,total:amounts.reduce((sum,value)=>sum+value,0)};
+     });
+     const grandTotal=monthTotals.reduce((sum,value)=>sum+value,0);
+     const schoolName=String(ctx.name||ctx.school_name||'School Welfare').trim();
+     const schoolCode=String(ctx.school_code||ctx.schoolCode||'').trim().toUpperCase();
+     if(!ctx.id||!schoolCode)throw new Error('The active school identity could not be verified. The PDF was not issued.');
+     const documentId=crypto.randomUUID();
+     const issued=new Date();
+     const escapePdf=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+     const logo=typeof window.getWelfareTenantLogoDataUrl==='function'?window.getWelfareTenantLogoDataUrl(ctx):'';
+     const logoMarkup=logo?'<img class="wf-dm-crest" src="'+logo+'" alt="'+escapePdf(schoolName)+' school crest">':'<div class="wf-dm-crest-placeholder" aria-hidden="true">✦</div>';
+     const headCells=monthNames.map(month=>'<th scope="col">'+month+'</th>').join('');
+     const bodyRows=matrixRows.map(({teacher,amounts,total})=>{
+      const name=escapePdf(teacher.name||'Unnamed member'),staff=escapePdf(teacher.staff_id||teacher.staffId||teacher.id||'—');
+      const cells=amounts.map(amount=>'<td class="'+(amount>0?'is-paid':'is-unpaid')+'">'+(amount>0?'GHS '+money(amount):'—')+'</td>').join('');
+      return '<tr><td class="wf-dm-member"><strong>'+name+'</strong><small>Staff ID: '+staff+'</small></td>'+cells+'<td class="wf-dm-total">GHS '+money(total)+'</td></tr>';
+     }).join('');
+     const totalsRow='<tr class="wf-dm-totals"><th scope="row">MONTHLY TOTAL</th>'+monthTotals.map(amount=>'<td>GHS '+money(amount)+'</td>').join('')+'<td>GHS '+money(grandTotal)+'</td></tr>';
+     const qrId='wfDuesMatrixQr_'+documentId.replace(/-/g,'');
+     report=document.createElement('div');report.id=reportHostId;report.className='school-welfare-summary-pdf wf-dues-matrix-pdf';
+     report.style.cssText='position:fixed;left:-12000px;top:0;width:281mm;max-width:281mm;min-height:0;margin:0;padding:6mm 7mm;box-sizing:border-box;background:#fff;color:#14213d;font-family:Arial,Helvetica,sans-serif;z-index:-1';
+     report.innerHTML='<style>'+
+      '#'+reportHostId+'{background:#fff!important;color:#14213d!important;font-family:Arial,Helvetica,sans-serif!important;font-size:8pt!important;line-height:1.3!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'+
+      '#'+reportHostId+' .wf-dm-header{display:grid;grid-template-columns:18mm 1fr 24mm;align-items:center;gap:5mm;margin:0 0 3mm;min-height:19mm}'+
+      '#'+reportHostId+' .wf-dm-crest{display:block;width:17mm;height:17mm;object-fit:contain;background:transparent!important;border:0!important;outline:0!important;box-shadow:none!important;padding:0!important;border-radius:0!important}'+
+      '#'+reportHostId+' .wf-dm-crest-placeholder{width:17mm;height:17mm;display:flex;align-items:center;justify-content:center;color:#64748b;font-size:22pt}'+
+      '#'+reportHostId+' .wf-dm-heading{text-align:center}'+
+      '#'+reportHostId+' .wf-dm-heading h2{margin:0;font-size:9pt;letter-spacing:1px;color:#17365d}'+
+      '#'+reportHostId+' .wf-dm-heading h1{margin:1mm 0;font-size:15pt;line-height:1.15;color:#142d52}'+
+      '#'+reportHostId+' .wf-dm-heading p{margin:0;font-size:8pt;font-weight:700;letter-spacing:.8px;color:#0f766e}'+
+      '#'+reportHostId+' .wf-dm-meta{display:flex;justify-content:space-between;gap:8px;margin:0 0 2.5mm;padding:2mm 0;border-top:1px solid #cbd5e1;border-bottom:1px solid #cbd5e1;font-size:7pt}'+
+      '#'+reportHostId+' .wf-dm-table{width:100%;table-layout:fixed;border-collapse:collapse!important;white-space:normal!important;font-size:7pt!important;line-height:1.2!important}'+
+      '#'+reportHostId+' .wf-dm-table th,#'+reportHostId+' .wf-dm-table td{border:1px solid #000000!important;padding:1.65mm .8mm!important;text-align:center;vertical-align:middle;overflow-wrap:anywhere;color:#14213d;background:#fff}'+
+      '#'+reportHostId+' .wf-dm-table thead th{background:#e8f3ef!important;color:#064e3b!important;font-size:7pt!important;font-weight:800!important}'+
+      '#'+reportHostId+' .wf-dm-table .wf-dm-member{width:47mm;text-align:left!important}'+
+      '#'+reportHostId+' .wf-dm-table .wf-dm-member strong{display:block;font-size:7pt}'+
+      '#'+reportHostId+' .wf-dm-table .wf-dm-member small{display:block;margin-top:.6mm;font-size:6pt;color:#475569}'+
+      '#'+reportHostId+' .wf-dm-table .is-paid{font-weight:700;color:#065f46}'+
+      '#'+reportHostId+' .wf-dm-table .is-unpaid{color:#64748b}'+
+      '#'+reportHostId+' .wf-dm-table .wf-dm-total{font-weight:800;background:#f1f5f9!important}'+
+      '#'+reportHostId+' .wf-dm-table .wf-dm-totals th,#'+reportHostId+' .wf-dm-table .wf-dm-totals td{background:#d1fae5!important;color:#064e3b!important;font-weight:900!important}'+
+      '#'+reportHostId+' .wf-dm-bottom{display:flex;justify-content:space-between;align-items:flex-end;gap:8mm;margin-top:2mm;break-inside:avoid;page-break-inside:avoid}'+
+      '#'+reportHostId+' .wf-dm-summary{font-size:8pt;font-weight:800;color:#064e3b}'+
+      '#'+reportHostId+' .wf-dm-qr{text-align:right;min-width:23mm;font-size:6pt;color:#475569}'+
+      '#'+reportHostId+' .wf-dm-qr img,#'+reportHostId+' .wf-dm-qr canvas{display:block;width:19mm!important;height:19mm!important;margin:0 0 1mm auto!important}'+
+      '#'+reportHostId+' .sws-disclaimer{font-weight:700!important;display:block;width:100%;max-width:100%;box-sizing:border-box;margin:2mm 0 0;padding:1mm 0;border-top:1px dotted #64748b;border-bottom:1px dotted #64748b;color:#334155;font-family:Arial,sans-serif;font-size:7pt;font-weight:700!important;line-height:1.2;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'+
+      '@media print{#'+reportHostId+'{width:281mm!important;max-width:281mm!important;margin:0!important;padding:6mm 7mm!important;box-sizing:border-box!important}}'+
+      '</style>'+
+      '<header class="wf-dm-header">'+logoMarkup+'<div class="wf-dm-heading"><h2>GHANA EDUCATION SERVICE</h2><h1>'+escapePdf(schoolName)+'</h1><p>MONTH-BY-MONTH DUES MATRIX</p></div><div></div></header>'+
+      '<div class="wf-dm-meta"><span><b>School code:</b> '+escapePdf(schoolCode)+'</span><span><b>Calendar year:</b> '+selectedYear+'</span><span><b>Members:</b> '+matrixRows.length+'</span><span><b>Date issued:</b> '+issued.toLocaleDateString('en-GB')+'</span></div>'+
+      '<table class="wf-dm-table"><colgroup><col style="width:47mm">'+monthNames.map(()=>'<col>').join('')+'<col style="width:24mm"></colgroup><thead><tr><th scope="col">Teacher / Staff ID</th>'+headCells+'<th scope="col">Row Total</th></tr></thead><tbody>'+bodyRows+totalsRow+'</tbody></table>'+
+      '<div class="wf-dm-bottom"><div class="wf-dm-summary">School contribution total for '+selectedYear+': GHS '+money(grandTotal)+'<br>Active members included: '+matrixRows.length+(searchTerm?'<br>Search filter: '+escapePdf($('wfDuesMatrixSearch')?.value||''):'')+'</div><div class="wf-dm-qr"><div id="'+qrId+'"></div>Scan to verify this official report</div></div>'+
+      '<div class="sws-disclaimer">*** The School welfare is not liable for any financial loss resulting from disclosing your member/account details including password to Third Parties ***</div>';
+     if(typeof window.applyWelfarePdfTenantWatermark==='function')window.applyWelfarePdfTenantWatermark(report,schoolName,ctx);
+     document.body.appendChild(report);
+     const qrNode=report.querySelector('#'+qrId);
+     new window.QRCode(qrNode,{text:'https://abcollins93.github.io/TEACHERS-WELFARE/verify.html?c='+encodeURIComponent(schoolCode)+'&d='+encodeURIComponent(documentId),width:300,height:300,colorDark:'#030a16',colorLight:'#ffffff',correctLevel:window.QRCode.CorrectLevel.M});
+     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+     if(!qrNode.querySelector('canvas,img'))throw new Error('The statement verification QR code could not be generated. The PDF was not issued.');
+     const filename=(schoolCode.replace(/[^a-z0-9_-]/gi,'_')||'school')+'-dues-matrix-'+selectedYear+'.pdf';
+     const blob=await window.html2pdf().set({margin:0,filename,image:{type:'png'},html2canvas:{scale:3,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0,windowWidth:report.scrollWidth},jsPDF:{unit:'mm',format:'a4',orientation:'landscape',compress:true},pagebreak:{mode:['css'],avoid:['tr','.wf-dm-bottom']}}).from(report).outputPdf('blob');
+     await window.registerTenantStatementVerification({
+      school_code:schoolCode,document_id:documentId,document_type:'dues-matrix',
+      period:'Calendar year '+selectedYear,academic_year:window.getCurrentAcademicYear()
+     });
+     if(typeof window.cacheWelfareStatementPdf==='function')await window.cacheWelfareStatementPdf(blob,filename,{
+      school_code:schoolCode,document_id:documentId,document_type:'dues-matrix',
+      period:'Calendar year '+selectedYear,academic_year:window.getCurrentAcademicYear()
+     });
+     window.downloadWelfareBlob(blob,filename,status,'Official dues matrix PDF for '+selectedYear+' is ready.');
+    }catch(error){
+     console.error('[School Welfare] Dues matrix PDF failed:',error);
+     if(status){status.textContent=error?.message||'The dues matrix PDF could not be generated.';status.className='error';}
+    }finally{
+     report?.remove();button.disabled=false;button.removeAttribute('aria-busy');button.innerHTML=original;
+    }
+   });
+  }
   const renderPayoutLedger=()=>{
     const q=String($('wfPayoutSearch')?.value||'').trim().toLowerCase();
     const rows=pays.filter(x=>[x.teacher_id,window.displayWelfareReason(x.reason),x.reference,teacherById.get(String(x.teacher_id))?.name].some(v=>String(v||'').toLowerCase().includes(q)));
