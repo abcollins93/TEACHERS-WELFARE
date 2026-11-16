@@ -1724,6 +1724,11 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
 .sws-head{display:grid!important;grid-template-columns:14mm minmax(0,1fr);align-items:center;gap:4mm;text-align:center}.sws-head-logo{display:block;width:14mm;height:14mm;object-fit:contain;background:transparent!important;background-color:transparent!important;border:none!important;outline:none!important;box-shadow:none!important;padding:0!important;border-radius:0!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
 .sws-head-copy{min-width:0}.sws-head.sws-head-no-logo{grid-template-columns:1fr!important}.sws-signatures{display:flex!important;justify-content:flex-end!important;align-items:flex-end!important;margin-top:2.5mm}.sws-signatures .sws-qr{grid-column:auto!important;justify-self:auto!important;margin-left:auto}.sws-qr img,.sws-qr canvas{margin-right:0!important;margin-left:auto!important}
 @media(max-width:700px){.tenant-school-logo-card{align-items:flex-start;flex-direction:column}.tenant-school-logo-controls{width:100%;align-items:flex-start}.tenant-school-logo-actions{flex:1}.tenant-school-logo-actions input{width:100%}}
+/* Pin the SCHOOL PROFILE accent to its unique section so generic panel rules cannot hide it. */
+#tenantSchoolLogoCard{position:relative!important;overflow:visible!important;border-top:4px solid #0f766e!important}
+#tenantSchoolLogoCard::before{content:""!important;position:absolute!important;top:0!important;left:0!important;right:0!important;height:4px!important;background:#0f766e!important;border-radius:18px 18px 0 0!important;display:block!important;z-index:5!important;pointer-events:none!important}
+.dark #tenantSchoolLogoCard{border-top-color:#0f766e!important}
+.dark #tenantSchoolLogoCard::before{background:#0f766e!important}
 </style>
 </head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
