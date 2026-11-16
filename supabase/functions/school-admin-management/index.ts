@@ -117,6 +117,7 @@ Deno.serve(async (req: Request) => {
           account_type: "school_admin",
           school_code: school.school_code,
           school_id: schoolId,
+          school_name: school.name,
         },
         redirectTo: `https://abcollins93.github.io/TEACHERS-WELFARE/set-password.html?c=${encodeURIComponent(school.school_code)}`,
       });
