@@ -1409,6 +1409,44 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    }));
  });
 
+ $('wfMonthlyShare').addEventListener('click',()=>{
+   const selectedMonth=$('wfReportMonth').value,selectedYear=$('wfReportYear').value;
+   if(!selectedMonth||!selectedYear)return msg('wfReportMsg','Choose both a reporting month and year.',true);
+   const month=selectedYear+'-'+selectedMonth;
+   return runWelfarePdf($('wfMonthlyShare'),'wfReportMsg','Monthly summary PDF shared successfully.',()=>({
+     type:'monthly',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},
+     month,contributions:activeCons,payouts:activePays,teachers,
+     academicYear:window.getCurrentAcademicYear(),standardMonthlyDues
+   }),true);
+ });
+ $('wfCompleteShare').addEventListener('click',()=>runWelfarePdf($('wfCompleteShare'),'wfReportMsg','Complete fund summary PDF shared successfully.',()=>({
+   type:'complete',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},
+   contributions:activeCons,payouts:activePays,teachers,
+   academicYear:window.getCurrentAcademicYear(),standardMonthlyDues
+ }),true));
+ $('wfAnnualShare').addEventListener('click',()=>{
+   const selectedYear=$('wfAnnualYear').value;
+   if(!/^\d{4}$/.test(selectedYear||''))return msg('wfReportMsg','Choose a valid reporting year.',true);
+   return runWelfarePdf($('wfAnnualShare'),'wfReportMsg','Yearly summary PDF shared successfully.',()=>({
+     type:'annual',year:selectedYear,school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},
+     contributions:activeCons,payouts:activePays,teachers,
+     academicYear:window.getCurrentAcademicYear(),standardMonthlyDues
+   }),true);
+ });
+ $('wfStatementShare').addEventListener('click',()=>{
+   const tid=$('wfStatementTeacher').value,teacher=teachers.find(t=>String(t.id)===String(tid));
+   if(!teacher)return msg('wfStatementMsg','Choose a teacher first.',true);
+   return runWelfarePdf($('wfStatementShare'),'wfStatementMsg','Member statement PDF shared successfully.',()=>({
+     type:'individual',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},
+     teacher,teachers,contributions:activeCons.filter(x=>String(x.teacher_id)===String(tid)),
+     payouts:pays.filter(row=>String(row.school_id||'')===String(ctx.id))
+      .sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||String(a.id||'').localeCompare(String(b.id||''))),
+     personalPayoutTotal:pays.filter(row=>String(row.teacher_id||'')===String(teacher.id||'')&&String(row.school_id||'')===String(ctx.id)).reduce((sum,row)=>sum+Number(row.amount||0),0),
+     personalContributionTotal:activeCons.filter(x=>String(x.teacher_id)===String(tid)).reduce((sum,row)=>sum+Number(row.amount||0),0),
+     schoolFundBalance:activeCons.reduce((sum,row)=>sum+Number(row.amount||0),0)-activePays.reduce((sum,row)=>sum+Number(row.amount||0),0),
+     academicYear:window.getCurrentAcademicYear(),standardMonthlyDues
+   }),true);
+ });
  const {data:broadcastSetting,error:broadcastLoadError}=await client.from('system_settings').select('value').eq('school_id',ctx.id).eq('key','broadcast_message').maybeSingle();
  if(!broadcastLoadError&&broadcastSetting)$('wfBroadcastText').value=String(broadcastSetting.value||'');
  const {data:duesReminderSetting,error:duesReminderLoadError}=await client.from('system_settings').select('value').eq('school_id',ctx.id).eq('key','automated_dues_reminder').maybeSingle();
