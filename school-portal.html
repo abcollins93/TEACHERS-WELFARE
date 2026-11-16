@@ -2544,7 +2544,7 @@ async function renderTeacherDashboard(profile,school){
   const monthKeyFromDate=rawValue=>{
    const raw=String(rawValue??'').trim();
    if(!raw)return '';
-   const match=raw.match(/^(\\d{4})-(\\d{1,2})(?:-\\d{1,2})?/);
+   const match=raw.match(/^(\d{4})-(\d{1,2})(?:-\d{1,2})?/);
    let year,month;
    if(match){year=Number(match[1]);month=Number(match[2]);}
    else{
