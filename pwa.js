@@ -42,7 +42,14 @@ function showPwaInstallNotice(tenantLabel){
  if(schoolCode)persistSchoolCode(schoolCode);
  var manifestLink=null;
  var manifestUrl='';
- var isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
+ function displayModeInstalled(){return window.matchMedia('(display-mode: standalone)').matches||window.matchMedia('(display-mode: fullscreen)').matches||window.navigator.standalone===true;}
+ var isStandalone=displayModeInstalled();
+ var isInstalled=isStandalone;
+ try{isInstalled=isInstalled||localStorage.getItem('welfare_app_installed')==='1';}catch(_){}
+ function hideInstallButton(){if(installButton){installButton.style.setProperty('display','none','important');installButton.setAttribute('aria-hidden','true');installButton.disabled=true;}}
+ function markInstalled(){isInstalled=true;isStandalone=true;try{localStorage.setItem('welfare_app_installed','1');}catch(_){}hideInstallButton();}
+ function detectRelatedInstalledApps(){if(!navigator.getInstalledRelatedApps)return;navigator.getInstalledRelatedApps().then(function(apps){if(Array.isArray(apps)&&apps.length)markInstalled();}).catch(function(){});}
+ detectRelatedInstalledApps();
  function safeTenantLabel(){
    return (tenantName||schoolCode||'School').replace(/[\x00-\x1F\x7F]/g,' ').replace(/\s+/g,' ').trim()||'School';
  }
@@ -54,18 +61,18 @@ function showPwaInstallNotice(tenantLabel){
  }
  function injectTenantManifest(){
    var label=safeTenantLabel();
-   var shortLabel=(schoolCode||label)+' Welfare';
+   var shortLabel='welfare';
    var appScope=new URL('./',pageUrl).href;
    var launchUrl=new URL('./g.html',pageUrl);
    if(schoolCode)launchUrl.searchParams.set('c',schoolCode);
    var manifest={
      id:launchUrl.href,
-     name:label+' Welfare',
-     short_name:shortLabel,
+     name:'welfare',
+     short_name:'welfare',
      description:'School welfare portal for '+label+'.',
      lang:'en-GH',
      start_url:launchUrl.href,
-     scope:appScope,
+     scope:new URL('/TEACHERS-WELFARE/',pageUrl.origin).href,
      display:'standalone',
      orientation:'any',
      theme_color:'#0b1d3a',
@@ -87,7 +94,8 @@ function showPwaInstallNotice(tenantLabel){
    if(name)persistTenantName(name);
    injectTenantManifest();
    if(installButton){
-     var label=isStandalone?safeTenantLabel()+' Welfare · Already installed':'Install '+safeTenantLabel()+' Portal';
+     if(isInstalled){hideInstallButton();return;}
+     var label='Install '+safeTenantLabel()+' Portal';
      var labelNode=installButton.querySelector('.welfare-pwa-install-label');
      if(labelNode)labelNode.textContent=label;
      installButton.setAttribute('aria-label',label);
@@ -105,7 +113,7 @@ function showPwaInstallNotice(tenantLabel){
            persistTenantName(value);
            injectTenantManifest();
            var labelNode=installButton&&installButton.querySelector('.welfare-pwa-install-label');
-           if(labelNode){
+           if(labelNode&&!isInstalled){
              var buttonLabel='Install '+safeTenantLabel()+' Portal';
              labelNode.textContent=buttonLabel;
              installButton.setAttribute('aria-label',buttonLabel);
@@ -132,7 +140,7 @@ function showPwaInstallNotice(tenantLabel){
  var deferredPrompt=null;
  var installButton=null;
  function addInstallButton(){
-   if(installButton||!document.body)return;
+   if(installButton||!document.body||isInstalled||displayModeInstalled())return;
    installButton=document.createElement('button');
    installButton.type='button';
    installButton.id='welfarePwaInstall';
@@ -147,9 +155,9 @@ function showPwaInstallNotice(tenantLabel){
    installButton.appendChild(installIcon);
    installButton.appendChild(installLabel);
    function refreshInstallButtonLabel(){
-     var label=isStandalone?safeTenantLabel()+' Welfare · Already installed':'Install '+safeTenantLabel()+' Portal';
+     var label='Install '+safeTenantLabel()+' Portal';
      installLabel.textContent=label;
-     installIcon.textContent=isStandalone?'✓':'＋';
+     installIcon.textContent='＋';
      installButton.setAttribute('aria-label',label);
    }
    refreshInstallButtonLabel();
@@ -158,33 +166,21 @@ function showPwaInstallNotice(tenantLabel){
        deferredPrompt.prompt();
        try{await deferredPrompt.userChoice;}catch(_){}
        deferredPrompt=null;
-       if(installButton){installButton.remove();installButton=null;}
      }else{
        var instructions='To install '+safeTenantLabel()+' Welfare, open your browser menu and choose “Install app” or “Add to Home screen”. The installed shortcut will open this school gateway.';
        if(isStandalone)instructions=safeTenantLabel()+' Welfare is already installed. Open it from your device home screen to return to this school portal.';
        if(window.showWelfareDialog){window.showWelfareDialog('alert',instructions,'Install '+safeTenantLabel()+' Welfare');}else{showPwaInstallNotice(safeTenantLabel());}
      }
    });
-   var hero=document.querySelector('#schoolOverview .portal-hero');
-   var loginPanel=document.getElementById('login');
-   // Keep the install control beside gateway sign-in, before authentication.
-   if(loginPanel&&loginPanel.parentNode){
-     loginPanel.insertAdjacentElement('afterend',installButton);
-   }else if(hero&&hero.parentNode){
-     hero.insertAdjacentElement('afterend',installButton);
-   }else{
-     document.body.appendChild(installButton);
-   }
+   // Append after all gateway/sign-in content so it remains at the bottom in normal document flow.
+   document.body.appendChild(installButton);
  }
  window.addEventListener('beforeinstallprompt',function(event){
    event.preventDefault();deferredPrompt=event;addInstallButton();
  });
- window.addEventListener('appinstalled',function(){
-   isStandalone=true;
-   if(installButton){installButton.remove();installButton=null;}
-   addInstallButton();
- });
- // Show either the install control or a tenant-specific installed status.
+ window.addEventListener('appinstalled',function(){markInstalled();});
+ window.addEventListener('pageshow',function(){if(displayModeInstalled())markInstalled();});
+ // Show the install control only while this device has not installed the app.
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addInstallButton,{once:true});
  else addInstallButton();
 })();
