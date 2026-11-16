@@ -1348,7 +1348,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      if(typeof window.registerTenantStatementVerification!=='function')throw new Error('The official statement verification service is unavailable. The PDF was not issued.');
      if(typeof window.QRCode!=='function')throw new Error('The QR verification library is unavailable. The PDF was not issued.');
      const selectedYear=String($('wfDuesMatrixYear')?.value||'');
-     if(!/^\\d{4}$/.test(selectedYear))throw new Error('Choose a valid reporting year.');
+     if(!/^\d{4}$/.test(selectedYear))throw new Error('Choose a valid reporting year.');
      const searchTerm=String($('wfDuesMatrixSearch')?.value||'').trim().toLowerCase();
      const roster=teachers.filter(teacher=>teacher.is_active!==false&&[
       teacher.name,teacher.id,teacher.staff_id,teacher.staffId
@@ -1359,7 +1359,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
       const amounts=Array(12).fill(0);
       activeCons.forEach(item=>{
        if(String(item.teacher_id)!==String(teacher.id))return;
-       const date=String(item.date||'').slice(0,10),match=date.match(/^(\\d{4})-(\\d{2})-/);
+       const date=String(item.date||'').slice(0,10),match=date.match(/^(\d{4})-(\d{2})-/);
        if(!match||match[1]!==selectedYear)return;
        const month=Number(match[2]);if(month<1||month>12)return;
        amounts[month-1]+=Number(item.amount||0);
