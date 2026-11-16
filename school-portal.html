@@ -5452,5 +5452,16 @@ body.sidebar-open{overflow:hidden}
 })();
 })();
 </script>
+
+<style id="tenant-school-logo-mobile-overflow-fix">
+@media(max-width:700px){
+ .tenant-school-logo-card{min-width:0;max-width:100%;overflow:hidden}
+ .tenant-school-logo-controls{width:100%;min-width:0;max-width:100%;gap:10px}
+ .tenant-school-logo-actions{flex:1 1 0;min-width:0;max-width:100%;grid-template-columns:minmax(0,1fr)}
+ .tenant-school-logo-actions input{grid-column:1;grid-row:auto;width:100%;min-width:0;max-width:100%;font-size:.68rem}
+ .tenant-school-logo-actions button{grid-column:1;grid-row:auto;justify-self:start;max-width:100%}
+ .tenant-school-logo-actions small,.tenant-school-logo-actions p{grid-column:1;min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+}
+</style>
 </body>
 </html>
