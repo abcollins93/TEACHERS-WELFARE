@@ -5832,7 +5832,7 @@ body.sidebar-open{overflow:hidden}
     const name=document.createElement('div');name.className='wcs-name';name.textContent=row.filename||'Welfare statement.pdf';
     const meta=document.createElement('span');meta.className='wcs-meta';meta.textContent=(row.document_type||'Statement')+' · '+new Date(row.saved_at).toLocaleString();name.appendChild(meta);
     const actions=document.createElement('div');actions.className='wcs-actions';
-    const view=document.createElement('button');view.type='button';view.textContent='Open';view.addEventListener('click',()=>{const url=URL.createObjectURL(row.blob);const win=window.open(url,'_blank','noopener');if(!win){const a=document.createElement('a');a.href=url;a.download=row.filename;a.click();}setTimeout(()=>URL.revokeObjectURL(url),5*60*1000);});
+    const view=document.createElement('button');view.type='button';view.textContent='Open';view.addEventListener('click',()=>{const url=URL.createObjectURL(row.blob),a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';a.click();setTimeout(()=>URL.revokeObjectURL(url),5*60*1000);});
     const save=document.createElement('button');save.type='button';save.textContent='Download';save.addEventListener('click',()=>{const url=URL.createObjectURL(row.blob),a=document.createElement('a');a.href=url;a.download=row.filename||'Welfare_Statement.pdf';a.click();setTimeout(()=>URL.revokeObjectURL(url),5*60*1000);});
     actions.append(view,save);item.append(name,actions);list.appendChild(item);
    });
