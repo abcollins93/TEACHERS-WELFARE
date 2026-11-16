@@ -5840,7 +5840,7 @@ body.sidebar-open{overflow:hidden}
  }
  window.cacheWelfareStatementPdf=async function(blob,filename,meta){
   try{
-   if(!(blob instanceof Blob)||!/^application\\/pdf/i.test(blob.type))return false;
+   if(!(blob instanceof Blob)||!String(blob.type||'').toLowerCase().startsWith('application/pdf'))return false;
    const code=String(meta?.school_code||tenantCode()).trim().toUpperCase();if(!code)return false;
    const record={key:code+':'+String(meta?.document_id||filename||Date.now()),school_code:code,document_id:String(meta?.document_id||''),document_type:String(meta?.document_type||'statement'),period:String(meta?.period||''),academic_year:String(meta?.academic_year||''),filename:String(filename||'Welfare_Statement.pdf'),blob,saved_at:Date.now()};
    await withStore('readwrite',store=>store.put(record));
