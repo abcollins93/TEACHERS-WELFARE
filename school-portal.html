@@ -2640,7 +2640,7 @@ async function renderTeacherDashboard(profile,school){
  const scheduleTeacherProgressUpdate=()=>{
   if(teacherProgressUpdateQueued)return;
   teacherProgressUpdateQueued=true;
-  const run=()=>{teacherProgressUpdateQueued=false;renderTeacherContributionProgress();};
+  const run=()=>{teacherProgressUpdateQueued=false;renderTeacherContributionProgress();renderTeacherContributionGap();};
   if(typeof requestAnimationFrame==='function')requestAnimationFrame(run);else setTimeout(run,0);
  };
  scheduleTeacherProgressUpdate();
