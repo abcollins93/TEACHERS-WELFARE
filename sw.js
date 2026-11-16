@@ -1,5 +1,23 @@
 'use strict';
-const CACHE_VERSION='twf-pwa-shell-v13';
+const CACHE_VERSION='twf-pwa-shell-v14';
+const STATEMENT_CACHE='twf-cached-statements-v1';
+const NETWORK_TIMEOUT_MS=12000;
+async function reportNetworkState(state,detail){
+ const clients=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+ clients.forEach(client=>client.postMessage({type:'WELFARE_NETWORK_STATUS',state,detail:detail||''}));
+}
+async function timedFetch(request,timeout=NETWORK_TIMEOUT_MS){
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),timeout);
+ try{
+  const response=await fetch(request,{signal:controller.signal});
+  if(response&&response.ok)reportNetworkState('online');
+  return response;
+ }catch(error){
+  reportNetworkState('slow',error&&error.name==='AbortError'?'Request timed out':'Network request failed');
+  throw error;
+ }finally{clearTimeout(timer);}
+}
 const SHELL_ASSETS=[
  './',
  './index.html',
@@ -42,7 +60,7 @@ self.addEventListener('install',event=>{
 self.addEventListener('activate',event=>{
  event.waitUntil((async()=>{
    const keys=await caches.keys();
-   await Promise.all(keys.filter(key=>key.startsWith('twf-pwa-')&&key!==CACHE_VERSION).map(key=>caches.delete(key)));
+   await Promise.all(keys.filter(key=>key.startsWith('twf-pwa-')&&key!==CACHE_VERSION&&key!==STATEMENT_CACHE).map(key=>caches.delete(key)));
    await self.clients.claim();
  })());
 });
@@ -61,19 +79,25 @@ self.addEventListener('fetch',event=>{
      const cached=await cache.match(request);
      if(cached)return cached;
      try{
-       const response=await fetch(request);
+       const response=await timedFetch(request);
        if(response&&(response.ok||response.type==='opaque'))cache.put(request,response.clone()).catch(()=>{});
        return response;
      }catch(_){return cached||Response.error();}
    })());
    return;
  }
- if(isSensitiveRequest(url))return;
+ if(isSensitiveRequest(url)){
+   event.respondWith((async()=>{
+    try{return await timedFetch(request,NETWORK_TIMEOUT_MS);}
+    catch(_){return new Response(JSON.stringify({message:'Network unavailable or too slow. Cached portal statements may still be opened.'}),{status:504,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});}
+   })());
+   return;
+ }
  if(request.mode==='navigate'){
    event.respondWith((async()=>{
      const cache=await caches.open(CACHE_VERSION);
      try{
-       const response=await fetch(request,{cache:'no-store'});
+       const response=await timedFetch(new Request(request,{cache:'no-store'}));
        if(response&&response.ok)cache.put(request,response.clone()).catch(()=>{});
        return response;
      }catch(_){
