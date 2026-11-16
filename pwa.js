@@ -1,8 +1,10 @@
-function showPwaInstallNotice(){
+function showPwaInstallNotice(tenantLabel){
+ var schoolLabel=String(tenantLabel||'School').trim()||'School';
+ var safeLabel=schoolLabel.replace(/[&<>"']/g,'');
  var id='pwaInstallNoticeModal',root=document.getElementById(id);
  if(!root){
   var style=document.createElement('style');style.textContent='#'+id+'{position:fixed;inset:0;z-index:15000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(2,8,23,.76);backdrop-filter:blur(7px)}#'+id+'[hidden]{display:none!important}#'+id+' .pwa-notice-card{width:min(100%,440px);padding:23px;border:1px solid #334155;border-radius:18px;background:linear-gradient(145deg,#10213b,#081426);color:#f1f5f9;box-shadow:0 25px 70px rgba(0,0,0,.5)}#'+id+' h2{margin:0 0 10px;color:#fff;font-size:1.15rem}#'+id+' p{margin:0;color:#c1ccdc;line-height:1.65}#'+id+' button{display:block;margin:20px 0 0 auto;min-height:42px;padding:9px 18px;border:1px solid #d6a637;border-radius:10px;background:linear-gradient(110deg,#f0c65d,#d6a637);color:#172033;font-weight:800}';
-  document.head.appendChild(style);root=document.createElement('div');root.id=id;root.hidden=true;root.innerHTML='<section class="pwa-notice-card" role="dialog" aria-modal="true" aria-labelledby="pwaInstallNoticeTitle"><h2 id="pwaInstallNoticeTitle">Install this portal</h2><p>To install this school portal, open your browser menu and choose “Add to Home screen” or “Install app”.</p><button type="button">OK</button></section>';document.body.appendChild(root);
+  document.head.appendChild(style);root=document.createElement('div');root.id=id;root.hidden=true;root.innerHTML='<section class="pwa-notice-card" role="dialog" aria-modal="true" aria-labelledby="pwaInstallNoticeTitle"><h2 id="pwaInstallNoticeTitle">Install '+safeLabel+' Welfare</h2><p>To install '+safeLabel+' Welfare, open your browser menu and choose “Add to Home screen” or “Install app”. The shortcut will open this school gateway.</p><button type="button">OK</button></section>';document.body.appendChild(root);
  }
  root.hidden=false;var button=root.querySelector('button'),prior=document.activeElement;
  var close=function(){root.hidden=true;button.removeEventListener('click',close);document.removeEventListener('keydown',key,true);if(prior&&prior.focus)prior.focus({preventScroll:true});};
@@ -14,8 +16,21 @@ function showPwaInstallNotice(){
  'use strict';
  var pageUrl=new URL(window.location.href);
  var params=pageUrl.searchParams;
- var schoolCode=(params.get('school')||params.get('c')||params.get('code')||params.get('school_code')||'').trim().toUpperCase();
+ var hashParams=new URLSearchParams(pageUrl.hash.replace(/^#/,''));
+ var storedCode='';
+ try{storedCode=sessionStorage.getItem('invited_school_code')||localStorage.getItem('invited_school_code')||sessionStorage.getItem('active_tenant_code')||localStorage.getItem('active_tenant_code')||'';}catch(_){}
+ var schoolCode=(params.get('c')||params.get('school_code')||params.get('tenant')||params.get('school')||params.get('code')||
+   hashParams.get('c')||hashParams.get('school_code')||hashParams.get('tenant')||hashParams.get('school')||storedCode||'').trim().toUpperCase();
  var tenantName='';
+ function persistSchoolCode(value){
+   var normalized=String(value||'').trim().toUpperCase();
+   if(!/^[A-Z0-9-]{2,32}$/.test(normalized))return '';
+   schoolCode=normalized;
+   try{localStorage.setItem('invited_school_code',normalized);localStorage.setItem('active_tenant_code',normalized);}catch(_){}
+   try{sessionStorage.setItem('invited_school_code',normalized);sessionStorage.setItem('active_tenant_code',normalized);}catch(_){}
+   return normalized;
+ }
+ if(schoolCode)persistSchoolCode(schoolCode);
  var manifestLink=null;
  var manifestUrl='';
  var isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
@@ -30,15 +45,18 @@ function showPwaInstallNotice(){
  }
  function injectTenantManifest(){
    var label=safeTenantLabel();
-   var shortLabel='Welfare';
+   var shortLabel=(schoolCode||label)+' Welfare';
+   var appScope=new URL('./',pageUrl).href;
+   var launchUrl=new URL('./g.html',pageUrl);
+   if(schoolCode)launchUrl.searchParams.set('c',schoolCode);
    var manifest={
-     id:window.location.href,
-     name:'Welfare Portal',
+     id:launchUrl.href,
+     name:label+' Welfare',
      short_name:shortLabel,
      description:'School welfare portal for '+label+'.',
      lang:'en-GH',
-     start_url:window.location.href,
-     scope:new URL('./',pageUrl).href,
+     start_url:launchUrl.href,
+     scope:appScope,
      display:'standalone',
      orientation:'any',
      theme_color:'#0b1d3a',
@@ -56,9 +74,15 @@ function showPwaInstallNotice(){
    document.title=label+' | Welfare Portal';
  }
  window.updateWelfarePwaTenant=function(name,code){
-   if(code)schoolCode=String(code).trim().toUpperCase();
+   if(code)persistSchoolCode(code);
    if(name)tenantName=String(name).trim();
    injectTenantManifest();
+   if(installButton){
+     var label='Install '+safeTenantLabel()+' Portal';
+     var labelNode=installButton.querySelector('.welfare-pwa-install-label');
+     if(labelNode)labelNode.textContent=label;
+     installButton.setAttribute('aria-label',label);
+   }
  };
  injectTenantManifest();
  if(typeof MutationObserver!=='undefined'){
@@ -126,23 +150,18 @@ function showPwaInstallNotice(){
        deferredPrompt=null;
        if(installButton){installButton.remove();installButton=null;}
      }else{
-       if(window.showWelfareDialog){window.showWelfareDialog('alert','To install this school portal, open your browser menu and choose “Add to Home screen” or “Install app”.','Install this portal');}else{showPwaInstallNotice();}
+       var instructions='To install '+safeTenantLabel()+' Welfare, open your browser menu and choose “Install app” or “Add to Home screen”. The installed shortcut will open this school gateway.';
+       if(isStandalone)instructions=safeTenantLabel()+' Welfare is already installed. Open it from your device home screen to return to this school portal.';
+       if(window.showWelfareDialog){window.showWelfareDialog('alert',instructions,'Install '+safeTenantLabel()+' Welfare');}else{showPwaInstallNotice(safeTenantLabel());}
      }
    });
    var hero=document.querySelector('#schoolOverview .portal-hero');
    var loginPanel=document.getElementById('login');
-   if(hero&&hero.parentNode){
-     hero.insertAdjacentElement('afterend',installButton);
-     installButton.style.display='none';
-     var dashboard=document.getElementById('dashboard');
-     if(dashboard&&!dashboard.classList.contains('hidden'))installButton.style.display='inline-flex';
-     if(dashboard){
-       new MutationObserver(function(){
-         installButton.style.display=dashboard.classList.contains('hidden')?'none':'inline-flex';
-       }).observe(dashboard,{attributes:true,attributeFilter:['class']});
-     }
-   }else if(loginPanel&&loginPanel.parentNode){
+   // Keep the install control beside gateway sign-in, before authentication.
+   if(loginPanel&&loginPanel.parentNode){
      loginPanel.insertAdjacentElement('afterend',installButton);
+   }else if(hero&&hero.parentNode){
+     hero.insertAdjacentElement('afterend',installButton);
    }else{
      document.body.appendChild(installButton);
    }
@@ -153,7 +172,8 @@ function showPwaInstallNotice(){
  window.addEventListener('appinstalled',function(){
    isStandalone=true;if(installButton){installButton.remove();installButton=null;}
  });
- if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!isStandalone){
+ // Manual-install fallback for browsers without beforeinstallprompt.
+ if(!isStandalone){
    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addInstallButton,{once:true});
    else addInstallButton();
  }
