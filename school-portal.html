@@ -1806,6 +1806,68 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
 }
 </style>
 
+<style id="bulk-contribution-import-dark-contrast">
+/* Keep the Bulk Contribution Import card readable in the portal's dark theme. */
+.dark #wfBulkContributionCard,
+[data-theme="dark"] #wfBulkContributionCard{
+  background:#0b1d3a!important;
+  color:#f8fafc!important;
+  border-color:#354862!important;
+}
+.dark #wfBulkContributionCard h3,
+[data-theme="dark"] #wfBulkContributionCard h3{
+  color:#f8fafc!important;
+}
+.dark #wfBulkContributionCard p,
+.dark #wfBulkContributionCard .muted,
+[data-theme="dark"] #wfBulkContributionCard p,
+[data-theme="dark"] #wfBulkContributionCard .muted{
+  color:#dbe7f3!important;
+}
+.dark #wfBulkContributionCard label,
+[data-theme="dark"] #wfBulkContributionCard label{
+  color:#f1f5f9!important;
+}
+.dark #wfBulkContributionCard select,
+[data-theme="dark"] #wfBulkContributionCard select{
+  color:#f8fafc!important;
+  -webkit-text-fill-color:#f8fafc!important;
+  background-color:#071328!important;
+  border-color:#64748b!important;
+  color-scheme:dark;
+}
+.dark #wfBulkContributionCard select option,
+[data-theme="dark"] #wfBulkContributionCard select option{
+  color:#f8fafc!important;
+  background:#071328!important;
+}
+.dark #wfBulkContributionCard input[type="file"],
+[data-theme="dark"] #wfBulkContributionCard input[type="file"]{
+  color:#f8fafc!important;
+  background:#071328!important;
+  border-color:#64748b!important;
+}
+.dark #wfBulkContributionCard input[type="file"]::file-selector-button,
+[data-theme="dark"] #wfBulkContributionCard input[type="file"]::file-selector-button{
+  color:#ffffff!important;
+  background:#115e59!important;
+  border:1px solid #2dd4bf!important;
+  border-radius:7px!important;
+  padding:7px 11px!important;
+  margin-right:10px!important;
+  font-weight:800!important;
+}
+.dark #wfBulkContributionCard input[type="file"]::-webkit-file-upload-button,
+[data-theme="dark"] #wfBulkContributionCard input[type="file"]::-webkit-file-upload-button{
+  color:#ffffff!important;
+  background:#115e59!important;
+  border:1px solid #2dd4bf!important;
+  border-radius:7px!important;
+  padding:7px 11px!important;
+  margin-right:10px!important;
+  font-weight:800!important;
+}
+</style>
 
 <style id="admin-contribution-records-metric-style">#schoolOverview .metric-contribution-records{--metric-accent:#0f766e;--metric-icon-bg:#dff7f2;position:relative;border-top:5px solid #0f766e;border-left:1px solid #e8edf5;padding-top:14px}#schoolOverview .metric-contribution-records .metric-icon{background:#dff7f2;color:#0f766e}#schoolOverview .metric-contribution-records .metric-label{color:#0f766e}.dark #schoolOverview .metric-contribution-records{background:#0b1d3a;border-color:#26364d;border-top-color:#2dd4bf;border-left-color:#26364d}.dark #schoolOverview .metric-contribution-records .metric-icon{background:#123d3a;color:#5eead4}.dark #schoolOverview .metric-contribution-records .metric-label{color:#5eead4}</style>
 </head><body>
