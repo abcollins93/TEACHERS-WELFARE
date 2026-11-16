@@ -5839,12 +5839,16 @@ body.sidebar-open{overflow:hidden}
   }catch(error){list.textContent='Cached statements are unavailable in this browser. '+(error?.message||'');}
  }
  window.cacheWelfareStatementPdf=async function(blob,filename,meta){
-  if(!(blob instanceof Blob)||!/^application\/pdf/i.test(blob.type))return false;
-  const code=String(meta?.school_code||tenantCode()).trim().toUpperCase();if(!code)return false;
-  const record={key:code+':'+String(meta?.document_id||filename||Date.now()),school_code:code,document_id:String(meta?.document_id||''),document_type:String(meta?.document_type||'statement'),period:String(meta?.period||''),academic_year:String(meta?.academic_year||''),filename:String(filename||'Welfare_Statement.pdf'),blob,saved_at:Date.now()};
-  await withStore('readwrite',store=>store.put(record));
-  const rows=await listCached();if(rows.length>MAX_ITEMS){const db=await openDb();const all=await new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readonly').objectStore(STORE).index('school_code').getAll(code);r.onsuccess=()=>resolve(r.result||[]);r.onerror=()=>reject(r.error);});all.sort((a,b)=>a.saved_at-b.saved_at).slice(0,all.length-MAX_ITEMS).forEach(row=>withStore('readwrite',st=>st.delete(row.key)).catch(()=>{}));}
-  window.dispatchEvent(new CustomEvent('welfare:cached-statement',{detail:{school_code:code}}));return true;
+  try{
+   if(!(blob instanceof Blob)||!/^application\\/pdf/i.test(blob.type))return false;
+   const code=String(meta?.school_code||tenantCode()).trim().toUpperCase();if(!code)return false;
+   const record={key:code+':'+String(meta?.document_id||filename||Date.now()),school_code:code,document_id:String(meta?.document_id||''),document_type:String(meta?.document_type||'statement'),period:String(meta?.period||''),academic_year:String(meta?.academic_year||''),filename:String(filename||'Welfare_Statement.pdf'),blob,saved_at:Date.now()};
+   await withStore('readwrite',store=>store.put(record));
+   const db=await openDb();
+   const all=await new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readonly').objectStore(STORE).index('school_code').getAll(code);r.onsuccess=()=>resolve(r.result||[]);r.onerror=()=>reject(r.error);});
+   all.sort((a,b)=>b.saved_at-a.saved_at).slice(MAX_ITEMS).forEach(row=>withStore('readwrite',store=>store.delete(row.key)).catch(()=>{}));
+   window.dispatchEvent(new CustomEvent('welfare:cached-statement',{detail:{school_code:code}}));return true;
+  }catch(error){console.warn('[Welfare offline] PDF cache unavailable:',error?.message||error);return false;}
  };
  window.openWelfareCachedStatements=openCachedPanel;
  window.addEventListener('online',()=>{showOnlinePending();networkCheck();});
