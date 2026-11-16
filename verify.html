@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#10284a">
+<title>Statement Verification · Welfare</title>
+<style>
+:root{color-scheme:light;--bg:#f3f6fb;--card:#fff;--ink:#14243b;--muted:#64748b;--line:#e2e8f0;--navy:#10284a;--gold:#d6a33a;--good:#087443;--goodbg:#e8f7ef;--bad:#b42318;--badbg:#fff0ee;--shadow:0 18px 55px rgba(15,35,65,.10)}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0b1422;--card:#111f32;--ink:#edf3fb;--muted:#a7b5c8;--line:#2b3b51;--navy:#dce9fb;--gold:#d6a33a;--good:#65d99b;--goodbg:#123426;--bad:#ff8d83;--badbg:#3b1c1b;--shadow:0 18px 55px rgba(0,0,0,.28)}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -10%,rgba(214,163,58,.13),transparent 34%),var(--bg);color:var(--ink);font:15px/1.55 Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:24px 15px 40px}
+.shell{width:min(100%,760px);margin:0 auto}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 22px}.brand{display:flex;align-items:center;gap:11px;min-width:0}.crest{width:42px;height:42px;border-radius:12px;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:900;letter-spacing:-1px}.brand strong{display:block;font-size:14px;letter-spacing:.06em}.brand span{display:block;color:var(--muted);font-size:12px}.theme{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:9px 13px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);overflow:hidden}.accent{height:6px;background:linear-gradient(90deg,var(--navy) 0 72%,var(--gold) 72% 100%)}.content{padding:clamp(22px,5vw,38px)}.eyebrow{margin:0 0 8px;color:var(--muted);font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}.status{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:8px 13px;font-size:12px;font-weight:850;letter-spacing:.025em;background:var(--badbg);color:var(--bad)}.status.good{background:var(--goodbg);color:var(--good)}.dot{width:8px;height:8px;border-radius:50%;background:currentColor}.title{margin:17px 0 5px;font-size:clamp(25px,5vw,34px);line-height:1.15;letter-spacing:-.035em}.sub{margin:0;color:var(--muted);font-size:14px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:27px}.field{min-width:0;padding:14px 15px;border:1px solid var(--line);border-radius:13px;background:color-mix(in srgb,var(--card) 88%,var(--bg))}.field.wide{grid-column:1/-1}.field span{display:block;color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;margin-bottom:5px}.field strong{display:block;font-size:14px;font-weight:750;overflow-wrap:anywhere}.field.money strong{font-size:19px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}.foot{margin:20px 0 0;padding-top:16px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:11px}.notice{margin-top:22px;padding:17px;border-radius:14px;background:var(--badbg);color:var(--bad);font-size:13px}.loading{padding:42px 12px;text-align:center;color:var(--muted)}.spinner{width:25px;height:25px;border:3px solid var(--line);border-top-color:var(--gold);border-radius:50%;margin:0 auto 13px;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}[hidden]{display:none!important}
+@media(max-width:520px){body{padding:15px 11px 28px}.top{margin-bottom:15px}.content{padding:22px 17px}.grid{gap:9px;margin-top:22px}.field{padding:12px}.field.money strong{font-size:17px}.foot{display:block}.foot span{display:block;margin-top:4px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<main class="shell">
+ <header class="top">
+  <div class="brand"><div class="crest" aria-hidden="true">W</div><div><strong>WELFARE</strong><span>Official document verification</span></div></div>
+  <button class="theme" id="themeToggle" type="button" aria-label="Toggle colour theme">☾ Dark mode</button>
+ </header>
+ <section class="card" aria-live="polite">
+  <div class="accent"></div>
+  <div class="content">
+   <p class="eyebrow">Teachers Welfare Fund</p>
+   <div id="loading" class="loading"><div class="spinner"></div>Checking the official verification registry…</div>
+   <div id="result" hidden>
+    <div id="status" class="status"><i class="dot"></i><span id="statusText">Invalid / Not Found</span></div>
+    <h1 class="title" id="schoolName">Statement verification</h1>
+    <p class="sub" id="intro">This document could not be matched to an official verification record.</p>
+    <div class="grid" id="details" hidden>
+     <div class="field wide"><span>Document ID</span><strong id="documentId">—</strong></div>
+     <div class="field"><span>School code</span><strong id="schoolCode">—</strong></div>
+     <div class="field"><span>Document type</span><strong id="documentType">—</strong></div>
+     <div class="field wide" id="memberField" hidden><span>Member name · Staff ID</span><strong id="member">—</strong></div>
+     <div class="field"><span>Academic year</span><strong id="academicYear">—</strong></div>
+     <div class="field"><span>Period</span><strong id="period">—</strong></div>
+     <div class="field money"><span>Total contributions</span><strong id="contributions">—</strong></div>
+     <div class="field money"><span>Total payouts</span><strong id="payouts">—</strong></div>
+     <div class="field money wide"><span>Net balance</span><strong id="balance">—</strong></div>
+    </div>
+    <div id="invalidNotice" class="notice" hidden>Invalid / Not Found. This document ID and school code do not match an official registered statement. Do not rely on this document as verified.</div>
+    <div class="foot"><span id="issuedAt">Verification service · Welfare</span><span>Read-only verification record</span></div>
+   </div>
+  </div>
+ </section>
+</main>
+<script>
+(function(){
+ 'use strict';
+ const API='https://jlwdtlhlztbgpogqdabu.supabase.co/functions/v1/verify-statement';
+ const KEY='sb_publishable_-idvZBti_BY5Xn8xDxhqqw_p_Me6X8O';
+ const root=document.documentElement, toggle=document.getElementById('themeToggle');
+ const saved=(()=>{try{return localStorage.getItem('welfare_verify_theme')}catch(_){return null}})();
+ const initial=saved||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+ function setTheme(theme){root.dataset.theme=theme;toggle.textContent=theme==='dark'?'☀ Light mode':'☾ Dark mode';try{localStorage.setItem('welfare_verify_theme',theme)}catch(_){}}
+ setTheme(initial);toggle.addEventListener('click',()=>setTheme(root.dataset.theme==='dark'?'light':'dark'));
+ const $=id=>document.getElementById(id);
+ const money=value=>'GHS '+Number(value||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
+ const text=(id,value)=>$(id).textContent=value==null||value===''?'—':String(value);
+ function invalid(){ $('loading').hidden=true;$('result').hidden=false;$('status').classList.remove('good');$('statusText').textContent='Invalid / Not Found';$('schoolName').textContent='Statement not verified';$('intro').textContent='This document could not be matched to an official verification record.';$('details').hidden=true;$('invalidNotice').hidden=false; }
+ async function verify(){
+  const params=new URLSearchParams(location.search),code=(params.get('c')||'').trim().toUpperCase(),id=(params.get('d')||'').trim();
+  if(!code||!id){invalid();return}
+  try{
+   const response=await fetch(API+'?c='+encodeURIComponent(code)+'&d='+encodeURIComponent(id),{method:'GET',headers:{apikey:KEY,Accept:'application/json'},cache:'no-store'});
+   const data=await response.json();
+   if(!response.ok||data.valid!==true){invalid();return}
+   $('loading').hidden=true;$('result').hidden=false;$('status').classList.add('good');$('statusText').textContent='Verified Official Statement';
+   text('schoolName',data.school_name);$('intro').textContent='This document matches an official record registered by the school welfare system.';
+   text('documentId',data.document_id);text('schoolCode',data.school_code);text('documentType',String(data.document_type||'').replace(/-/g,' '));
+   text('academicYear',data.academic_year);text('period',data.period);text('contributions',money(data.total_contributions));text('payouts',money(data.total_payouts));text('balance',money(data.net_balance));
+   if(data.member_name){$('memberField').hidden=false;text('member',(data.member_name||'')+(data.staff_id?' · '+data.staff_id:''))}
+   $('details').hidden=false;$('invalidNotice').hidden=true;
+   const issued=data.issued_at?new Date(data.issued_at):null;text('issuedAt',issued&&!Number.isNaN(issued.getTime())?'Issued '+issued.toLocaleString('en-GB'):'Verification service · Welfare');
+  }catch(_){invalid()}
+ }
+ verify();
+})();
+</script>
+</body>
+</html>
