@@ -1198,7 +1198,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  });
 
  const adminContributionRecordsMetric=$('adminContributionRecordsMetric');if(adminContributionRecordsMetric)adminContributionRecordsMetric.hidden=false;
- const adminContributionRecordsCount=$('adminContributionRecordsCount');if(adminContributionRecordsCount)adminContributionRecordsCount.textContent=cr.error?'Unavailable':String(cons.length);
+ const adminContributionRecordsCount=$('adminContributionRecordsCount');if(adminContributionRecordsCount)adminContributionRecordsCount.textContent=(cr.error||rr.error)?'Unavailable':String(activeCons.length);
  const options='<option value="">Choose teacher</option>'+teachers.filter(t=>t.is_active!==false).map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name)+' ('+esc(t.id)+')</option>').join('');
  $('wfConTeacher').innerHTML=options;$('wfPayTeacher').innerHTML=options;$('wfStatementTeacher').innerHTML=options;
  const reversalCell=(type,x)=>reversed.has(type+':'+x.id)?'<strong class="wf-reversed-label">REVERSED</strong> <span class="muted">· '+esc(reversals.find(r=>r.transaction_type===type&&String(r.transaction_id)===String(x.id))?.reason||'Reason recorded')+'</span>':'<button type="button" class="wf-reverse-action" data-wf-reverse="'+type+'" data-wf-id="'+esc(x.id)+'"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Reverse</button>';
@@ -1239,11 +1239,11 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     ]);
     cr=nextCon;pr=nextPay;rr=nextRev;
     cons=nextCon.data||[];pays=nextPay.data||[];reversals=nextRev.data||[];
-    const contributionRecordsCount=$('adminContributionRecordsCount');
-    if(contributionRecordsCount)contributionRecordsCount.textContent=cr.error?'Unavailable':String(cons.length);
     reversed.clear();
     reversals.forEach(item=>reversed.add(item.transaction_type+':'+item.transaction_id));
     activeCons=cons.filter(item=>!reversed.has('contribution:'+item.id));
+    const contributionRecordsCount=$('adminContributionRecordsCount');
+    if(contributionRecordsCount)contributionRecordsCount.textContent=(cr.error||rr.error)?'Unavailable':String(activeCons.length);
     activePays=pays.filter(item=>!reversed.has('payout:'+item.id));
     const totalCon=activeCons.reduce((sum,item)=>sum+Number(item.amount||0),0);
     const totalPay=activePays.reduce((sum,item)=>sum+Number(item.amount||0),0);
