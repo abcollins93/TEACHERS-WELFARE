@@ -1443,7 +1443,15 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    msg(statusId,'Preparing PDF…');
    try{
      if(typeof window.generateTenantWelfarePdf!=='function')throw new Error('The PDF generator is unavailable. Reload the portal and try again.');
-     const generated=await window.generateTenantWelfarePdf(buildOptions());
+     const pdfOptions=buildOptions();
+     const generated=await window.generateTenantWelfarePdf(pdfOptions);
+     if(typeof window.cacheWelfareStatementPdf==='function'){
+       await window.cacheWelfareStatementPdf(generated.blob,generated.filename,{
+        school_code:pdfOptions?.school?.school_code||window.__welfareCurrentSchool?.school_code,
+        document_id:generated.documentId,document_type:pdfOptions?.type,
+        period:pdfOptions?.month||pdfOptions?.year||'',academic_year:pdfOptions?.academicYear||''
+       });
+     }
      if(sharePdf){
        const pdfFile=new File([generated.blob],generated.filename,{type:'application/pdf'});
        const shareTitle=String(generated.filename||'Welfare PDF').replace(/\.pdf$/i,'').replace(/[-_]+/g,' ');
