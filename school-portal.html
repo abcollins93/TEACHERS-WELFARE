@@ -3694,7 +3694,7 @@ window.applyWelfarePdfTenantWatermark=function(host,tenantSchoolName,schoolConte
  if(!document.getElementById('welfare-pdf-watermark-layer-style')){
   const style=document.createElement('style');
   style.id='welfare-pdf-watermark-layer-style';
-  style.textContent='.welfare-pdf-watermarked{position:relative!important;isolation:isolate!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.welfare-pdf-watermarked::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background-image:var(--welfare-pdf-watermark-image);background-repeat:repeat-y;background-position:center top;background-size:100% 297mm}.welfare-pdf-watermarked.landscape::before{background-size:100% 210mm}.welfare-pdf-watermarked>*{position:relative;z-index:1}';
+  style.textContent='.welfare-pdf-watermarked{position:relative!important;isolation:isolate!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.welfare-pdf-watermarked::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background-image:var(--welfare-pdf-watermark-image);background-repeat:repeat-y;background-position:center top;background-size:auto 297mm}.welfare-pdf-watermarked.landscape::before{background-size:auto 210mm}.welfare-pdf-watermarked>*{position:relative;z-index:1}';
   document.head.appendChild(style);
  }
 };
