@@ -45,10 +45,27 @@ function showPwaInstallNotice(tenantLabel){
  function displayModeInstalled(){return window.matchMedia('(display-mode: standalone)').matches||window.matchMedia('(display-mode: fullscreen)').matches||window.navigator.standalone===true;}
  var isStandalone=displayModeInstalled();
  var isInstalled=isStandalone;
- try{isInstalled=isInstalled||localStorage.getItem('welfare_app_installed')==='1';}catch(_){}
+ var appInstalledThisSession=false;
+ function clearStaleInstalledFlag(){try{localStorage.removeItem('welfare_app_installed');}catch(_){}}
  function hideInstallButton(){if(installButton){installButton.style.setProperty('display','none','important');installButton.setAttribute('aria-hidden','true');installButton.disabled=true;}}
- function markInstalled(){isInstalled=true;isStandalone=true;try{localStorage.setItem('welfare_app_installed','1');}catch(_){}hideInstallButton();}
- function detectRelatedInstalledApps(){if(!navigator.getInstalledRelatedApps)return;navigator.getInstalledRelatedApps().then(function(apps){if(Array.isArray(apps)&&apps.length)markInstalled();}).catch(function(){});}
+ function showInstallButton(){if(installButton&&!isInstalled&&!displayModeInstalled()){installButton.style.removeProperty('display');installButton.setAttribute('aria-hidden','false');installButton.disabled=false;}}
+ function markInstalled(fromAppInstalledEvent){isInstalled=true;isStandalone=displayModeInstalled();if(fromAppInstalledEvent)appInstalledThisSession=true;clearStaleInstalledFlag();hideInstallButton();}
+ function detectRelatedInstalledApps(){
+   if(displayModeInstalled()){markInstalled(false);return;}
+   if(typeof navigator.getInstalledRelatedApps!=='function'){
+     clearStaleInstalledFlag();
+     if(!appInstalledThisSession){isInstalled=false;showInstallButton();}
+     return;
+   }
+   Promise.resolve().then(function(){return navigator.getInstalledRelatedApps();}).then(function(apps){
+     if(Array.isArray(apps)&&apps.length){markInstalled(false);return;}
+     clearStaleInstalledFlag();
+     if(!displayModeInstalled()&&!appInstalledThisSession){isInstalled=false;isStandalone=false;showInstallButton();}
+   }).catch(function(){
+     clearStaleInstalledFlag();
+     if(!displayModeInstalled()&&!appInstalledThisSession){isInstalled=false;isStandalone=false;showInstallButton();}
+   });
+ }
  detectRelatedInstalledApps();
  function safeTenantLabel(){
    return (tenantName||schoolCode||'School').replace(/[\x00-\x1F\x7F]/g,' ').replace(/\s+/g,' ').trim()||'School';
@@ -163,9 +180,13 @@ function showPwaInstallNotice(tenantLabel){
    refreshInstallButtonLabel();
    installButton.addEventListener('click',async function(){
      if(deferredPrompt&&!isStandalone){
-       deferredPrompt.prompt();
-       try{await deferredPrompt.userChoice;}catch(_){}
+       try{
+         await deferredPrompt.prompt();
+         var choiceResult=await deferredPrompt.userChoice;
+         if(choiceResult&&choiceResult.outcome==='accepted')markInstalled(true);
+       }catch(_){}
        deferredPrompt=null;
+       if(!isInstalled)showInstallButton();
      }else{
        var instructions='To install '+safeTenantLabel()+' Welfare, open your browser menu and choose “Install app” or “Add to Home screen”. The installed shortcut will open this school gateway.';
        if(isStandalone)instructions=safeTenantLabel()+' Welfare is already installed. Open it from your device home screen to return to this school portal.';
@@ -178,8 +199,8 @@ function showPwaInstallNotice(tenantLabel){
  window.addEventListener('beforeinstallprompt',function(event){
    event.preventDefault();deferredPrompt=event;addInstallButton();
  });
- window.addEventListener('appinstalled',function(){markInstalled();});
- window.addEventListener('pageshow',function(){if(displayModeInstalled())markInstalled();});
+ window.addEventListener('appinstalled',function(){markInstalled(true);});
+ window.addEventListener('pageshow',function(){detectRelatedInstalledApps();if(displayModeInstalled())markInstalled(false);});
  // Show the install control only while this device has not installed the app.
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addInstallButton,{once:true});
  else addInstallButton();
