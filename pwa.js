@@ -24,7 +24,7 @@ function showPwaInstallNotice(tenantLabel){
  var tenantName='';
  try{tenantName=sessionStorage.getItem('active_tenant_name')||localStorage.getItem('active_tenant_name')||sessionStorage.getItem('invited_school_name')||localStorage.getItem('invited_school_name')||'';}catch(_){}
  function persistTenantName(value){
-   var normalized=String(value||'').replace(/[\\x00-\\x1F\\x7F]/g,' ').replace(/\\s+/g,' ').trim();
+   var normalized=String(value||'').replace(/[\x00-\x1F\x7F]/g,' ').replace(/\s+/g,' ').trim();
    if(!normalized)return '';
    tenantName=normalized;
    try{localStorage.setItem('active_tenant_name',normalized);localStorage.setItem('invited_school_name',normalized);}catch(_){}
@@ -87,7 +87,7 @@ function showPwaInstallNotice(tenantLabel){
    if(name)persistTenantName(name);
    injectTenantManifest();
    if(installButton){
-     var label='Install '+safeTenantLabel()+' Portal';
+     var label=isStandalone?safeTenantLabel()+' Welfare · Already installed':'Install '+safeTenantLabel()+' Portal';
      var labelNode=installButton.querySelector('.welfare-pwa-install-label');
      if(labelNode)labelNode.textContent=label;
      installButton.setAttribute('aria-label',label);
@@ -132,7 +132,7 @@ function showPwaInstallNotice(tenantLabel){
  var deferredPrompt=null;
  var installButton=null;
  function addInstallButton(){
-   if(installButton||isStandalone||!document.body)return;
+   if(installButton||!document.body)return;
    installButton=document.createElement('button');
    installButton.type='button';
    installButton.id='welfarePwaInstall';
@@ -147,13 +147,14 @@ function showPwaInstallNotice(tenantLabel){
    installButton.appendChild(installIcon);
    installButton.appendChild(installLabel);
    function refreshInstallButtonLabel(){
-     var label='Install '+safeTenantLabel()+' Portal';
+     var label=isStandalone?safeTenantLabel()+' Welfare · Already installed':'Install '+safeTenantLabel()+' Portal';
      installLabel.textContent=label;
+     installIcon.textContent=isStandalone?'✓':'＋';
      installButton.setAttribute('aria-label',label);
    }
    refreshInstallButtonLabel();
    installButton.addEventListener('click',async function(){
-     if(deferredPrompt){
+     if(deferredPrompt&&!isStandalone){
        deferredPrompt.prompt();
        try{await deferredPrompt.userChoice;}catch(_){}
        deferredPrompt=null;
@@ -179,11 +180,11 @@ function showPwaInstallNotice(tenantLabel){
    event.preventDefault();deferredPrompt=event;addInstallButton();
  });
  window.addEventListener('appinstalled',function(){
-   isStandalone=true;if(installButton){installButton.remove();installButton=null;}
+   isStandalone=true;
+   if(installButton){installButton.remove();installButton=null;}
+   addInstallButton();
  });
- // Manual-install fallback for browsers without beforeinstallprompt.
- if(!isStandalone){
-   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addInstallButton,{once:true});
-   else addInstallButton();
- }
+ // Show either the install control or a tenant-specific installed status.
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addInstallButton,{once:true});
+ else addInstallButton();
 })();
