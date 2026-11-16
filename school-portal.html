@@ -1871,9 +1871,14 @@ const SUPABASE_URL='https://jlwdtlhlztbgpogqdabu.supabase.co';
 const SUPABASE_KEY='sb_publishable_-idvZBti_BY5Xn8xDxhqqw_p_Me6X8O';
 const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const params=new URLSearchParams(location.search);
-const requestedCode=(params.get('school')||params.get('c')||params.get('code')||params.get('school_code')||'').trim().toUpperCase();
+const hashParams=new URLSearchParams(location.hash.replace(/^#/,'')); 
+let requestedCode=(params.get('c')||params.get('school_code')||params.get('tenant')||params.get('school')||params.get('code')||
+ hashParams.get('c')||hashParams.get('school_code')||hashParams.get('tenant')||hashParams.get('school')||'').trim().toUpperCase();
+if(!requestedCode){try{requestedCode=(sessionStorage.getItem('invited_school_code')||localStorage.getItem('invited_school_code')||sessionStorage.getItem('active_tenant_code')||localStorage.getItem('active_tenant_code')||'').trim().toUpperCase();}catch(_){}}
+function persistActiveTenant(codeValue){const value=String(codeValue||'').trim().toUpperCase();if(!/^[A-Z0-9-]{2,32}$/.test(value))return;try{localStorage.setItem('invited_school_code',value);localStorage.setItem('active_tenant_code',value);}catch(_){}try{sessionStorage.setItem('invited_school_code',value);sessionStorage.setItem('active_tenant_code',value);}catch(_){}if(typeof window.updateWelfarePwaTenant==='function')window.updateWelfarePwaTenant('',value);}
+if(requestedCode)persistActiveTenant(requestedCode);
 // Normalize the legacy Ntonso code to the code actually registered in Supabase.
-const code=requestedCode==='NTONSO-A-0'?'NTONSO-A-01':requestedCode;
+let code=requestedCode==='NTONSO-A-0'?'NTONSO-A-01':requestedCode;
 const $=id=>document.getElementById(id);
 const pageLoader=$('page-loader');
 let pageLoaderTimer;
@@ -1955,7 +1960,9 @@ function blockTenantAccess(title, message){
  $('dashboard')?.classList.add('hidden');
 }
 async function loadGatewayIdentity(){
- if(!code){blockTenantAccess('School gateway unavailable','A valid school code is required. Please use the official gateway link.');return;}
+ // A missing URL code may still be resolved from the authenticated administrator's
+ // verified school assignment after sign-in; do not prematurely block that flow.
+ if(!code)return;
  const {data:directory,error:directoryError}=await client.from('platform_schools').select('name,status').eq('school_code',code).maybeSingle();
  if(directoryError||!directory){
   blockTenantAccess('School gateway unavailable','This school’s access status could not be verified. For security, sign-in is blocked. Please contact the platform administrator.');
@@ -1967,11 +1974,12 @@ async function loadGatewayIdentity(){
  }
  const name=String(directory.name||'').trim();if(!name){blockTenantAccess('School gateway unavailable','The school identity could not be verified. Sign-in is blocked.');return;}
  $('brand').textContent=name;$('loginSchoolName').textContent=name;$('documentTitle').textContent=name+' | Teachers Welfare Fund';
+ if(typeof window.updateWelfarePwaTenant==='function')window.updateWelfarePwaTenant(name,code);
 }
 tenantIdentityReady=loadGatewayIdentity().catch(()=>{
  blockTenantAccess('School gateway unavailable','We could not verify this school’s access status. For security, sign-in is blocked.');
 });
-if(!/^[A-Z0-9-]{3,32}$/.test(code)){ $('loginError').textContent='This gateway link is missing a valid school code. Please use the link provided by your school platform administrator.';$('loginBtn').disabled=true; }
+if(code&&!/^[A-Z0-9-]{3,32}$/.test(code)){ $('loginError').textContent='This gateway link is missing a valid school code. Please use the link provided by your school platform administrator.';$('loginBtn').disabled=true; }
 function displayWelfareReason(reason){const value=String(reason??'').trim();return value?value.replace(/^Bereavement Assistance$/i,'Condolence Support'):'—';}
 window.displayWelfareReason=displayWelfareReason;
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -2802,8 +2810,26 @@ async function showDashboard(){
   }
   // Preserve the verified teacher name resolved during sign-in; auth metadata may be empty or contain no teacher name.
   window.__welfareTeacherDisplayName=window.__welfareTeacherDisplayName||teacherProfile.name||user.user_metadata?.full_name||user.user_metadata?.name||'';
+  if(teacherSchool.school_code){code=String(teacherSchool.school_code).trim().toUpperCase();persistActiveTenant(code);if(typeof window.updateWelfarePwaTenant==='function')window.updateWelfarePwaTenant(teacherSchool.name,code);}
   await renderTeacherDashboard(teacherProfile,teacherSchool);
   return;
+ }
+ if(!code){
+  const metadataSchoolId=String(user.app_metadata?.school_id||user.user_metadata?.school_id||'').trim();
+  let assignmentQuery=client.from('platform_admins').select('school_id').eq('user_id',user.id).eq('active',true);
+  if(metadataSchoolId)assignmentQuery=assignmentQuery.eq('school_id',metadataSchoolId);
+  const {data:assignments,error:assignmentError}=await assignmentQuery.limit(2);
+  if(!assignmentError&&Array.isArray(assignments)&&assignments.length===1&&assignments[0].school_id){
+   const {data:assignedSchool}=await client.from('schools').select('id,name,school_code,status').eq('id',assignments[0].school_id).maybeSingle();
+   if(assignedSchool&&assignedSchool.status==='active'&&assignedSchool.school_code){
+    code=String(assignedSchool.school_code).trim().toUpperCase();persistActiveTenant(code);
+    if(typeof window.updateWelfarePwaTenant==='function')window.updateWelfarePwaTenant(assignedSchool.name,code);
+   }
+  }
+ }
+ if(!code){
+  $('loginError').textContent='Your administrator account is not linked to a school gateway. Open the school-specific invitation link or contact the platform administrator.';
+  window.finishTenantSkeletons?.();$('login').classList.remove('hidden');$('dashboard').classList.add('hidden');return;
  }
  window.__welfareCurrentRole='admin';
  if(window.__teacherDashboardLedgerTimer){clearInterval(window.__teacherDashboardLedgerTimer);window.__teacherDashboardLedgerTimer=null;}
@@ -2831,6 +2857,8 @@ async function showDashboard(){
  resetInactivityTimer();
  $('schoolName').textContent=school.name;$('brand').textContent=school.name;$('sideSchoolName').textContent=school.name;$('sideSchoolCode').textContent=[school.school_code,school.school_type,school.district,school.region].filter(Boolean).join(' · ');$('schoolDescription').textContent='Providing mutual financial support, social welfare benefits, and fully transparent monthly record-keeping for '+school.name+'.';
  $('schoolMeta').textContent=[school.school_code,school.school_type,school.district,school.region].filter(Boolean).join(' · ');
+ persistActiveTenant(school.school_code);
+ if(typeof window.updateWelfarePwaTenant==='function')window.updateWelfarePwaTenant(school.name,school.school_code);
  // Start Settings as soon as the authenticated tenant context is known. Do not await it:
  // dashboard query failures or workflow startup must never prevent the Settings view mounting.
  void startAccountSettingsInitialization(client,school,'admin');
@@ -3091,15 +3119,16 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
  }
 });
 $('teacherForgotPreview').addEventListener('click',()=>{ $('teacherLoginMessage').className='muted';$('teacherLoginMessage').textContent='For secure recovery, contact your school administrator to verify your identity and reset your account.';});
-$('loginForm').addEventListener('submit',async e=>{e.preventDefault();showPageLoader('Signing you in securely');$('loginError').textContent='';$('loginError').className='error';$('loginBtn').disabled=true;$('loginBtn').textContent='Signing in…';let authenticated=false;try{const {data,error}=await client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error||!data.user)throw new Error('credentials');authenticated=true;await showDashboard();}catch(err){if(!authenticated){$('loginError').textContent='Sign-in failed. Check your administrator email and password, or use the password setup link from your invitation.';await client.auth.signOut();}else{$('login').classList.remove('hidden');$('dashboard').classList.add('hidden');$('loginError').textContent='Your credentials were accepted, but school verification or dashboard loading failed. Check that this URL uses your registered school code and that your administrator account is assigned to that school. Your session has been preserved.';}}finally{$('loginBtn').disabled=!/^[A-Z0-9-]{3,32}$/.test(code);$('loginBtn').textContent='Sign in securely';hidePageLoader();}});
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();showPageLoader('Signing you in securely');$('loginError').textContent='';$('loginError').className='error';$('loginBtn').disabled=true;$('loginBtn').textContent='Signing in…';let authenticated=false;try{const {data,error}=await client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error||!data.user)throw new Error('credentials');authenticated=true;await showDashboard();}catch(err){if(!authenticated){$('loginError').textContent='Sign-in failed. Check your administrator email and password, or use the password setup link from your invitation.';await client.auth.signOut();}else{$('login').classList.remove('hidden');$('dashboard').classList.add('hidden');$('loginError').textContent='Your credentials were accepted, but school verification or dashboard loading failed. Check that this URL uses your registered school code and that your administrator account is assigned to that school. Your session has been preserved.';}}finally{$('loginBtn').disabled=!!code&&!/^[A-Z0-9-]{3,32}$/.test(code);$('loginBtn').textContent='Sign in securely';hidePageLoader();}});
 $('forgotPassword').addEventListener('click',async()=>{
  const email=$('email').value.trim();
  $('loginError').textContent='';
  if(!email){$('loginError').textContent='Enter your administrator email first, then choose Forgot password.';return;}
  const btn=$('forgotPassword');btn.disabled=true;btn.textContent='Sending recovery email…';
  try{
-  const redirectTo=new URL('set-password.html',window.location.href.split('?')[0]).href;
-  const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo});
+  const redirectTo=new URL('set-password.html',window.location.href.split('?')[0]);
+  if(code)redirectTo.searchParams.set('c',code);
+  const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:redirectTo.href});
   if(error)throw error;
   $('loginError').className='muted';
   $('loginError').textContent='If this email belongs to an account, a password recovery link will be sent. Check your inbox and spam folder.';
