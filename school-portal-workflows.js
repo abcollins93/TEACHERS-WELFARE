@@ -716,9 +716,13 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  try{
  // Yield the main thread before mounting large admin tables, audit panels and matrix UI.
  await new Promise(resolve=>{
-  if('requestIdleCallback' in window)window.requestIdleCallback(()=>resolve(),{timeout:900});
+  // DEMO becomes touch-ready immediately after first paint; live tenants keep
+  // the longer idle window for their network-backed workflow initialization.
+  if(isLocalDemo)window.setTimeout(resolve,32);
+  else if('requestIdleCallback' in window)window.requestIdleCallback(()=>resolve(),{timeout:900});
   else window.setTimeout(resolve,80);
  });
+ if(isLocalDemo&&window.__welfareDemoRole!=='admin')return false;
  // Rebuild workflow markup on refresh so handlers always use the latest school-scoped data.
  const existingWorkflows=$('workflows');const retainedRoster=$('schoolTeachers');const overview=$('schoolOverview');if(existingWorkflows&&retainedRoster&&existingWorkflows.contains(retainedRoster)&&overview?.parentElement)overview.parentElement.insertBefore(retainedRoster,overview.nextElementSibling);retainedRoster?.querySelector('#wfTeacherRegisterPanel')?.remove();if(existingWorkflows)existingWorkflows.remove();
  addUI();
@@ -907,11 +911,19 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  // Load sources independently: a missing optional column/table must not prevent the
  // dashboard's other sections from rendering. Errors are logged without exposing SQL.
  // Fetch every page so totals and ledgers are not silently capped by the API row limit.
+  const withWorkflowTimeout=(value,ms,label)=>{
+    let timer;
+    return Promise.race([
+      Promise.resolve(value),
+      new Promise((_,reject)=>{timer=window.setTimeout(()=>reject(new Error(label||'This request timed out.')),ms);})
+    ]).finally(()=>{if(timer)window.clearTimeout(timer);});
+  };
   const loadSource=async(label,makeQuery)=>{
     try{
-      const all=[];let from=0;const pageSize=1000;
+      const all=[];let from=0;const pageSize=1000;let pages=0;
       while(true){
-        const result=await makeQuery().range(from,from+pageSize-1);
+        if(++pages>50)throw new Error('The '+label+' exceeded the safe pagination limit.');
+        const result=await withWorkflowTimeout(makeQuery().range(from,from+pageSize-1),7000,label+' timed out.');
         if(result?.error){console.warn('[School Welfare] '+label+' unavailable:',result.error.code||'',result.error.message||'');return {data:[],error:result.error};}
         const batch=Array.isArray(result?.data)?result.data:[];
         all.push(...batch);
@@ -960,7 +972,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   if(!item||typeof item!=='object')return false;
   const statuses=[item.status,item.transaction_status,item.reversal_status].map(value=>String(value||'').trim().toLowerCase());
   const reversedFlag=[item.is_reversed,item.isReversed,item.reversed].some(value=>value===true||['true','t','1','yes'].includes(String(value).trim().toLowerCase()));
-  return !reversed.has('contribution:'+item.id)&&!statuses.includes('reversed')&&!reversedFlag&&!item.reversed_at&&!item.reversedAt;
+  const inactiveFlag=statuses.some(status=>['inactive','deleted','cancelled','canceled','void','archived'].includes(status));
+  return !reversed.has('contribution:'+item.id)&&!statuses.includes('reversed')&&!inactiveFlag&&!reversedFlag&&!item.reversed_at&&!item.reversedAt;
  };
  let activeCons=cons.filter(isActiveContributionRecord), activePays=pays.filter(x=>!reversed.has('payout:'+x.id));
  const demoLatestMonthKey=isLocalDemo?cons.reduce((latest,row)=>String(row.date||'')>latest?String(row.date||''):latest,'').slice(0,7):'';
