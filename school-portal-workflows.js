@@ -1395,7 +1395,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      const totalsRow='<tr class="wf-dm-totals"><th scope="row">MONTHLY TOTAL</th>'+monthTotals.map(amount=>'<td>GHS '+money(amount)+'</td>').join('')+'<td>GHS '+money(grandTotal)+'</td></tr>';
      const qrId='wfDuesMatrixQr_'+documentId.replace(/-/g,'');
      report=document.createElement('div');report.id=reportHostId;report.className='school-welfare-summary-pdf wf-dues-matrix-pdf';
-     report.style.cssText='position:fixed;left:-12000px;top:0;width:281mm;max-width:281mm;min-height:0;margin:0;padding:6mm 7mm;box-sizing:border-box;background:#fff;color:#14213d;font-family:Arial,Helvetica,sans-serif;z-index:-1';
+     report.style.cssText='position:absolute;left:0;top:0;width:281mm;min-width:281mm;max-width:281mm;min-height:150mm;margin:0;padding:6mm 7mm;box-sizing:border-box;background:#ffffff!important;color:#000000!important;font-family:Arial,Helvetica,sans-serif;z-index:-1;pointer-events:none;overflow:visible';
      report.innerHTML='<style>'+
       '#'+reportHostId+'{background:#fff!important;color:#14213d!important;font-family:Arial,Helvetica,sans-serif!important;font-size:8pt!important;line-height:1.3!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'+
       '#'+reportHostId+' .wf-dm-header{display:grid;grid-template-columns:18mm 1fr 24mm;align-items:center;gap:5mm;margin:0 0 3mm;min-height:19mm}'+
@@ -1443,7 +1443,30 @@ window.initSchoolWorkflows=async function(client,school,refresh){
       }
      }
      const filename=(schoolCode.replace(/[^a-z0-9_-]/gi,'_')||'school')+'-dues-matrix-'+selectedYear+'.pdf';
-     const blob=await window.html2pdf().set({margin:0,filename,image:{type:'png'},html2canvas:{scale:3,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0,windowWidth:report.scrollWidth},jsPDF:{unit:'mm',format:'a4',orientation:'landscape',compress:true},pagebreak:{mode:['css'],avoid:['tr','.wf-dm-bottom']}}).from(report).outputPdf('blob');
+     // Keep the capture node attached, measurable and fully laid out before
+     // html2canvas snapshots it. Waiting for fonts/images prevents blank pages.
+     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+     if(document.fonts?.ready)await document.fonts.ready;
+     const reportImages=Array.from(report.querySelectorAll('img'));
+     await Promise.all(reportImages.map(async image=>{
+      if(image.complete&&image.naturalWidth>0)return;
+      if(typeof image.decode==='function'){try{await image.decode();return;}catch(_){}}
+      await new Promise(resolve=>{image.addEventListener('load',resolve,{once:true});image.addEventListener('error',resolve,{once:true});});
+     }));
+     const reportWidth=Math.ceil(report.getBoundingClientRect().width||report.scrollWidth);
+     const reportHeight=Math.ceil(report.getBoundingClientRect().height||report.scrollHeight);
+     if(!reportWidth||!reportHeight||!report.querySelector('.wf-dm-table tbody tr'))throw new Error('The dues matrix report did not finish rendering. Please try again.');
+     const pdfOptions={margin:0,filename,image:{type:'png'},html2canvas:{scale:3,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,scrollX:0,scrollY:0,windowWidth:Math.max(reportWidth,document.documentElement.clientWidth),windowHeight:Math.max(reportHeight,document.documentElement.clientHeight),width:reportWidth,height:reportHeight},jsPDF:{unit:'mm',format:'a4',orientation:'landscape',compress:true},pagebreak:{mode:['css'],avoid:['tr','.wf-dm-bottom']}};
+     const pdfWorker=window.html2pdf().set(pdfOptions).from(report);
+     await pdfWorker.toCanvas();
+     const renderedCanvas=await pdfWorker.get('canvas');
+     if(!renderedCanvas||renderedCanvas.width<1||renderedCanvas.height<1)throw new Error('The dues matrix page could not be rendered. No blank PDF was downloaded.');
+     const renderedPixels=renderedCanvas.getContext('2d',{willReadFrequently:true})?.getImageData(0,0,Math.min(renderedCanvas.width,32),Math.min(renderedCanvas.height,32)).data;
+     if(!renderedPixels||renderedCanvas.toDataURL('image/png').length<1000)throw new Error('The dues matrix page rendered empty. Please try again.');
+     const blob=await pdfWorker.toPdf().output('blob');
+     if(!(blob instanceof Blob)||blob.size<1000)throw new Error('The generated dues matrix PDF is empty. Please try again.');
+     const pdfSignature=new Uint8Array(await blob.slice(0,5).arrayBuffer());
+     if(String.fromCharCode(...pdfSignature)!=='%PDF-')throw new Error('The generated report is not a valid PDF document. Please try again.');
      if(typeof window.cacheWelfareStatementPdf==='function'){
       try{await window.cacheWelfareStatementPdf(blob,filename,{
        school_code:schoolCode,document_id:documentId,document_type:'dues-matrix',
