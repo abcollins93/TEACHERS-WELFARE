@@ -3195,21 +3195,23 @@ function updateDemoBanner(){
   #demoSandboxBanner{position:sticky;top:0;z-index:12500;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 14px;margin:0 0 14px;border:1px solid #c7d8f4;border-radius:13px;background:linear-gradient(100deg,#eff6ff,#fff);color:#17345d;box-shadow:0 5px 18px rgba(15,23,42,.07)}
   #demoSandboxBanner .demo-copy{font-size:13px;font-weight:850;letter-spacing:.01em}
   #demoSandboxBanner .demo-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-  #demoSandboxBanner button,#demoSandboxBanner a{min-height:34px;padding:7px 11px;border:1px solid #b9c9df;border-radius:9px;background:#fff;color:#17345d;font:inherit;font-size:12px;font-weight:800;text-decoration:none;cursor:pointer}
+  #demoSandboxBanner button,#demoSandboxBanner a,#demoSandboxBanner button{min-height:34px;padding:7px 11px;border:1px solid #b9c9df;border-radius:9px;background:#fff;color:#17345d;font:inherit;font-size:12px;font-weight:800;text-decoration:none;cursor:pointer}
   #demoSandboxBanner button[aria-pressed="true"]{background:#173b69;border-color:#173b69;color:#fff}
-  #demoSandboxBanner a.demo-setup{background:#e8b94f;border-color:#d6a637;color:#18263a}
+  #demoSandboxBanner .demo-setup{background:#e8b94f;border-color:#d6a637;color:#18263a}
   .dark #demoSandboxBanner{background:#10213b;border-color:#334b6e;color:#edf4ff}
-  .dark #demoSandboxBanner button,.dark #demoSandboxBanner a{background:#172d4c;border-color:#435b7d;color:#edf4ff}
+  .dark #demoSandboxBanner button,.dark #demoSandboxBanner a,#demoSandboxBanner button{background:#172d4c;border-color:#435b7d;color:#edf4ff}
   .dark #demoSandboxBanner button[aria-pressed="true"]{background:#d6a637;color:#172033}
-  .dark #demoSandboxBanner a.demo-setup{background:#e8b94f;color:#18263a}
+  .dark #demoSandboxBanner .demo-setup{background:#e8b94f;color:#18263a}
   @media(max-width:650px){#demoSandboxBanner{align-items:flex-start}#demoSandboxBanner .demo-actions{width:100%}#demoSandboxBanner .demo-actions>*{flex:1;text-align:center}}
   `;
   document.head.appendChild(style);
   banner=document.createElement('section');banner.id='demoSandboxBanner';
-  banner.innerHTML='<div class="demo-copy">Live Demo Sandbox · Explore freely</div><div class="demo-actions"><button type="button" data-demo-role="teacher">Teacher View</button><button type="button" data-demo-role="admin">Admin View</button><a class="demo-setup" href="https://github.com/abcollins93/TEACHERS-WELFARE/issues/new?title=School%20Portal%20Setup%20Request" target="_blank" rel="noopener">Set Up Your School</a></div>';
+  banner.innerHTML='<div class="demo-copy">Live Demo Sandbox · Explore freely</div><div class="demo-actions"><button type="button" data-demo-role="teacher">Teacher View</button><button type="button" data-demo-role="admin">Admin View</button><button class="demo-setup" type="button" data-demo-setup>Set Up Your School</button></div>';
   const dashboard=document.getElementById('dashboard');
   if(dashboard)dashboard.insertBefore(banner,dashboard.firstChild);
   banner.addEventListener('click',event=>{
+   const setup=event.target.closest('[data-demo-setup]');
+   if(setup){event.preventDefault();if(typeof window.WelfareDemo?.openSchoolSetupModal==='function')window.WelfareDemo.openSchoolSetupModal();return;}
    const button=event.target.closest('[data-demo-role]');
    if(button){demoRole=button.dataset.demoRole;window.__welfareDemoRole=demoRole;showDashboard();}
   });
