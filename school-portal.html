@@ -2783,7 +2783,39 @@ async function renderTeacherDashboard(profile,school){
   description:type==='Contribution'?'Monthly dues contribution':window.displayWelfareReason(row.reason||'Welfare payout'),
   amount:Number(row.amount||0)
  })).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
- async function downloadTeacherStatement(sharePdf=false){
+ let preparedTeacherStatementShare=null;
+ async function downloadTeacherStatement(sharePdf=false,prepareOnly=false){
+  if(sharePdf&&!prepareOnly&&preparedTeacherStatementShare){
+   const prepared=preparedTeacherStatementShare;
+   const shareData={files:[prepared.pdfFile],title:prepared.shareTitle,text:'Please find attached my member welfare statement.'};
+   let canFile=false;try{canFile=typeof navigator.share==='function'&&(!navigator.canShare||navigator.canShare(shareData));}catch(_){}
+   if(canFile){
+    let pending;try{pending=navigator.share(shareData);}catch(error){pending=Promise.reject(error);}
+    Promise.resolve(pending).then(()=>statementStatus('PDF shared successfully.')).catch(error=>{
+     if(error?.name==='AbortError'){statementStatus('PDF sharing was cancelled.');return;}
+     console.warn('[Teacher statement] Native PDF file share failed:',error);
+     window.downloadWelfareBlob(prepared.pdfBlob,prepared.filename,statementMessage,'The PDF could not be shared. Your PDF statement has been downloaded instead.');
+    });
+   }else{
+    const linkText='Verify this official Welfare PDF report:',url=prepared.verificationUrl;
+    if(typeof navigator.share==='function'){
+     let pending;try{pending=navigator.share({title:prepared.shareTitle,text:linkText,url:url||undefined});}catch(error){pending=Promise.reject(error);}
+     Promise.resolve(pending).then(()=>statementStatus(url?'Verification link shared. No PDF file was attached.':'Statement details shared. No PDF file was attached.')).catch(error=>{
+      if(error?.name==='AbortError'){statementStatus('PDF sharing was cancelled.');return;}
+      const whatsapp='https://wa.me/?text='+encodeURIComponent(linkText+(url?' '+url:''));
+      let opened=null;try{opened=window.open(whatsapp,'_blank');}catch(_){}
+      if(opened)statementStatus('Verification link opened in WhatsApp. No PDF file was attached.');
+      else window.downloadWelfareBlob(prepared.pdfBlob,prepared.filename,statementMessage,'File sharing is not supported here. Your PDF statement has been downloaded instead.');
+     });
+    }else{
+     const whatsapp='https://wa.me/?text='+encodeURIComponent(linkText+(url?' '+url:''));
+     let opened=null;try{opened=window.open(whatsapp,'_blank');}catch(_){}
+     if(opened)statementStatus('Verification link opened in WhatsApp. No PDF file was attached.');
+     else window.downloadWelfareBlob(prepared.pdfBlob,prepared.filename,statementMessage,'File sharing is not supported here. Your PDF statement has been downloaded instead.');
+    }
+   }
+   return;
+  }
   if(!window.html2pdf)return statementStatus('The PDF service is unavailable. Check your internet connection and try again.',true);
   statementButton.disabled=true;if($('teacherStatementShare'))$('teacherStatementShare').disabled=true;statementStatus(sharePdf?'Preparing your PDF for sharing…':'Verifying your account and preparing your statement…');
   try{
@@ -2860,6 +2892,15 @@ async function renderTeacherDashboard(profile,school){
    const rawFilename=String(generatedStatement?.filename||'Welfare_Statement_Report.pdf');
    const filename=(rawFilename.replace(/\\.pdf$/i,'')||'Welfare_Statement_Report')+'.pdf';
    if(!(pdfBlob instanceof Blob))throw new Error('The generated personal statement PDF is unavailable.');
+   if(sharePdf&&prepareOnly){
+    const pdfFile=new File([pdfBlob],filename,{type:'application/pdf'});
+    const shareTitle=(school.name||'School')+' Member Welfare Statement';
+    const verificationUrl=generatedStatement?.documentId&&school?.school_code
+     ?'https://abcollins93.github.io/TEACHERS-WELFARE/verify.html?c='+encodeURIComponent(school.school_code)+'&d='+encodeURIComponent(generatedStatement.documentId):'';
+    preparedTeacherStatementShare={pdfBlob,pdfFile,filename,shareTitle,verificationUrl};
+    statementStatus('Your statement PDF is ready. Tap Share PDF to open your device share sheet.');
+    return;
+   }
    if(sharePdf){
     const pdfFile=new File([pdfBlob],filename,{type:'application/pdf'});
     const shareTitle=(school.name||'School')+' Member Welfare Statement';
@@ -2904,7 +2945,13 @@ async function renderTeacherDashboard(profile,school){
   }finally{statementButton.disabled=false;if($('teacherStatementShare'))$('teacherStatementShare').disabled=false;}
  }
  statementButton?.addEventListener('click',()=>downloadTeacherStatement(false));
- $('teacherStatementShare')?.addEventListener('click',()=>downloadTeacherStatement(true));
+ $('teacherStatementShare')?.addEventListener('click',()=>{
+  if(preparedTeacherStatementShare)return downloadTeacherStatement(true,false);
+  statementStatus('Your statement is still being prepared. Please tap Share PDF again when it is ready.');
+  if(!window.__teacherStatementSharePreparing){window.__teacherStatementSharePreparing=true;downloadTeacherStatement(true,true).finally(()=>{window.__teacherStatementSharePreparing=false;});}
+ });
+ // Prepare the authenticated, school-scoped statement before the user taps Share.
+ downloadTeacherStatement(true,true);
 
  const form=$('teacherVoluntaryPasswordForm');
  form?.addEventListener('submit',async ev=>{
