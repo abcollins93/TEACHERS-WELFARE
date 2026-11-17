@@ -2132,19 +2132,12 @@ if(isDemoMode){
  },1800);
 }
 let tenantIdentityReady=Promise.resolve();
-// Independent loader deadline: stalled optional scripts or tenant identity
-// initialization must never leave the splash screen covering the portal.
+let tenantIdentityDeadline=null;
+// Independent safety deadline. This timer is deliberately separate from the
+// tenant request so a stalled identity check cannot hold the splash screen.
 window.setTimeout(()=>{
  if(pageLoader&&!pageLoader.classList.contains('is-hidden'))hidePageLoader();
-},18000);
-const tenantIdentityDeadline=withPortalTimeout(tenantIdentityReady,6500,'Tenant identity initialization timed out.')
- .catch(error=>{console.warn('[School Welfare] Tenant identity initialization recovered:',error?.message||error);});
-window.addEventListener('load',()=>{
- tenantIdentityDeadline.finally(()=>{
-  if(pageLoaderTimer)window.clearTimeout(pageLoaderTimer);
-  pageLoaderTimer=window.setTimeout(hidePageLoader,250);
- });
-},{once:true});
+},15000);
 
 const applyTheme=dark=>{document.documentElement.classList.toggle('dark',dark);const b=$('themeToggle');if(b)b.innerHTML=dark?'<i class="fa-solid fa-sun"></i> Light mode':'<i class="fa-solid fa-moon"></i> Dark mode';};
 applyTheme(false);
@@ -2226,6 +2219,22 @@ tenantIdentityReady=isDemoMode?Promise.resolve():loadGatewayIdentity().catch(err
  console.warn('[School Welfare] Tenant identity check failed safely:',error?.message||error);
  blockTenantAccess('School gateway unavailable','We could not verify this school’s access status in time. Reload the school link or contact the platform administrator.');
 });
+// Start the deadline only after tenantIdentityReady has been assigned. The
+// previous code timed the initial, already-resolved placeholder promise.
+tenantIdentityDeadline=withPortalTimeout(
+ tenantIdentityReady,9500,'Tenant identity initialization timed out.'
+).catch(error=>{
+ console.warn('[School Welfare] Tenant identity initialization recovered:',error?.message||error);
+ blockTenantAccess('School gateway unavailable','We could not verify this school’s access status in time. Reload the school link or contact the platform administrator.');
+});
+const finishInitialPortalLoad=()=>{
+ Promise.resolve(tenantIdentityDeadline||tenantIdentityReady).finally(()=>{
+  if(pageLoaderTimer)window.clearTimeout(pageLoaderTimer);
+  pageLoaderTimer=window.setTimeout(hidePageLoader,250);
+ });
+};
+if(document.readyState==='complete')finishInitialPortalLoad();
+else window.addEventListener('load',finishInitialPortalLoad,{once:true});
 if(code&&!/^[A-Z0-9-]{3,32}$/.test(code)){ $('loginError').textContent='This gateway link is missing a valid school code. Please use the link provided by your school platform administrator.';$('loginBtn').disabled=true; }
 function displayWelfareReason(reason){const value=String(reason??'').trim();return value?value.replace(/^Bereavement Assistance$/i,'Condolence Support'):'—';}
 window.displayWelfareReason=displayWelfareReason;
