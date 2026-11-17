@@ -120,7 +120,42 @@
     default:return {data:null,error:null};
    }
   },
-  functions:{async invoke(name,{body}={}){if(name==='issue-statement-verification')return {data:{success:true,school_code:'DEMO',document_id:body?.document_id||'DEMO-STATEMENT',verification_url:location.origin+location.pathname.replace(/[^/]*$/,'')+'verify.html?c=DEMO&d='+(body?.document_id||'DEMO-STATEMENT')},error:null};return {data:{ok:true,success:true,administrators:[]},error:null};}}
+  functions:{async invoke(name,{body}={}){
+   const payload=body||{};
+   if(name==='issue-statement-verification'){
+    const documentId=String(payload.document_id||'DEMO-STATEMENT');
+    return {data:{success:true,school_code:'DEMO',document_id:documentId,verification_url:'https://abcollins93.github.io/TEACHERS-WELFARE/verify.html?c=DEMO&d='+encodeURIComponent(documentId)},error:null};
+   }
+   if(name==='provision-teacher-account'){
+    const teacher=teachers.find(item=>String(item.id)===String(payload.teacher_id));
+    if(!teacher)return {data:{ok:false,error:'Demo teacher not found.'},error:null};
+    const authId='demo-auth-'+teacher.id;
+    let account=accounts.find(item=>item.teacher_id===teacher.id);
+    if(!account){account={id:'demo-account-'+teacher.id,teacher_id:teacher.id,school_id:school.id,active:true};accounts.push(account);}
+    account.auth_user_id=authId;account.active=true;teacher.login_activated=true;
+    return {data:{ok:true,auth_user_id:authId,teacher_name:teacher.name,staff_id:teacher.staff_id,initial_password:teacher.staff_id},error:null};
+   }
+   if(name==='school-admin-management'){
+    if(payload.action==='list')return {data:{ok:true,administrators:clone(tables.admin_users)},error:null};
+    if(payload.action==='invite'){
+     const row={id:'demo-admin-'+(tables.admin_users.length+1),user_id:'demo-invited-'+(tables.admin_users.length+1),username:payload.username,name:payload.full_name,email:payload.email,active:true};
+     tables.admin_users.push(row);return {data:{ok:true,message:'Demo invitation recorded in this browser session only.'},error:null};
+    }
+    if(payload.action==='deactivate'){
+     const row=tables.admin_users.find(item=>String(item.id)===String(payload.admin_id));
+     if(row)row.active=false;return {data:{ok:true,message:'Demo administrator deactivated in this session.'},error:null};
+    }
+    if(payload.action==='reset'){
+     const removed={members_removed:teachers.length,contributions_removed:contributions.length,payouts_removed:payouts.length};
+     teachers.splice(0);contributions.splice(0);payouts.splice(0);reversals.splice(0);accounts.splice(0);
+     return {data:{ok:true,result:removed},error:null};
+    }
+    if(payload.action==='change_password')return {data:{ok:true,message:'Demo password change simulated for this session.'},error:null};
+    return {data:{ok:true,administrators:clone(tables.admin_users)},error:null};
+   }
+   if(name==='teacher-account-security')return {data:{ok:true,success:true,message:'Demo teacher account action simulated locally.'},error:null};
+   return {data:{ok:true,success:true,administrators:clone(tables.admin_users)},error:null};
+  }}
  };
  window.WelfareDemo={school,teachers,contributions,payouts,announcements,client,months,activeCon,activePay,setTeacher(index){activeTeacherIndex=Math.max(0,Math.min(teachers.length-1,Number(index)||0));}};
 })();
