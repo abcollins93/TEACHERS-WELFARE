@@ -2150,7 +2150,7 @@ function showLoginWelcome(displayName,roleLabel,schoolName){
  const sessionKey=String(window.__welfareWelcomeLoginKey||'').trim();
  if(sessionKey&&window.__welfareWelcomeShownForLogin===sessionKey)return;
  if(sessionKey)window.__welfareWelcomeShownForLogin=sessionKey;
- const first=String(displayName||'').trim().split(/\\s+/)[0]||'there';
+ const first=String(displayName||'').trim().split(/\s+/)[0]||'there';
  let toast=document.getElementById('loginWelcomeToast');
  if(!document.getElementById('loginWelcomeStyles')){
   const style=document.createElement('style');style.id='loginWelcomeStyles';
