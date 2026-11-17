@@ -2064,6 +2064,25 @@ function hidePageLoader(){
  pageLoader.classList.add('is-hidden');
  pageLoader.setAttribute('aria-hidden','true');
 }
+if(isDemoMode){
+ // Last-resort mobile recovery: a non-network timer must never leave DEMO behind
+ // the splash screen if any later optional dashboard module fails to initialize.
+ window.setTimeout(()=>{
+  if(pageLoader&&!pageLoader.classList.contains('is-hidden')){
+   hidePageLoader();
+   const demoSchool=window.WelfareDemo&&window.WelfareDemo.school;
+   const login=document.getElementById('login'),dashboard=document.getElementById('dashboard');
+   if(login)login.classList.add('hidden');
+   if(dashboard)dashboard.classList.remove('hidden');
+   if(demoSchool){
+    const schoolName=document.getElementById('schoolName'),brand=document.getElementById('brand'),sideName=document.getElementById('sideSchoolName');
+    if(schoolName)schoolName.textContent=demoSchool.name;
+    if(brand)brand.textContent=demoSchool.name;
+    if(sideName)sideName.textContent=demoSchool.name;
+   }
+  }
+ },1800);
+}
 let tenantIdentityReady=Promise.resolve();
 window.addEventListener('load',()=>{
  Promise.resolve(tenantIdentityReady).finally(()=>{
