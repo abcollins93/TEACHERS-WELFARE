@@ -3198,7 +3198,7 @@ async function showDemoDashboard(){
  $('schoolDescription').textContent='Explore the sample welfare records and portal features for '+school.name+'.';
  $('schoolMeta').textContent='DEMO · Basic · Kumasi Metro · Ashanti Region';
  setTenantFooter(school);
- if(typeof window.updateWelfarePwaTenant==='function')window.updateWelfarePwaTenant(school.name,'DEMO');
+
  if(demoRole==='teacher'){
   const teacher=window.WelfareDemo.teachers[0];
   window.WelfareDemo.setTeacher(0);
