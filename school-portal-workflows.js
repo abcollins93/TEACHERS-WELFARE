@@ -988,7 +988,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  #wfDuesMatrixCard .wf-dues-matrix-table td{padding:9px 8px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
  #wfDuesMatrixCard .wf-dues-matrix-table td:first-child{position:sticky;left:0;z-index:1;text-align:left;background:var(--surface,#fff);font-weight:800;min-width:190px}
  #wfDuesMatrixCard .wf-dues-matrix-teacher small{display:block;color:var(--muted);font-size:.68rem;font-weight:650}
- #wfDuesMatrixCard .wf-dues-matrix-cell-paid{display:inline-block;padding:4px 7px;border-radius:7px;background:#dcfce7;color:#166534;font-weight:850}
+ #wfDuesMatrixCard .wf-dues-matrix-cell-paid{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;max-width:none;min-width:max-content;padding:4px 5px;border-radius:7px;background:#dcfce7;color:#166534;font-size:.69rem;line-height:1.25;font-weight:850;white-space:nowrap;letter-spacing:-.01em}
  #wfDuesMatrixCard .wf-dues-matrix-cell-unpaid{color:#9aa5b5;font-weight:750}
  #wfDuesMatrixCard .wf-dues-matrix-table tbody tr:last-child td{border-bottom:0}
  .dark #wfDuesMatrixCard{background:#0b1d3a;color:#e6edf7;border-color:#26364d}
@@ -1601,73 +1601,81 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  // Bind report actions as soon as report controls and school-scoped data are ready.
  // Install these BEFORE optional settings requests so slow settings cannot leave
  // visible PDF buttons without click handlers.
+ const preparedAdminShares=new Map();
+ const adminSharePreparation=new Map();
+ const adminShareKey=options=>[options.type,options.month||'',options.year||''].join('|');
+ const prepareAdminReportShare=(button,statusId,buildOptions)=>{
+   if(!button||typeof window.generateTenantWelfarePdf!=='function')return;
+   const options=buildOptions();options.shareIntent=true;
+   const key=adminShareKey(options);
+   const current=adminSharePreparation.get(button.id);
+   if(current?.key===key)return;
+   const task=(async()=>{
+     try{
+       const generated=await window.generateTenantWelfarePdf(options);
+       if(!generated?.blob||!generated.blob.size)throw new Error('The PDF could not be prepared.');
+       const fileName=String(generated.filename||'Welfare_Report.pdf');
+       const pdfFile=new File([generated.blob],fileName,{type:'application/pdf'});
+       const schoolCode=options.school?.school_code||ctx.school_code||'';
+       const verificationUrl=generated.documentId&&schoolCode
+        ?'https://abcollins93.github.io/TEACHERS-WELFARE/verify.html?c='+encodeURIComponent(schoolCode)+'&d='+encodeURIComponent(generated.documentId):'';
+       if(adminSharePreparation.get(button.id)?.task===task){
+         preparedAdminShares.set(button.id,{key,generated,pdfFile,fileName,verificationUrl});
+         msg(statusId,'PDF ready to share. Tap Share PDF to open your device share sheet.');
+       }
+     }catch(error){console.warn('[School Welfare PDF] Share preparation deferred:',error?.message||error);}
+   })();
+   adminSharePreparation.set(button.id,{key,task});
+ };
+ const sharePreparedAdminReport=(button,statusId,buildOptions)=>{
+   const options=buildOptions(),key=adminShareKey(options),prepared=preparedAdminShares.get(button.id);
+   if(!prepared||prepared.key!==key){
+     prepareAdminReportShare(button,statusId,buildOptions);
+     msg(statusId,'Preparing your PDF for sharing. Please tap Share PDF again when it is ready.');
+     return;
+   }
+   const title=prepared.fileName.replace(/\.pdf$/i,'').replace(/[-_]+/g,' ');
+   const shareData={files:[prepared.pdfFile],title,text:'Please find attached this school welfare PDF report.'};
+   let canFile=false;try{canFile=typeof navigator.share==='function'&&(!navigator.canShare||navigator.canShare(shareData));}catch(_){}
+   if(canFile){
+     let pending;try{pending=navigator.share(shareData);}catch(error){pending=Promise.reject(error);}
+     Promise.resolve(pending).then(()=>msg(statusId,'PDF shared successfully.')).catch(error=>{
+       if(error?.name==='AbortError'){msg(statusId,'PDF sharing was cancelled.');return;}
+       console.warn('[School Welfare PDF] Native report file sharing failed:',error);
+       downloadWorkflowBlob(prepared.generated.blob,prepared.fileName,statusId,'The PDF could not be shared. Your PDF has been downloaded instead.','Tap here to view downloaded PDF');
+     });
+     return;
+   }
+   const linkText='Verify this official Welfare PDF report:',url=prepared.verificationUrl;
+   if(typeof navigator.share==='function'){
+     let pending;try{pending=navigator.share({title,text:linkText,url:url||undefined});}catch(error){pending=Promise.reject(error);}
+     Promise.resolve(pending).then(()=>msg(statusId,url?'Verification link shared. No PDF file was attached.':'Report details shared. No PDF file was attached.')).catch(error=>{
+       if(error?.name==='AbortError'){msg(statusId,'PDF sharing was cancelled.');return;}
+       const whatsapp='https://wa.me/?text='+encodeURIComponent(linkText+(url?' '+url:''));
+       let opened=null;try{opened=window.open(whatsapp,'_blank');}catch(_){}
+       if(opened)msg(statusId,'Verification link opened in WhatsApp. No PDF file was attached.');
+       else downloadWorkflowBlob(prepared.generated.blob,prepared.fileName,statusId,'File sharing is not supported here. Your PDF has been downloaded instead.','Tap here to view downloaded PDF');
+     });
+   }else{
+     const whatsapp='https://wa.me/?text='+encodeURIComponent(linkText+(url?' '+url:''));
+     let opened=null;try{opened=window.open(whatsapp,'_blank');}catch(_){}
+     if(opened)msg(statusId,'Verification link opened in WhatsApp. No PDF file was attached.');
+     else downloadWorkflowBlob(prepared.generated.blob,prepared.fileName,statusId,'File sharing is not supported here. Your PDF has been downloaded instead.','Tap here to view downloaded PDF');
+   }
+ };
  const runWelfarePdf=async(button,statusId,successText,buildOptions,sharePdf=false)=>{
+   if(sharePdf){sharePreparedAdminReport(button,statusId,buildOptions);return;}
    if(button.disabled)return;
-   button.disabled=true;
-   msg(statusId,'Preparing PDF…');
+   button.disabled=true;msg(statusId,'Preparing PDF…');
    try{
      if(typeof window.generateTenantWelfarePdf!=='function')throw new Error('The PDF generator is unavailable. Reload the portal and try again.');
      const pdfOptions=buildOptions();
-     if(sharePdf)pdfOptions.shareIntent=true;
      const generated=await window.generateTenantWelfarePdf(pdfOptions);
-     const cacheDetails={
-      school_code:pdfOptions?.school?.school_code||window.__welfareCurrentSchool?.school_code,
-      document_id:generated.documentId,document_type:pdfOptions?.type,
-      period:pdfOptions?.month||pdfOptions?.year||'',academic_year:pdfOptions?.academicYear||''
-     };
-     // Cache in the background; never insert an extra await between PDF
-     // creation and the native share invocation.
-     if(typeof window.cacheWelfareStatementPdf==='function'){
-      Promise.resolve(window.cacheWelfareStatementPdf(generated.blob,generated.filename,cacheDetails))
-       .catch(cacheError=>console.warn('[School Welfare PDF] Local PDF cache deferred:',cacheError?.message||cacheError));
-     }
-     if(sharePdf){
-       const fileName=String(generated.filename||'Welfare_Report.pdf');
-       const pdfFile=new File([generated.blob],fileName,{type:'application/pdf'});
-       const shareTitle=String(fileName).replace(/\.pdf$/i,'').replace(/[-_]+/g,' ');
-       const shareText='Please find attached this school welfare PDF report.';
-       const schoolCode=cacheDetails.school_code||'';
-       const verificationUrl=generated.documentId&&schoolCode
-        ?'https://abcollins93.github.io/TEACHERS-WELFARE/verify.html?c='+encodeURIComponent(schoolCode)+'&d='+encodeURIComponent(generated.documentId)
-        :'';
-       const canShareFile=typeof navigator.share==='function'&&(!navigator.canShare||navigator.canShare({files:[pdfFile]}));
-       let shared=false;
-       if(canShareFile){
-        try{
-         // File-capable browsers receive the actual generated PDF attachment.
-         await navigator.share({files:[pdfFile],title:shareTitle,text:shareText});
-         shared=true;msg(statusId,'PDF shared successfully.');
-        }catch(shareError){
-         if(shareError?.name==='AbortError'){msg(statusId,'PDF sharing was cancelled.');return;}
-         console.warn('[School Welfare PDF] Native PDF file share failed:',shareError);
-         downloadWorkflowBlob(generated.blob,fileName,statusId,'The PDF could not be shared. Your PDF has been downloaded instead.','Tap here to view downloaded PDF');
-         return;
-        }
-       }else{
-        const linkShareText=verificationUrl?'Verify this official Welfare PDF report:':'Official Welfare PDF report details:';
-        if(typeof navigator.share==='function'){
-         try{
-          await navigator.share({title:shareTitle,text:linkShareText,url:verificationUrl||undefined});
-          shared=true;msg(statusId,verificationUrl?'Verification link shared. No PDF file was attached.':'Report details shared. No PDF file was attached.');
-         }catch(linkShareError){
-          if(linkShareError?.name==='AbortError'){msg(statusId,'PDF sharing was cancelled.');return;}
-          console.warn('[School Welfare PDF] Link share unavailable:',linkShareError);
-         }
-        }
-        if(!shared){
-         const whatsappText=linkShareText+(verificationUrl?' '+verificationUrl:'');
-         const whatsappUrl='https://wa.me/?text='+encodeURIComponent(whatsappText);
-         let whatsappWindow=null;
-         try{whatsappWindow=window.open(whatsappUrl,'_blank');}catch(_){}
-         if(whatsappWindow){msg(statusId,'Verification link opened in WhatsApp. No PDF file was attached.');}
-         else downloadWorkflowBlob(generated.blob,fileName,statusId,'File sharing is not supported here. Your PDF has been downloaded instead.','Tap here to view downloaded PDF');
-        }
-       }
-     }else downloadWorkflowBlob(generated.blob,generated.filename,statusId,successText,'Tap here to view downloaded PDF');
-   }catch(error){
-     console.error('[School Welfare PDF]',error);
-     msg(statusId,error?.message||'The PDF could not be generated. Check your connection and try again.',true);
-   }finally{button.disabled=false;}
+     const cacheDetails={school_code:pdfOptions?.school?.school_code||window.__welfareCurrentSchool?.school_code,document_id:generated.documentId,document_type:pdfOptions?.type,period:pdfOptions?.month||pdfOptions?.year||'',academic_year:pdfOptions?.academicYear||''};
+     if(typeof window.cacheWelfareStatementPdf==='function')Promise.resolve(window.cacheWelfareStatementPdf(generated.blob,generated.filename,cacheDetails)).catch(error=>console.warn('[School Welfare PDF] Local PDF cache deferred:',error?.message||error));
+     downloadWorkflowBlob(generated.blob,generated.filename,statusId,successText,'Tap here to view downloaded PDF');
+   }catch(error){console.error('[School Welfare PDF]',error);msg(statusId,error?.message||'The PDF could not be generated. Check your connection and try again.',true);}
+   finally{button.disabled=false;}
  };
  $('wfMonthlyPdf').addEventListener('click',()=>{
    const selectedMonth=$('wfReportMonth').value,selectedYear=$('wfReportYear').value;
@@ -1813,30 +1821,26 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  // Prepare the currently selected member as soon as the report controls are ready.
  prepareIndividualStatementShare();
 
- $('wfMonthlyShare').addEventListener('click',()=>{
+ const buildMonthlyShareOptions=()=>{
    const selectedMonth=$('wfReportMonth').value,selectedYear=$('wfReportYear').value;
-   if(!selectedMonth||!selectedYear)return msg('wfReportMsg','Choose both a reporting month and year.',true);
-   const month=selectedYear+'-'+selectedMonth;
-   return runWelfarePdf($('wfMonthlyShare'),'wfReportMsg','Monthly summary PDF shared successfully.',()=>({
-     type:'monthly',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},
-     month,contributions:activeCons,payouts:activePays,teachers,
-     academicYear:window.getCurrentAcademicYear(),standardMonthlyDues
-   }),true);
- });
- $('wfCompleteShare').addEventListener('click',()=>runWelfarePdf($('wfCompleteShare'),'wfReportMsg','Complete fund summary PDF shared successfully.',()=>({
-   type:'complete',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},
-   contributions:activeCons,payouts:activePays,teachers,
-   academicYear:window.getCurrentAcademicYear(),standardMonthlyDues
- }),true));
- $('wfAnnualShare').addEventListener('click',()=>{
+   if(!selectedMonth||!selectedYear)throw new Error('Choose both a reporting month and year.');
+   return {type:'monthly',month:selectedYear+'-'+selectedMonth,school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},contributions:activeCons,payouts:activePays,teachers,academicYear:window.getCurrentAcademicYear(),standardMonthlyDues};
+ };
+ $('wfMonthlyShare').addEventListener('click',()=>{try{return runWelfarePdf($('wfMonthlyShare'),'wfReportMsg','Monthly summary PDF shared successfully.',buildMonthlyShareOptions,true);}catch(error){msg('wfReportMsg',error.message,true);}});
+ prepareAdminReportShare($('wfMonthlyShare'),'wfReportMsg',buildMonthlyShareOptions);
+ $('wfReportMonth').addEventListener('change',()=>prepareAdminReportShare($('wfMonthlyShare'),'wfReportMsg',buildMonthlyShareOptions));
+ $('wfReportYear').addEventListener('change',()=>prepareAdminReportShare($('wfMonthlyShare'),'wfReportMsg',buildMonthlyShareOptions));
+ const buildCompleteShareOptions=()=>({type:'complete',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},contributions:activeCons,payouts:activePays,teachers,academicYear:window.getCurrentAcademicYear(),standardMonthlyDues});
+ $('wfCompleteShare').addEventListener('click',()=>runWelfarePdf($('wfCompleteShare'),'wfReportMsg','Complete fund summary PDF shared successfully.',buildCompleteShareOptions,true));
+ prepareAdminReportShare($('wfCompleteShare'),'wfReportMsg',buildCompleteShareOptions);
+ const buildAnnualShareOptions=()=>{
    const selectedYear=$('wfAnnualYear').value;
-   if(!/^\d{4}$/.test(selectedYear||''))return msg('wfReportMsg','Choose a valid reporting year.',true);
-   return runWelfarePdf($('wfAnnualShare'),'wfReportMsg','Yearly summary PDF shared successfully.',()=>({
-     type:'annual',year:selectedYear,school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},
-     contributions:activeCons,payouts:activePays,teachers,
-     academicYear:window.getCurrentAcademicYear(),standardMonthlyDues
-   }),true);
- });
+   if(!/^\d{4}$/.test(selectedYear||''))throw new Error('Choose a valid reporting year.');
+   return {type:'annual',year:selectedYear,school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},contributions:activeCons,payouts:activePays,teachers,academicYear:window.getCurrentAcademicYear(),standardMonthlyDues};
+ };
+ $('wfAnnualShare').addEventListener('click',()=>{try{return runWelfarePdf($('wfAnnualShare'),'wfReportMsg','Yearly summary PDF shared successfully.',buildAnnualShareOptions,true);}catch(error){msg('wfReportMsg',error.message,true);}});
+ prepareAdminReportShare($('wfAnnualShare'),'wfReportMsg',buildAnnualShareOptions);
+ $('wfAnnualYear').addEventListener('change',()=>prepareAdminReportShare($('wfAnnualShare'),'wfReportMsg',buildAnnualShareOptions));
  $('wfStatementShare').addEventListener('click',()=>{
    const tid=$('wfStatementTeacher').value,teacher=teachers.find(t=>String(t.id)===String(tid));
    if(!teacher)return msg('wfStatementMsg','Choose a teacher first.',true);
