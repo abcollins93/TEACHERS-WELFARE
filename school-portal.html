@@ -2273,6 +2273,17 @@ window.getLoggedInTeacherData=async function(profile,school){
  return {data:data?window.normalizeTeacherProfileRecord(data,profile):window.normalizeTeacherProfileRecord(profile),error:null};
 };
 async function renderTeacherDashboard(profile,school){
+ if(window.WelfareDemo&&window.__welfareDemoTeacherWorkspaceReady){
+  window.__welfareCurrentRole='teacher';window.__welfareCurrentSchool=school;
+  $('login').classList.add('hidden');$('dashboard').classList.remove('hidden');
+  if($('teacherDashboardProfile'))$('teacherDashboardProfile').hidden=false;
+  if($('teacherDashboardLedgers'))$('teacherDashboardLedgers').hidden=false;
+  if($('teacherContributionProgress'))$('teacherContributionProgress').hidden=false;
+  document.getElementById('teacherWorkspace')?.classList.remove('hidden');
+  $('schoolTeachers')?.classList.add('hidden');
+  $('workflows')?.classList.add('hidden');
+  return;
+ }
  window.__welfareCurrentRole='teacher';
  window.__welfareCurrentSchool=school;
  const {data:{user}}=await client.auth.getUser();
@@ -3051,6 +3062,7 @@ async function renderTeacherDashboard(profile,school){
  showLoginWelcome(teacherName,'Teacher',school.name);
  window.finishTenantSkeletons?.();
  resetInactivityTimer();
+ if(window.WelfareDemo)window.__welfareDemoTeacherWorkspaceReady=true;
 }
 
 const HEADER_AVATAR_MAX_BYTES = 1024 * 1024;
@@ -3221,13 +3233,58 @@ function updateDemoBanner(){
    const setup=event.target.closest('[data-demo-setup]');
    if(setup){event.preventDefault();if(typeof window.WelfareDemo?.openSchoolSetupModal==='function')window.WelfareDemo.openSchoolSetupModal();return;}
    const button=event.target.closest('[data-demo-role]');
-   if(button){demoRole=button.dataset.demoRole;window.__welfareDemoRole=demoRole;showDashboard();}
-  });
+   if(button){
+    const nextRole=button.dataset.demoRole;
+    if(nextRole===demoRole)return;
+    demoRole=nextRole;window.__welfareDemoRole=demoRole;
+    showDemoDashboard();
+   }
+  },{passive:false});
  }
  banner.querySelectorAll('[data-demo-role]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.demoRole===demoRole)));
 }
-async function showDemoDashboard(){
+let demoWorkflowMountPromise=null;
+function scheduleDemoAdminWorkflows(school){
+ if(demoWorkflowMountPromise)return demoWorkflowMountPromise;
+ const mount=async()=>{
+  if(demoRole!=='admin')return false;
+  const ready=await waitForSchoolWorkflows(4000);
+  if(!ready||typeof window.initSchoolWorkflows!=='function')throw new Error('Admin tools are not ready yet.');
+  if(demoRole!=='admin')return false;
+  return window.initSchoolWorkflows(client,school,showDashboard);
+ };
+ demoWorkflowMountPromise=new Promise(resolve=>{
+  const run=()=>mount().then(resolve).catch(error=>{
+   console.warn('[DEMO] Admin tools are still available for retry:',error?.message||error);
+   demoWorkflowMountPromise=null;resolve(false);
+  });
+  if('requestIdleCallback' in window)window.requestIdleCallback(run,{timeout:900});
+  else window.setTimeout(run,60);
+ }).then(result=>{
+  if(demoRole==='teacher'){
+   window.__welfareCurrentRole='teacher';
+   $('workflows')?.classList.add('hidden');
+   document.getElementById('teacherWorkspace')?.classList.remove('hidden');
+  }
+  return result;
+ });
+ return demoWorkflowMountPromise;
+}
+function setDemoMetricLabel(id,label){
+ const node=$(id),labelNode=node?.closest('.metric')?.querySelector('.metric-label');
+ if(labelNode)labelNode.textContent=label;
+}
+function setDemoMetricNote(id,note){
+ const node=$(id),content=node?.closest('.metric')?.querySelector('.metric-content');
+ if(!content)return;
+ let noteNode=content.querySelector('.demo-metric-note');
+ if(!noteNode){noteNode=document.createElement('span');noteNode.className='metric-note demo-metric-note';content.appendChild(noteNode);}
+ noteNode.textContent=note;
+}
+function showDemoDashboard(){
  const school=window.WelfareDemo.school;
+ const generation=(window.__welfareDemoViewGeneration||0)+1;
+ window.__welfareDemoViewGeneration=generation;
  window.__welfareDemoRole=demoRole;
  updateDemoBanner();
  $('login').classList.add('hidden');$('dashboard').classList.remove('hidden');
@@ -3237,41 +3294,65 @@ async function showDemoDashboard(){
  $('schoolDescription').textContent='Explore the sample welfare records and portal features for '+school.name+'.';
  $('schoolMeta').textContent='DEMO · Basic · Kumasi Metro · Ashanti Region';
  setTenantFooter(school);
-
  if(demoRole==='teacher'){
+  window.__welfareCurrentRole='teacher';
+  $('schoolTeachers')?.classList.add('hidden');
+  $('workflows')?.classList.add('hidden');
+  if($('teacherContributionProgress'))$('teacherContributionProgress').hidden=false;
+  if(window.__welfareDemoTeacherWorkspaceReady){
+   if($('teacherDashboardProfile'))$('teacherDashboardProfile').hidden=false;
+   if($('teacherDashboardLedgers'))$('teacherDashboardLedgers').hidden=false;
+   document.getElementById('teacherWorkspace')?.classList.remove('hidden');
+   return;
+  }
   const teacher=window.WelfareDemo.teachers[0];
   window.WelfareDemo.setTeacher(0);
   const profile={...teacher,teacher_id:teacher.id,school_id:school.id};
-  await renderTeacherDashboard(profile,school);
-  updateDemoBanner();
-  document.getElementById('workflows')?.classList.add('hidden');
+  const render=()=>{
+   if(generation!==window.__welfareDemoViewGeneration||demoRole!=='teacher')return;
+   Promise.resolve(renderTeacherDashboard(profile,school)).then(()=>{
+    if(generation===window.__welfareDemoViewGeneration&&demoRole==='teacher')updateDemoBanner();
+   }).catch(error=>console.warn('[DEMO] Teacher view rendered with a recoverable issue:',error?.message||error));
+  };
+  if('requestIdleCallback' in window)window.requestIdleCallback(render,{timeout:700});
+  else window.setTimeout(render,80);
   return;
  }
  window.__welfareCurrentRole='admin';
  $('teacherContributionGap')?.remove();$('teacherStandardMonthlyDues')?.remove();
  if(window.__teacherDashboardLedgerTimer){clearInterval(window.__teacherDashboardLedgerTimer);window.__teacherDashboardLedgerTimer=null;}
- $('teacherDashboardProfile')?.setAttribute('hidden','');
- $('teacherDashboardLedgers')?.setAttribute('hidden','');
- document.getElementById('teacherWorkspace')?.remove();
+ if($('teacherDashboardProfile'))$('teacherDashboardProfile').hidden=true;
+ if($('teacherDashboardLedgers'))$('teacherDashboardLedgers').hidden=true;
+ if($('teacherContributionProgress'))$('teacherContributionProgress').hidden=true;
+ document.getElementById('teacherWorkspace')?.classList.add('hidden');
  $('schoolTeachers')?.classList.remove('hidden');
+ $('workflows')?.classList.remove('hidden');
  document.querySelectorAll('.sidebar .navbtn').forEach(btn=>{btn.classList.remove('role-restricted');btn.removeAttribute('aria-disabled');btn.removeAttribute('title');btn.style.removeProperty('opacity');btn.style.removeProperty('cursor');btn.querySelector('.role-lock-icon')?.remove();});
  const greeting=$('dashboardGreeting');if(greeting)greeting.textContent='HI, ADMIN!';
  const accountTitle=document.querySelector('.sidebar-account-copy strong');if(accountTitle)accountTitle.textContent='Demo Administrator';
  const profileViewerNav=document.querySelector('.sidebar .navbtn[data-target="teacherProfileViewer"]');if(profileViewerNav)profileViewerNav.style.removeProperty('display');
- $('teacherCount').textContent=String(window.WelfareDemo.teachers.length);
  const activeCon=window.WelfareDemo.activeCon(),activePay=window.WelfareDemo.activePay();
  const totalCon=activeCon.reduce((sum,row)=>sum+Number(row.amount||0),0),totalPay=activePay.reduce((sum,row)=>sum+Number(row.amount||0),0);
- const currentMonth=new Date().toISOString().slice(0,7);
- $('contributionTotal').textContent='GHS '+money(totalCon);$('payoutTotal').textContent='GHS '+money(totalPay);$('netTotal').textContent='GHS '+money(totalCon-totalPay);
- $('monthlyContributionTotal').textContent='GHS '+money(activeCon.filter(row=>String(row.date||'').slice(0,7)===currentMonth).reduce((sum,row)=>sum+Number(row.amount||0),0));
+ const latestMonth=window.WelfareDemo.months[window.WelfareDemo.months.length-1]||'2026-03';
+ const latestMonthAmount=activeCon.filter(row=>String(row.date||'').slice(0,7)===latestMonth).reduce((sum,row)=>sum+Number(row.amount||0),0);
+ const latestMonthLabel=new Date(latestMonth+'-01T00:00:00').toLocaleDateString('en-GH',{month:'short',year:'numeric'});
+ $('teacherCount').textContent=String(window.WelfareDemo.teachers.filter(row=>row.is_active!==false).length);
+ $('contributionTotal').textContent='GHS '+money(totalCon);
+ $('payoutTotal').textContent='GHS '+money(totalPay);
+ $('netTotal').textContent='GHS '+money(totalCon-totalPay);
+ $('monthlyContributionTotal').textContent='GHS '+money(latestMonthAmount);
+ $('standardDuesMetric').textContent='GHS '+money(school.monthly_dues);
  $('lastActivity').textContent='15 Mar 2026';
- $('login').classList.add('hidden');$('dashboard').classList.remove('hidden');
+ $('adminContributionRecordsMetric').hidden=false;
+ $('adminContributionRecordsCount').textContent=String(activeCon.length);
+ setDemoMetricLabel('teacherCount','REGISTERED TEACHERS');
+ setDemoMetricLabel('contributionTotal','TOTAL CONTRIBUTIONS');
+ setDemoMetricLabel('payoutTotal','WELFARE PAYOUTS');
+ setDemoMetricLabel('monthlyContributionTotal','LATEST DEMO MONTH · '+latestMonthLabel.toUpperCase());
+ setDemoMetricNote('contributionTotal',activeCon.length+' active non-reversed records');
+ setDemoMetricNote('payoutTotal',activePay.length+' active payouts');
  const overview=$('schoolOverview');overview?.classList.remove('hidden');
- const workflowNode=$('workflows');if(workflowNode)workflowNode.classList.remove('hidden');
- const ready=await waitForSchoolWorkflows();
- if(ready&&typeof window.initSchoolWorkflows==='function')await window.initSchoolWorkflows(client,school,showDashboard);
- window.finishTenantSkeletons?.();
- updateDemoBanner();
+ scheduleDemoAdminWorkflows(school);
 }
 
 async function showDashboardInternal(){
