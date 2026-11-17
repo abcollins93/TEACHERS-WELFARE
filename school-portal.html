@@ -49,7 +49,7 @@
    '<b>'+label+'</b><span class="'+kind+'-sign-school">'+(financial?'':escapeHtml(schoolName||''))+'</span></div>';
  };
 })();
-</script><script src="./demo-sandbox.js?v=demo-sandbox-20261117"></script><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"><script>
+</script><script src="./demo-sandbox.js"></script><script>
 /* Load Supabase synchronously only for live school tenants. DEMO must never wait
    for the Supabase CDN or create a network/auth dependency before rendering. */
 (function(){
@@ -58,7 +58,7 @@
  if(code==='DEMO')return;
  document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\\/script>');
 })();
-</script>
+</script><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 document.addEventListener('click',event=>{
  const toggle=event.target.closest('.password-toggle');
  if(!toggle)return;
@@ -5894,8 +5894,8 @@ body.sidebar-open{overflow:hidden}
   const readSignatureFile=file=>new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(new Error('The selected signature image could not be read.'));reader.readAsDataURL(file);});
   const upload=(inputId,key,previewId)=>{const input=document.getElementById(inputId);input && input.addEventListener('change',async()=>{const file=(input.files && input.files[0]);if(!file)return;if(!/^image\/(png|jpeg|webp)$/i.test(file.type)){showMessage('Choose a PNG, JPG or WebP signature image.',true);input.value='';return;}const previous=pending[key];input.disabled=true;showMessage('Scanning, cropping and resizing signature…',false);try{const original=await readSignatureFile(file);const processed=await cleanSignatureImage(original);if(!/^data:image\/png;base64,/i.test(processed)||processed===original)throw new Error('The signature could not be scanned. Try a clearer PNG, JPG or WebP image.');const finalBytes=signatureDataUrlBytes(processed);if(!finalBytes||finalBytes>SIGNATURE_MAX_BYTES)throw new Error('The scanned signature is still larger than 350 KB. Choose a clearer or less detailed image.');pending[key]=processed;setPreview(previewId,processed);showMessage('Signature scanned and ready ('+Math.ceil(finalBytes/1024)+' KB). Select Save PDF signatories to keep it.',false);}catch(error){pending[key]=previous;input.value='';showMessage((error && error.message)||'The signature image could not be processed.',true);}finally{input.disabled=false;}});};
   upload('pdfFinancialSecretarySignature','financial_secretary_signature','pdfFinancialSecretaryPreview');upload('pdfHeadteacherSignature','headteacher_signature','pdfHeadteacherPreview');
-  document.getElementById('clearPdfFinancialSecretarySignature')?.addEventListener('click',()=>{pending.financial_secretary_signature='';document.getElementById('pdfFinancialSecretarySignature').value='';setPreview('pdfFinancialSecretaryPreview','');});
-  document.getElementById('clearPdfHeadteacherSignature')?.addEventListener('click',()=>{pending.headteacher_signature='';document.getElementById('pdfHeadteacherSignature').value='';setPreview('pdfHeadteacherPreview','');});
+  (document.getElementById('clearPdfFinancialSecretarySignature') && document.getElementById('clearPdfFinancialSecretarySignature').addEventListener('click',()=>{pending.financial_secretary_signature='';document.getElementById('pdfFinancialSecretarySignature').value='';setPreview('pdfFinancialSecretaryPreview','');}));
+  (document.getElementById('clearPdfHeadteacherSignature') && document.getElementById('clearPdfHeadteacherSignature').addEventListener('click',()=>{pending.headteacher_signature='';document.getElementById('pdfHeadteacherSignature').value='';setPreview('pdfHeadteacherPreview','');}));
   const form=document.getElementById('schoolPdfSignatoryForm');
   form && form.addEventListener('submit',async event=>{event.preventDefault();const button=form.querySelector('button[type="submit"]');button.disabled=true;showMessage('Saving school PDF signatories…',false);const next={financial_secretary_name:document.getElementById('pdfFinancialSecretaryName').value.trim(),financial_secretary_signature:pending.financial_secretary_signature,headteacher_name:document.getElementById('pdfHeadteacherName').value.trim(),headteacher_signature:pending.headteacher_signature};const rows=[{school_id:school.id,key:KEYS[0],value:next.financial_secretary_name},{school_id:school.id,key:KEYS[1],value:next.financial_secretary_signature},{school_id:school.id,key:KEYS[2],value:next.headteacher_name},{school_id:school.id,key:KEYS[3],value:next.headteacher_signature}];try{const {error}=await client.from('system_settings').upsert(rows,{onConflict:'school_id,key'});if(error)throw error;window.__welfarePdfSignatories=next;window.__welfarePdfSignatoriesReadyKey=String(school.id)+':admin';window.__welfarePdfSignatoriesReady=Promise.resolve(next);showMessage('PDF signatories saved successfully for this school.',false);}catch(error){showMessage('PDF signatories were not saved. '+(error.message||'Check school settings permissions.'),true);}finally{button.disabled=false;}});
  }
