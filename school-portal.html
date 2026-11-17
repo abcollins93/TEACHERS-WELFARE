@@ -5855,7 +5855,7 @@ body.sidebar-open{overflow:hidden}
  }
  window.ensureWelfarePdfSignatoriesReady=async function(){
   const context=window.__welfareAccountSettingsContext||{};
-  if(!context.client||!context.(school && school.id))return window.__welfarePdfSignatories||blank();
+  if(!context.client||!(context.school && context.school.id))return window.__welfarePdfSignatories||blank();
   try{return await loadPdfSignatories(context.client,context.school,context.role);}
   catch(error){console.warn('[PDF signatories] Saved signatories could not be refreshed before export:',error);return window.__welfarePdfSignatories||blank();}
  };
