@@ -711,6 +711,11 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  window.__welfareCurrentRole='admin';
  window.__welfareCurrentSchool=school;
  try{
+ // Yield the main thread before mounting large admin tables, audit panels and matrix UI.
+ await new Promise(resolve=>{
+  if('requestIdleCallback' in window)window.requestIdleCallback(()=>resolve(),{timeout:900});
+  else window.setTimeout(resolve,80);
+ });
  // Rebuild workflow markup on refresh so handlers always use the latest school-scoped data.
  const existingWorkflows=$('workflows');const retainedRoster=$('schoolTeachers');const overview=$('schoolOverview');if(existingWorkflows&&retainedRoster&&existingWorkflows.contains(retainedRoster)&&overview?.parentElement)overview.parentElement.insertBefore(retainedRoster,overview.nextElementSibling);retainedRoster?.querySelector('#wfTeacherRegisterPanel')?.remove();if(existingWorkflows)existingWorkflows.remove();
  addUI();
