@@ -67,7 +67,7 @@
       }
       try {
         var gatewayController = typeof AbortController === 'function' ? new AbortController() : null;
-        var gatewayTimer = window.setTimeout(function(){ if(gatewayController)gatewayController.abort(); }, 8000);
+        var gatewayTimer, gatewayDeadline;
         var response;
         try {
           response = await Promise.race([
@@ -76,10 +76,16 @@
               cache: 'no-store',
               signal: gatewayController ? gatewayController.signal : undefined
             }),
-            new Promise(function(_, reject){ window.setTimeout(function(){ reject(new Error('School gateway verification timed out.')); }, 8200); })
+            new Promise(function(_, reject){
+              gatewayDeadline = window.setTimeout(function(){
+                if(gatewayController)gatewayController.abort();
+                reject(new Error('School gateway verification timed out.'));
+              }, 8000);
+            })
           ]);
         } finally {
           window.clearTimeout(gatewayTimer);
+          window.clearTimeout(gatewayDeadline);
         }
         if (!response.ok) throw new Error('School access status could not be verified.');
         const records = await response.json();
