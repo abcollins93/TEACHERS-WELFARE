@@ -36,6 +36,9 @@
       var params = new URLSearchParams(window.location.search);
       var hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
       function stored(key){try{return sessionStorage.getItem(key)||localStorage.getItem(key)||'';}catch(_){return '';}}
+      var message = document.getElementById('message');
+      var link = document.getElementById('continue');
+      var heading = document.querySelector('main h1');
       var code = (params.get('c') || params.get('school_code') || params.get('tenant') || params.get('school') ||
         hashParams.get('c') || hashParams.get('school_code') || hashParams.get('tenant') || hashParams.get('school') ||
         stored('invited_school_code') || stored('active_tenant_code') || '').trim().toUpperCase();
@@ -52,9 +55,6 @@
         try { sessionStorage.setItem('invited_school_code', code); sessionStorage.setItem('active_tenant_code', code); } catch (_) {}
       }
       (async function(){
-      var message = document.getElementById('message');
-      var link = document.getElementById('continue');
-      var heading = document.querySelector('main h1');
       function block(title, detail) {
         if (heading) heading.textContent = title;
         message.textContent = detail;
