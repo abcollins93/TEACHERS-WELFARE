@@ -2051,6 +2051,13 @@ if(requestedCode)persistActiveTenant(requestedCode);
 // Normalize the legacy Ntonso code to the code actually registered in Supabase.
 let code=requestedCode==='NTONSO-A-0'?'NTONSO-A-01':requestedCode;
 const $=id=>document.getElementById(id);
+function withPortalTimeout(value,ms,label){
+ let timer;
+ return Promise.race([
+  Promise.resolve(value),
+  new Promise((_,reject)=>{timer=window.setTimeout(()=>reject(new Error(label||'This request took too long. Please try again.')),ms);})
+ ]).finally(()=>{if(timer)window.clearTimeout(timer);});
+}
 const pageLoader=$('page-loader');
 let pageLoaderTimer;
 function showPageLoader(message='Loading your portal'){
@@ -2153,7 +2160,7 @@ async function loadGatewayIdentity(){
  // A missing URL code may still be resolved from the authenticated administrator's
  // verified school assignment after sign-in; do not prematurely block that flow.
  if(!code)return;
- const {data:directory,error:directoryError}=await client.from('platform_schools').select('name,status').eq('school_code',code).maybeSingle();
+ const {data:directory,error:directoryError}=await withPortalTimeout(client.from('platform_schools').select('name,status').eq('school_code',code).maybeSingle(),8000,'School gateway verification timed out. Please reload the school link and try again.');
  if(directoryError||!directory){
   blockTenantAccess('School gateway unavailable','This school’s access status could not be verified. For security, sign-in is blocked. Please contact the platform administrator.');
   return;
@@ -2166,8 +2173,9 @@ async function loadGatewayIdentity(){
  $('brand').textContent=name;$('loginSchoolName').textContent=name;$('documentTitle').textContent=name+' | Teachers Welfare Fund';
  if(typeof window.updateWelfarePwaTenant==='function')window.updateWelfarePwaTenant(name,code);
 }
-tenantIdentityReady=isDemoMode?Promise.resolve():loadGatewayIdentity().catch(()=>{
- blockTenantAccess('School gateway unavailable','We could not verify this school’s access status. For security, sign-in is blocked.');
+tenantIdentityReady=isDemoMode?Promise.resolve():loadGatewayIdentity().catch(error=>{
+ console.warn('[School Welfare] Tenant identity check failed safely:',error?.message||error);
+ blockTenantAccess('School gateway unavailable','We could not verify this school’s access status in time. Reload the school link or contact the platform administrator.');
 });
 if(code&&!/^[A-Z0-9-]{3,32}$/.test(code)){ $('loginError').textContent='This gateway link is missing a valid school code. Please use the link provided by your school platform administrator.';$('loginBtn').disabled=true; }
 function displayWelfareReason(reason){const value=String(reason??'').trim();return value?value.replace(/^Bereavement Assistance$/i,'Condolence Support'):'—';}
@@ -3266,7 +3274,7 @@ async function showDemoDashboard(){
  updateDemoBanner();
 }
 
-async function showDashboard(){
+async function showDashboardInternal(){
  if(isDemoMode){await showDemoDashboard();return;}
  await tenantIdentityReady;
  if(gatewayAccessBlocked){
@@ -3485,6 +3493,17 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
  };
  showLoginWelcome('Admin','School Administrator',school.name);
 }
+async function showDashboard(){
+ try{
+  return await withPortalTimeout(showDashboardInternal(),20000,'Your school dashboard is taking longer than expected. The loading screen has been cleared; please retry or contact your administrator.');
+ }catch(error){
+  console.error('[School Welfare] Dashboard startup recovered safely:',error?.message||error);
+  if($('loginError'))$('loginError').textContent=error?.message||'The school dashboard could not finish loading. Please try again.';
+  $('login')?.classList.remove('hidden');$('dashboard')?.classList.add('hidden');
+  window.finishTenantSkeletons?.();
+  return false;
+ }finally{hidePageLoader();}
+}
 $('teacherLoginForm').addEventListener('submit',async e=>{
  e.preventDefault();
  showPageLoader('Verifying teacher account');
@@ -3672,10 +3691,11 @@ if(isDemoMode){
  });
 }else{
  try{
-  client.auth.getSession().then(({data})=>{if(data.session)showDashboard();}).catch(error=>{
-   console.error('[School Welfare] Session restoration failed:',error);
-   hidePageLoader();
-  });
+  withPortalTimeout(client.auth.getSession(),8000,'Session restoration timed out.').then(({data})=>{
+   if(data.session)return showDashboard();
+  }).catch(error=>{
+   console.error('[School Welfare] Session restoration failed safely:',error?.message||error);
+  }).finally(()=>hidePageLoader());
  }catch(error){console.error('[School Welfare] Startup failed:',error);hidePageLoader();}
 }
 })();
