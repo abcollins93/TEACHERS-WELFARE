@@ -1345,8 +1345,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     try{
      if(tr.error||cr.error||rr.error)throw new Error('The school roster, contribution ledger, and reversal status must all be available before this official report can be issued.');
      if(typeof window.html2pdf!=='function')throw new Error('The PDF library is unavailable. Check your connection and try again.');
-     if(typeof window.registerTenantStatementVerification!=='function')throw new Error('The official statement verification service is unavailable. The PDF was not issued.');
-     if(typeof window.QRCode!=='function')throw new Error('The QR verification library is unavailable. The PDF was not issued.');
+     // Verification is best-effort for this report: a slow or unavailable
+     // registry must never prevent the school from receiving its PDF.
      const selectedYear=String($('wfDuesMatrixYear')?.value||'');
      if(!/^\d{4}$/.test(selectedYear))throw new Error('Choose a valid reporting year.');
      const searchTerm=String($('wfDuesMatrixSearch')?.value||'').trim().toLowerCase();
@@ -1373,6 +1373,16 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      if(!ctx.id||!schoolCode)throw new Error('The active school identity could not be verified. The PDF was not issued.');
      const documentId=crypto.randomUUID();
      const issued=new Date();
+     let verificationRegistered=false;
+     if(typeof window.registerTenantStatementVerification==='function'){
+      try{
+       await Promise.race([
+        window.registerTenantStatementVerification({school_code:schoolCode,document_id:documentId,document_type:'dues-matrix',period:'Calendar year '+selectedYear,academic_year:window.getCurrentAcademicYear()}).then(result=>{verificationRegistered=!!result?.success;return result;}),
+        new Promise((_,reject)=>setTimeout(()=>reject(new Error('Verification registration timed out.')),5000))
+       ]);
+      }catch(verificationError){console.warn('[School Welfare] Dues matrix verification registration deferred; PDF will still be downloaded:',verificationError?.message||verificationError);}
+     }
+     const includeVerificationQr=verificationRegistered&&typeof window.QRCode==='function';
      const escapePdf=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
      const logo=typeof window.getWelfareTenantLogoDataUrl==='function'?window.getWelfareTenantLogoDataUrl(ctx):'';
      const logoMarkup=logo?'<img class="wf-dm-crest" src="'+logo+'" alt="'+escapePdf(schoolName)+' school crest">':'<div class="wf-dm-crest-placeholder" aria-hidden="true">✦</div>';
@@ -1416,24 +1426,30 @@ window.initSchoolWorkflows=async function(client,school,refresh){
       '<header class="wf-dm-header">'+logoMarkup+'<div class="wf-dm-heading"><h2>GHANA EDUCATION SERVICE</h2><h1>'+escapePdf(schoolName)+'</h1><p>MONTH-BY-MONTH DUES MATRIX</p></div><div></div></header>'+
       '<div class="wf-dm-meta"><span><b>School code:</b> '+escapePdf(schoolCode)+'</span><span><b>Calendar year:</b> '+selectedYear+'</span><span><b>Members:</b> '+matrixRows.length+'</span><span><b>Date issued:</b> '+issued.toLocaleDateString('en-GB')+'</span></div>'+
       '<table class="wf-dm-table"><colgroup><col style="width:47mm">'+monthNames.map(()=>'<col>').join('')+'<col style="width:24mm"></colgroup><thead><tr><th scope="col">Teacher / Staff ID</th>'+headCells+'<th scope="col">Row Total</th></tr></thead><tbody>'+bodyRows+totalsRow+'</tbody></table>'+
-      '<div class="wf-dm-bottom"><div class="wf-dm-summary">School contribution total for '+selectedYear+': GHS '+money(grandTotal)+'<br>Active members included: '+matrixRows.length+(searchTerm?'<br>Search filter: '+escapePdf($('wfDuesMatrixSearch')?.value||''):'')+'</div><div class="wf-dm-qr"><div id="'+qrId+'"></div>Scan to verify this official report</div></div>'+
+      '<div class="wf-dm-bottom"><div class="wf-dm-summary">School contribution total for '+selectedYear+': GHS '+money(grandTotal)+'<br>Active members included: '+matrixRows.length+(searchTerm?'<br>Search filter: '+escapePdf($('wfDuesMatrixSearch')?.value||''):'')+'</div>'+(includeVerificationQr?'<div class="wf-dm-qr"><div id="'+qrId+'"></div>Scan to verify this official report</div>':'')+'</div>'+
       '<div class="sws-disclaimer">*** The School welfare is not liable for any financial loss resulting from disclosing your member/account details including password to Third Parties ***</div>';
      if(typeof window.applyWelfarePdfTenantWatermark==='function')window.applyWelfarePdfTenantWatermark(report,schoolName,ctx);
      document.body.appendChild(report);
      const qrNode=report.querySelector('#'+qrId);
-     new window.QRCode(qrNode,{text:'https://abcollins93.github.io/TEACHERS-WELFARE/verify.html?c='+encodeURIComponent(schoolCode)+'&d='+encodeURIComponent(documentId),width:300,height:300,colorDark:'#030a16',colorLight:'#ffffff',correctLevel:window.QRCode.CorrectLevel.M});
-     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
-     if(!qrNode.querySelector('canvas,img'))throw new Error('The statement verification QR code could not be generated. The PDF was not issued.');
+     if(includeVerificationQr){
+      try{
+       const qrNode=report.querySelector('#'+qrId);
+       new window.QRCode(qrNode,{text:'https://abcollins93.github.io/TEACHERS-WELFARE/verify.html?c='+encodeURIComponent(schoolCode)+'&d='+encodeURIComponent(documentId),width:300,height:300,colorDark:'#030a16',colorLight:'#ffffff',correctLevel:window.QRCode.CorrectLevel.M});
+       await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+       if(!qrNode.querySelector('canvas,img'))throw new Error('QR image was not created.');
+      }catch(qrError){
+       console.warn('[School Welfare] Dues matrix QR could not be rendered; continuing without QR:',qrError?.message||qrError);
+       report.querySelector('.wf-dm-qr')?.remove();
+      }
+     }
      const filename=(schoolCode.replace(/[^a-z0-9_-]/gi,'_')||'school')+'-dues-matrix-'+selectedYear+'.pdf';
      const blob=await window.html2pdf().set({margin:0,filename,image:{type:'png'},html2canvas:{scale:3,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0,windowWidth:report.scrollWidth},jsPDF:{unit:'mm',format:'a4',orientation:'landscape',compress:true},pagebreak:{mode:['css'],avoid:['tr','.wf-dm-bottom']}}).from(report).outputPdf('blob');
-     await window.registerTenantStatementVerification({
-      school_code:schoolCode,document_id:documentId,document_type:'dues-matrix',
-      period:'Calendar year '+selectedYear,academic_year:window.getCurrentAcademicYear()
-     });
-     if(typeof window.cacheWelfareStatementPdf==='function')await window.cacheWelfareStatementPdf(blob,filename,{
-      school_code:schoolCode,document_id:documentId,document_type:'dues-matrix',
-      period:'Calendar year '+selectedYear,academic_year:window.getCurrentAcademicYear()
-     });
+     if(typeof window.cacheWelfareStatementPdf==='function'){
+      try{await window.cacheWelfareStatementPdf(blob,filename,{
+       school_code:schoolCode,document_id:documentId,document_type:'dues-matrix',
+       period:'Calendar year '+selectedYear,academic_year:window.getCurrentAcademicYear()
+      });}catch(cacheError){console.warn('[School Welfare] Dues matrix PDF cache unavailable; continuing with download:',cacheError?.message||cacheError);}
+     }
      window.downloadWelfareBlob(blob,filename,status,'Official dues matrix PDF for '+selectedYear+' is ready.');
     }catch(error){
      console.error('[School Welfare] Dues matrix PDF failed:',error);
