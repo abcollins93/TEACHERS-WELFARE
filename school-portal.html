@@ -5689,7 +5689,7 @@ body.sidebar-open{overflow:hidden}
  'use strict';
  const KEYS=['pdf_financial_secretary_name','pdf_financial_secretary_signature','pdf_headteacher_name','pdf_headteacher_signature'];
  const blank=()=>({financial_secretary_name:'',financial_secretary_signature:'',headteacher_name:'',headteacher_signature:''});
- const esc=value=>String(value == null ? '' : value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+ const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
  async function cleanSignatureImage(dataUrl){
   if(!String(dataUrl||'').trim())return '';
   if(!/^data:image\/(?:png|jpeg|webp);base64,/i.test(String(dataUrl||'')))throw new Error('Choose a valid PNG, JPG or WebP image.');
@@ -5767,11 +5767,11 @@ body.sidebar-open{overflow:hidden}
   // trust the panel's current parent: previous navigation/role transitions
   // may have left it attached to a hidden workflow wrapper.
   const dashboard=document.getElementById('dashboard');
-  const layout=dashboard ? dashboard.querySelector('.dash-layout');
+  const layout=dashboard?.querySelector('.dash-layout');
   const sidebar=document.getElementById('schoolSidebar');
   const overview=document.getElementById('schoolOverview');
   const content=layout?Array.from(layout.children).find(node=>node!==sidebar&&node.contains(overview)):null;
-  return content||(overview ? overview.parentElement : null)||null;
+  return content||overview?.parentElement||null;
  }
  function ensurePanel(role,forceRebuild){
   try{
@@ -5810,7 +5810,7 @@ body.sidebar-open{overflow:hidden}
    };
    if(theme&&!theme.dataset.bound){
     theme.dataset.bound='1';
-    theme.addEventListener('click',()=>{(document.getElementById('themeToggle') && document.getElementById('themeToggle').click());requestAnimationFrame(syncTheme);});
+    theme.addEventListener('click',()=>{document.getElementById('themeToggle')?.click();requestAnimationFrame(syncTheme);});
    }
    const header=document.getElementById('themeToggle');
    if(header&&!header.dataset.settingsSync){header.dataset.settingsSync='1';header.addEventListener('click',()=>requestAnimationFrame(syncTheme));}
@@ -5832,7 +5832,7 @@ body.sidebar-open{overflow:hidden}
   return s;
  }
  async function loadPdfSignatories(client,school,role){
-  const key=String((school && school.id)||'')+':'+(role==='teacher'?'teacher':'admin');
+  const key=String(school?.id||'')+':'+(role==='teacher'?'teacher':'admin');
   if(window.__welfarePdfSignatoriesReadyKey===key&&window.__welfarePdfSignatoriesReady)return window.__welfarePdfSignatoriesReady;
   const promise=(async()=>{
    let values;
@@ -5855,7 +5855,7 @@ body.sidebar-open{overflow:hidden}
  }
  window.ensureWelfarePdfSignatoriesReady=async function(){
   const context=window.__welfareAccountSettingsContext||{};
-  if(!context.client||!context.(school && school.id))return window.__welfarePdfSignatories||blank();
+  if(!context.client||!context.school?.id)return window.__welfarePdfSignatories||blank();
   try{return await loadPdfSignatories(context.client,context.school,context.role);}
   catch(error){console.warn('[PDF signatories] Saved signatories could not be refreshed before export:',error);return window.__welfarePdfSignatories||blank();}
  };
@@ -5863,7 +5863,7 @@ body.sidebar-open{overflow:hidden}
  function showMessage(text,bad){const node=document.getElementById('schoolPdfSignatoryMessage');if(node){node.textContent=text;node.className=bad?'error':'muted';}}
  async function setup(client,school,role){
   window.__welfareAccountSettingsContext={client,school,role};
-  const panel=ensurePanel(role,true);if(!panel||!client||!(school && school.id))return;
+  const panel=ensurePanel(role,true);if(!panel||!client||!school?.id)return;
   const themeToggle=document.getElementById('themeToggle');
   const syncTheme=()=>{const dark=document.body.classList.contains('dark')||document.documentElement.classList.contains('dark');const b=document.getElementById('settingsThemeToggle');if(b)b.innerHTML=dark?'<i class="fa-solid fa-sun"></i> Switch to light theme':'<i class="fa-solid fa-moon"></i> Switch to dark theme';};
   if(themeToggle&&!themeToggle.dataset.settingsSync){themeToggle.dataset.settingsSync='1';themeToggle.addEventListener('click',syncTheme);}syncTheme();
@@ -5876,7 +5876,7 @@ body.sidebar-open{overflow:hidden}
    if(details){
     ['teacherCurrentPassword','teacherVoluntaryNewPassword','teacherVoluntaryConfirmPassword'].forEach(id=>{
      const input=details.querySelector('#'+id);
-     if(!input||(input.parentElement && input.parentElement.classList.contains('password-field')))return;
+     if(!input||input.parentElement?.classList.contains('password-field'))return;
      const wrapper=document.createElement('div');wrapper.className='password-field';
      input.parentNode.insertBefore(wrapper,input);wrapper.appendChild(input);
      const toggle=document.createElement('button');toggle.type='button';toggle.className='password-toggle';toggle.dataset.passwordTarget=id;toggle.setAttribute('aria-label','Show password');toggle.setAttribute('title','Show password');toggle.setAttribute('aria-pressed','false');toggle.innerHTML='<i class="fa-solid fa-eye" aria-hidden="true"></i>';wrapper.appendChild(toggle);
@@ -5892,12 +5892,12 @@ body.sidebar-open{overflow:hidden}
   const SIGNATURE_MAX_BYTES=350*1024;
   const signatureDataUrlBytes=value=>{const base64=String(value||'').split(',')[1]||'';const padding=(base64.match(/=*$/)||[''])[0].length;return Math.max(0,Math.floor(base64.length*3/4)-padding);};
   const readSignatureFile=file=>new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(new Error('The selected signature image could not be read.'));reader.readAsDataURL(file);});
-  const upload=(inputId,key,previewId)=>{const input=document.getElementById(inputId);input && input.addEventListener('change',async()=>{const file=(input.files && input.files[0]);if(!file)return;if(!/^image\/(png|jpeg|webp)$/i.test(file.type)){showMessage('Choose a PNG, JPG or WebP signature image.',true);input.value='';return;}const previous=pending[key];input.disabled=true;showMessage('Scanning, cropping and resizing signature…',false);try{const original=await readSignatureFile(file);const processed=await cleanSignatureImage(original);if(!/^data:image\/png;base64,/i.test(processed)||processed===original)throw new Error('The signature could not be scanned. Try a clearer PNG, JPG or WebP image.');const finalBytes=signatureDataUrlBytes(processed);if(!finalBytes||finalBytes>SIGNATURE_MAX_BYTES)throw new Error('The scanned signature is still larger than 350 KB. Choose a clearer or less detailed image.');pending[key]=processed;setPreview(previewId,processed);showMessage('Signature scanned and ready ('+Math.ceil(finalBytes/1024)+' KB). Select Save PDF signatories to keep it.',false);}catch(error){pending[key]=previous;input.value='';showMessage((error && error.message)||'The signature image could not be processed.',true);}finally{input.disabled=false;}});};
+  const upload=(inputId,key,previewId)=>{const input=document.getElementById(inputId);input?.addEventListener('change',async()=>{const file=input.files?.[0];if(!file)return;if(!/^image\/(png|jpeg|webp)$/i.test(file.type)){showMessage('Choose a PNG, JPG or WebP signature image.',true);input.value='';return;}const previous=pending[key];input.disabled=true;showMessage('Scanning, cropping and resizing signature…',false);try{const original=await readSignatureFile(file);const processed=await cleanSignatureImage(original);if(!/^data:image\/png;base64,/i.test(processed)||processed===original)throw new Error('The signature could not be scanned. Try a clearer PNG, JPG or WebP image.');const finalBytes=signatureDataUrlBytes(processed);if(!finalBytes||finalBytes>SIGNATURE_MAX_BYTES)throw new Error('The scanned signature is still larger than 350 KB. Choose a clearer or less detailed image.');pending[key]=processed;setPreview(previewId,processed);showMessage('Signature scanned and ready ('+Math.ceil(finalBytes/1024)+' KB). Select Save PDF signatories to keep it.',false);}catch(error){pending[key]=previous;input.value='';showMessage(error?.message||'The signature image could not be processed.',true);}finally{input.disabled=false;}});};
   upload('pdfFinancialSecretarySignature','financial_secretary_signature','pdfFinancialSecretaryPreview');upload('pdfHeadteacherSignature','headteacher_signature','pdfHeadteacherPreview');
-  (document.getElementById('clearPdfFinancialSecretarySignature') && document.getElementById('clearPdfFinancialSecretarySignature').addEventListener('click',()=>{pending.financial_secretary_signature='';document.getElementById('pdfFinancialSecretarySignature').value='';setPreview('pdfFinancialSecretaryPreview','');}));
-  (document.getElementById('clearPdfHeadteacherSignature') && document.getElementById('clearPdfHeadteacherSignature').addEventListener('click',()=>{pending.headteacher_signature='';document.getElementById('pdfHeadteacherSignature').value='';setPreview('pdfHeadteacherPreview','');}));
+  document.getElementById('clearPdfFinancialSecretarySignature')?.addEventListener('click',()=>{pending.financial_secretary_signature='';document.getElementById('pdfFinancialSecretarySignature').value='';setPreview('pdfFinancialSecretaryPreview','');});
+  document.getElementById('clearPdfHeadteacherSignature')?.addEventListener('click',()=>{pending.headteacher_signature='';document.getElementById('pdfHeadteacherSignature').value='';setPreview('pdfHeadteacherPreview','');});
   const form=document.getElementById('schoolPdfSignatoryForm');
-  form && form.addEventListener('submit',async event=>{event.preventDefault();const button=form.querySelector('button[type="submit"]');button.disabled=true;showMessage('Saving school PDF signatories…',false);const next={financial_secretary_name:document.getElementById('pdfFinancialSecretaryName').value.trim(),financial_secretary_signature:pending.financial_secretary_signature,headteacher_name:document.getElementById('pdfHeadteacherName').value.trim(),headteacher_signature:pending.headteacher_signature};const rows=[{school_id:school.id,key:KEYS[0],value:next.financial_secretary_name},{school_id:school.id,key:KEYS[1],value:next.financial_secretary_signature},{school_id:school.id,key:KEYS[2],value:next.headteacher_name},{school_id:school.id,key:KEYS[3],value:next.headteacher_signature}];try{const {error}=await client.from('system_settings').upsert(rows,{onConflict:'school_id,key'});if(error)throw error;window.__welfarePdfSignatories=next;window.__welfarePdfSignatoriesReadyKey=String(school.id)+':admin';window.__welfarePdfSignatoriesReady=Promise.resolve(next);showMessage('PDF signatories saved successfully for this school.',false);}catch(error){showMessage('PDF signatories were not saved. '+(error.message||'Check school settings permissions.'),true);}finally{button.disabled=false;}});
+  form?.addEventListener('submit',async event=>{event.preventDefault();const button=form.querySelector('button[type="submit"]');button.disabled=true;showMessage('Saving school PDF signatories…',false);const next={financial_secretary_name:document.getElementById('pdfFinancialSecretaryName').value.trim(),financial_secretary_signature:pending.financial_secretary_signature,headteacher_name:document.getElementById('pdfHeadteacherName').value.trim(),headteacher_signature:pending.headteacher_signature};const rows=[{school_id:school.id,key:KEYS[0],value:next.financial_secretary_name},{school_id:school.id,key:KEYS[1],value:next.financial_secretary_signature},{school_id:school.id,key:KEYS[2],value:next.headteacher_name},{school_id:school.id,key:KEYS[3],value:next.headteacher_signature}];try{const {error}=await client.from('system_settings').upsert(rows,{onConflict:'school_id,key'});if(error)throw error;window.__welfarePdfSignatories=next;window.__welfarePdfSignatoriesReadyKey=String(school.id)+':admin';window.__welfarePdfSignatoriesReady=Promise.resolve(next);showMessage('PDF signatories saved successfully for this school.',false);}catch(error){showMessage('PDF signatories were not saved. '+(error.message||'Check school settings permissions.'),true);}finally{button.disabled=false;}});
  }
  // Mount a real destination immediately, before a user can click Settings.
  // Authenticated initialization replaces this neutral placeholder with the
@@ -5916,7 +5916,7 @@ body.sidebar-open{overflow:hidden}
    // Never replace the actual Settings cards with a temporary loading-only
    // placeholder. That placeholder was capable of becoming the only visible
    // content when account context was still being restored during navigation.
-   if(context.client&&context.(school && school.id)){
+   if(context.client&&context.school?.id){
     Promise.resolve(setup(context.client,context.school,role)).then(ok=>{
      if(ok===false)throw new Error('Settings initialization did not complete.');
     }).catch(error=>{
@@ -5928,7 +5928,7 @@ body.sidebar-open{overflow:hidden}
       current.style.setProperty('visibility','visible','important');
       let notice=current.querySelector('#settingsViewError');
       if(!notice){notice=document.createElement('p');notice.id='settingsViewError';notice.className='error';notice.setAttribute('role','alert');current.appendChild(notice);}
-      notice.textContent='Some saved settings could not be loaded. The available controls remain visible. '+((error && error.message)||'');
+      notice.textContent='Some saved settings could not be loaded. The available controls remain visible. '+(error?.message||'');
      }
     });
    }else{
@@ -5949,7 +5949,7 @@ body.sidebar-open{overflow:hidden}
   catch(error){
    console.error('[Account Settings] Initialization failed:',error);
    const panel=ensurePanel(role,true);
-   if(panel){panel.classList.remove('hidden');panel.style.setProperty('display','block','important');const note=document.createElement('p');note.className='error';note.setAttribute('role','alert');note.textContent='Settings cards are available, but some saved details could not be loaded. '+((error && error.message)||'');panel.appendChild(note);}
+   if(panel){panel.classList.remove('hidden');panel.style.setProperty('display','block','important');const note=document.createElement('p');note.className='error';note.setAttribute('role','alert');note.textContent='Settings cards are available, but some saved details could not be loaded. '+(error?.message||'');panel.appendChild(note);}
    return false;
   }
  };
