@@ -913,7 +913,15 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  // Load the full master teacher record so the administrator viewer and individual
  // teacher profile resolve identical source fields. select('*') also avoids assuming
  // optional profile columns exist in every tenant schema.
- let tr=await teacherQuery('*');
+ // Start the primary roster read alongside the independent school ledgers.
+ // Compatibility fallbacks run only if the full teacher projection is unavailable.
+ let [tr,cr,pr,rr,ar]=await Promise.all([
+   teacherQuery('*'),
+   loadSource('contribution ledger',()=>client.from('contributions').select('id,teacher_id,amount,date,reference').eq('school_id',school.id).order('date',{ascending:false})),
+   loadSource('payout ledger',()=>client.from('payouts').select('id,teacher_id,amount,date,reason,reference,school_id').eq('school_id',school.id).order('date',{ascending:false})),
+   loadSource('transaction reversals',()=>client.from('transaction_reversals').select('transaction_type,transaction_id,reason,created_at').eq('school_id',school.id)),
+   loadSource('teacher login accounts',()=>client.from('teacher_accounts').select('auth_user_id,teacher_id,school_id,must_change_password,active').eq('school_id',school.id).eq('active',true))
+ ]);
  if(tr.error)tr=await teacherQuery('id,name,phone,rank,class_name,is_active,passport,created_at');
  if(tr.error)tr=await teacherQuery('id,name,phone,rank,class_name,is_active,passport');
  if(tr.error)tr=await teacherQuery('id,name,phone,rank,class_name,passport');
@@ -924,12 +932,6 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  }else{
    tr.data=tr.data.map(t=>({...t,is_active:typeof t.is_active==='boolean'?t.is_active:true,passport:t.passport??null}));
  }
- let [cr,pr,rr,ar]=await Promise.all([
-   loadSource('contribution ledger',()=>client.from('contributions').select('id,teacher_id,amount,date,reference').eq('school_id',school.id).order('date',{ascending:false})),
-   loadSource('payout ledger',()=>client.from('payouts').select('id,teacher_id,amount,date,reason,reference,school_id').eq('school_id',school.id).order('date',{ascending:false})),
-   loadSource('transaction reversals',()=>client.from('transaction_reversals').select('transaction_type,transaction_id,reason,created_at').eq('school_id',school.id)),
-   loadSource('teacher login accounts',()=>client.from('teacher_accounts').select('auth_user_id,teacher_id,school_id,must_change_password,active').eq('school_id',school.id).eq('active',true))
- ]);
  const loginAccounts=new Map((ar.data||[]).map(account=>[String(account.teacher_id),account]));
  const teachers=(tr.data||[]).map(t=>{const normalized=typeof window.normalizeTeacherProfileRecord==='function'?window.normalizeTeacherProfileRecord(t):t;const account=loginAccounts.get(String(normalized.id));return {...normalized,auth_user_id:account?.auth_user_id||null,login_activated:!!account?.auth_user_id,must_change_password:account?.must_change_password??null};});let cons=cr.data||[], pays=pr.data||[], reversals=rr.data||[];
  const sourceWarnings=[];
