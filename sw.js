@@ -47,7 +47,7 @@ self.addEventListener('install',event=>{
    await cache.addAll(SHELL_ASSETS.map(path=>new Request(new URL(path,self.registration.scope),{cache:'reload'})));
    // Cache third-party assets on demand in the fetch handler. Do not make
    // service-worker installation wait for external CDN hosts or font servers.
-   await self.skipWaiting();   await self.skipWaiting();
+   await self.skipWaiting();
  })());
 });
 self.addEventListener('activate',event=>{
