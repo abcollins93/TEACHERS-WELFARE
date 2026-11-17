@@ -1543,7 +1543,7 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
 <meta name="apple-mobile-web-app-title" content="Welfare">
 <link rel="icon" type="image/svg+xml" href="./icons/welfare-portal.svg">
 <link rel="apple-touch-icon" href="./icons/welfare-portal.svg">
-<script src="./pwa.js" defer></script>
+<script src="./pwa.js?v=demo-sandbox-20261117" defer></script>
 
 
 
@@ -3629,7 +3629,7 @@ client.auth.onAuthStateChange((event,session)=>{
 if(isDemoMode){showDashboard();}else{client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});}
 })();
 </script>
-<script src="school-portal-workflows.js?v=prepared-admin-share-20261117"></script>
+<script src="school-portal-workflows.js?v=demo-sandbox-20261117"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
