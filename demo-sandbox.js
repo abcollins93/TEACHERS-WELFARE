@@ -83,6 +83,12 @@
  }
  function activeCon(){const rev=new Set(reversals.filter(x=>x.transaction_type==='contribution').map(x=>String(x.transaction_id)));return contributions.filter(x=>!rev.has(String(x.id))&&!x.is_reversed&&String(x.status||'').toLowerCase()!=='reversed');}
  function activePay(){const rev=new Set(reversals.filter(x=>x.transaction_type==='payout').map(x=>String(x.transaction_id)));return payouts.filter(x=>!rev.has(String(x.id)));}
+ const summary=()=>{
+  const activeContributions=activeCon(),activePayouts=activePay();
+  const contributionTotal=activeContributions.reduce((sum,row)=>sum+Number(row.amount||0),0);
+  const payoutTotal=activePayouts.reduce((sum,row)=>sum+Number(row.amount||0),0);
+  return {teacherCount:teachers.filter(row=>row.is_active!==false).length,contributionCount:activeContributions.length,contributionTotal,payoutCount:activePayouts.length,payoutTotal,netFundBalance:contributionTotal-payoutTotal,monthlyDues:Number(school.monthly_dues||0),latestMonth:months[months.length-1]||''};
+ };
  const demoStorage={};
  const client={
   __welfareDemo:true,
@@ -220,5 +226,5 @@
   modal.querySelector('input[name="school"]').focus({preventScroll:true});
  }
 
- window.WelfareDemo={school,teachers,contributions,payouts,announcements,client,months,activeCon,activePay,openSchoolSetupModal,setTeacher(index){activeTeacherIndex=Math.max(0,Math.min(teachers.length-1,Number(index)||0));}};
+ window.WelfareDemo={school,teachers,contributions,payouts,announcements,client,months,activeCon,activePay,summary,openSchoolSetupModal,setTeacher(index){activeTeacherIndex=Math.max(0,Math.min(teachers.length-1,Number(index)||0));}};
 })();
