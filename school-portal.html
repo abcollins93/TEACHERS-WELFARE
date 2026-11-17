@@ -3248,9 +3248,13 @@ const activityDates=latestActivity.flatMap(x=>x.data||[]).map(x=>x.date).filter(
 $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'No records';
 // Finish the visible dashboard shell without waiting for the Admin workspace.
   // Its tenant-scoped panels hydrate independently after first paint.
-  const workflowMount=waitForSchoolWorkflows().then(ready=>{
-    if(!ready)throw new Error('Workflow bundle unavailable after waiting for script initialization.');
-    return window.initSchoolWorkflows(client,school,showDashboard);
+  const workflowMount=new Promise(resolve=>{
+    const schedule=()=>waitForSchoolWorkflows().then(ready=>{
+      if(!ready)throw new Error('Workflow bundle unavailable after waiting for script initialization.');
+      return window.initSchoolWorkflows(client,school,showDashboard);
+    }).then(resolve);
+    if('requestIdleCallback' in window)window.requestIdleCallback(schedule,{timeout:1200});
+    else window.setTimeout(schedule,180);
   }).then(result=>{
     if(result===false)throw new Error('Workflow module reported incomplete initialization.');
   }).catch(workflowError=>{
