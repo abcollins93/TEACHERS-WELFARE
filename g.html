@@ -66,10 +66,21 @@
         return;
       }
       try {
-        const response = await fetch('https://jlwdtlhlztbgpogqdabu.supabase.co/rest/v1/platform_schools?select=status&school_code=eq.' + encodeURIComponent(code), {
-          headers: { apikey: 'sb_publishable_-idvZBti_BY5Xn8xDxhqqw_p_Me6X8O' },
-          cache: 'no-store'
-        });
+        var gatewayController = typeof AbortController === 'function' ? new AbortController() : null;
+        var gatewayTimer = window.setTimeout(function(){ if(gatewayController)gatewayController.abort(); }, 8000);
+        var response;
+        try {
+          response = await Promise.race([
+            fetch('https://jlwdtlhlztbgpogqdabu.supabase.co/rest/v1/platform_schools?select=status&school_code=eq.' + encodeURIComponent(code), {
+              headers: { apikey: 'sb_publishable_-idvZBti_BY5Xn8xDxhqqw_p_Me6X8O' },
+              cache: 'no-store',
+              signal: gatewayController ? gatewayController.signal : undefined
+            }),
+            new Promise(function(_, reject){ window.setTimeout(function(){ reject(new Error('School gateway verification timed out.')); }, 8200); })
+          ]);
+        } finally {
+          window.clearTimeout(gatewayTimer);
+        }
         if (!response.ok) throw new Error('School access status could not be verified.');
         const records = await response.json();
         if (!Array.isArray(records) || records.length !== 1) {
@@ -81,7 +92,8 @@
           return;
         }
         var target = new URL('school-portal.html', window.location.href);
-        target.searchParams.set('school', code);
+        target.searchParams.set('c', code);
+        target.searchParams.delete('school');
         link.href = target.href;
         window.location.replace(target.href);
       } catch (error) {
