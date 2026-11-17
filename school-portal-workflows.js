@@ -1585,6 +1585,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    try{
      if(typeof window.generateTenantWelfarePdf!=='function')throw new Error('The PDF generator is unavailable. Reload the portal and try again.');
      const pdfOptions=buildOptions();
+     if(sharePdf)pdfOptions.shareIntent=true;
      const generated=await window.generateTenantWelfarePdf(pdfOptions);
      const cacheDetails={
       school_code:pdfOptions?.school?.school_code||window.__welfareCurrentSchool?.school_code,
