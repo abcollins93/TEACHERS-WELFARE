@@ -50,13 +50,30 @@
  };
 })();
 </script><script src="./demo-sandbox.js"></script><script>
-/* Load Supabase synchronously only for live school tenants. DEMO must never wait
-   for the Supabase CDN or create a network/auth dependency before rendering. */
+/* Load Supabase asynchronously for live tenants. A CDN stall is bounded and
+   cannot block HTML parsing or leave the portal splash screen running forever. */
 (function(){
  var params=new URLSearchParams(window.location.search);
  var code=(params.get('c')||params.get('school_code')||params.get('tenant')||params.get('school')||'').trim().toUpperCase();
- if(code==='DEMO')return;
- document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>');
+ if(code==='DEMO'){window.__welfareSupabaseReady=Promise.resolve(null);return;}
+ window.__welfareSupabaseReady=new Promise(function(resolve,reject){
+  var script=document.createElement('script'),settled=false;
+  var finish=function(error){
+   if(settled)return;settled=true;window.clearTimeout(deadline);
+   if(error)reject(error);
+   else if(window.supabase)resolve(window.supabase);
+   else reject(new Error('Supabase library did not initialize.'));
+  };
+  var deadline=window.setTimeout(function(){
+   script.remove();
+   finish(new Error('Supabase library loading timed out.'));
+  },8000);
+  script.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+  script.async=true;
+  script.onload=function(){finish();};
+  script.onerror=function(){finish(new Error('Supabase library could not be loaded.'));};
+  document.head.appendChild(script);
+ });
 })();
 </script><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><script>
 document.addEventListener('click',event=>{
@@ -2000,7 +2017,7 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
 </footer>
 
 <script>
-(function(){
+(async function(){
 // Teacher login is intentionally a non-authenticating UI preview until the secure
 // teacher-account mapping and recovery workflow are implemented and approved.
 const teacherPreviewForm=document.getElementById('teacherLoginPreviewForm');
@@ -2030,6 +2047,18 @@ if(!requestedCode){try{requestedCode=(sessionStorage.getItem('invited_school_cod
 const SUPABASE_URL='https://jlwdtlhlztbgpogqdabu.supabase.co';
 const SUPABASE_KEY='sb_publishable_-idvZBti_BY5Xn8xDxhqqw_p_Me6X8O';
 const isDemoMode=requestedCode==='DEMO';
+if(!isDemoMode){
+ try{await window.__welfareSupabaseReady;}
+ catch(error){
+  console.error('[School Welfare] Supabase library startup failed:',error?.message||error);
+  const login=document.getElementById('login'),dashboard=document.getElementById('dashboard'),message=document.getElementById('loginError');
+  if(login)login.classList.remove('hidden');
+  if(dashboard)dashboard.classList.add('hidden');
+  if(message)message.textContent='The secure school portal could not connect to its authentication service. Please reload the school link or try again shortly.';
+  const loader=document.getElementById('page-loader');if(loader){loader.classList.add('is-hidden');loader.setAttribute('aria-hidden','true');}
+  return;
+ }
+}
 let demoRole=(params.get('role')||'teacher').toLowerCase()==='admin'?'admin':'teacher';
 const client=isDemoMode?window.WelfareDemo.client:window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 window.registerTenantStatementVerification=async function(details){
