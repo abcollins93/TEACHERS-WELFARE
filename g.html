@@ -67,8 +67,7 @@
       }
       try {
         var gatewayController = typeof AbortController === 'function' ? new AbortController() : null;
-        var gatewayTimer, gatewayDeadline;
-        var response;
+        var gatewayDeadline, gatewayJsonDeadline, response, records;
         try {
           response = await Promise.race([
             fetch('https://jlwdtlhlztbgpogqdabu.supabase.co/rest/v1/platform_schools?select=status&school_code=eq.' + encodeURIComponent(code), {
@@ -83,12 +82,17 @@
               }, 8000);
             })
           ]);
+          if (!response.ok) throw new Error('School access status could not be verified.');
+          records = await Promise.race([
+            response.json(),
+            new Promise(function(_, reject){
+              gatewayJsonDeadline = window.setTimeout(function(){ reject(new Error('School gateway response timed out.')); }, 8000);
+            })
+          ]);
         } finally {
-          window.clearTimeout(gatewayTimer);
           window.clearTimeout(gatewayDeadline);
+          window.clearTimeout(gatewayJsonDeadline);
         }
-        if (!response.ok) throw new Error('School access status could not be verified.');
-        const records = await response.json();
         if (!Array.isArray(records) || records.length !== 1) {
           block('School gateway unavailable', 'This school code could not be verified. Please contact the platform administrator.');
           return;
