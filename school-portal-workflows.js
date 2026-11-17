@@ -1611,31 +1611,34 @@ window.initSchoolWorkflows=async function(client,school,refresh){
        let shared=false;
        if(canShareFile){
         try{
-         // Invoke immediately once the PDF Blob exists; do not await cache or
-         // other network work before entering the native device share sheet.
+         // File-capable browsers receive the actual generated PDF attachment.
          await navigator.share({files:[pdfFile],title:shareTitle,text:shareText});
          shared=true;msg(statusId,'PDF shared successfully.');
         }catch(shareError){
          if(shareError?.name==='AbortError'){msg(statusId,'PDF sharing was cancelled.');return;}
-         console.warn('[School Welfare PDF] Native file share failed:',shareError);
+         console.warn('[School Welfare PDF] Native PDF file share failed:',shareError);
+         downloadWorkflowBlob(generated.blob,fileName,statusId,'The PDF could not be shared. Your PDF has been downloaded instead.','Tap here to view downloaded PDF');
+         return;
         }
-       }
-       if(!shared&&typeof navigator.share==='function'){
-        try{
-         await navigator.share({title:shareTitle,text:shareText,url:verificationUrl||undefined});
-         shared=true;msg(statusId,verificationUrl?'Verification link shared. The PDF is available to download separately.':'Report details shared.');
-        }catch(linkShareError){
-         if(linkShareError?.name==='AbortError'){msg(statusId,'PDF sharing was cancelled.');return;}
-         console.warn('[School Welfare PDF] Link share unavailable:',linkShareError);
+       }else{
+        const linkShareText=verificationUrl?'Verify this official Welfare PDF report:':'Official Welfare PDF report details:';
+        if(typeof navigator.share==='function'){
+         try{
+          await navigator.share({title:shareTitle,text:linkShareText,url:verificationUrl||undefined});
+          shared=true;msg(statusId,verificationUrl?'Verification link shared. No PDF file was attached.':'Report details shared. No PDF file was attached.');
+         }catch(linkShareError){
+          if(linkShareError?.name==='AbortError'){msg(statusId,'PDF sharing was cancelled.');return;}
+          console.warn('[School Welfare PDF] Link share unavailable:',linkShareError);
+         }
         }
-       }
-       if(!shared){
-        const whatsappText=shareText+(verificationUrl?' '+verificationUrl:'');
-        const whatsappUrl='https://wa.me/?text='+encodeURIComponent(whatsappText);
-        let whatsappWindow=null;
-        try{whatsappWindow=window.open(whatsappUrl,'_blank');}catch(_){}
-        if(whatsappWindow){msg(statusId,'WhatsApp share opened. Attach the downloaded PDF to send the file.');}
-        else downloadWorkflowBlob(generated.blob,fileName,statusId,'Sharing is unavailable here. Your PDF has been downloaded instead.','Tap here to view downloaded PDF');
+        if(!shared){
+         const whatsappText=linkShareText+(verificationUrl?' '+verificationUrl:'');
+         const whatsappUrl='https://wa.me/?text='+encodeURIComponent(whatsappText);
+         let whatsappWindow=null;
+         try{whatsappWindow=window.open(whatsappUrl,'_blank');}catch(_){}
+         if(whatsappWindow){msg(statusId,'Verification link opened in WhatsApp. No PDF file was attached.');}
+         else downloadWorkflowBlob(generated.blob,fileName,statusId,'File sharing is not supported here. Your PDF has been downloaded instead.','Tap here to view downloaded PDF');
+        }
        }
      }else downloadWorkflowBlob(generated.blob,generated.filename,statusId,successText,'Tap here to view downloaded PDF');
    }catch(error){
