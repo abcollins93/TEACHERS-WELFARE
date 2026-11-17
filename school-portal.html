@@ -1989,6 +1989,7 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
     </div>
   </section>
 </footer>
+<script src="./demo-sandbox.js?v=demo-sandbox-20261117"></script>
 <script>
 (function(){
 // Teacher login is intentionally a non-authenticating UI preview until the secure
@@ -2014,9 +2015,15 @@ if(teacherPreviewForm){
 }
 const SUPABASE_URL='https://jlwdtlhlztbgpogqdabu.supabase.co';
 const SUPABASE_KEY='sb_publishable_-idvZBti_BY5Xn8xDxhqqw_p_Me6X8O';
-const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const isDemoMode=requestedCode==='DEMO';
+let demoRole=(params.get('role')||'teacher').toLowerCase()==='admin'?'admin':'teacher';
+const client=isDemoMode?window.WelfareDemo.client:window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 window.registerTenantStatementVerification=async function(details){
  const payload=details&&typeof details==='object'?details:{};
+ if(isDemoMode){
+  const documentId=String(payload.document_id||'DEMO-STATEMENT');
+  return {success:true,school_code:'DEMO',document_id:documentId,verification_url:new URL('verify.html?c=DEMO&d='+encodeURIComponent(documentId),location.href).href};
+ }
  const {data:{session},error:sessionError}=await client.auth.getSession();
  if(sessionError||!session?.access_token)throw new Error('Your administrator session has expired. Sign in again before issuing this PDF.');
  const {data,error}=await client.functions.invoke('issue-statement-verification',{body:payload});
@@ -2030,7 +2037,7 @@ const hashParams=new URLSearchParams(location.hash.replace(/^#/,''));
 let requestedCode=(params.get('c')||params.get('school_code')||params.get('tenant')||params.get('school')||params.get('code')||
  hashParams.get('c')||hashParams.get('school_code')||hashParams.get('tenant')||hashParams.get('school')||'').trim().toUpperCase();
 if(!requestedCode){try{requestedCode=(sessionStorage.getItem('invited_school_code')||localStorage.getItem('invited_school_code')||sessionStorage.getItem('active_tenant_code')||localStorage.getItem('active_tenant_code')||'').trim().toUpperCase();}catch(_){}}
-function persistActiveTenant(codeValue){const value=String(codeValue||'').trim().toUpperCase();if(!/^[A-Z0-9-]{2,32}$/.test(value))return;try{localStorage.setItem('invited_school_code',value);localStorage.setItem('active_tenant_code',value);}catch(_){}try{sessionStorage.setItem('invited_school_code',value);sessionStorage.setItem('active_tenant_code',value);}catch(_){}if(typeof window.updateWelfarePwaTenant==='function')window.updateWelfarePwaTenant('',value);}
+function persistActiveTenant(codeValue){const value=String(codeValue||'').trim().toUpperCase();if(value==='DEMO'||!/^[A-Z0-9-]{2,32}$/.test(value))return;try{localStorage.setItem('invited_school_code',value);localStorage.setItem('active_tenant_code',value);}catch(_){}try{sessionStorage.setItem('invited_school_code',value);sessionStorage.setItem('active_tenant_code',value);}catch(_){}if(typeof window.updateWelfarePwaTenant==='function')window.updateWelfarePwaTenant('',value);}
 if(requestedCode)persistActiveTenant(requestedCode);
 // Normalize the legacy Ntonso code to the code actually registered in Supabase.
 let code=requestedCode==='NTONSO-A-0'?'NTONSO-A-01':requestedCode;
@@ -3151,7 +3158,84 @@ function startAccountSettingsInitialization(client,school,role){
  })();
  return window.__welfareAccountSettingsInitPromise;
 }
+function updateDemoBanner(){
+ let banner=document.getElementById('demoSandboxBanner');
+ if(!banner){
+  const style=document.createElement('style');
+  style.id='demo-sandbox-styles';
+  style.textContent=`
+  #demoSandboxBanner{position:sticky;top:0;z-index:12500;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 14px;margin:0 0 14px;border:1px solid #c7d8f4;border-radius:13px;background:linear-gradient(100deg,#eff6ff,#fff);color:#17345d;box-shadow:0 5px 18px rgba(15,23,42,.07)}
+  #demoSandboxBanner .demo-copy{font-size:13px;font-weight:850;letter-spacing:.01em}
+  #demoSandboxBanner .demo-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  #demoSandboxBanner button,#demoSandboxBanner a{min-height:34px;padding:7px 11px;border:1px solid #b9c9df;border-radius:9px;background:#fff;color:#17345d;font:inherit;font-size:12px;font-weight:800;text-decoration:none;cursor:pointer}
+  #demoSandboxBanner button[aria-pressed="true"]{background:#173b69;border-color:#173b69;color:#fff}
+  #demoSandboxBanner a.demo-setup{background:#e8b94f;border-color:#d6a637;color:#18263a}
+  .dark #demoSandboxBanner{background:#10213b;border-color:#334b6e;color:#edf4ff}
+  .dark #demoSandboxBanner button,.dark #demoSandboxBanner a{background:#172d4c;border-color:#435b7d;color:#edf4ff}
+  .dark #demoSandboxBanner button[aria-pressed="true"]{background:#d6a637;color:#172033}
+  .dark #demoSandboxBanner a.demo-setup{background:#e8b94f;color:#18263a}
+  @media(max-width:650px){#demoSandboxBanner{align-items:flex-start}#demoSandboxBanner .demo-actions{width:100%}#demoSandboxBanner .demo-actions>*{flex:1;text-align:center}}
+  `;
+  document.head.appendChild(style);
+  banner=document.createElement('section');banner.id='demoSandboxBanner';
+  banner.innerHTML='<div class="demo-copy">Live Demo Sandbox · Explore freely</div><div class="demo-actions"><button type="button" data-demo-role="teacher">Teacher View</button><button type="button" data-demo-role="admin">Admin View</button><a class="demo-setup" href="https://github.com/abcollins93/TEACHERS-WELFARE/issues/new?title=School%20Portal%20Setup%20Request" target="_blank" rel="noopener">Set Up Your School</a></div>';
+  const dashboard=document.getElementById('dashboard');
+  if(dashboard)dashboard.insertBefore(banner,dashboard.firstChild);
+  banner.addEventListener('click',event=>{
+   const button=event.target.closest('[data-demo-role]');
+   if(button){demoRole=button.dataset.demoRole;window.__welfareDemoRole=demoRole;showDashboard();}
+  });
+ }
+ banner.querySelectorAll('[data-demo-role]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.demoRole===demoRole)));
+}
+async function showDemoDashboard(){
+ const school=window.WelfareDemo.school;
+ window.__welfareDemoRole=demoRole;
+ updateDemoBanner();
+ $('login').classList.add('hidden');$('dashboard').classList.remove('hidden');
+ $('schoolName').textContent=school.name;$('brand').textContent=school.name;$('sideSchoolName').textContent=school.name;
+ $('sideSchoolCode').textContent='DEMO · Basic · Kumasi Metro · Ashanti Region';
+ $('schoolDescription').textContent='Explore the sample welfare records and portal features for '+school.name+'.';
+ $('schoolMeta').textContent='DEMO · Basic · Kumasi Metro · Ashanti Region';
+ setTenantFooter(school);
+ if(typeof window.updateWelfarePwaTenant==='function')window.updateWelfarePwaTenant(school.name,'DEMO');
+ if(demoRole==='teacher'){
+  const teacher=window.WelfareDemo.teachers[0];
+  window.WelfareDemo.setTeacher(0);
+  const profile={...teacher,teacher_id:teacher.id,school_id:school.id};
+  await renderTeacherDashboard(profile,school);
+  updateDemoBanner();
+  document.getElementById('workflows')?.classList.add('hidden');
+  return;
+ }
+ window.__welfareCurrentRole='admin';
+ if(window.__teacherDashboardLedgerTimer){clearInterval(window.__teacherDashboardLedgerTimer);window.__teacherDashboardLedgerTimer=null;}
+ $('teacherDashboardProfile')?.setAttribute('hidden','');
+ $('teacherDashboardLedgers')?.setAttribute('hidden','');
+ document.getElementById('teacherWorkspace')?.remove();
+ $('schoolTeachers')?.classList.remove('hidden');
+ document.querySelectorAll('.sidebar .navbtn').forEach(btn=>{btn.classList.remove('role-restricted');btn.removeAttribute('aria-disabled');btn.removeAttribute('title');btn.style.removeProperty('opacity');btn.style.removeProperty('cursor');btn.querySelector('.role-lock-icon')?.remove();});
+ const greeting=$('dashboardGreeting');if(greeting)greeting.textContent='HI, ADMIN!';
+ const accountTitle=document.querySelector('.sidebar-account-copy strong');if(accountTitle)accountTitle.textContent='Demo Administrator';
+ const profileViewerNav=document.querySelector('.sidebar .navbtn[data-target="teacherProfileViewer"]');if(profileViewerNav)profileViewerNav.style.removeProperty('display');
+ $('teacherCount').textContent=String(window.WelfareDemo.teachers.length);
+ const activeCon=window.WelfareDemo.activeCon(),activePay=window.WelfareDemo.activePay();
+ const totalCon=activeCon.reduce((sum,row)=>sum+Number(row.amount||0),0),totalPay=activePay.reduce((sum,row)=>sum+Number(row.amount||0),0);
+ const currentMonth=new Date().toISOString().slice(0,7);
+ $('contributionTotal').textContent='GHS '+money(totalCon);$('payoutTotal').textContent='GHS '+money(totalPay);$('netTotal').textContent='GHS '+money(totalCon-totalPay);
+ $('monthlyContributionTotal').textContent='GHS '+money(activeCon.filter(row=>String(row.date||'').slice(0,7)===currentMonth).reduce((sum,row)=>sum+Number(row.amount||0),0));
+ $('lastActivity').textContent='15 Mar 2026';
+ $('login').classList.add('hidden');$('dashboard').classList.remove('hidden');
+ const overview=$('schoolOverview');overview?.classList.remove('hidden');
+ const workflowNode=$('workflows');if(workflowNode)workflowNode.classList.remove('hidden');
+ const ready=await waitForSchoolWorkflows();
+ if(ready&&typeof window.initSchoolWorkflows==='function')await window.initSchoolWorkflows(client,school,showDashboard);
+ window.finishTenantSkeletons?.();
+ updateDemoBanner();
+}
+
 async function showDashboard(){
+ if(isDemoMode){await showDemoDashboard();return;}
  await tenantIdentityReady;
  if(gatewayAccessBlocked){
   try{await client.auth.signOut();}catch(_){}
@@ -3533,15 +3617,15 @@ function resetInactivityTimer(){
 }
 ['pointerdown','pointermove','keydown','scroll','touchstart'].forEach(eventName=>{
   document.addEventListener(eventName,()=>{
-    if(!$('dashboard').classList.contains('hidden')) resetInactivityTimer();
+    if(!$('dashboard').classList.contains('hidden')&&!isDemoMode) resetInactivityTimer();
   },{passive:true});
 });
 client.auth.onAuthStateChange((event,session)=>{
   if(event==='SIGNED_OUT'){window.__welfareWelcomeLoginKey='';window.__welfareWelcomeShownForLogin='';if(window.__welfareWelcomeTimer){clearTimeout(window.__welfareWelcomeTimer);window.__welfareWelcomeTimer=null;}document.getElementById('loginWelcomeToast')?.remove();}
-  if(session) resetInactivityTimer();
+  if(session&&!isDemoMode) resetInactivityTimer();
   else if(inactivityTimer){clearTimeout(inactivityTimer);inactivityTimer=null;}
 });
-client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});
+if(isDemoMode){showDashboard();}else{client.auth.getSession().then(({data})=>{if(data.session)showDashboard();});}
 })();
 </script>
 <script src="school-portal-workflows.js?v=prepared-admin-share-20261117"></script>
