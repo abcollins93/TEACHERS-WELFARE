@@ -81,7 +81,7 @@
   }
   return q;
  }
- function activeCon(){const rev=new Set(reversals.filter(x=>x.transaction_type==='contribution').map(x=>String(x.transaction_id)));return contributions.filter(x=>!rev.has(String(x.id))&&!x.is_reversed&&String(x.status||'').toLowerCase()!=='reversed');}
+ function activeCon(){const rev=new Set(reversals.filter(x=>x.transaction_type==='contribution').map(x=>String(x.transaction_id)));return contributions.filter(x=>!rev.has(String(x.id))&&!x.is_reversed&&!['reversed','inactive','deleted','cancelled','canceled','void','archived'].includes(String(x.status||'').toLowerCase())&&!x.reversed_at&&!x.reversedAt);}
  function activePay(){const rev=new Set(reversals.filter(x=>x.transaction_type==='payout').map(x=>String(x.transaction_id)));return payouts.filter(x=>!rev.has(String(x.id))&&!x.is_reversed&&!['reversed','inactive','deleted','cancelled','canceled','void','archived'].includes(String(x.status||'').toLowerCase())&&!x.reversed_at&&!x.reversedAt);}
  const summary=()=>{
   const activeContributions=activeCon(),activePayouts=activePay();
