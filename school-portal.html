@@ -2147,9 +2147,10 @@ function setTenantFooter(school){
  if(copyright)copyright.textContent='© '+new Date().getFullYear()+' Teachers Welfare Fund Portal. All Rights Reserved.';
 }
 function showLoginWelcome(displayName,roleLabel,schoolName){
- const sessionKey=String(window.__welfareWelcomeLoginKey||'').trim();
- if(sessionKey&&window.__welfareWelcomeShownForLogin===sessionKey)return;
- if(sessionKey)window.__welfareWelcomeShownForLogin=sessionKey;
+ const sessionKey=String(window.__welfareWelcomeLoginKey||'active-session').trim();
+ if(window.__welfareWelcomeShownForLogin===sessionKey)return;
+ // Mark before rendering: auth callbacks and profile hydration cannot restart its timer.
+ window.__welfareWelcomeShownForLogin=sessionKey;
  const first=String(displayName||'').trim().split(/\s+/)[0]||'there';
  let toast=document.getElementById('loginWelcomeToast');
  if(!document.getElementById('loginWelcomeStyles')){
@@ -2167,6 +2168,7 @@ function showLoginWelcome(displayName,roleLabel,schoolName){
    #loginWelcomeToast .wf-welcome-close{flex:0 0 28px;width:28px;height:28px;margin-left:2px;border:1px solid rgba(255,255,255,.24);border-radius:50%;background:rgba(255,255,255,.08);color:#fff;font-size:18px;line-height:1;cursor:pointer}
    #loginWelcomeToast.wf-welcome-show{animation:wfWelcomeEnter .28s ease-out forwards}
    #loginWelcomeToast.wf-welcome-hide{animation:wfWelcomeExit .32s ease-in forwards;pointer-events:none}
+   #loginWelcomeToast.wf-welcome-gone{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;height:0!important;margin:0!important;padding:0!important}
    @media(max-width:420px){#loginWelcomeToast .wf-welcome-inner{gap:10px;padding:12px}#loginWelcomeToast .wf-welcome-emblem{flex-basis:38px;width:38px;height:38px;font-size:16px}#loginWelcomeToast .wf-welcome-title{font-size:16px}}
    @media(prefers-reduced-motion:reduce){#loginWelcomeToast.wf-welcome-show,#loginWelcomeToast.wf-welcome-hide{animation-duration:.01ms}}
   `;
@@ -2180,18 +2182,27 @@ function showLoginWelcome(displayName,roleLabel,schoolName){
  const title=toast.querySelector('#wfWelcomeTitle'),subtitle=toast.querySelector('#wfWelcomeSubtitle');
  if(title)title.textContent='Welcome, '+first+'!';
  if(subtitle)subtitle.textContent=roleLabel==='School Administrator'?(schoolName||'Your school')+' · Administrator portal':'Your personal welfare account is ready';
+ let dismissed=false;
  const dismiss=()=>{
+  if(dismissed)return;
+  dismissed=true;
   if(window.__welfareWelcomeTimer){clearTimeout(window.__welfareWelcomeTimer);window.__welfareWelcomeTimer=null;}
   if(!toast.isConnected)return;
   toast.classList.remove('wf-welcome-show');toast.classList.add('wf-welcome-hide');
-  window.setTimeout(()=>{if(toast.isConnected)toast.remove();},360);
+  window.setTimeout(()=>{
+   if(!toast.isConnected)return;
+   toast.classList.add('wf-welcome-gone');
+   toast.style.display='none';
+   toast.remove();
+  },340);
  };
  toast.onclick=dismiss;
  const close=toast.querySelector('.wf-welcome-close');if(close)close.onclick=event=>{event.stopPropagation();dismiss();};
- toast.classList.remove('wf-welcome-hide','wf-welcome-show');
+ toast.classList.remove('wf-welcome-gone','wf-welcome-hide','wf-welcome-show');
+ toast.style.removeProperty('display');
  void toast.offsetWidth;toast.classList.add('wf-welcome-show');
- if(window.__welfareWelcomeTimer)clearTimeout(window.__welfareWelcomeTimer);
- window.__welfareWelcomeTimer=window.setTimeout(dismiss,3600);
+ // Exactly one 3-second timer is started for this login; duplicate triggers return above.
+ window.__welfareWelcomeTimer=window.setTimeout(dismiss,3000);
 }
 // Shared teacher-record normalization keeps the individual teacher profile and
 // administrator Profile Viewer aligned with the same master teachers table fields.
