@@ -2593,12 +2593,17 @@ async function renderTeacherDashboard(profile,school){
   const currentMonthKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
   const activeRows=teacherContributionRows.filter(row=>isMyTeacherContribution(row)&&isActiveTeacherContribution(row));
   const membershipDateCandidates=[
-   teacherRecord?.registration_date,teacherRecord?.registered_at,teacherRecord?.created_at,teacherRecord?.date_registered,
-   profile?.registration_date,profile?.registered_at,profile?.created_at,profile?.date_registered
+   teacherRecord?.registration_date,teacherRecord?.joined_at,teacherRecord?.registered_at,teacherRecord?.created_at,teacherRecord?.date_registered,
+   profile?.registration_date,profile?.joined_at,profile?.registered_at,profile?.created_at,profile?.date_registered
   ];
   let startMonthKey=membershipDateCandidates.map(monthKeyFromDate).find(Boolean)||'';
+  const contributionMonthKey=row=>{
+   const candidates=[row.contribution_date,row.payment_date,row.date,row.created_at]
+    .map(monthKeyFromDate).filter(Boolean);
+   return candidates.sort()[0]||'';
+  };
   if(!startMonthKey){
-   const firstActiveMonth=activeRows.map(row=>monthKeyFromDate(row.payment_date||row.contribution_date||row.date)).filter(Boolean).sort()[0];
+   const firstActiveMonth=activeRows.map(contributionMonthKey).filter(Boolean).sort()[0];
    startMonthKey=firstActiveMonth||'';
   }
   if(!startMonthKey){
@@ -2611,11 +2616,7 @@ async function renderTeacherDashboard(profile,school){
   }
   const [startYear,startMonth]=startMonthKey.split('-').map(Number);
   const expectedMonths=(now.getFullYear()-startYear)*12+(now.getMonth()+1-startMonth)+1;
-  const rowMonthKey=row=>{
-   const candidates=[row.payment_date,row.contribution_date,row.date,row.created_at]
-    .map(monthKeyFromDate).filter(Boolean);
-   return candidates[0]||'';
-  };
+  const rowMonthKey=contributionMonthKey;
   const periodRows=activeRows.filter(row=>{
    const rowMonth=rowMonthKey(row);
    return rowMonth&&rowMonth>=startMonthKey&&rowMonth<=currentMonthKey;
@@ -5846,12 +5847,12 @@ body.sidebar-open{overflow:hidden}
 }
 </style>
 <style id="member-contribution-gap-card">
-#schoolOverview .dashboard-metrics .metric-member-arrears{--metric-accent:#d97706;--metric-icon-bg:#fff3d6;border-top:4px solid var(--metric-accent);border-left-color:var(--metric-accent)}
+#schoolOverview .dashboard-metrics .metric-member-arrears{--metric-accent:#d97706;--metric-icon-bg:#fff3d6;border-top:0!important;border-left-color:var(--metric-accent)}
 #schoolOverview .dashboard-metrics .metric-member-arrears .metric-icon{background:var(--metric-icon-bg);color:var(--metric-accent)}
 #schoolOverview .dashboard-metrics .metric-member-arrears.is-up-to-date{--metric-accent:#16804a;--metric-icon-bg:#e2f7eb}
 #schoolOverview .dashboard-metrics .metric-member-arrears.is-behind{--metric-accent:#c2410c;--metric-icon-bg:#ffedd5}
 #schoolOverview .dashboard-metrics .metric-member-arrears.is-unavailable{--metric-accent:#64748b;--metric-icon-bg:#eef2f7}
-.dark #schoolOverview .dashboard-metrics .metric-member-arrears{background:#0b1d3a;border-color:#26364d;border-top-color:var(--metric-accent);border-left-color:var(--metric-accent)}
+.dark #schoolOverview .dashboard-metrics .metric-member-arrears{background:#0b1d3a;border-color:#26364d;border-top:0!important;border-left-color:var(--metric-accent)}
 .dark #schoolOverview .dashboard-metrics .metric-member-arrears .metric-icon{background:#26364d;color:#fbbf24}
 .dark #schoolOverview .dashboard-metrics .metric-member-arrears.is-up-to-date .metric-icon{background:#123d32;color:#6ee7a3}
 .dark #schoolOverview .dashboard-metrics .metric-member-arrears.is-behind .metric-icon{background:#4a2818;color:#fdba74}
