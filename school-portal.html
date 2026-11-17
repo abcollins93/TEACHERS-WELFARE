@@ -3479,7 +3479,7 @@ async function showDashboardInternal(){
  // Start Settings as soon as the authenticated tenant context is known. Do not await it:
  // dashboard query failures or workflow startup must never prevent the Settings view mounting.
  void startAccountSettingsInitialization(client,school,'admin');
- const [teachersRes,contribRes,payoutsRes,reversalsRes,latestActivity]=await Promise.all([
+ const [teachersRes,contribRes,payoutsRes,reversalsRes,latestActivity]=await withPortalTimeout(Promise.all([
   client.from('teachers').select('id,name,phone,rank,class_name').eq('school_id',school.id).order('name'),
   client.from('contributions').select('id,amount,date').eq('school_id',school.id),
   client.from('payouts').select('id,amount').eq('school_id',school.id),
@@ -3488,7 +3488,7 @@ async function showDashboardInternal(){
    client.from('contributions').select('date').eq('school_id',school.id).order('date',{ascending:false}).limit(1),
    client.from('payouts').select('date').eq('school_id',school.id).order('date',{ascending:false}).limit(1)
   ])
- ]);
+ ]),12000,'School dashboard records timed out. Please retry after checking your connection.');
  const err=[teachersRes.error,contribRes.error,payoutsRes.error,reversalsRes.error].find(Boolean);
  if(err){window.finishTenantSkeletons?.();console.warn('School records could not be loaded:',err);return;}
  const teachers=teachersRes.data||[], contributions=contribRes.data||[], payouts=payoutsRes.data||[], reversals=reversalsRes.data||[];
