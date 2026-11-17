@@ -157,5 +157,68 @@
    return {data:{ok:true,success:true,administrators:clone(tables.admin_users)},error:null};
   }}
  };
- window.WelfareDemo={school,teachers,contributions,payouts,announcements,client,months,activeCon,activePay,setTeacher(index){activeTeacherIndex=Math.max(0,Math.min(teachers.length-1,Number(index)||0));}};
+
+ const whatsappNumber='233202790002';
+ const setupMessage=values=>[
+  'Hello, I would like to set up a Teachers Welfare Portal for my school.',
+  '',
+  'School Name: '+(values.school||'Not provided'),
+  'Contact Person & Role: '+(values.contact||'Not provided'),
+  'District / Region: '+(values.location||'Not provided'),
+  'Approximate Number of Staff: '+(values.staff||'Not provided'),
+  '',
+  'Please contact me with the onboarding details. Thank you.'
+ ].join('\\n');
+ const setupUrl=values=>'https://wa.me/'+whatsappNumber+'?text='+encodeURIComponent(setupMessage(values||{}));
+ function openSchoolSetupModal(){
+  let modal=document.getElementById('welfareSchoolSetupModal');
+  if(!modal){
+   const style=document.createElement('style');style.id='welfare-school-setup-modal-styles';
+   style.textContent=`
+    #welfareSchoolSetupModal{position:fixed;inset:0;z-index:16000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(4,12,27,.62);backdrop-filter:blur(3px)}
+    #welfareSchoolSetupModal[hidden]{display:none!important}
+    #welfareSchoolSetupModal .wss-card{position:relative;width:min(100%,480px);max-height:min(90vh,760px);overflow:auto;padding:22px;border:1px solid #d8e1ee;border-radius:18px;background:#fff;color:#172b46;box-shadow:0 24px 80px rgba(0,0,0,.3)}
+    #welfareSchoolSetupModal .wss-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:16px}
+    #welfareSchoolSetupModal h2{margin:0 0 5px;font-size:20px;font-weight:850}
+    #welfareSchoolSetupModal .wss-intro{margin:0;color:#64748b;font-size:13px;line-height:1.5}
+    #welfareSchoolSetupModal .wss-close{width:36px;height:36px;flex:0 0 36px;border:0;border-radius:10px;background:#eef2f7;color:#334155;font-size:25px;line-height:1;cursor:pointer}
+    #welfareSchoolSetupModal .wss-fields{display:grid;gap:12px}
+    #welfareSchoolSetupModal label{display:grid;gap:5px;color:#263b58;font-size:12px;font-weight:800}
+    #welfareSchoolSetupModal input{width:100%;min-width:0;min-height:42px;padding:10px 12px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#172b46;font:inherit;font-size:14px;outline:none}
+    #welfareSchoolSetupModal input:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.13)}
+    #welfareSchoolSetupModal .wss-primary{display:flex;width:100%;min-height:46px;align-items:center;justify-content:center;margin-top:16px;padding:11px 14px;border:0;border-radius:10px;background:#16834b;color:#fff;font:inherit;font-size:14px;font-weight:850;cursor:pointer}
+    #welfareSchoolSetupModal .wss-direct{display:block;margin-top:12px;text-align:center;color:#176bba;font-size:13px;font-weight:800;text-decoration:underline;text-underline-offset:3px}
+    #welfareSchoolSetupModal .wss-foot{margin:12px 0 0;text-align:center;color:#64748b;font-size:11px}
+    body.dark #welfareSchoolSetupModal .wss-card,.dark #welfareSchoolSetupModal .wss-card{background:#10213b;color:#edf4ff;border-color:#334b6e}
+    body.dark #welfareSchoolSetupModal .wss-intro,.dark #welfareSchoolSetupModal .wss-intro,body.dark #welfareSchoolSetupModal .wss-foot,.dark #welfareSchoolSetupModal .wss-foot{color:#b8c8dc}
+    body.dark #welfareSchoolSetupModal label,.dark #welfareSchoolSetupModal label{color:#e2eaf5}
+    body.dark #welfareSchoolSetupModal input,.dark #welfareSchoolSetupModal input{background:#0b1a30;color:#f1f5f9;border-color:#435b7d}
+    body.dark #welfareSchoolSetupModal .wss-close,.dark #welfareSchoolSetupModal .wss-close{background:#263b59;color:#edf4ff}
+    body.dark #welfareSchoolSetupModal .wss-direct,.dark #welfareSchoolSetupModal .wss-direct{color:#8fc5ff}
+    @media(max-width:480px){#welfareSchoolSetupModal{align-items:flex-end;padding:8px}#welfareSchoolSetupModal .wss-card{max-height:92vh;padding:18px;border-radius:18px 18px 12px 12px}}
+   `;
+   document.head.appendChild(style);
+   modal=document.createElement('div');modal.id='welfareSchoolSetupModal';modal.hidden=true;modal.setAttribute('role','presentation');
+   modal.innerHTML='<section class="wss-card" role="dialog" aria-modal="true" aria-labelledby="wssTitle"><div class="wss-head"><div><h2 id="wssTitle">Set Up Your School</h2><p class="wss-intro">Share a few details and our team will help you get your school welfare portal ready.</p></div><button class="wss-close" type="button" aria-label="Close onboarding form">×</button></div><form class="wss-fields"><label>School Name<input name="school" autocomplete="organization" placeholder="Enter your school name"></label><label>Contact Person Name &amp; Role<input name="contact" autocomplete="name" placeholder="e.g. Ama Mensah — Headteacher"></label><label>District / Region<input name="location" placeholder="e.g. Kumasi Metro, Ashanti Region"></label><label>Approximate Number of Staff<input name="staff" inputmode="numeric" type="number" min="1" placeholder="e.g. 35"></label><button class="wss-primary" type="submit">Send via WhatsApp</button></form><a class="wss-direct" target="_blank" rel="noopener noreferrer">Direct WhatsApp Chat</a><p class="wss-foot">You can send a message now or complete the details first.</p></section>';
+   document.body.appendChild(modal);
+   const close=()=>{modal.hidden=true;};
+   modal.querySelector('.wss-close').addEventListener('click',close);
+   modal.addEventListener('click',event=>{if(event.target===modal)close();});
+   modal.querySelector('.wss-fields').addEventListener('submit',event=>{
+    event.preventDefault();const form=event.currentTarget;
+    const values={school:form.elements.school.value.trim(),contact:form.elements.contact.value.trim(),location:form.elements.location.value.trim(),staff:form.elements.staff.value.trim()};
+    window.open(setupUrl(values),'_blank','noopener,noreferrer');close();
+   });
+   modal.querySelector('.wss-fields').addEventListener('input',updateDirectLink);
+   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!modal.hidden)close();});
+  }
+  function updateDirectLink(){
+   const form=modal.querySelector('.wss-fields'),values={school:form.elements.school.value.trim(),contact:form.elements.contact.value.trim(),location:form.elements.location.value.trim(),staff:form.elements.staff.value.trim()};
+   modal.querySelector('.wss-direct').href=setupUrl(values);
+  }
+  updateDirectLink();modal.hidden=false;
+  modal.querySelector('input[name="school"]').focus({preventScroll:true});
+ }
+
+ window.WelfareDemo={school,teachers,contributions,payouts,announcements,client,months,activeCon,activePay,openSchoolSetupModal,setTeacher(index){activeTeacherIndex=Math.max(0,Math.min(teachers.length-1,Number(index)||0));}};
 })();
