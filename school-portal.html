@@ -3209,6 +3209,7 @@ async function showDemoDashboard(){
   return;
  }
  window.__welfareCurrentRole='admin';
+ $('teacherContributionGap')?.remove();$('teacherStandardMonthlyDues')?.remove();
  if(window.__teacherDashboardLedgerTimer){clearInterval(window.__teacherDashboardLedgerTimer);window.__teacherDashboardLedgerTimer=null;}
  $('teacherDashboardProfile')?.setAttribute('hidden','');
  $('teacherDashboardLedgers')?.setAttribute('hidden','');
