@@ -3269,6 +3269,9 @@ function scheduleDemoAdminWorkflows(school){
  }).then(result=>{
   if(demoRole==='teacher'){
    window.__welfareCurrentRole='teacher';
+   const activityTicker=document.getElementById('adminActivityTicker');
+   if(activityTicker)activityTicker.classList.add('hidden');
+   document.body.classList.remove('admin-activity-ticker-active');
    $('workflows')?.classList.add('hidden');
    document.getElementById('teacherWorkspace')?.classList.remove('hidden');
   }
@@ -3331,6 +3334,8 @@ function showDemoDashboard(){
   return;
  }
  window.__welfareCurrentRole='admin';
+ const activityTicker=document.getElementById('adminActivityTicker');
+ if(activityTicker){activityTicker.classList.remove('hidden');document.body.classList.add('admin-activity-ticker-active');}
  $('teacherContributionGap')?.remove();$('teacherStandardMonthlyDues')?.remove();
  if(window.__teacherDashboardLedgerTimer){clearInterval(window.__teacherDashboardLedgerTimer);window.__teacherDashboardLedgerTimer=null;}
  if($('teacherDashboardProfile'))$('teacherDashboardProfile').hidden=true;
@@ -3344,16 +3349,15 @@ function showDemoDashboard(){
  const accountTitle=document.querySelector('.sidebar-account-copy strong');if(accountTitle)accountTitle.textContent='Demo Administrator';
  const profileViewerNav=document.querySelector('.sidebar .navbtn[data-target="teacherProfileViewer"]');if(profileViewerNav)profileViewerNav.style.removeProperty('display');
  const activeCon=window.WelfareDemo.activeCon(),activePay=window.WelfareDemo.activePay();
- const totalCon=activeCon.reduce((sum,row)=>sum+Number(row.amount||0),0),totalPay=activePay.reduce((sum,row)=>sum+Number(row.amount||0),0);
- const latestMonth=window.WelfareDemo.months[window.WelfareDemo.months.length-1]||'2026-03';
- const latestMonthAmount=activeCon.filter(row=>String(row.date||'').slice(0,7)===latestMonth).reduce((sum,row)=>sum+Number(row.amount||0),0);
+ const summary=window.WelfareDemo.summary();
+ const latestMonth=summary.latestMonth||'2026-03';
  const latestMonthLabel=new Date(latestMonth+'-01T00:00:00').toLocaleDateString('en-GH',{month:'short',year:'numeric'});
- $('teacherCount').textContent=String(window.WelfareDemo.teachers.filter(row=>row.is_active!==false).length);
- $('contributionTotal').textContent='GHS '+money(totalCon);
- $('payoutTotal').textContent='GHS '+money(totalPay);
- $('netTotal').textContent='GHS '+money(totalCon-totalPay);
- $('monthlyContributionTotal').textContent='GHS '+money(latestMonthAmount);
- $('standardDuesMetric').textContent='GHS '+money(school.monthly_dues);
+ $('teacherCount').textContent=String(summary.teacherCount);
+ $('contributionTotal').textContent='GHS '+money(summary.contributionTotal);
+ $('payoutTotal').textContent='GHS '+money(summary.payoutTotal);
+ $('netTotal').textContent='GHS '+money(summary.netFundBalance);
+ $('monthlyContributionTotal').textContent='GHS '+money(activeCon.filter(row=>String(row.date||'').slice(0,7)===latestMonth).reduce((sum,row)=>sum+Number(row.amount||0),0));
+ $('standardDuesMetric').textContent='GHS '+money(summary.monthlyDues);
  $('lastActivity').textContent='15 Mar 2026';
  $('adminContributionRecordsMetric').hidden=false;
  $('adminContributionRecordsCount').textContent=String(activeCon.length);
@@ -3361,8 +3365,8 @@ function showDemoDashboard(){
  setDemoMetricLabel('contributionTotal','TOTAL CONTRIBUTIONS');
  setDemoMetricLabel('payoutTotal','WELFARE PAYOUTS');
  setDemoMetricLabel('monthlyContributionTotal','LATEST DEMO MONTH · '+latestMonthLabel.toUpperCase());
- setDemoMetricNote('contributionTotal',activeCon.length+' active non-reversed records');
- setDemoMetricNote('payoutTotal',activePay.length+' active payouts');
+ setDemoMetricNote('contributionTotal',summary.contributionCount+' active non-reversed records');
+ setDemoMetricNote('payoutTotal',summary.payoutCount+' active payouts');
  const overview=$('schoolOverview');overview?.classList.remove('hidden');
  scheduleDemoAdminWorkflows(school);
 }
