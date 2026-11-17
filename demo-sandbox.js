@@ -81,8 +81,8 @@
   }
   return q;
  }
- function activeCon(){const rev=new Set(reversals.filter(x=>x.transaction_type==='contribution').map(x=>String(x.transaction_id)));return contributions.filter(x=>!rev.has(String(x.id))&&!x.is_reversed&&!['reversed','inactive','deleted','cancelled','canceled','void','archived'].includes(String(x.status||'').toLowerCase())&&!x.reversed_at&&!x.reversedAt);}
- function activePay(){const rev=new Set(reversals.filter(x=>x.transaction_type==='payout').map(x=>String(x.transaction_id)));return payouts.filter(x=>!rev.has(String(x.id))&&!x.is_reversed&&!['reversed','inactive','deleted','cancelled','canceled','void','archived'].includes(String(x.status||'').toLowerCase())&&!x.reversed_at&&!x.reversedAt);}
+ function activeCon(){const rev=new Set(reversals.filter(x=>x.transaction_type==='contribution').map(x=>String(x.transaction_id)));return contributions.filter(x=>{const status=String(x.status||x.transaction_status||x.reversal_status||'').toLowerCase(),flagged=v=>v===true||['true','t','1','yes'].includes(String(v??'').trim().toLowerCase());return !rev.has(String(x.id))&&!flagged(x.is_reversed)&&!flagged(x.reversed)&&!['reversed','inactive','deleted','cancelled','canceled','void','archived'].includes(status)&&!x.reversed_at&&!x.reversedAt;});}
+ function activePay(){const rev=new Set(reversals.filter(x=>x.transaction_type==='payout').map(x=>String(x.transaction_id)));return payouts.filter(x=>{const status=String(x.status||x.transaction_status||'').toLowerCase(),flagged=v=>v===true||['true','t','1','yes'].includes(String(v??'').trim().toLowerCase());return !rev.has(String(x.id))&&!flagged(x.is_reversed)&&!flagged(x.reversed)&&!['reversed','inactive','deleted','cancelled','canceled','void','archived'].includes(status)&&!x.reversed_at&&!x.reversedAt;});}
  const summary=()=>{
   const activeContributions=activeCon(),activePayouts=activePay();
   const contributionTotal=activeContributions.reduce((sum,row)=>sum+Number(row.amount||0),0);
