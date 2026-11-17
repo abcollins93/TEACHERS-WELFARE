@@ -2062,11 +2062,17 @@ const pageLoader=$('page-loader');
 let pageLoaderTimer;
 function showPageLoader(message='Loading your portal'){
  if(!pageLoader)return;
+ if(pageLoaderTimer)window.clearTimeout(pageLoaderTimer);
  $('page-loader-title').textContent=message;
  pageLoader.classList.remove('is-hidden');
  pageLoader.setAttribute('aria-hidden','false');
+ pageLoaderTimer=window.setTimeout(()=>{
+  console.warn('[School Welfare] Loading indicator cleared by its safety deadline.');
+  hidePageLoader();
+ },22000);
 }
 function hidePageLoader(){
+ if(pageLoaderTimer){window.clearTimeout(pageLoaderTimer);pageLoaderTimer=null;}
  if(!pageLoader)return;
  pageLoader.classList.add('is-hidden');
  pageLoader.setAttribute('aria-hidden','true');
@@ -3296,6 +3302,12 @@ function showDemoDashboard(){
  setTenantFooter(school);
  if(demoRole==='teacher'){
   window.__welfareCurrentRole='teacher';
+  setDemoMetricLabel('teacherCount','Registered Members');
+  setDemoMetricLabel('contributionTotal','My Contributions');
+  setDemoMetricLabel('payoutTotal','My Payouts');
+  setDemoMetricLabel('monthlyContributionTotal','Contributions This Month');
+  $('adminContributionRecordsMetric')?.setAttribute('hidden','');
+  document.querySelectorAll('.demo-metric-note').forEach(node=>node.remove());
   $('schoolTeachers')?.classList.add('hidden');
   $('workflows')?.classList.add('hidden');
   if($('teacherContributionProgress'))$('teacherContributionProgress').hidden=false;
