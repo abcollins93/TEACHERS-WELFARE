@@ -2485,9 +2485,9 @@ async function renderTeacherDashboard(profile,school){
  let schoolPayoutRows=spe?[]:(schoolPayoutData||[]);
  const isActiveTeacherContribution=row=>{
   if(!row||typeof row!=='object')return false;
-  const status=String(row.status||row.transaction_status||row.reversal_status||'').trim().toLowerCase();
+  const statuses=[row.status,row.transaction_status,row.reversal_status].map(value=>String(value||'').trim().toLowerCase());
   const reversedFlag=[row.is_reversed,row.isReversed,row.reversed].some(value=>value===true||['true','t','1','yes'].includes(String(value).trim().toLowerCase()));
-  return status!=='reversed'&&!reversedFlag&&!row.reversed_at&&!row.reversedAt;
+  return !statuses.includes('reversed')&&!reversedFlag&&!row.reversed_at&&!row.reversedAt;
  };
  const loggedInTeacherStaffId=String(profile.staff_id||profile.staffId||teacherRecord?.staff_id||'').trim().toLowerCase();
  const loggedInTeacherEmail=String(user?.email||profile.email||profile.email_address||'').trim().toLowerCase();
@@ -2592,20 +2592,22 @@ async function renderTeacherDashboard(profile,school){
   const now=new Date();
   const currentMonthKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
   const activeRows=teacherContributionRows.filter(row=>isMyTeacherContribution(row)&&isActiveTeacherContribution(row));
+  // Use explicit membership/join dates only. Generic created_at timestamps
+  // can reflect a later profile migration and must not truncate older dues history.
   const membershipDateCandidates=[
-   teacherRecord?.registration_date,teacherRecord?.joined_at,teacherRecord?.registered_at,teacherRecord?.created_at,teacherRecord?.date_registered,
-   profile?.registration_date,profile?.joined_at,profile?.registered_at,profile?.created_at,profile?.date_registered
+   teacherRecord?.registration_date,teacherRecord?.joined_at,teacherRecord?.registered_at,teacherRecord?.date_registered,
+   profile?.registration_date,profile?.joined_at,profile?.registered_at,profile?.date_registered
   ];
-  let startMonthKey=membershipDateCandidates.map(monthKeyFromDate).find(Boolean)||'';
   const contributionMonthKey=row=>{
    const candidates=[row.contribution_date,row.payment_date,row.date,row.created_at]
     .map(monthKeyFromDate).filter(Boolean);
    return candidates.sort()[0]||'';
   };
-  if(!startMonthKey){
-   const firstActiveMonth=activeRows.map(contributionMonthKey).filter(Boolean).sort()[0];
-   startMonthKey=firstActiveMonth||'';
-  }
+  const explicitStartMonthKey=membershipDateCandidates.map(monthKeyFromDate).find(Boolean)||'';
+  const firstActiveMonth=activeRows.map(contributionMonthKey).filter(Boolean).sort()[0]||'';
+  // The earliest active ledger month is the fallback when no explicit join date
+  // exists; it also protects pre-migration history from a newer generic created_at.
+  const startMonthKey=explicitStartMonthKey||firstActiveMonth;
   if(!startMonthKey){
    setGapState('is-unavailable','Start date unavailable','Membership date or first active contribution month is not available');
    return;
@@ -5851,7 +5853,8 @@ body.sidebar-open{overflow:hidden}
 }
 </style>
 <style id="member-contribution-gap-card">
-#schoolOverview .dashboard-metrics .metric-member-arrears{--metric-accent:#d97706;--metric-icon-bg:#fff3d6;border-top:0!important;border-left-color:var(--metric-accent)}
+#schoolOverview .dashboard-metrics .metric-member-arrears{--metric-accent:#d97706;--metric-icon-bg:#fff3d6;border-top:0!important;border-top-width:0!important;background-image:none!important;border-left-color:var(--metric-accent)}
+#schoolOverview .dashboard-metrics .metric-member-arrears::before,#schoolOverview .dashboard-metrics .metric-member-arrears::after{content:none!important;display:none!important}
 #schoolOverview .dashboard-metrics .metric-member-arrears .metric-icon{background:var(--metric-icon-bg);color:var(--metric-accent)}
 #schoolOverview .dashboard-metrics .metric-member-arrears.is-up-to-date{--metric-accent:#16804a;--metric-icon-bg:#e2f7eb}
 #schoolOverview .dashboard-metrics .metric-member-arrears.is-behind{--metric-accent:#c2410c;--metric-icon-bg:#ffedd5}
