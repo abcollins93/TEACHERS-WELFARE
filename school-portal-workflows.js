@@ -1633,7 +1633,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
         const whatsappText=shareText+(verificationUrl?' '+verificationUrl:'');
         const whatsappUrl='https://wa.me/?text='+encodeURIComponent(whatsappText);
         let whatsappWindow=null;
-        try{whatsappWindow=window.open(whatsappUrl,'_blank','noopener,noreferrer');}catch(_){}
+        try{whatsappWindow=window.open(whatsappUrl,'_blank');}catch(_){}
         if(whatsappWindow){msg(statusId,'WhatsApp share opened. Attach the downloaded PDF to send the file.');}
         else downloadWorkflowBlob(generated.blob,fileName,statusId,'Sharing is unavailable here. Your PDF has been downloaded instead.','Tap here to view downloaded PDF');
        }
