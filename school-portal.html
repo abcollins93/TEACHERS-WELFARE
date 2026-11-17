@@ -2870,18 +2870,32 @@ async function renderTeacherDashboard(profile,school){
     const canShareFile=typeof navigator.share==='function'&&(!navigator.canShare||navigator.canShare({files:[pdfFile]}));
     let shared=false;
     if(canShareFile){
-     try{await navigator.share({files:[pdfFile],title:shareTitle,text:shareText});shared=true;statementStatus('PDF shared successfully.');}
-     catch(shareError){if(shareError?.name==='AbortError'){statementStatus('PDF sharing was cancelled.');return;}console.warn('[Teacher statement] Native file share failed:',shareError);}
-    }
-    if(!shared&&typeof navigator.share==='function'){
-     try{await navigator.share({title:shareTitle,text:shareText,url:verificationUrl||undefined});shared=true;statementStatus(verificationUrl?'Verification link shared. The PDF can be downloaded separately.':'Statement details shared.');}
-     catch(linkShareError){if(linkShareError?.name==='AbortError'){statementStatus('PDF sharing was cancelled.');return;}console.warn('[Teacher statement] Link share unavailable:',linkShareError);}
-    }
-    if(!shared){
-     const whatsappUrl='https://wa.me/?text='+encodeURIComponent(shareText+(verificationUrl?' '+verificationUrl:''));
-     let whatsappWindow=null;try{whatsappWindow=window.open(whatsappUrl,'_blank','noopener,noreferrer');}catch(_){}
-     if(whatsappWindow)statementStatus('WhatsApp share opened. Attach the downloaded PDF to send the file.');
-     else window.downloadWelfareBlob(pdfBlob,filename,statementMessage,'Sharing is unavailable here. Your PDF statement has been downloaded instead.');
+     try{
+      await navigator.share({files:[pdfFile],title:shareTitle,text:shareText});
+      shared=true;statementStatus('PDF shared successfully.');
+     }catch(shareError){
+      if(shareError?.name==='AbortError'){statementStatus('PDF sharing was cancelled.');return;}
+      console.warn('[Teacher statement] Native PDF file share failed:',shareError);
+      window.downloadWelfareBlob(pdfBlob,filename,statementMessage,'The PDF could not be shared. Your PDF statement has been downloaded instead.');
+      return;
+     }
+    }else{
+     const linkShareText=verificationUrl?'Verify this official Welfare PDF report:':'Official Welfare PDF statement details:';
+     if(typeof navigator.share==='function'){
+      try{
+       await navigator.share({title:shareTitle,text:linkShareText,url:verificationUrl||undefined});
+       shared=true;statementStatus(verificationUrl?'Verification link shared. No PDF file was attached.':'Statement details shared. No PDF file was attached.');
+      }catch(linkShareError){
+       if(linkShareError?.name==='AbortError'){statementStatus('PDF sharing was cancelled.');return;}
+       console.warn('[Teacher statement] Link share unavailable:',linkShareError);
+      }
+     }
+     if(!shared){
+      const whatsappUrl='https://wa.me/?text='+encodeURIComponent(linkShareText+(verificationUrl?' '+verificationUrl:''));
+      let whatsappWindow=null;try{whatsappWindow=window.open(whatsappUrl,'_blank');}catch(_){}
+      if(whatsappWindow)statementStatus('Verification link opened in WhatsApp. No PDF file was attached.');
+      else window.downloadWelfareBlob(pdfBlob,filename,statementMessage,'File sharing is not supported here. Your PDF statement has been downloaded instead.');
+     }
     }
    }else window.downloadWelfareBlob(pdfBlob,filename,statementMessage,'Your personal PDF statement is ready.');
   }catch(error){
