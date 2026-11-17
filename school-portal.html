@@ -2047,6 +2047,7 @@ if(!requestedCode){try{requestedCode=(sessionStorage.getItem('invited_school_cod
 const SUPABASE_URL='https://jlwdtlhlztbgpogqdabu.supabase.co';
 const SUPABASE_KEY='sb_publishable_-idvZBti_BY5Xn8xDxhqqw_p_Me6X8O';
 const isDemoMode=requestedCode==='DEMO';
+if(document.body)document.body.classList.toggle('welfare-demo-mode',isDemoMode);
 if(!isDemoMode){
  try{await window.__welfareSupabaseReady;}
  catch(error){
@@ -2126,9 +2127,17 @@ if(isDemoMode){
  },1800);
 }
 let tenantIdentityReady=Promise.resolve();
+// Independent loader deadline: stalled optional scripts or tenant identity
+// initialization must never leave the splash screen covering the portal.
+window.setTimeout(()=>{
+ if(pageLoader&&!pageLoader.classList.contains('is-hidden'))hidePageLoader();
+},18000);
+const tenantIdentityDeadline=withPortalTimeout(tenantIdentityReady,6500,'Tenant identity initialization timed out.')
+ .catch(error=>{console.warn('[School Welfare] Tenant identity initialization recovered:',error?.message||error);});
 window.addEventListener('load',()=>{
- Promise.resolve(tenantIdentityReady).finally(()=>{
-  pageLoaderTimer=setTimeout(hidePageLoader,420);
+ tenantIdentityDeadline.finally(()=>{
+  if(pageLoaderTimer)window.clearTimeout(pageLoaderTimer);
+  pageLoaderTimer=window.setTimeout(hidePageLoader,250);
  });
 },{once:true});
 
