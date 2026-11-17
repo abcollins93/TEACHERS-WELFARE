@@ -44,17 +44,9 @@ self.addEventListener('install',event=>{
  event.waitUntil((async()=>{
    const cache=await caches.open(CACHE_VERSION);
    await cache.addAll(SHELL_ASSETS.map(path=>new Request(new URL(path,self.registration.scope),{cache:'reload'})));
-   const cdnCache=await caches.open('twf-pwa-cdn-v1');
-   await Promise.allSettled(CDN_ASSETS.map(async url=>{
-     const request=new Request(url,{mode:'no-cors'});
-     const controller=new AbortController();
-     const timeout=setTimeout(()=>controller.abort(),4000);
-     try{
-       const response=await fetch(request,{signal:controller.signal});
-       if(response&&(response.ok||response.type==='opaque'))await cdnCache.put(request,response);
-     }finally{clearTimeout(timeout);}
-   }));
-   await self.skipWaiting();
+   // Cache third-party assets on demand in the fetch handler. Do not make
+   // service-worker installation wait for external CDN hosts or font servers.
+   await self.skipWaiting();   await self.skipWaiting();
  })());
 });
 self.addEventListener('activate',event=>{
