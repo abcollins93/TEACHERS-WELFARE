@@ -704,6 +704,9 @@ async function audit(client,ctx,action,details,teacherId){
  return true;
 }
 window.initSchoolWorkflows=async function(client,school,refresh){
+ // DEMO receives a dedicated in-memory client from demo-sandbox.js. Every query
+ // and mutation below is therefore scoped to this local sandbox, never Supabase.
+ const isLocalDemo=!!client?.__welfareDemo&&String(school?.school_code||'').toUpperCase()==='DEMO';
  const workflowSchoolKey=String(school?.id||'');
  // A repeated auth/session callback for the same active tenant must not tear down
  // and rebuild the already-mounted roster, dues matrix, and audit workspace.
