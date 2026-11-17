@@ -3379,15 +3379,15 @@ async function showDashboardInternal(){
   try{await client.auth.signOut();}catch(_){}
   return;
  }
- const {data:{user},error:userErr}=await client.auth.getUser();
+ const {data:{user},error:userErr}=await withPortalTimeout(client.auth.getUser(),8000,'Administrator session check timed out.');
  if(userErr||!user){window.__welfareWelcomeLoginKey='';window.__welfareWelcomeShownForLogin='';$('login').classList.remove('hidden');$('dashboard').classList.add('hidden');return;}
  window.__welfareWelcomeLoginKey=String(user.id||'');
  window.startTenantSkeletons?.();
- const {data:teacherProfiles,error:teacherProfileError}=await client.rpc('get_my_teacher_profile');
+ const {data:teacherProfiles,error:teacherProfileError}=await withPortalTimeout(client.rpc('get_my_teacher_profile'),8000,'Teacher account verification timed out.');
  const teacherProfile=Array.isArray(teacherProfiles)?teacherProfiles[0]:teacherProfiles;
  // The active teacher_accounts mapping is authoritative; never trust editable user metadata as a permission grant.
  if(!teacherProfileError&&teacherProfile?.school_id){
-  const {data:teacherSchool,error:teacherSchoolError}=await client.from('schools').select('id,name,school_code,school_type,region,district,status').eq('id',teacherProfile.school_id).maybeSingle();
+  const {data:teacherSchool,error:teacherSchoolError}=await withPortalTimeout(client.from('schools').select('id,name,school_code,school_type,region,district,status').eq('id',teacherProfile.school_id).maybeSingle(),8000,'Teacher school verification timed out.');
   if(teacherSchoolError||!teacherSchool||teacherSchool.status!=='active'){
    window.finishTenantSkeletons?.();
    $('loginError').textContent='Your teacher account could not access its active school portal. Contact your school administrator.';
@@ -3403,9 +3403,9 @@ async function showDashboardInternal(){
   const metadataSchoolId=String(user.app_metadata?.school_id||user.user_metadata?.school_id||'').trim();
   let assignmentQuery=client.from('platform_admins').select('school_id').eq('user_id',user.id).eq('active',true);
   if(metadataSchoolId)assignmentQuery=assignmentQuery.eq('school_id',metadataSchoolId);
-  const {data:assignments,error:assignmentError}=await assignmentQuery.limit(2);
+  const {data:assignments,error:assignmentError}=await withPortalTimeout(assignmentQuery.limit(2),8000,'Administrator school assignment check timed out.');
   if(!assignmentError&&Array.isArray(assignments)&&assignments.length===1&&assignments[0].school_id){
-   const {data:assignedSchool}=await client.from('schools').select('id,name,school_code,status').eq('id',assignments[0].school_id).maybeSingle();
+   const {data:assignedSchool}=await withPortalTimeout(client.from('schools').select('id,name,school_code,status').eq('id',assignments[0].school_id).maybeSingle(),8000,'Assigned school lookup timed out.');
    if(assignedSchool&&assignedSchool.status==='active'&&assignedSchool.school_code){
     code=String(assignedSchool.school_code).trim().toUpperCase();persistActiveTenant(code);
     if(typeof window.updateWelfarePwaTenant==='function')window.updateWelfarePwaTenant(assignedSchool.name,code);
@@ -3427,7 +3427,7 @@ async function showDashboardInternal(){
  const adminGreeting=$('dashboardGreeting');if(adminGreeting)adminGreeting.textContent='HI, ADMIN!';
  const accountTitle=document.querySelector('.sidebar-account-copy strong');if(accountTitle)accountTitle.textContent='School Administrator';
  // RLS must return only the school assigned to this authenticated administrator.
- const {data:school,error}=await client.from('schools').select('id,name,school_code,school_type,region,district,status').eq('school_code',code).maybeSingle();
+ const {data:school,error}=await withPortalTimeout(client.from('schools').select('id,name,school_code,school_type,region,district,status').eq('school_code',code).maybeSingle(),8000,'School profile lookup timed out.');
  if(error||!school||school.status!=='active'){
    // Keep the authenticated session intact so a school-mapping/RLS problem is not mistaken for a failed password or page refresh.
    $('loginError').textContent=error
@@ -3615,9 +3615,9 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
  console.log('School code:',code);
  try{
   if(!staffId||!password)throw new Error('Enter your Staff ID and password.');
-  const {data:result,error:invokeError}=await client.functions.invoke('teacher-sign-in',{
+  const {data:result,error:invokeError}=await withPortalTimeout(client.functions.invoke('teacher-sign-in',{
    body:{school_code:code,staff_id:staffId,password}
-  });
+  }),10000,'Teacher sign-in verification timed out. Please try again.');
   if(invokeError){
    let detail={};
    try{if(invokeError.context&&typeof invokeError.context.json==='function')detail=await invokeError.context.json();}catch(_){}
@@ -3631,15 +3631,15 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
    console.warn('Teacher authentication response was incomplete:',{code:result?.code||'UNKNOWN',teacherFound:result?.teacherFound??false});
    throw new Error(result?.error||'Teacher sign-in could not be completed.');
   }
-  const {data:sessionData,error:setSessionError}=await client.auth.setSession({
+  const {data:sessionData,error:setSessionError}=await withPortalTimeout(client.auth.setSession({
    access_token:result.session.access_token,
    refresh_token:result.session.refresh_token
-  });
+  }),8000,'Secure teacher session setup timed out.');
   if(setSessionError||!sessionData?.user)throw new Error('Your credentials were accepted, but the secure session could not be started. Please sign in again.');
   authSessionCreated=true;
   const school=result.school;
   if(!school?.id||school.school_code!==code)throw new Error('The teacher account does not match this school portal.');
-  const {data:profile,error:profileError}=await client.rpc('get_my_teacher_profile');
+  const {data:profile,error:profileError}=await withPortalTimeout(client.rpc('get_my_teacher_profile'),8000,'Teacher profile verification timed out.');
   if(profileError||!profile||!profile.length||profile[0].school_id!==school.id){
    throw new Error('The teacher profile could not be verified for this school. Contact your administrator.');
   }
@@ -3647,8 +3647,8 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
   p.must_change_password=result.must_change_password===true;
   let teacherAvatar=null,teacherName=result.teacher?.name||staffId;
   try{
-   const {data:teacherRecord,error:teacherRecordError}=await client.from('teachers')
-    .select('id,name,passport').eq('id',p.teacher_id).eq('school_id',school.id).maybeSingle();
+   const {data:teacherRecord,error:teacherRecordError}=await withPortalTimeout(client.from('teachers')
+    .select('id,name,passport').eq('id',p.teacher_id).eq('school_id',school.id).maybeSingle(),5000,'Optional teacher profile details timed out.');
    console.log('Teacher profile record lookup:',{found:!!teacherRecord,error:teacherRecordError?.message||null});
    if(teacherRecord){teacherName=teacherRecord.name||teacherName;teacherAvatar=teacherRecord.passport||null;}
   }catch(teacherReadError){console.warn('Optional teacher profile details could not be loaded:',teacherReadError?.message||teacherReadError);}
@@ -3706,7 +3706,7 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
    });
   }else renderTeacherDashboard(p,school);
  }catch(err){
-  if(authSessionCreated)await client.auth.signOut();
+  if(authSessionCreated)await withPortalTimeout(client.auth.signOut(),3000,'Sign-out cleanup timed out.').catch(()=>{});
   message.className='error';
   message.textContent=err?.message||'Teacher sign-in was not accepted. Confirm your Staff ID and temporary password with your school administrator.';
  }finally{
