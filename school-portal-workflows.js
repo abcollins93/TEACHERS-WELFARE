@@ -1704,21 +1704,114 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      contributions:activeCons,teachers,standardMonthlyDues
    }));
  });
+ // Prepare the selected individual statement before the Share tap. Mobile Chrome
+ // requires navigator.share() to be called while the tap's transient activation is live.
+ const buildIndividualStatementOptions=(tid,teacher)=>({
+   type:'individual',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},
+   teacher,teachers,contributions:activeCons.filter(x=>String(x.teacher_id)===String(tid)),
+   payouts:pays.filter(row=>String(row.school_id||'')===String(ctx.id))
+    .sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||String(a.id||'').localeCompare(String(b.id||''))),
+   personalPayoutTotal:pays.filter(row=>String(row.teacher_id||'')===String(teacher.id||'')&&String(row.school_id||'')===String(ctx.id)).reduce((sum,row)=>sum+Number(row.amount||0),0),
+   personalContributionTotal:activeCons.filter(x=>String(x.teacher_id)===String(tid)).reduce((sum,row)=>sum+Number(row.amount||0),0),
+   schoolFundBalance:activeCons.reduce((sum,row)=>sum+Number(row.amount||0),0)-activePays.reduce((sum,row)=>sum+Number(row.amount||0),0),
+   academicYear:window.getCurrentAcademicYear(),standardMonthlyDues
+ });
+ let preparedIndividualShare=null,individualSharePreparation=null,individualSharePreparationToken=0;
+ const prepareIndividualStatementShare=()=>{
+   const tid=$('wfStatementTeacher').value,teacher=teachers.find(t=>String(t.id)===String(tid));
+   const token=++individualSharePreparationToken;
+   preparedIndividualShare=null;
+   if(!teacher){msg('wfStatementMsg','Choose a member account to prepare its PDF for sharing.');return;}
+   if(typeof window.generateTenantWelfarePdf!=='function'){msg('wfStatementMsg','The PDF generator is unavailable. Reload the portal and try again.',true);return;}
+   msg('wfStatementMsg','Preparing statement for one-tap sharing…');
+   individualSharePreparation=(async()=>{
+     const options=buildIndividualStatementOptions(tid,teacher);
+     options.shareIntent=true;
+     const generated=await window.generateTenantWelfarePdf(options);
+     if(!generated?.blob||!generated.blob.size)throw new Error('The statement PDF could not be prepared.');
+     const fileName=String(generated.filename||'Welfare_Individual_Statement.pdf');
+     const pdfFile=new File([generated.blob],fileName,{type:'application/pdf'});
+     const schoolCode=options.school.school_code||'';
+     const verificationUrl=generated.documentId&&schoolCode
+       ?'https://abcollins93.github.io/TEACHERS-WELFARE/verify.html?c='+encodeURIComponent(schoolCode)+'&d='+encodeURIComponent(generated.documentId)
+       :'';
+     if(token===individualSharePreparationToken&&String($('wfStatementTeacher').value)===String(tid)){
+       preparedIndividualShare={tid,generated,pdfFile,fileName,verificationUrl};
+       msg('wfStatementMsg','Statement PDF is ready. Tap Share PDF to open your device share sheet.');
+     }
+   })().catch(error=>{
+     if(token===individualSharePreparationToken){
+       preparedIndividualShare=null;
+       console.error('[School Welfare PDF] Individual share preparation failed:',error);
+       msg('wfStatementMsg',error?.message||'The statement PDF could not be prepared for sharing.',true);
+     }
+   });
+ };
+ $('wfStatementTeacher').addEventListener('change',prepareIndividualStatementShare);
  $('wfStatementPdf').addEventListener('click',()=>{
    const tid=$('wfStatementTeacher').value,teacher=teachers.find(t=>String(t.id)===String(tid));
    if(!teacher)return msg('wfStatementMsg','Choose a teacher first.',true);
-   return runWelfarePdf($('wfStatementPdf'),'wfStatementMsg','Member statement PDF downloaded successfully.',()=>({
-     type:'individual',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},
-     teacher,teachers,contributions:activeCons.filter(x=>String(x.teacher_id)===String(tid)),
-     payouts:pays.filter(row=>String(row.school_id||'')===String(ctx.id))
-      .sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||String(a.id||'').localeCompare(String(b.id||''))),
-     personalPayoutTotal:pays.filter(row=>String(row.teacher_id||'')===String(teacher.id||'')&&String(row.school_id||'')===String(ctx.id)).reduce((sum,row)=>sum+Number(row.amount||0),0),
-     personalContributionTotal:activeCons.filter(x=>String(x.teacher_id)===String(tid)).reduce((sum,row)=>sum+Number(row.amount||0),0),
-     schoolFundBalance:activeCons.reduce((sum,row)=>sum+Number(row.amount||0),0)-activePays.reduce((sum,row)=>sum+Number(row.amount||0),0),
-     academicYear:window.getCurrentAcademicYear(),
-     standardMonthlyDues
-   }));
+   return runWelfarePdf($('wfStatementPdf'),'wfStatementMsg','Member statement PDF downloaded successfully.',()=>buildIndividualStatementOptions(tid,teacher));
  });
+ $('wfStatementShare').addEventListener('click',()=>{
+   const tid=$('wfStatementTeacher').value,prepared=preparedIndividualShare;
+   if(!tid)return msg('wfStatementMsg','Choose a teacher first.',true);
+   if(!prepared||String(prepared.tid)!==String(tid)){
+     if(!individualSharePreparation)prepareIndividualStatementShare();
+     msg('wfStatementMsg','Your statement is still being prepared. Please tap Share PDF again when preparation is complete.');
+     return;
+   }
+   const shareTitle=String(prepared.fileName).replace(/\\.pdf$/i,'').replace(/[-_]+/g,' ');
+   const shareText='Please find attached this school welfare PDF report.';
+   const shareData={files:[prepared.pdfFile],title:shareTitle,text:shareText};
+   let supportsFileShare=false;
+   try{
+     supportsFileShare=typeof navigator.share==='function'&&(!navigator.canShare||navigator.canShare(shareData));
+   }catch(_){supportsFileShare=false;}
+   if(supportsFileShare){
+     // Invoke synchronously in this click handler: no await, promise chain, cache,
+     // verification call, or QR request is allowed before native share().
+     let sharePromise;
+     try{sharePromise=navigator.share(shareData);}
+     catch(error){
+       if(error?.name==='AbortError'){msg('wfStatementMsg','PDF sharing was cancelled.');return;}
+       console.warn('[School Welfare PDF] Individual native file share failed:',error);
+       downloadWorkflowBlob(prepared.generated.blob,prepared.fileName,'wfStatementMsg','The PDF could not be shared. Your PDF has been downloaded instead.','Tap here to view downloaded PDF');
+       return;
+     }
+     Promise.resolve(sharePromise).then(()=>{
+       msg('wfStatementMsg','PDF shared successfully.');
+     }).catch(error=>{
+       if(error?.name==='AbortError'){msg('wfStatementMsg','PDF sharing was cancelled.');return;}
+       console.warn('[School Welfare PDF] Individual native file share failed:',error);
+       downloadWorkflowBlob(prepared.generated.blob,prepared.fileName,'wfStatementMsg','The PDF could not be shared. Your PDF has been downloaded instead.','Tap here to view downloaded PDF');
+     });
+     return;
+   }
+   const linkText='Verify this official Welfare PDF report:';
+   const shareUrl=prepared.verificationUrl;
+   if(typeof navigator.share==='function'){
+     let linkPromise;
+     try{linkPromise=navigator.share({title:shareTitle,text:linkText,url:shareUrl||undefined});}
+     catch(error){linkPromise=Promise.reject(error);}
+     Promise.resolve(linkPromise).then(()=>{
+       msg('wfStatementMsg',shareUrl?'Verification link shared. No PDF file was attached.':'Report details shared. No PDF file was attached.');
+     }).catch(error=>{
+       if(error?.name==='AbortError'){msg('wfStatementMsg','PDF sharing was cancelled.');return;}
+       const whatsappUrl='https://wa.me/?text='+encodeURIComponent(linkText+(shareUrl?' '+shareUrl:''));
+       let opened=null;try{opened=window.open(whatsappUrl,'_blank');}catch(_){}
+       if(opened)msg('wfStatementMsg','Verification link opened in WhatsApp. No PDF file was attached.');
+       else downloadWorkflowBlob(prepared.generated.blob,prepared.fileName,'wfStatementMsg','File sharing is not supported here. Your PDF has been downloaded instead.','Tap here to view downloaded PDF');
+     });
+     return;
+   }
+   const whatsappUrl='https://wa.me/?text='+encodeURIComponent(linkText+(shareUrl?' '+shareUrl:''));
+   let opened=null;try{opened=window.open(whatsappUrl,'_blank');}catch(_){}
+   if(opened)msg('wfStatementMsg','Verification link opened in WhatsApp. No PDF file was attached.');
+   else downloadWorkflowBlob(prepared.generated.blob,prepared.fileName,'wfStatementMsg','File sharing is not supported here. Your PDF has been downloaded instead.','Tap here to view downloaded PDF');
+ });
+ // Prepare the currently selected member as soon as the report controls are ready.
+ prepareIndividualStatementShare();
 
  $('wfMonthlyShare').addEventListener('click',()=>{
    const selectedMonth=$('wfReportMonth').value,selectedYear=$('wfReportYear').value;
