@@ -3306,6 +3306,9 @@ function showDemoDashboard(){
  setTenantFooter(school);
  if(demoRole==='teacher'){
   window.__welfareCurrentRole='teacher';
+  const activityTicker=document.getElementById('adminActivityTicker');
+  if(activityTicker)activityTicker.classList.add('hidden');
+  document.body.classList.remove('admin-activity-ticker-active');
   setDemoMetricLabel('teacherCount','Registered Members');
   setDemoMetricLabel('contributionTotal','My Contributions');
   setDemoMetricLabel('payoutTotal','My Payouts');
