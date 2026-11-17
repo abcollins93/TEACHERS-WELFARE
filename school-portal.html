@@ -5999,32 +5999,11 @@ body.sidebar-open{overflow:hidden}
 .dark #schoolOverview .dashboard-metrics .metric-member-arrears.is-unavailable .metric-icon{background:#26364d;color:#cbd5e1}
 </style>
 
-<style id="welfare-offline-status-styles">
-#welfareNetworkBanner{position:sticky;top:0;z-index:11900;display:flex;align-items:center;gap:10px;padding:10px 14px;margin:0 0 10px;border:1px solid #d97706;border-radius:0 0 12px 12px;background:#fff7e6;color:#78350f;font-size:13px;font-weight:750;box-shadow:0 5px 16px rgba(15,23,42,.08)}
-#welfareNetworkBanner[hidden]{display:none!important}
-#welfareNetworkBanner .wnb-dot{width:9px;height:9px;flex:0 0 9px;border-radius:50%;background:#d97706}
-#welfareNetworkBanner .wnb-copy{flex:1;min-width:0}
-#welfareNetworkBanner button,#welfareCachedPanel button{border:1px solid currentColor;border-radius:8px;padding:6px 10px;background:transparent;color:inherit;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
-#welfareCachedPanel{position:fixed;inset:auto 12px 14px auto;z-index:14000;width:min(430px,calc(100vw - 24px));max-height:min(70vh,620px);overflow:auto;padding:16px;border:1px solid #cbd5e1;border-radius:16px;background:#fff;color:#10233d;box-shadow:0 20px 60px rgba(2,8,23,.28)}
-#welfareCachedPanel[hidden]{display:none!important}
-#welfareCachedPanel h3{margin:0 0 4px;font-size:16px}
-#welfareCachedPanel p{margin:0 0 12px;color:#64748b;font-size:12px}
-#welfareCachedPanel .wcs-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-top:1px solid #e2e8f0}
-#welfareCachedPanel .wcs-name{min-width:0;overflow-wrap:anywhere;font-size:12px;font-weight:750}
-#welfareCachedPanel .wcs-meta{display:block;color:#64748b;font-size:11px;font-weight:500}
-#welfareCachedPanel .wcs-actions{display:flex;gap:6px;flex-shrink:0}
-#welfareCachedPanel .wcs-actions button{color:#12376b}
-#welfareCachedPanel .wcs-close{display:block;margin:12px 0 0 auto}
-.dark #welfareCachedPanel,body.dark #welfareCachedPanel{background:#0b1d3a;color:#edf4ff;border-color:#334155}
-.dark #welfareCachedPanel .wcs-item,body.dark #welfareCachedPanel .wcs-item{border-color:#334155}
-.dark #welfareCachedPanel p,body.dark #welfareCachedPanel p,.dark #welfareCachedPanel .wcs-meta,body.dark #welfareCachedPanel .wcs-meta{color:#a9bad0}
-@media(max-width:600px){#welfareNetworkBanner{font-size:12px;padding:9px 10px}#welfareCachedPanel{inset:auto 8px 8px;width:calc(100vw - 16px)}}
-</style>
 <script id="welfare-offline-cache-controller">
 (function(){
  'use strict';
  const DB_NAME='welfare-offline-statements',STORE='pdfs',DB_VERSION=1,MAX_ITEMS=25;
- let dbPromise=null,networkState='unknown',syncTimer=null;
+ let dbPromise=null;
  const openDb=()=>dbPromise||(dbPromise=new Promise((resolve,reject)=>{
   const request=indexedDB.open(DB_NAME,DB_VERSION);
   request.onupgradeneeded=()=>{const db=request.result;if(!db.objectStoreNames.contains(STORE)){const store=db.createObjectStore(STORE,{keyPath:'key'});store.createIndex('school_code','school_code',{unique:false});store.createIndex('saved_at','saved_at',{unique:false});}};
@@ -6032,60 +6011,6 @@ body.sidebar-open{overflow:hidden}
  }));
  const withStore=async(mode,run)=>{const db=await openDb();return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,mode),store=tx.objectStore(STORE);let value;try{value=run(store)}catch(e){reject(e);return;}tx.oncomplete=()=>resolve(value);tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||new Error('Offline statement storage failed.'));});};
  const tenantCode=()=>String(window.__welfareCurrentSchool?.school_code||window.__welfareCurrentSchool?.schoolCode||new URL(location.href).searchParams.get('c')||'').trim().toUpperCase();
- const banner=()=>document.getElementById('welfareNetworkBanner');
- function showBanner(state,detail){
-  networkState=state;const node=banner();if(!node)return;
-  const offline=state==='offline',slow=state==='slow';
-  node.hidden=!(offline||slow);
-  if(node.hidden)return;
-  node.querySelector('.wnb-dot').style.background=offline?'#dc2626':'#d97706';
-  node.querySelector('.wnb-copy').textContent=offline?'You are offline. Showing cached portal content and statements where available.':(detail?'Slow or unstable connection. '+detail+'. Cached content is available where possible.':'Slow network detected. Showing cached content where available.');
- }
- function showOnlinePending(){networkState='syncing';const node=banner();if(!node)return;node.hidden=false;node.querySelector('.wnb-dot').style.background='#2563eb';node.querySelector('.wnb-copy').textContent='Connection restored. Refreshing portal data…';}
- function showOnline(){networkState='online';const node=banner();if(node){node.hidden=true;}window.dispatchEvent(new CustomEvent('welfare:network-online'));}
- function networkCheck(){
-  const conn=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
-  if(!navigator.onLine){showBanner('offline');return;}
-  if(conn&&(['slow-2g','2g'].includes(String(conn.effectiveType||'').toLowerCase())||conn.saveData===true)){showBanner('slow');return;}
-  if(networkState==='offline'||networkState==='slow'||networkState==='syncing')showOnlinePending();
- }
- function announceFreshData(){if(navigator.onLine){clearTimeout(syncTimer);syncTimer=setTimeout(()=>showOnline(),1100);}}
- function ensureUi(){
-  if(!document.getElementById('welfareNetworkBanner')){
-   const bar=document.createElement('div');bar.id='welfareNetworkBanner';bar.hidden=true;bar.setAttribute('role','status');bar.setAttribute('aria-live','polite');
-   bar.innerHTML='<span class="wnb-dot" aria-hidden="true"></span><span class="wnb-copy">Network status</span><button type="button" id="welfareCachedOpen">Cached statements</button>';
-   const target=document.querySelector('header.top')||document.body;target.parentNode.insertBefore(bar,target);
-   bar.querySelector('button').addEventListener('click',openCachedPanel);
-  }
-  if(!document.getElementById('welfareCachedPanel')){
-   const panel=document.createElement('aside');panel.id='welfareCachedPanel';panel.hidden=true;panel.setAttribute('aria-label','Cached PDF statements');
-   panel.innerHTML='<h3>Cached statements</h3><p>Previously generated PDFs saved on this device for this school.</p><div id="welfareCachedList">Loading saved statements…</div><button class="wcs-close" type="button">Close</button>';
-   document.body.appendChild(panel);panel.querySelector('.wcs-close').addEventListener('click',()=>panel.hidden=true);
-  }
- }
- async function listCached(){
-  const code=tenantCode();if(!code)return [];
-  const db=await openDb();return new Promise((resolve,reject)=>{
-   const tx=db.transaction(STORE,'readonly'),request=tx.objectStore(STORE).index('school_code').getAll(code);
-   request.onsuccess=()=>resolve((request.result||[]).sort((a,b)=>b.saved_at-a.saved_at).slice(0,MAX_ITEMS));request.onerror=()=>reject(request.error);
-  });
- }
- async function openCachedPanel(){
-  ensureUi();const panel=document.getElementById('welfareCachedPanel'),list=document.getElementById('welfareCachedList');panel.hidden=false;list.textContent='Loading saved statements…';
-  try{
-   const rows=await listCached();list.replaceChildren();
-   if(!rows.length){const p=document.createElement('p');p.textContent='No previously generated statements are cached for this school on this device.';list.appendChild(p);return;}
-   rows.forEach(row=>{
-    const item=document.createElement('div');item.className='wcs-item';
-    const name=document.createElement('div');name.className='wcs-name';name.textContent=row.filename||'Welfare statement.pdf';
-    const meta=document.createElement('span');meta.className='wcs-meta';meta.textContent=(row.document_type||'Statement')+' · '+new Date(row.saved_at).toLocaleString();name.appendChild(meta);
-    const actions=document.createElement('div');actions.className='wcs-actions';
-    const view=document.createElement('button');view.type='button';view.textContent='Open';view.addEventListener('click',()=>{const url=URL.createObjectURL(row.blob),a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';a.click();setTimeout(()=>URL.revokeObjectURL(url),5*60*1000);});
-    const save=document.createElement('button');save.type='button';save.textContent='Download';save.addEventListener('click',()=>{const url=URL.createObjectURL(row.blob),a=document.createElement('a');a.href=url;a.download=row.filename||'Welfare_Statement.pdf';a.click();setTimeout(()=>URL.revokeObjectURL(url),5*60*1000);});
-    actions.append(view,save);item.append(name,actions);list.appendChild(item);
-   });
-  }catch(error){list.textContent='Cached statements are unavailable in this browser. '+(error?.message||'');}
- }
  window.cacheWelfareStatementPdf=async function(blob,filename,meta){
   try{
    if(!(blob instanceof Blob)||!String(blob.type||'').toLowerCase().startsWith('application/pdf'))return false;
@@ -6095,23 +6020,9 @@ body.sidebar-open{overflow:hidden}
    const db=await openDb();
    const all=await new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readonly').objectStore(STORE).index('school_code').getAll(code);r.onsuccess=()=>resolve(r.result||[]);r.onerror=()=>reject(r.error);});
    all.sort((a,b)=>b.saved_at-a.saved_at).slice(MAX_ITEMS).forEach(row=>withStore('readwrite',store=>store.delete(row.key)).catch(()=>{}));
-   window.dispatchEvent(new CustomEvent('welfare:cached-statement',{detail:{school_code:code}}));return true;
+   return true;
   }catch(error){console.warn('[Welfare offline] PDF cache unavailable:',error?.message||error);return false;}
  };
- window.openWelfareCachedStatements=openCachedPanel;
- window.addEventListener('online',()=>{showOnlinePending();networkCheck();});
- window.addEventListener('offline',()=>showBanner('offline'));
- const conn=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
- if(conn&&typeof conn.addEventListener==='function')conn.addEventListener('change',networkCheck);
- if(navigator.serviceWorker)navigator.serviceWorker.addEventListener('message',event=>{
-  const message=event.data||{};if(message.type!=='WELFARE_NETWORK_STATUS')return;
-  if(message.state==='online'){if(navigator.onLine)announceFreshData();}
-  else if(message.state==='offline')showBanner('offline',message.detail);
-  else if(message.state==='slow')showBanner('slow',message.detail);
- });
- window.addEventListener('welfare:data-refreshed',announceFreshData);
- window.addEventListener('welfare:cached-statement',()=>{const button=document.getElementById('welfareCachedOpen');if(button)button.textContent='Cached statements';});
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{ensureUi();networkCheck();},{once:true});else{ensureUi();networkCheck();}
 })();
 </script>
 </body>
