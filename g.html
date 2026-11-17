@@ -39,6 +39,20 @@
       var message = document.getElementById('message');
       var link = document.getElementById('continue');
       var heading = document.querySelector('main h1');
+      var redirecting = false;
+      function navigate(target, label) {
+        if (redirecting) return;
+        redirecting = true;
+        link.href = target.href;
+        message.textContent = label || 'School verified. Opening your portal…';
+        window.location.replace(target.href);
+        window.setTimeout(function(){
+          if (document.visibilityState === 'visible') {
+            link.style.display = 'inline';
+            link.textContent = 'Open school portal';
+          }
+        }, 1400);
+      }
       var code = (params.get('c') || params.get('school_code') || params.get('tenant') || params.get('school') ||
         hashParams.get('c') || hashParams.get('school_code') || hashParams.get('tenant') || hashParams.get('school') ||
         stored('invited_school_code') || stored('active_tenant_code') || '').trim().toUpperCase();
@@ -46,8 +60,7 @@
         var demoTarget = new URL('school-portal.html', window.location.href);
         demoTarget.searchParams.set('c', 'DEMO');
         demoTarget.searchParams.set('role', 'teacher');
-        link.href = demoTarget.href;
-        window.location.replace(demoTarget.href);
+        navigate(demoTarget, 'Opening the live DEMO sandbox…');
         return;
       }
       if (code && code !== 'DEMO' && /^[A-Z0-9-]{2,32}$/.test(code)) {
@@ -104,8 +117,7 @@
         var target = new URL('school-portal.html', window.location.href);
         target.searchParams.set('c', code);
         target.searchParams.delete('school');
-        link.href = target.href;
-        window.location.replace(target.href);
+        navigate(target, 'School verified. Opening your secure portal…');
       } catch (error) {
         block('School gateway unavailable', 'We could not verify this school’s access status. For security, sign-in is blocked. Please try again later or contact the platform administrator.');
       }
