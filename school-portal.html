@@ -3267,6 +3267,7 @@ function scheduleDemoAdminWorkflows(school){
   if('requestIdleCallback' in window)window.requestIdleCallback(run,{timeout:900});
   else window.setTimeout(run,60);
  }).then(result=>{
+  if(!result)demoWorkflowMountPromise=null;
   if(demoRole==='teacher'){
    window.__welfareCurrentRole='teacher';
    const activityTicker=document.getElementById('adminActivityTicker');
