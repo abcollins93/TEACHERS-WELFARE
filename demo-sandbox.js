@@ -34,7 +34,7 @@
   {id:'demo-ann-1',school_id:school.id,message:'Welcome to the DEMO BASIC SCHOOL welfare portal. Explore the dashboard, contribution ledger and reports.',created_at:'2026-03-01T08:00:00Z',published_at:'2026-03-01T08:00:00Z',active:true},
   {id:'demo-ann-2',school_id:school.id,message:'Monthly standard welfare dues are GHS 20.00. Please review your contribution history and outstanding months.',created_at:'2026-03-05T08:00:00Z',published_at:'2026-03-05T08:00:00Z',active:true}
  ];
- let settings=[{school_id:school.id,key:'standard_dues',value:'20'},{school_id:school.id,key:'school_announcement',value:announcements[0].message},{school_id:school.id,key:'headteacher_name',value:'Mrs. Akosua Mensah'},{school_id:school.id,key:'financial_secretary_name',value:'Mr. Kwame Asare'}];
+ let settings=[{school_id:school.id,key:'standard_dues',value:'20'},{school_id:school.id,key:'school_announcement',value:announcements[0].message},{school_id:school.id,key:'broadcast_message',value:announcements[1].message},{school_id:school.id,key:'headteacher_name',value:'Mrs. Akosua Mensah'},{school_id:school.id,key:'financial_secretary_name',value:'Mr. Kwame Asare'}];
  let accounts=[],activeTeacherIndex=0;
  const user={id:'demo-admin-user',email:'admin@demo.welfare.local',user_metadata:{full_name:'Demo Administrator',name:'Demo Administrator'},app_metadata:{account_type:'school_admin'}};
  const clone=x=>JSON.parse(JSON.stringify(x));
