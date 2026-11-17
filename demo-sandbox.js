@@ -83,8 +83,14 @@
  }
  function activeCon(){const rev=new Set(reversals.filter(x=>x.transaction_type==='contribution').map(x=>String(x.transaction_id)));return contributions.filter(x=>!rev.has(String(x.id))&&!x.is_reversed&&String(x.status||'').toLowerCase()!=='reversed');}
  function activePay(){const rev=new Set(reversals.filter(x=>x.transaction_type==='payout').map(x=>String(x.transaction_id)));return payouts.filter(x=>!rev.has(String(x.id)));}
+ const demoStorage={};
  const client={
   __welfareDemo:true,
+  storage:{from(bucket){return {
+   async upload(path,file){demoStorage[bucket+'/'+path]=file;return {data:{path},error:null};},
+   async createSignedUrl(path){return {data:{signedUrl:demoStorage[bucket+'/'+path] instanceof Blob?URL.createObjectURL(demoStorage[bucket+'/'+path]):null},error:{statusCode:'404',message:'No demo profile image'}};},
+   async remove(paths){(paths||[]).forEach(path=>delete demoStorage[bucket+'/'+path]);return {data:[],error:null};}
+  };}},
   auth:{
    async getUser(){const selected=teachers[activeTeacherIndex];return {data:{user:window.__welfareDemoRole==='teacher'?{...user,id:'demo-teacher-auth',email:selected.email,user_metadata:{full_name:selected.name,account_type:'teacher'}}:user},error:null};},
    async getSession(){return {data:{session:{access_token:'demo-local-session',user}},error:null};},
