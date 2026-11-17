@@ -897,7 +897,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    if(primary&&clone){primary.innerHTML=items;clone.innerHTML=items;}
  };
  await refreshAdminActivityTicker();
- window.__adminActivityTickerTimer=setInterval(refreshAdminActivityTicker,30000);
+ if(!isLocalDemo)window.__adminActivityTickerTimer=setInterval(refreshAdminActivityTicker,30000);
 
  const adminTeacherProfileNav=document.querySelector('.sidebar .navbtn[data-target="wfTeacherPanel"]');
  if(adminTeacherProfileNav){adminTeacherProfileNav.style.display='none';adminTeacherProfileNav.setAttribute('aria-hidden','true');}
@@ -963,6 +963,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   return !reversed.has('contribution:'+item.id)&&!statuses.includes('reversed')&&!reversedFlag&&!item.reversed_at&&!item.reversedAt;
  };
  let activeCons=cons.filter(isActiveContributionRecord), activePays=pays.filter(x=>!reversed.has('payout:'+x.id));
+ const demoLatestMonthKey=isLocalDemo?cons.reduce((latest,row)=>String(row.date||'')>latest?String(row.date||''):latest,'').slice(0,7):'';
 
  const contribStyle=document.createElement('style');
  contribStyle.textContent=`
@@ -1533,7 +1534,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     $('contributionTotal').textContent=cr.error?'Unavailable':'GHS '+money(totalCon);
     $('payoutTotal').textContent=pr.error?'Unavailable':'GHS '+money(totalPay);
     $('netTotal').textContent=(cr.error||pr.error)?'Unavailable':'GHS '+money(totalCon-totalPay);
-    const now=new Date(),monthKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+    const now=new Date(),monthKey=isLocalDemo?(demoLatestMonthKey||'2026-03'):now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
     if($('monthlyContributionTotal'))$('monthlyContributionTotal').textContent=cr.error?'Unavailable':'GHS '+money(activeCons.filter(item=>String(item.date||'').slice(0,7)===monthKey).reduce((sum,item)=>sum+Number(item.amount||0),0));
     renderContributionLedger();
     renderDuesMatrix();
