@@ -107,6 +107,7 @@ function showPwaInstallNotice(tenantLabel){
    document.title=label+' | Welfare Portal';
  }
  window.updateWelfarePwaTenant=function(name,code){
+   if(new URLSearchParams(location.search).get('c')?.trim().toUpperCase()==='DEMO')return;
    if(code)persistSchoolCode(code);
    if(name)persistTenantName(name);
    injectTenantManifest();
@@ -125,6 +126,7 @@ function showPwaInstallNotice(tenantLabel){
        var node=document.getElementById(id);
        if(!node)return;
        var update=function(){
+         if(new URLSearchParams(location.search).get('c')?.trim().toUpperCase()==='DEMO')return;
          var value=(node.textContent||'').trim();
          if(value&&value!=='School gateway unavailable'&&value!=='Loading...'){
            persistTenantName(value);
