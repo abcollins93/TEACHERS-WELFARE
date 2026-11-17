@@ -975,7 +975,13 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   const inactiveFlag=statuses.some(status=>['inactive','deleted','cancelled','canceled','void','archived'].includes(status));
   return !reversed.has('contribution:'+item.id)&&!statuses.includes('reversed')&&!inactiveFlag&&!reversedFlag&&!item.reversed_at&&!item.reversedAt;
  };
- let activeCons=cons.filter(isActiveContributionRecord), activePays=pays.filter(x=>!reversed.has('payout:'+x.id));
+ const isActivePayoutRecord=item=>{
+  if(!item||typeof item!=='object')return false;
+  const status=String(item.status||item.transaction_status||'').trim().toLowerCase();
+  const reversedFlag=[item.is_reversed,item.isReversed,item.reversed].some(value=>value===true||['true','t','1','yes'].includes(String(value).trim().toLowerCase()));
+  return !reversed.has('payout:'+item.id)&&!['reversed','inactive','deleted','cancelled','canceled','void','archived'].includes(status)&&!reversedFlag&&!item.reversed_at&&!item.reversedAt;
+ };
+ let activeCons=cons.filter(isActiveContributionRecord), activePays=pays.filter(isActivePayoutRecord);
  const demoLatestMonthKey=isLocalDemo?cons.reduce((latest,row)=>String(row.date||'')>latest?String(row.date||''):latest,'').slice(0,7):'';
 
  const contribStyle=document.createElement('style');
@@ -1541,7 +1547,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     activeCons=cons.filter(isActiveContributionRecord);
     const contributionRecordsCount=$('adminContributionRecordsCount');
     if(contributionRecordsCount)contributionRecordsCount.textContent=(cr.error||rr.error)?'Unavailable':String(activeCons.length);
-    activePays=pays.filter(item=>!reversed.has('payout:'+item.id));
+    activePays=pays.filter(isActivePayoutRecord);
     const totalCon=activeCons.reduce((sum,item)=>sum+Number(item.amount||0),0);
     const totalPay=activePays.reduce((sum,item)=>sum+Number(item.amount||0),0);
     $('contributionTotal').textContent=cr.error?'Unavailable':'GHS '+money(totalCon);
