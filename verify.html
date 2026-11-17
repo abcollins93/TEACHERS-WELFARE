@@ -64,6 +64,18 @@
  async function verify(){
   const params=new URLSearchParams(location.search),code=(params.get('c')||'').trim().toUpperCase(),id=(params.get('d')||'').trim();
   if(!code||!id){invalid();return}
+  if(code==='DEMO'){
+   $('loading').hidden=true;$('result').hidden=false;$('status').classList.add('good');
+   $('statusText').textContent='Demo Statement Preview';
+   $('schoolName').textContent='DEMO BASIC SCHOOL';
+   $('intro').textContent='This is a sample document preview from the public Welfare demo sandbox. It is not an official school-issued or independently verified statement.';
+   text('documentId',id);text('schoolCode','DEMO');text('documentType','Demo welfare statement');
+   text('academicYear','2025 / 2026');text('period','April 2025 – March 2026');
+   text('contributions',money(1480));text('payouts',money(450));text('balance',money(1030));
+   $('details').hidden=false;$('invalidNotice').hidden=true;
+   text('issuedAt','DEMO sandbox · Local preview only');
+   return;
+  }
   try{
    const response=await fetch(API+'?c='+encodeURIComponent(code)+'&d='+encodeURIComponent(id),{method:'GET',headers:{apikey:KEY,Accept:'application/json'},cache:'no-store'});
    const data=await response.json();
