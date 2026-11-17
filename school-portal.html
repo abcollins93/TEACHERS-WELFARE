@@ -2842,7 +2842,7 @@ async function renderTeacherDashboard(profile,school){
     is_reversed:row.is_reversed===true
    }));
    const personalPayoutTotal=personalPayouts.reduce((sum,row)=>sum+Number(row.amount||0),0);
-   const generatedStatement=await window.generateTenantWelfarePdf({
+   const statementPdfOptions={
     type:'individual',
     school:{name:school.name,school_code:school.school_code,district:school.district,region:school.region},
     teacher:{id:verifiedTeacherId,staff_id:profile.staff_id||profile.staffId||teacherRecord?.staff_id||'',user_id:verifiedUser.id,auth_user_id:verifiedUser.id,name:teacherRecord?.name||teacherName,phone:teacherRecord?.phone||'',rank:teacherRecord?.rank||profile.rank||'',class_name:teacherRecord?.class_name||profile.class_name||'',passport:teacherAvatar||teacherRecord?.passport||''},
@@ -2852,8 +2852,10 @@ async function renderTeacherDashboard(profile,school){
     personalContributionTotal:activePersonalContributionTotal,
     schoolFundBalance:schoolWideFundBalance,
     standardMonthlyDues:teacherStandardMonthlyDues,
-    academicYear:window.getCurrentAcademicYear()
-   });
+    academicYear:window.getCurrentAcademicYear(),
+    shareIntent:sharePdf
+   };
+   const generatedStatement=await window.generateTenantWelfarePdf(statementPdfOptions);
    const pdfBlob=generatedStatement?.blob;
    const rawFilename=String(generatedStatement?.filename||'Welfare_Statement_Report.pdf');
    const filename=(rawFilename.replace(/\\.pdf$/i,'')||'Welfare_Statement_Report')+'.pdf';
@@ -2862,10 +2864,25 @@ async function renderTeacherDashboard(profile,school){
     const pdfFile=new File([pdfBlob],filename,{type:'application/pdf'});
     const shareTitle=(school.name||'School')+' Member Welfare Statement';
     const shareText='Please find attached my member welfare statement.';
-    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[pdfFile]})){
-     try{await navigator.share({files:[pdfFile],title:shareTitle,text:shareText});statementStatus('PDF statement shared successfully.');}
-     catch(shareError){if(shareError?.name==='AbortError')statementStatus('PDF sharing was cancelled.');else{console.warn('[Teacher statement] File sharing unavailable:',shareError);window.downloadWelfareBlob(pdfBlob,filename,statementMessage,'File sharing is unavailable. Your PDF statement has been downloaded instead.');}}
-    }else window.downloadWelfareBlob(pdfBlob,filename,statementMessage,'File sharing is not supported here. Your PDF statement has been downloaded instead.');
+    const verificationUrl=generatedStatement?.documentId&&school?.school_code
+     ?'https://abcollins93.github.io/TEACHERS-WELFARE/verify.html?c='+encodeURIComponent(school.school_code)+'&d='+encodeURIComponent(generatedStatement.documentId)
+     :'';
+    const canShareFile=typeof navigator.share==='function'&&(!navigator.canShare||navigator.canShare({files:[pdfFile]}));
+    let shared=false;
+    if(canShareFile){
+     try{await navigator.share({files:[pdfFile],title:shareTitle,text:shareText});shared=true;statementStatus('PDF shared successfully.');}
+     catch(shareError){if(shareError?.name==='AbortError'){statementStatus('PDF sharing was cancelled.');return;}console.warn('[Teacher statement] Native file share failed:',shareError);}
+    }
+    if(!shared&&typeof navigator.share==='function'){
+     try{await navigator.share({title:shareTitle,text:shareText,url:verificationUrl||undefined});shared=true;statementStatus(verificationUrl?'Verification link shared. The PDF can be downloaded separately.':'Statement details shared.');}
+     catch(linkShareError){if(linkShareError?.name==='AbortError'){statementStatus('PDF sharing was cancelled.');return;}console.warn('[Teacher statement] Link share unavailable:',linkShareError);}
+    }
+    if(!shared){
+     const whatsappUrl='https://wa.me/?text='+encodeURIComponent(shareText+(verificationUrl?' '+verificationUrl:''));
+     let whatsappWindow=null;try{whatsappWindow=window.open(whatsappUrl,'_blank','noopener,noreferrer');}catch(_){}
+     if(whatsappWindow)statementStatus('WhatsApp share opened. Attach the downloaded PDF to send the file.');
+     else window.downloadWelfareBlob(pdfBlob,filename,statementMessage,'Sharing is unavailable here. Your PDF statement has been downloaded instead.');
+    }
    }else window.downloadWelfareBlob(pdfBlob,filename,statementMessage,'Your personal PDF statement is ready.');
   }catch(error){
    console.error('[Teacher statement] PDF generation failed:',error);
@@ -4179,20 +4196,29 @@ window.generateTenantWelfarePdf=async function(options){
  if(typeof window.html2pdf!=='function')throw new Error('The PDF library is unavailable. Check your internet connection and try again.');
  const opts=options&&typeof options==='object'?options:{};
  const generated=await generator(opts);
- if(typeof window.registerTenantStatementVerification!=='function')throw new Error('The secure statement verification service is unavailable. The PDF was not issued.');
- await window.registerTenantStatementVerification({
+ const verificationDetails={
   school_code:opts.school?.school_code,
   document_id:generated.documentId,
   document_type:opts.type,
   period:opts.month||opts.year||'',
   teacher_id:opts.teacher?.id||'',
   academic_year:opts.academicYear||''
- });
- if(typeof window.cacheWelfareStatementPdf==='function'){
-  await window.cacheWelfareStatementPdf(generated.blob,generated.filename,{
-   school_code:opts.school?.school_code,document_id:generated.documentId,
-   document_type:opts.type,period:opts.month||opts.year||'',academic_year:opts.academicYear||''
-  });
+ };
+ if(opts.shareIntent){
+  // Share flows must not wait on verification/cache network calls after the
+  // user's tap. Register and cache in the background while preserving QR URL.
+  if(typeof window.registerTenantStatementVerification==='function'){
+   Promise.resolve(window.registerTenantStatementVerification(verificationDetails))
+    .catch(error=>console.warn('[Welfare PDF] Verification registration deferred during share:',error?.message||error));
+  }
+  if(typeof window.cacheWelfareStatementPdf==='function'){
+   Promise.resolve(window.cacheWelfareStatementPdf(generated.blob,generated.filename,verificationDetails))
+    .catch(error=>console.warn('[Welfare PDF] Local cache deferred during share:',error?.message||error));
+  }
+ }else{
+  if(typeof window.registerTenantStatementVerification!=='function')throw new Error('The secure statement verification service is unavailable. The PDF was not issued.');
+  await window.registerTenantStatementVerification(verificationDetails);
+  if(typeof window.cacheWelfareStatementPdf==='function')await window.cacheWelfareStatementPdf(generated.blob,generated.filename,verificationDetails);
  }
  return generated;
 };
