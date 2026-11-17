@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_VERSION='twf-pwa-shell-v14';
+const CACHE_VERSION='twf-pwa-shell-v15';
 const STATEMENT_CACHE='twf-cached-statements-v1';
 const NETWORK_TIMEOUT_MS=12000;
 async function reportNetworkState(state,detail){
@@ -22,6 +22,7 @@ const SHELL_ASSETS=[
  './',
  './index.html',
  './school-portal.html',
+ './demo-sandbox.js',
  './set-password.html',
  './g.html',
  './offline.html',
