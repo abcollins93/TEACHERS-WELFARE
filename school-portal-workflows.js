@@ -953,7 +953,13 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    console.warn('[School Welfare] Partial dashboard data for school',school.school_code,sourceWarnings);
  }
  const reversed=new Set(reversals.map(r=>r.transaction_type+':'+r.transaction_id));
- let activeCons=cons.filter(x=>!reversed.has('contribution:'+x.id)), activePays=pays.filter(x=>!reversed.has('payout:'+x.id));
+ const isActiveContributionRecord=item=>{
+  if(!item||typeof item!=='object')return false;
+  const statuses=[item.status,item.transaction_status,item.reversal_status].map(value=>String(value||'').trim().toLowerCase());
+  const reversedFlag=[item.is_reversed,item.isReversed,item.reversed].some(value=>value===true||['true','t','1','yes'].includes(String(value).trim().toLowerCase()));
+  return !reversed.has('contribution:'+item.id)&&!statuses.includes('reversed')&&!reversedFlag&&!item.reversed_at&&!item.reversedAt;
+ };
+ let activeCons=cons.filter(isActiveContributionRecord), activePays=pays.filter(x=>!reversed.has('payout:'+x.id));
 
  const contribStyle=document.createElement('style');
  contribStyle.textContent=`
@@ -1515,7 +1521,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     cons=nextCon.data||[];pays=nextPay.data||[];reversals=nextRev.data||[];
     reversed.clear();
     reversals.forEach(item=>reversed.add(item.transaction_type+':'+item.transaction_id));
-    activeCons=cons.filter(item=>!reversed.has('contribution:'+item.id));
+    activeCons=cons.filter(isActiveContributionRecord);
     const contributionRecordsCount=$('adminContributionRecordsCount');
     if(contributionRecordsCount)contributionRecordsCount.textContent=(cr.error||rr.error)?'Unavailable':String(activeCons.length);
     activePays=pays.filter(item=>!reversed.has('payout:'+item.id));
