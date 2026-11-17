@@ -2523,6 +2523,8 @@ async function renderTeacherDashboard(profile,school){
  if(balanceNote)balanceNote.textContent='School-wide contributions less all active welfare payouts';
  const standardLabel=document.querySelector('#schoolOverview .metric-standard .metric-label');
  if(standardLabel)standardLabel.textContent='MY CONTRIBUTION RECORDS';
+ const standardNote=document.querySelector('#schoolOverview .metric-standard .metric-note');
+ if(standardNote)standardNote.textContent='Active non-reversed entries';
  const standardValue=$('standardDuesMetric');if(standardValue)standardValue.textContent=String(activeTeacherContributionCount());
  const existingTeacherDuesCard=$('teacherStandardMonthlyDues');
  if(existingTeacherDuesCard)existingTeacherDuesCard.remove();
@@ -2609,15 +2611,21 @@ async function renderTeacherDashboard(profile,school){
   }
   const [startYear,startMonth]=startMonthKey.split('-').map(Number);
   const expectedMonths=(now.getFullYear()-startYear)*12+(now.getMonth()+1-startMonth)+1;
+  const rowMonthKey=row=>{
+   const candidates=[row.payment_date,row.contribution_date,row.date,row.created_at]
+    .map(monthKeyFromDate).filter(Boolean);
+   return candidates[0]||'';
+  };
   const periodRows=activeRows.filter(row=>{
-   const rowMonth=monthKeyFromDate(row.payment_date||row.contribution_date||row.date);
+   const rowMonth=rowMonthKey(row);
    return rowMonth&&rowMonth>=startMonthKey&&rowMonth<=currentMonthKey;
   });
-  const paidTotal=periodRows.reduce((sum,row)=>sum+Math.max(0,Number(row.amount)||0),0);
-  const expectedTotal=expectedMonths*monthlyRate;
-  const arrears=Math.max(0,Math.round((expectedTotal-paidTotal)*100)/100);
-  const paidMonths=arrears<=0.005?expectedMonths:Math.min(expectedMonths,Math.floor((paidTotal+0.005)/monthlyRate));
+  // A month counts once regardless of how many separate contribution entries
+  // were recorded during that month. Reversed rows were removed by activeRows.
+  const paidMonthKeys=new Set(periodRows.map(rowMonthKey));
+  const paidMonths=Math.min(expectedMonths,paidMonthKeys.size);
   const missedMonths=Math.max(0,expectedMonths-paidMonths);
+  const arrears=Math.round(missedMonths*monthlyRate*100)/100;
   if(arrears<=0.005){
    setGapState('is-up-to-date','Up to date','Paid: '+paidMonths+' mos | Missed: 0 mos');
   }else{
