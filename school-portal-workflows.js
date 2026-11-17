@@ -1586,21 +1586,56 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      if(typeof window.generateTenantWelfarePdf!=='function')throw new Error('The PDF generator is unavailable. Reload the portal and try again.');
      const pdfOptions=buildOptions();
      const generated=await window.generateTenantWelfarePdf(pdfOptions);
+     const cacheDetails={
+      school_code:pdfOptions?.school?.school_code||window.__welfareCurrentSchool?.school_code,
+      document_id:generated.documentId,document_type:pdfOptions?.type,
+      period:pdfOptions?.month||pdfOptions?.year||'',academic_year:pdfOptions?.academicYear||''
+     };
+     // Cache in the background; never insert an extra await between PDF
+     // creation and the native share invocation.
      if(typeof window.cacheWelfareStatementPdf==='function'){
-       await window.cacheWelfareStatementPdf(generated.blob,generated.filename,{
-        school_code:pdfOptions?.school?.school_code||window.__welfareCurrentSchool?.school_code,
-        document_id:generated.documentId,document_type:pdfOptions?.type,
-        period:pdfOptions?.month||pdfOptions?.year||'',academic_year:pdfOptions?.academicYear||''
-       });
+      Promise.resolve(window.cacheWelfareStatementPdf(generated.blob,generated.filename,cacheDetails))
+       .catch(cacheError=>console.warn('[School Welfare PDF] Local PDF cache deferred:',cacheError?.message||cacheError));
      }
      if(sharePdf){
-       const pdfFile=new File([generated.blob],generated.filename,{type:'application/pdf'});
-       const shareTitle=String(generated.filename||'Welfare PDF').replace(/\.pdf$/i,'').replace(/[-_]+/g,' ');
+       const fileName=String(generated.filename||'Welfare_Report.pdf');
+       const pdfFile=new File([generated.blob],fileName,{type:'application/pdf'});
+       const shareTitle=String(fileName).replace(/\.pdf$/i,'').replace(/[-_]+/g,' ');
        const shareText='Please find attached this school welfare PDF report.';
-       if(navigator.share&&navigator.canShare&&navigator.canShare({files:[pdfFile]})){
-        try{await navigator.share({files:[pdfFile],title:shareTitle,text:shareText});msg(statusId,'PDF shared successfully.');}
-        catch(shareError){if(shareError?.name==='AbortError')msg(statusId,'PDF sharing was cancelled.');else{console.warn('[School Welfare PDF] File sharing unavailable:',shareError);downloadWorkflowBlob(generated.blob,generated.filename,statusId,'File sharing is unavailable. The PDF has been downloaded instead.','Tap here to view downloaded PDF');}}
-       }else downloadWorkflowBlob(generated.blob,generated.filename,statusId,'File sharing is not supported here. The PDF has been downloaded instead.','Tap here to view downloaded PDF');
+       const schoolCode=cacheDetails.school_code||'';
+       const verificationUrl=generated.documentId&&schoolCode
+        ?'https://abcollins93.github.io/TEACHERS-WELFARE/verify.html?c='+encodeURIComponent(schoolCode)+'&d='+encodeURIComponent(generated.documentId)
+        :'';
+       const canShareFile=typeof navigator.share==='function'&&(!navigator.canShare||navigator.canShare({files:[pdfFile]}));
+       let shared=false;
+       if(canShareFile){
+        try{
+         // Invoke immediately once the PDF Blob exists; do not await cache or
+         // other network work before entering the native device share sheet.
+         await navigator.share({files:[pdfFile],title:shareTitle,text:shareText});
+         shared=true;msg(statusId,'PDF shared successfully.');
+        }catch(shareError){
+         if(shareError?.name==='AbortError'){msg(statusId,'PDF sharing was cancelled.');return;}
+         console.warn('[School Welfare PDF] Native file share failed:',shareError);
+        }
+       }
+       if(!shared&&typeof navigator.share==='function'){
+        try{
+         await navigator.share({title:shareTitle,text:shareText,url:verificationUrl||undefined});
+         shared=true;msg(statusId,verificationUrl?'Verification link shared. The PDF is available to download separately.':'Report details shared.');
+        }catch(linkShareError){
+         if(linkShareError?.name==='AbortError'){msg(statusId,'PDF sharing was cancelled.');return;}
+         console.warn('[School Welfare PDF] Link share unavailable:',linkShareError);
+        }
+       }
+       if(!shared){
+        const whatsappText=shareText+(verificationUrl?' '+verificationUrl:'');
+        const whatsappUrl='https://wa.me/?text='+encodeURIComponent(whatsappText);
+        let whatsappWindow=null;
+        try{whatsappWindow=window.open(whatsappUrl,'_blank','noopener,noreferrer');}catch(_){}
+        if(whatsappWindow){msg(statusId,'WhatsApp share opened. Attach the downloaded PDF to send the file.');}
+        else downloadWorkflowBlob(generated.blob,fileName,statusId,'Sharing is unavailable here. Your PDF has been downloaded instead.','Tap here to view downloaded PDF');
+       }
      }else downloadWorkflowBlob(generated.blob,generated.filename,statusId,successText,'Tap here to view downloaded PDF');
    }catch(error){
      console.error('[School Welfare PDF]',error);
