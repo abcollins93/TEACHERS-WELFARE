@@ -1444,7 +1444,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      const totalsRow='<tr class="wf-dm-totals"><th scope="row">MONTHLY TOTAL</th>'+monthTotals.map(amount=>'<td>GHS '+money(amount)+'</td>').join('')+'<td>GHS '+money(grandTotal)+'</td></tr>';
      const qrId='wfDuesMatrixQr_'+documentId.replace(/-/g,'');
      report=document.createElement('div');report.id=reportHostId;report.className='school-welfare-summary-pdf wf-dues-matrix-pdf';
-     report.style.cssText='position:absolute;left:0;top:0;width:281mm;min-width:281mm;max-width:281mm;min-height:150mm;margin:0;padding:6mm 7mm;box-sizing:border-box;background:#ffffff!important;color:#000000!important;font-family:Arial,Helvetica,sans-serif;z-index:-1;pointer-events:none;overflow:visible';
+     report.setAttribute('data-welfare-pdf-staging','');report.style.cssText='display:none!important;position:absolute!important;left:-9999px!important;top:-9999px!important;width:0!important;height:0!important;overflow:hidden!important;pointer-events:none!important;margin:0;padding:6mm 7mm;box-sizing:border-box;background:#ffffff!important;color:#000000!important;font-family:Arial,Helvetica,sans-serif';
      report.innerHTML='<style>'+
       '#'+reportHostId+'{background:#fff!important;color:#14213d!important;font-family:Arial,Helvetica,sans-serif!important;font-size:8pt!important;line-height:1.3!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'+
       '#'+reportHostId+' .wf-dm-header{display:grid;grid-template-columns:18mm 1fr 24mm;align-items:center;gap:5mm;margin:0 0 3mm;min-height:19mm}'+
@@ -1479,6 +1479,19 @@ window.initSchoolWorkflows=async function(client,school,refresh){
       '<div class="sws-disclaimer">*** The School welfare is not liable for any financial loss resulting from disclosing your member/account details including password to Third Parties ***</div>';
      if(typeof window.applyWelfarePdfTenantWatermark==='function')window.applyWelfarePdfTenantWatermark(report,schoolName,ctx);
      document.body.appendChild(report);
+     // Temporarily make the export node measurable, but keep it fully off-screen.
+     // The finally block removes it immediately after capture/download preparation.
+     report.style.setProperty('display','block','important');
+     report.style.setProperty('position','absolute','important');
+     report.style.setProperty('left','-100000px','important');
+     report.style.setProperty('top','0','important');
+     report.style.setProperty('width','281mm','important');
+     report.style.setProperty('min-width','281mm','important');
+     report.style.setProperty('max-width','281mm','important');
+     report.style.setProperty('height','auto','important');
+     report.style.setProperty('min-height','150mm','important');
+     report.style.setProperty('overflow','visible','important');
+     report.style.setProperty('pointer-events','none','important');
      const qrNode=report.querySelector('#'+qrId);
      if(includeVerificationQr){
       try{
