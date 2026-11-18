@@ -1,6 +1,8 @@
 /* Welfare DEMO sandbox: entirely in-memory; never calls Supabase or persists demo records. */
 (function(){
  'use strict';
+ const demoQuery=new URLSearchParams(window.location.search);
+ if(!demoQuery.has('c')||String(demoQuery.get('c')||'').trim().toUpperCase()!=='DEMO')return;
  const school={id:'demo-school-local',name:'DEMO BASIC SCHOOL',school_code:'DEMO',school_type:'Basic',region:'Ashanti Region',district:'Kumasi Metro',status:'active',monthly_dues:20};
  const names=[
   ['Akosua Mensah','GES/DEMO/001','Principal Superintendent','Primary 6','024 310 2201'],
