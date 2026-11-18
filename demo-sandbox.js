@@ -37,7 +37,10 @@
  let settings=[{school_id:school.id,key:'standard_dues',value:'20'},{school_id:school.id,key:'school_announcement',value:announcements[0].message},{school_id:school.id,key:'broadcast_message',value:announcements[1].message},{school_id:school.id,key:'headteacher_name',value:'Mrs. Akosua Mensah'},{school_id:school.id,key:'financial_secretary_name',value:'Mr. Kwame Asare'}];
  let accounts=[],activeTeacherIndex=0;
  const user={id:'demo-admin-user',email:'admin@demo.welfare.local',user_metadata:{full_name:'Demo Administrator',name:'Demo Administrator'},app_metadata:{account_type:'school_admin'}};
- const clone=x=>JSON.parse(JSON.stringify(x));
+ // DEMO rows are flat records. Shallow snapshots avoid JSON serialization
+ // while keeping returned row objects independent of the in-memory dataset.
+ const clone=x=>Array.isArray(x)?x.map(row=>row&&typeof row==='object'?{...row}:row)
+  :x&&typeof x==='object'?{...x}:x;
  const tables={schools:[school],teachers,contributions,payouts,transaction_reversals:reversals,system_settings:settings,audit_logs:auditLogs,school_announcements:announcements,teacher_accounts:accounts,platform_admins:[{user_id:user.id,school_id:school.id,active:true}],admin_users:[],platform_schools:[{school_code:'DEMO',status:'active'}]};
  function rows(name){return tables[name]||(tables[name]=[]);}
  function query(table){
