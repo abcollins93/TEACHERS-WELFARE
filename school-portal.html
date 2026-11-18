@@ -550,6 +550,29 @@ input, select, textarea, button { max-width: 100%; }
 }
 </style>
 <style id="dashboard-metric-card-refresh">#schoolOverview .dashboard-metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}#schoolOverview .metric-featured{display:flex;align-items:center;gap:14px;min-width:0;min-height:128px;padding:18px;background:#fff;color:#182235;border:1px solid #e8edf5;border-left:5px solid var(--metric-accent,#2563eb);border-radius:16px;box-shadow:0 8px 22px rgba(15,23,42,.065)}#schoolOverview .metric-featured:after{display:none}#schoolOverview .metric-icon{flex:0 0 50px;width:50px;height:50px;display:grid;place-items:center;border-radius:14px;background:var(--metric-icon-bg,#eff6ff);color:var(--metric-accent,#2563eb);font-size:1.3rem}#schoolOverview .metric-content{min-width:0;flex:1}#schoolOverview .metric-label{display:block;color:#778196;font-size:.67rem;font-weight:800;letter-spacing:.055em;line-height:1.4;text-transform:uppercase;overflow-wrap:anywhere}#schoolOverview .metric-content strong{display:block;margin-top:7px;color:#182235;font-size:clamp(1.05rem,1.7vw,1.45rem);font-weight:850;line-height:1.25;letter-spacing:-.035em;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}#schoolOverview .metric-note{display:block;margin-top:7px;color:#7b8799;font-size:.73rem;font-weight:600;line-height:1.35}#schoolOverview .metric-note-positive{color:#16804a}#schoolOverview .metric-note-positive i{margin-right:4px}#schoolOverview .metric-balance{--metric-accent:#2878d0;--metric-icon-bg:#e7f2ff}#schoolOverview .metric-standard{--metric-accent:#23945f;--metric-icon-bg:#e2f7eb}#schoolOverview .metric-activity{--metric-accent:#8055c7;--metric-icon-bg:#f0e8ff}#schoolOverview .metric-compact{border-left:5px solid #bd8a0b;border-radius:16px;background:#fff;box-shadow:0 8px 22px rgba(15,23,42,.065)}#schoolOverview .metric-compact:nth-child(1){border-left-color:#2878d0}#schoolOverview .metric-compact:nth-child(3){border-left-color:#23945f}#schoolOverview .metric-compact:nth-child(4){border-left-color:#8055c7}#schoolOverview .metric-compact:after{display:none}#schoolOverview .metric-compact span{font-size:.72rem;font-weight:750;line-height:1.4}#schoolOverview .metric-compact span i{color:#bd8a0b}#schoolOverview .metric-compact strong{font-size:clamp(1.1rem,1.8vw,1.55rem)}.dark #schoolOverview .metric-featured,.dark #schoolOverview .metric-compact{background:#0b1d3a;color:#e6edf7;border-color:#26364d;border-left-color:var(--metric-accent,#bd8a0b)}.dark #schoolOverview .metric-content strong,.dark #schoolOverview .metric-compact strong{color:#f1f5fb}.dark #schoolOverview .metric-label,.dark #schoolOverview .metric-note,.dark #schoolOverview .metric-compact span{color:#a8b5c8}.dark #schoolOverview .metric-note-positive{color:#6ee7a3}@media(max-width:950px){#schoolOverview .dashboard-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){#schoolOverview .dashboard-metrics{gap:9px}#schoolOverview .metric-featured{gap:9px;min-height:110px;padding:12px 9px;border-radius:14px}#schoolOverview .metric-icon{flex-basis:40px;width:40px;height:40px;border-radius:11px;font-size:1.05rem}#schoolOverview .metric-label{font-size:.57rem;letter-spacing:.025em}#schoolOverview .metric-content strong{font-size:clamp(.95rem,3.8vw,1.15rem)}#schoolOverview .metric-note{font-size:.64rem}#schoolOverview .metric-compact{padding:13px 10px;border-radius:14px}#schoolOverview .metric-compact span{font-size:.65rem}#schoolOverview .metric-compact strong{font-size:1.08rem}} 
+/* One shared metric-card layout for DEMO and authenticated school dashboards. */
+#schoolOverview>.dashboard-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch;gap:14px}
+#schoolOverview>.dashboard-metrics>.metric{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:11px;min-width:0;width:100%;height:auto;min-height:142px;padding:15px;overflow:hidden;border:1px solid #e8edf5;border-left:5px solid var(--metric-accent,#bd8a0b);border-radius:16px;background:#fff;color:#182235;box-shadow:0 8px 22px rgba(15,23,42,.065)}
+#schoolOverview>.dashboard-metrics>.metric:after{display:none}
+#schoolOverview>.dashboard-metrics>.metric .metric-icon{display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;border-radius:11px;background:var(--metric-icon-bg,#eff6ff);color:var(--metric-accent,#2563eb);font-size:1.05rem}
+#schoolOverview>.dashboard-metrics>.metric .metric-content{display:block;min-width:0;width:100%;flex:1}
+#schoolOverview>.dashboard-metrics>.metric .metric-label{display:block;margin:0;color:#778196;font-size:.65rem;font-weight:800;letter-spacing:.035em;line-height:1.35;text-transform:uppercase;white-space:normal;overflow-wrap:normal;word-break:normal;hyphens:none}
+#schoolOverview>.dashboard-metrics>.metric .metric-content strong{display:block;width:100%;max-width:100%;margin-top:6px;color:#182235;font-size:clamp(.82rem,1.15vw,1.08rem);font-weight:850;line-height:1.25;letter-spacing:-.02em;white-space:nowrap!important;overflow:visible;font-variant-numeric:tabular-nums}
+#schoolOverview>.dashboard-metrics>.metric .metric-note{display:block;margin-top:6px;color:#7b8799;font-size:.68rem;font-weight:600;line-height:1.35;overflow-wrap:normal;word-break:normal}
+#schoolOverview>.dashboard-metrics>.metric:nth-child(1){--metric-accent:#2878d0;--metric-icon-bg:#e7f2ff}
+#schoolOverview>.dashboard-metrics>.metric:nth-child(2){--metric-accent:#bd8a0b;--metric-icon-bg:#fff4d6}
+#schoolOverview>.dashboard-metrics>.metric:nth-child(3){--metric-accent:#23945f;--metric-icon-bg:#e2f7eb}
+#schoolOverview>.dashboard-metrics>.metric:nth-child(4){--metric-accent:#8055c7;--metric-icon-bg:#f0e8ff}
+#schoolOverview>.dashboard-metrics>.metric:nth-child(5){--metric-accent:#0f766e;--metric-icon-bg:#dff7f3}
+#schoolOverview>.dashboard-metrics>.metric:nth-child(6){--metric-accent:#2878d0;--metric-icon-bg:#e7f2ff}
+#schoolOverview>.dashboard-metrics>.metric:nth-child(7){--metric-accent:#23945f;--metric-icon-bg:#e2f7eb}
+#schoolOverview>.dashboard-metrics>.metric:nth-child(8){--metric-accent:#8055c7;--metric-icon-bg:#f0e8ff}
+.dark #schoolOverview>.dashboard-metrics>.metric{background:#0b1d3a;color:#e6edf7;border-color:#26364d;border-left-color:var(--metric-accent,#bd8a0b)}
+.dark #schoolOverview>.dashboard-metrics>.metric .metric-content strong{color:#f1f5fb}
+.dark #schoolOverview>.dashboard-metrics>.metric .metric-label,.dark #schoolOverview>.dashboard-metrics>.metric .metric-note{color:#a8b5c8}
+@media(max-width:950px){#schoolOverview>.dashboard-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}}
+@media(max-width:560px){#schoolOverview>.dashboard-metrics{grid-template-columns:minmax(0,1fr);gap:10px}#schoolOverview>.dashboard-metrics>.metric{min-height:0;padding:14px}#schoolOverview>.dashboard-metrics>.metric .metric-content strong{font-size:1.02rem}}
+
 /* Signed-in profile avatar in the top navigation */
 .header-profile{display:flex;align-items:center;gap:10px;min-width:0;padding:4px 8px 4px 4px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.075);color:#fff}
 .header-avatar{position:relative;width:40px;height:40px;min-width:40px;padding:0;border-radius:50%;overflow:hidden;display:grid;place-items:center;border:2px solid #dfb15b;background:linear-gradient(145deg,#213c62,#071326);color:#f5cf70;font-size:16px;font-weight:850;box-shadow:0 0 0 3px rgba(223,177,91,.12);cursor:pointer}.header-avatar:disabled{opacity:.72;cursor:progress}.header-avatar-edit{position:absolute;inset:0;display:grid;place-items:center;background:rgba(3,10,22,.68);color:#fff;opacity:0;transition:opacity .18s}.header-avatar:hover .header-avatar-edit,.header-avatar:focus-visible .header-avatar-edit{opacity:1}.header-avatar-status{position:absolute;top:100%;right:8px;margin-top:4px;max-width:240px;padding:4px 8px;border-radius:7px;background:#10233d;color:#fff;font-size:.7rem;box-shadow:0 4px 12px #0002;z-index:5}.header-avatar-status:empty{display:none}
@@ -3595,6 +3618,13 @@ function scheduleDemoAdminWorkflows(school){
  });
  return demoWorkflowMountPromise;
 }
+function applyDashboardMetricLayout(){
+ const grid=document.querySelector('#schoolOverview>.dashboard-metrics');
+ if(!grid)return false;
+ const ids=window.WelfareDemo?.dashboardMetricOrder||['teacherCount','contributionTotal','payoutTotal','monthlyContributionTotal','adminContributionRecordsMetric','netTotal','standardDuesMetric','lastActivity'];
+ ids.forEach(id=>{const card=document.getElementById(id)?.closest('.metric');if(card&&card.parentElement===grid)grid.appendChild(card);});
+ return true;
+}
 function setDemoMetricLabel(id,label){
  const node=$(id),labelNode=node?.closest('.metric')?.querySelector('.metric-label');
  if(labelNode)labelNode.textContent=label;
@@ -3680,6 +3710,7 @@ function showDemoDashboard(){
  $('lastActivity').textContent='15 Mar 2026';
  $('adminContributionRecordsMetric').hidden=false;
  $('adminContributionRecordsCount').textContent=String(activeCon.length);
+ applyDashboardMetricLayout();
  setDemoMetricLabel('teacherCount','REGISTERED TEACHERS');
  setDemoMetricLabel('contributionTotal','TOTAL CONTRIBUTIONS');
  setDemoMetricLabel('payoutTotal','WELFARE PAYOUTS');
