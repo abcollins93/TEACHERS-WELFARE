@@ -550,30 +550,6 @@ input, select, textarea, button { max-width: 100%; }
 }
 </style>
 <style id="dashboard-metric-card-refresh">#schoolOverview .dashboard-metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}#schoolOverview .metric-featured{display:flex;align-items:center;gap:14px;min-width:0;min-height:128px;padding:18px;background:#fff;color:#182235;border:1px solid #e8edf5;border-left:5px solid var(--metric-accent,#2563eb);border-radius:16px;box-shadow:0 8px 22px rgba(15,23,42,.065)}#schoolOverview .metric-featured:after{display:none}#schoolOverview .metric-icon{flex:0 0 50px;width:50px;height:50px;display:grid;place-items:center;border-radius:14px;background:var(--metric-icon-bg,#eff6ff);color:var(--metric-accent,#2563eb);font-size:1.3rem}#schoolOverview .metric-content{min-width:0;flex:1}#schoolOverview .metric-label{display:block;color:#778196;font-size:.67rem;font-weight:800;letter-spacing:.055em;line-height:1.4;text-transform:uppercase;overflow-wrap:anywhere}#schoolOverview .metric-content strong{display:block;margin-top:7px;color:#182235;font-size:clamp(1.05rem,1.7vw,1.45rem);font-weight:850;line-height:1.25;letter-spacing:-.035em;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}#schoolOverview .metric-note{display:block;margin-top:7px;color:#7b8799;font-size:.73rem;font-weight:600;line-height:1.35}#schoolOverview .metric-note-positive{color:#16804a}#schoolOverview .metric-note-positive i{margin-right:4px}#schoolOverview .metric-balance{--metric-accent:#2878d0;--metric-icon-bg:#e7f2ff}#schoolOverview .metric-standard{--metric-accent:#23945f;--metric-icon-bg:#e2f7eb}#schoolOverview .metric-activity{--metric-accent:#8055c7;--metric-icon-bg:#f0e8ff}#schoolOverview .metric-compact{border-left:5px solid #bd8a0b;border-radius:16px;background:#fff;box-shadow:0 8px 22px rgba(15,23,42,.065)}#schoolOverview .metric-compact:nth-child(1){border-left-color:#2878d0}#schoolOverview .metric-compact:nth-child(3){border-left-color:#23945f}#schoolOverview .metric-compact:nth-child(4){border-left-color:#8055c7}#schoolOverview .metric-compact:after{display:none}#schoolOverview .metric-compact span{font-size:.72rem;font-weight:750;line-height:1.4}#schoolOverview .metric-compact span i{color:#bd8a0b}#schoolOverview .metric-compact strong{font-size:clamp(1.1rem,1.8vw,1.55rem)}.dark #schoolOverview .metric-featured,.dark #schoolOverview .metric-compact{background:#0b1d3a;color:#e6edf7;border-color:#26364d;border-left-color:var(--metric-accent,#bd8a0b)}.dark #schoolOverview .metric-content strong,.dark #schoolOverview .metric-compact strong{color:#f1f5fb}.dark #schoolOverview .metric-label,.dark #schoolOverview .metric-note,.dark #schoolOverview .metric-compact span{color:#a8b5c8}.dark #schoolOverview .metric-note-positive{color:#6ee7a3}@media(max-width:950px){#schoolOverview .dashboard-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){#schoolOverview .dashboard-metrics{gap:9px}#schoolOverview .metric-featured{gap:9px;min-height:110px;padding:12px 9px;border-radius:14px}#schoolOverview .metric-icon{flex-basis:40px;width:40px;height:40px;border-radius:11px;font-size:1.05rem}#schoolOverview .metric-label{font-size:.57rem;letter-spacing:.025em}#schoolOverview .metric-content strong{font-size:clamp(.95rem,3.8vw,1.15rem)}#schoolOverview .metric-note{font-size:.64rem}#schoolOverview .metric-compact{padding:13px 10px;border-radius:14px}#schoolOverview .metric-compact span{font-size:.65rem}#schoolOverview .metric-compact strong{font-size:1.08rem}} 
-/* One shared metric-card layout for DEMO and authenticated school dashboards. */
-#schoolOverview>.dashboard-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch;gap:14px}
-#schoolOverview>.dashboard-metrics>.metric{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:11px;min-width:0;width:100%;height:auto;min-height:142px;padding:15px;overflow:hidden;border:1px solid #e8edf5;border-left:5px solid var(--metric-accent,#bd8a0b);border-radius:16px;background:#fff;color:#182235;box-shadow:0 8px 22px rgba(15,23,42,.065)}
-#schoolOverview>.dashboard-metrics>.metric:after{display:none}
-#schoolOverview>.dashboard-metrics>.metric[hidden]{display:none!important}
-#schoolOverview>.dashboard-metrics>.metric .metric-icon{display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;border-radius:11px;background:var(--metric-icon-bg,#eff6ff);color:var(--metric-accent,#2563eb);font-size:1.05rem}
-#schoolOverview>.dashboard-metrics>.metric .metric-content{display:block;min-width:0;width:100%;flex:1}
-#schoolOverview>.dashboard-metrics>.metric .metric-label{display:block;margin:0;color:#778196;font-size:.65rem;font-weight:800;letter-spacing:.035em;line-height:1.35;text-transform:uppercase;white-space:normal;overflow-wrap:normal;word-break:normal;hyphens:none}
-#schoolOverview>.dashboard-metrics>.metric .metric-content strong{display:block;width:100%;max-width:100%;margin-top:6px;color:#182235;font-size:clamp(.76rem,1.05vw,1rem);font-weight:850;line-height:1.25;letter-spacing:-.035em;white-space:nowrap!important;overflow:visible;font-variant-numeric:tabular-nums}
-#schoolOverview>.dashboard-metrics>.metric .metric-note{display:block;margin-top:6px;color:#7b8799;font-size:.68rem;font-weight:600;line-height:1.35;overflow-wrap:normal;word-break:normal}
-#schoolOverview>.dashboard-metrics>.metric:nth-child(1){--metric-accent:#2878d0;--metric-icon-bg:#e7f2ff}
-#schoolOverview>.dashboard-metrics>.metric:nth-child(2){--metric-accent:#bd8a0b;--metric-icon-bg:#fff4d6}
-#schoolOverview>.dashboard-metrics>.metric:nth-child(3){--metric-accent:#23945f;--metric-icon-bg:#e2f7eb}
-#schoolOverview>.dashboard-metrics>.metric:nth-child(4){--metric-accent:#8055c7;--metric-icon-bg:#f0e8ff}
-#schoolOverview>.dashboard-metrics>.metric:nth-child(5){--metric-accent:#0f766e;--metric-icon-bg:#dff7f3}
-#schoolOverview>.dashboard-metrics>.metric:nth-child(6){--metric-accent:#2878d0;--metric-icon-bg:#e7f2ff}
-#schoolOverview>.dashboard-metrics>.metric:nth-child(7){--metric-accent:#23945f;--metric-icon-bg:#e2f7eb}
-#schoolOverview>.dashboard-metrics>.metric:nth-child(8){--metric-accent:#8055c7;--metric-icon-bg:#f0e8ff}
-.dark #schoolOverview>.dashboard-metrics>.metric{background:#0b1d3a;color:#e6edf7;border-color:#26364d;border-left-color:var(--metric-accent,#bd8a0b)}
-.dark #schoolOverview>.dashboard-metrics>.metric .metric-content strong{color:#f1f5fb}
-.dark #schoolOverview>.dashboard-metrics>.metric .metric-label,.dark #schoolOverview>.dashboard-metrics>.metric .metric-note{color:#a8b5c8}
-@media(max-width:950px){#schoolOverview>.dashboard-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}}
-@media(max-width:560px){#schoolOverview>.dashboard-metrics{grid-template-columns:minmax(0,1fr);gap:10px}#schoolOverview>.dashboard-metrics>.metric{min-height:0;padding:14px}#schoolOverview>.dashboard-metrics>.metric .metric-content strong{font-size:.96rem}}
-
 /* Signed-in profile avatar in the top navigation */
 .header-profile{display:flex;align-items:center;gap:10px;min-width:0;padding:4px 8px 4px 4px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.075);color:#fff}
 .header-avatar{position:relative;width:40px;height:40px;min-width:40px;padding:0;border-radius:50%;overflow:hidden;display:grid;place-items:center;border:2px solid #dfb15b;background:linear-gradient(145deg,#213c62,#071326);color:#f5cf70;font-size:16px;font-weight:850;box-shadow:0 0 0 3px rgba(223,177,91,.12);cursor:pointer}.header-avatar:disabled{opacity:.72;cursor:progress}.header-avatar-edit{position:absolute;inset:0;display:grid;place-items:center;background:rgba(3,10,22,.68);color:#fff;opacity:0;transition:opacity .18s}.header-avatar:hover .header-avatar-edit,.header-avatar:focus-visible .header-avatar-edit{opacity:1}.header-avatar-status{position:absolute;top:100%;right:8px;margin-top:4px;max-width:240px;padding:4px 8px;border-radius:7px;background:#10233d;color:#fff;font-size:.7rem;box-shadow:0 4px 12px #0002;z-index:5}.header-avatar-status:empty{display:none}
@@ -1938,227 +1914,7 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
  display:none!important;position:absolute!important;left:-9999px!important;top:-9999px!important;
  width:0!important;height:0!important;overflow:hidden!important;pointer-events:none!important;
 }
-</style>
-<style id="tenant-header-school-name-flex-fix">
-/* Give the tenant identity the remaining header width without moving account controls. */
-header.top .top-brand-group{
- flex:1 1 0%!important;
- min-width:0!important;
- max-width:100%!important;
-}
-header.top .top-brand-copy{
- flex:1 1 0%!important;
- min-width:0!important;
- width:0!important;
- max-width:100%!important;
- overflow:hidden!important;
-}
-header.top .top-school-name{
- display:block!important;
- flex:1 1 auto!important;
- min-width:0!important;
- width:100%!important;
- max-width:100%!important;
- white-space:nowrap!important;
- overflow:hidden!important;
- text-overflow:ellipsis!important;
- overflow-wrap:normal!important;
-}
-header.top .top-account-actions{
- flex:0 0 auto!important;
- min-width:max-content!important;
- gap:clamp(3px,.8vw,7px)!important;
-}
-header.top .quick-actions-wrap,
-header.top #themeToggle,
-header.top #headerProfile{
- flex:0 0 auto!important;
- min-width:0!important;
-}
-header.top #themeToggle{margin:0!important}
-@media(max-width:430px){
- header.top .top-brand-group{gap:5px!important}
- header.top .top-brand-copy{min-width:0!important}
- header.top .top-school-name{font-size:clamp(.76rem,3.4vw,.84rem)!important}
- header.top .top-account-actions{gap:3px!important}
- header.top #mobileNavToggle{
-  flex:0 0 34px!important;width:34px!important;min-width:34px!important;
-  height:35px!important;min-height:35px!important;
- }
-}
-</style>
-
-
-<style id="tenant-header-long-school-name-final">
-/* Keep school identity flexible while reserving only the space required by controls. */
-header.top{
- display:flex!important;
- align-items:center!important;
- gap:clamp(5px,1vw,10px)!important;
- min-width:0!important;
-}
-header.top .top-brand-group{
- display:flex!important;
- align-items:center!important;
- flex:1 1 0%!important;
- width:0!important;
- min-width:0!important;
- max-width:100%!important;
- gap:clamp(5px,1vw,10px)!important;
-}
-header.top .top-brand-copy{
- flex:1 1 0%!important;
- width:0!important;
- min-width:0!important;
- max-width:100%!important;
- overflow:hidden!important;
-}
-header.top .top-school-name{
- display:block!important;
- width:100%!important;
- min-width:0!important;
- max-width:100%!important;
- overflow:hidden!important;
- white-space:nowrap!important;
- text-overflow:ellipsis!important;
- overflow-wrap:normal!important;
-}
-header.top .top-account-actions{
- flex:0 0 auto!important;
- min-width:0!important;
- max-width:62%!important;
- gap:clamp(3px,.65vw,7px)!important;
-}
-header.top .quick-actions-wrap,
-header.top #themeToggle,
-header.top #headerProfile{
- flex:0 0 auto!important;
- min-width:0!important;
-}
-header.top #headerProfile{gap:5px!important;padding:3px!important}
-@media(max-width:650px){
- header.top{gap:5px!important}
- header.top .top-brand-group{gap:6px!important}
- header.top .top-account-actions{gap:4px!important;max-width:none!important}
- header.top .quick-actions-toggle{
-  width:36px!important;min-width:36px!important;height:36px!important;min-height:36px!important;
-  padding:0!important;display:grid!important;place-items:center!important;
- }
- header.top .quick-actions-toggle>span,
- header.top .quick-actions-toggle .quick-actions-chevron{display:none!important}
- header.top #themeToggle{
-  width:36px!important;min-width:36px!important;height:36px!important;min-height:36px!important;
-  padding:0!important;font-size:0!important;display:grid!important;place-items:center!important;
- }
- header.top #themeToggle i{font-size:14px!important}
- header.top .header-avatar{width:36px!important;height:36px!important;min-width:36px!important}
- header.top .top-school-name{font-size:clamp(.76rem,3.6vw,.94rem)!important}
-}
-@media(max-width:380px){
- header.top{padding-left:8px!important;padding-right:8px!important}
- header.top .top-brand-group{gap:4px!important}
- header.top .top-account-actions{gap:3px!important}
- header.top #mobileNavToggle{flex-basis:32px!important;width:32px!important;min-width:32px!important;height:34px!important;min-height:34px!important}
- header.top .quick-actions-toggle,
- header.top #themeToggle{width:32px!important;min-width:32px!important;height:34px!important;min-height:34px!important}
- header.top .header-avatar{width:34px!important;height:34px!important;min-width:34px!important}
-}
-</style>
-
-<style id="tenant-header-school-name-final-flex-breathing-room">
-/* Final responsive header sizing: the school identity receives all width left
-   after the fixed navigation and account controls, with no horizontal collision. */
-header.top{
- display:flex!important;
- align-items:center!important;
- gap:clamp(4px,.8vw,8px)!important;
- min-width:0!important;
-}
-header.top .top-brand-group{
- display:flex!important;
- align-items:center!important;
- flex:1 1 0%!important;
- width:0!important;
- min-width:0!important;
- max-width:100%!important;
- gap:clamp(4px,.7vw,8px)!important;
-}
-header.top #mobileNavToggle{
- flex:0 0 36px!important;
- width:36px!important;
- min-width:36px!important;
-}
-header.top .top-brand-copy{
- flex:1 1 0%!important;
- width:0!important;
- min-width:0!important;
- max-width:100%!important;
- overflow:hidden!important;
-}
-header.top .top-school-name{
- display:block!important;
- flex:1 1 0%!important;
- width:100%!important;
- min-width:0!important;
- max-width:100%!important;
- white-space:nowrap!important;
- overflow:hidden!important;
- text-overflow:ellipsis!important;
- overflow-wrap:normal!important;
-}
-header.top .top-account-actions{
- display:flex!important;
- flex:0 0 auto!important;
- align-items:center!important;
- min-width:0!important;
- gap:clamp(3px,.55vw,6px)!important;
-}
-header.top .quick-actions-wrap,
-header.top #themeToggle,
-header.top #headerProfile{
- flex:0 0 auto!important;
- min-width:0!important;
-}
-header.top #headerProfile{gap:4px!important;padding:2px!important}
-@media(max-width:650px){
- header.top{gap:4px!important}
- header.top .top-brand-group{gap:4px!important}
- header.top #mobileNavToggle{
-  flex-basis:33px!important;width:33px!important;min-width:33px!important;
-  height:35px!important;min-height:35px!important;padding:0!important;
- }
- header.top .top-account-actions{gap:3px!important}
- header.top .quick-actions-toggle,
- header.top #themeToggle{
-  flex:0 0 33px!important;width:33px!important;min-width:33px!important;
-  height:35px!important;min-height:35px!important;padding:0!important;
- }
- header.top .header-avatar{
-  flex:0 0 33px!important;width:33px!important;min-width:33px!important;
-  height:33px!important;
- }
- header.top #themeToggle{display:grid!important;place-items:center!important;font-size:0!important}
- header.top #themeToggle i{font-size:14px!important}
-}
-@media(max-width:380px){
- header.top{padding-left:7px!important;padding-right:7px!important;gap:3px!important}
- header.top .top-brand-group{gap:3px!important}
- header.top #mobileNavToggle,
- header.top .quick-actions-toggle,
- header.top #themeToggle{
-  flex-basis:30px!important;width:30px!important;min-width:30px!important;
-  height:33px!important;min-height:33px!important;
- }
- header.top .header-avatar{
-  flex-basis:31px!important;width:31px!important;min-width:31px!important;
-  height:31px!important;
- }
- header.top .top-account-actions{gap:2px!important}
- header.top .top-school-name{font-size:clamp(.73rem,3.5vw,.86rem)!important}
-}
-</style>
-
-</head><body>
+</style></head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading Teachers Welfare Portal" aria-hidden="false">
  <div class="page-loader-card">
@@ -2312,7 +2068,11 @@ const SUPABASE_URL='https://jlwdtlhlztbgpogqdabu.supabase.co';
 const SUPABASE_KEY='sb_publishable_-idvZBti_BY5Xn8xDxhqqw_p_Me6X8O';
 
 if(document.body)document.body.classList.toggle('welfare-demo-mode',isDemoMode);
-/* DEMO and authenticated tenants share the same dashboard metric CSS and grid breakpoints. */
+if(isDemoMode&&!document.getElementById('welfare-demo-dashboard-layout')){
+ const demoStyle=document.createElement('style');demoStyle.id='welfare-demo-dashboard-layout';
+ demoStyle.textContent='.welfare-demo-mode .dashboard-metrics .metric[hidden]{display:none!important}.welfare-demo-mode .dashboard-metrics{align-items:stretch;grid-auto-flow:row}.welfare-demo-mode .dashboard-metrics>.metric{min-width:0;min-height:128px}.welfare-demo-mode .dashboard-metrics .metric-content{min-width:0}.welfare-demo-mode .dashboard-metrics .metric strong{overflow-wrap:anywhere}@media(max-width:650px){.welfare-demo-mode .dashboard-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}.welfare-demo-mode .dashboard-metrics>.metric{min-height:112px;padding:14px!important}}';
+ document.head.appendChild(demoStyle);
+}
 if(!isDemoMode){
  try{await window.__welfareSupabaseReady;}
  catch(error){
@@ -3615,13 +3375,6 @@ function scheduleDemoAdminWorkflows(school){
  });
  return demoWorkflowMountPromise;
 }
-function applyDashboardMetricLayout(){
- const grid=document.querySelector('#schoolOverview>.dashboard-metrics');
- if(!grid)return false;
- const ids=window.WelfareDemo?.dashboardMetricOrder||['teacherCount','contributionTotal','payoutTotal','monthlyContributionTotal','adminContributionRecordsMetric','netTotal','standardDuesMetric','lastActivity'];
- ids.forEach(id=>{const card=document.getElementById(id)?.closest('.metric');if(card&&card.parentElement===grid)grid.appendChild(card);});
- return true;
-}
 function setDemoMetricLabel(id,label){
  const node=$(id),labelNode=node?.closest('.metric')?.querySelector('.metric-label');
  if(labelNode)labelNode.textContent=label;
@@ -3707,7 +3460,6 @@ function showDemoDashboard(){
  $('lastActivity').textContent='15 Mar 2026';
  $('adminContributionRecordsMetric').hidden=false;
  $('adminContributionRecordsCount').textContent=String(activeCon.length);
- applyDashboardMetricLayout();
  setDemoMetricLabel('teacherCount','REGISTERED TEACHERS');
  setDemoMetricLabel('contributionTotal','TOTAL CONTRIBUTIONS');
  setDemoMetricLabel('payoutTotal','WELFARE PAYOUTS');
@@ -3933,7 +3685,6 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
     const filename=(code.replace(/[^a-z0-9_-]/gi,'_')||'school')+'-welfare-summary.pdf';
     const blob=await window.html2pdf().set({margin:0,filename,image:{type:'png'},html2canvas:{scale:4,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0},jsPDF:{unit:'mm',format:'a4',orientation:'landscape',compress:true},pagebreak:{mode:['css'],avoid:['tr','.sws-kpi','.sws-signatures']}}).from(report).outputPdf('blob');
-    report.remove(); // Release the staging node immediately after canvas/PDF capture.
     await window.registerTenantStatementVerification({
      school_code:code,document_id:documentId,document_type:'executive-summary',
      period:'School-wide summary',academic_year:window.getCurrentAcademicYear()
