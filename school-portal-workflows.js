@@ -991,6 +991,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  };
  let activeCons=cons.filter(isActiveContributionRecord), activePays=pays.filter(isActivePayoutRecord);
  const demoLatestMonthKey=isLocalDemo?cons.reduce((latest,row)=>String(row.date||'')>latest?String(row.date||''):latest,'').slice(0,7):'';
+ const getDashboardMonthKey=isLocalDemo?()=>demoLatestMonthKey||'2026-03':()=>{const now=new Date();return now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');};
 
  const contribStyle=document.createElement('style');
  contribStyle.textContent=`
@@ -1561,7 +1562,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     $('contributionTotal').textContent=cr.error?'Unavailable':'GHS '+money(totalCon);
     $('payoutTotal').textContent=pr.error?'Unavailable':'GHS '+money(totalPay);
     $('netTotal').textContent=(cr.error||pr.error)?'Unavailable':'GHS '+money(totalCon-totalPay);
-    const now=new Date(),monthKey=isLocalDemo?(demoLatestMonthKey||'2026-03'):now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+    const monthKey=getDashboardMonthKey();
     if($('monthlyContributionTotal'))$('monthlyContributionTotal').textContent=cr.error?'Unavailable':'GHS '+money(activeCons.filter(item=>String(item.date||'').slice(0,7)===monthKey).reduce((sum,item)=>sum+Number(item.amount||0),0));
     renderContributionLedger();
     renderDuesMatrix();
