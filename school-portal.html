@@ -3289,7 +3289,7 @@ function updateDemoBanner(){
   if(dashboard)dashboard.insertBefore(banner,dashboard.firstChild);
   banner.addEventListener('click',event=>{
    const setup=event.target.closest('[data-demo-setup]');
-   if(setup){event.preventDefault();if(typeof window.WelfareDemo?.openSchoolSetupModal==='function')window.WelfareDemo.openSchoolSetupModal();return;}
+   if(setup){if(typeof window.WelfareDemo?.openSchoolSetupModal==='function')window.WelfareDemo.openSchoolSetupModal();return;}
    const button=event.target.closest('[data-demo-role]');
    if(button){
     const nextRole=button.dataset.demoRole;
@@ -3297,9 +3297,9 @@ function updateDemoBanner(){
     demoRole=nextRole;window.__welfareDemoRole=demoRole;
     showDemoDashboard();
    }
-  },{passive:false});
- }
- banner.querySelectorAll('[data-demo-role]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.demoRole===demoRole)));
+  },{passive:true});
+  }
+  banner.querySelectorAll('[data-demo-role]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.demoRole===demoRole)));
 }
 let demoWorkflowMountPromise=null;
 function scheduleDemoAdminWorkflows(school){
@@ -4069,8 +4069,9 @@ if(isDemoMode){
       else item.removeAttribute('aria-current');
     });
     closeSidebar();
-    void target.offsetHeight;
-    target.scrollIntoView({behavior:'smooth',block:'start'});
+    // Let the browser commit visibility changes before scrolling; avoid a
+     // synchronous layout read that blocks the first tap on mobile.
+     window.requestAnimationFrame(()=>target.scrollIntoView({behavior:'smooth',block:'start'}));
     if (typeof target.focus === 'function') {
       if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex','-1');
       target.focus({preventScroll:true});
@@ -6200,5 +6201,9 @@ body.sidebar-open{overflow:hidden}
  };
 })();
 </script>
+<style id="welfare-mobile-input-performance">
+/* Input-only mobile responsiveness; preserves all existing visual styling. */
+button,a,.navbtn,[role="button"],[role="tab"],.tab-button,.metric[role="button"],.card[role="button"]{touch-action:manipulation}
+</style>
 </body>
 </html>
