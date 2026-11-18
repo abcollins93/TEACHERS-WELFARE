@@ -2041,6 +2041,99 @@ header.top #headerProfile{gap:5px!important;padding:3px!important}
 }
 </style>
 
+<style id="tenant-header-school-name-final-flex-breathing-room">
+/* Final responsive header sizing: the school identity receives all width left
+   after the fixed navigation and account controls, with no horizontal collision. */
+header.top{
+ display:flex!important;
+ align-items:center!important;
+ gap:clamp(4px,.8vw,8px)!important;
+ min-width:0!important;
+}
+header.top .top-brand-group{
+ display:flex!important;
+ align-items:center!important;
+ flex:1 1 0%!important;
+ width:0!important;
+ min-width:0!important;
+ max-width:100%!important;
+ gap:clamp(4px,.7vw,8px)!important;
+}
+header.top #mobileNavToggle{
+ flex:0 0 36px!important;
+ width:36px!important;
+ min-width:36px!important;
+}
+header.top .top-brand-copy{
+ flex:1 1 0%!important;
+ width:0!important;
+ min-width:0!important;
+ max-width:100%!important;
+ overflow:hidden!important;
+}
+header.top .top-school-name{
+ display:block!important;
+ flex:1 1 0%!important;
+ width:100%!important;
+ min-width:0!important;
+ max-width:100%!important;
+ white-space:nowrap!important;
+ overflow:hidden!important;
+ text-overflow:ellipsis!important;
+ overflow-wrap:normal!important;
+}
+header.top .top-account-actions{
+ display:flex!important;
+ flex:0 0 auto!important;
+ align-items:center!important;
+ min-width:0!important;
+ gap:clamp(3px,.55vw,6px)!important;
+}
+header.top .quick-actions-wrap,
+header.top #themeToggle,
+header.top #headerProfile{
+ flex:0 0 auto!important;
+ min-width:0!important;
+}
+header.top #headerProfile{gap:4px!important;padding:2px!important}
+@media(max-width:650px){
+ header.top{gap:4px!important}
+ header.top .top-brand-group{gap:4px!important}
+ header.top #mobileNavToggle{
+  flex-basis:33px!important;width:33px!important;min-width:33px!important;
+  height:35px!important;min-height:35px!important;padding:0!important;
+ }
+ header.top .top-account-actions{gap:3px!important}
+ header.top .quick-actions-toggle,
+ header.top #themeToggle{
+  flex:0 0 33px!important;width:33px!important;min-width:33px!important;
+  height:35px!important;min-height:35px!important;padding:0!important;
+ }
+ header.top .header-avatar{
+  flex:0 0 33px!important;width:33px!important;min-width:33px!important;
+  height:33px!important;
+ }
+ header.top #themeToggle{display:grid!important;place-items:center!important;font-size:0!important}
+ header.top #themeToggle i{font-size:14px!important}
+}
+@media(max-width:380px){
+ header.top{padding-left:7px!important;padding-right:7px!important;gap:3px!important}
+ header.top .top-brand-group{gap:3px!important}
+ header.top #mobileNavToggle,
+ header.top .quick-actions-toggle,
+ header.top #themeToggle{
+  flex-basis:30px!important;width:30px!important;min-width:30px!important;
+  height:33px!important;min-height:33px!important;
+ }
+ header.top .header-avatar{
+  flex-basis:31px!important;width:31px!important;min-width:31px!important;
+  height:31px!important;
+ }
+ header.top .top-account-actions{gap:2px!important}
+ header.top .top-school-name{font-size:clamp(.73rem,3.5vw,.86rem)!important}
+}
+</style>
+
 </head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading Teachers Welfare Portal" aria-hidden="false">
