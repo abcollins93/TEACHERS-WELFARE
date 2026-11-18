@@ -3685,6 +3685,7 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
     const filename=(code.replace(/[^a-z0-9_-]/gi,'_')||'school')+'-welfare-summary.pdf';
     const blob=await window.html2pdf().set({margin:0,filename,image:{type:'png'},html2canvas:{scale:4,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0},jsPDF:{unit:'mm',format:'a4',orientation:'landscape',compress:true},pagebreak:{mode:['css'],avoid:['tr','.sws-kpi','.sws-signatures']}}).from(report).outputPdf('blob');
+    report.remove(); // Release the staging node immediately after canvas/PDF capture.
     await window.registerTenantStatementVerification({
      school_code:code,document_id:documentId,document_type:'executive-summary',
      period:'School-wide summary',academic_year:window.getCurrentAcademicYear()
