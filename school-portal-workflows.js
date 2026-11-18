@@ -1316,6 +1316,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  });
 
  const adminContributionRecordsMetric=$('adminContributionRecordsMetric');if(adminContributionRecordsMetric)adminContributionRecordsMetric.hidden=false;
+ window.applyDashboardMetricLayout?.();
  const adminContributionRecordsCount=$('adminContributionRecordsCount');if(adminContributionRecordsCount)adminContributionRecordsCount.textContent=(cr.error||rr.error)?'Unavailable':String(activeCons.length);
  const options='<option value="">Choose teacher</option>'+teachers.filter(t=>t.is_active!==false).map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name)+' ('+esc(t.id)+')</option>').join('');
  $('wfConTeacher').innerHTML=options;$('wfPayTeacher').innerHTML=options;$('wfStatementTeacher').innerHTML=options;
