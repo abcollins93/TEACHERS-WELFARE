@@ -2086,6 +2086,23 @@ if(requestedCode)persistActiveTenant(requestedCode);
 // Normalize the legacy Ntonso code to the code actually registered in Supabase.
 let code=requestedCode==='NTONSO-A-0'?'NTONSO-A-01':requestedCode;
 const $=id=>document.getElementById(id);
+function setLoginRetry(message, retryAction){
+ const target=$('loginError');
+ if(!target)return;
+ target.replaceChildren(document.createTextNode(message));
+ const button=document.createElement('button');
+ button.type='button';
+ button.textContent='Retry Connection';
+ button.className='secondary';
+ button.style.cssText='display:block;width:100%;margin-top:10px;touch-action:manipulation';
+ button.addEventListener('click',async()=>{
+  if(button.disabled)return;
+  button.disabled=true;button.textContent='Retrying…';
+  try{await retryAction();}
+  finally{if(button.isConnected){button.disabled=false;button.textContent='Retry Connection';}}
+ });
+ target.appendChild(button);
+}
 function withPortalTimeout(value,ms,label){
  let timer;
  return Promise.race([
@@ -2137,7 +2154,7 @@ let tenantIdentityDeadline=null;
 // tenant request so a stalled identity check cannot hold the splash screen.
 window.setTimeout(()=>{
  if(pageLoader&&!pageLoader.classList.contains('is-hidden'))hidePageLoader();
-},15000);
+},20000);
 
 const applyTheme=dark=>{document.documentElement.classList.toggle('dark',dark);const b=$('themeToggle');if(b)b.innerHTML=dark?'<i class="fa-solid fa-sun"></i> Light mode':'<i class="fa-solid fa-moon"></i> Dark mode';};
 applyTheme(false);
@@ -2192,7 +2209,13 @@ let gatewayAccessBlocked=false;
 function blockTenantAccess(title, message){
  gatewayAccessBlocked=true;
  $('loginSchoolName').textContent=title;
- $('loginError').textContent=message;
+ setLoginRetry(message,async()=>{
+  gatewayAccessBlocked=false;
+  ['loginBtn','teacherLoginButton','forgotPassword','teacherForgotPreview'].forEach(id=>{const el=$(id);if(el)el.disabled=false;});
+  ['email','password','teacherStaffId','teacherPreviewPassword'].forEach(id=>{const el=$(id);if(el)el.disabled=false;});
+  await loadGatewayIdentity();
+  if(!gatewayAccessBlocked){const {data:{session}}=await client.auth.getSession();if(session?.user)await showDashboard();}
+ });
  ['loginBtn','teacherLoginButton','forgotPassword','teacherForgotPreview'].forEach(id=>{const el=$(id);if(el)el.disabled=true;});
  ['email','password','teacherStaffId','teacherPreviewPassword'].forEach(id=>{const el=$(id);if(el)el.disabled=true;});
  $('login')?.classList.remove('hidden');
@@ -2202,7 +2225,7 @@ async function loadGatewayIdentity(){
  // A missing URL code may still be resolved from the authenticated administrator's
  // verified school assignment after sign-in; do not prematurely block that flow.
  if(!code)return;
- const {data:directory,error:directoryError}=await withPortalTimeout(client.from('platform_schools').select('name,status').eq('school_code',code).maybeSingle(),8000,'School gateway verification timed out. Please reload the school link and try again.');
+ const {data:directory,error:directoryError}=await withPortalTimeout(client.from('platform_schools').select('name,status').eq('school_code',code).maybeSingle(),15000,'School gateway verification timed out. Please reload the school link and try again.');
  if(directoryError||!directory){
   blockTenantAccess('School gateway unavailable','This school’s access status could not be verified. For security, sign-in is blocked. Please contact the platform administrator.');
   return;
@@ -2222,7 +2245,7 @@ tenantIdentityReady=isDemoMode?Promise.resolve():loadGatewayIdentity().catch(err
 // Start the deadline only after tenantIdentityReady has been assigned. The
 // previous code timed the initial, already-resolved placeholder promise.
 tenantIdentityDeadline=withPortalTimeout(
- tenantIdentityReady,9500,'Tenant identity initialization timed out.'
+ tenantIdentityReady,15000,'Tenant identity initialization timed out.'
 ).catch(error=>{
  console.warn('[School Welfare] Tenant identity initialization recovered:',error?.message||error);
  blockTenantAccess('School gateway unavailable','We could not verify this school’s access status in time. Reload the school link or contact the platform administrator.');
@@ -3648,10 +3671,10 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
 }
 async function showDashboard(){
  try{
-  return await withPortalTimeout(showDashboardInternal(),20000,'Your school dashboard is taking longer than expected. The loading screen has been cleared; please retry or contact your administrator.');
+  return await withPortalTimeout(showDashboardInternal(),30000,'Your school dashboard is taking longer than expected.');
  }catch(error){
   console.error('[School Welfare] Dashboard startup recovered safely:',error?.message||error);
-  if($('loginError'))$('loginError').textContent=error?.message||'The school dashboard could not finish loading. Please try again.';
+  setLoginRetry(error?.message||'The school dashboard could not finish loading. Please try again.',()=>showDashboard());
   $('login')?.classList.remove('hidden');$('dashboard')?.classList.add('hidden');
   window.finishTenantSkeletons?.();
   return false;
