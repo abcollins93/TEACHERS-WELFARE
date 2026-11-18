@@ -63,7 +63,8 @@
 (function(){
  var params=new URLSearchParams(window.location.search);
  var code=(params.get('c')||params.get('school_code')||params.get('tenant')||params.get('school')||'').trim().toUpperCase();
- if(code==='DEMO'){window.__welfareSupabaseReady=Promise.resolve(null);return;}
+ var explicitDemo=params.has('c')&&String(params.get('c')||'').trim().toUpperCase()==='DEMO';
+ if(explicitDemo){window.__welfareSupabaseReady=Promise.resolve(null);return;}
  window.__welfareSupabaseReady=new Promise(function(resolve,reject){
   var script=document.createElement('script'),settled=false;
   var finish=function(error){
