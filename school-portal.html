@@ -49,7 +49,15 @@
    '<b>'+label+'</b><span class="'+kind+'-sign-school">'+(financial?'':escapeHtml(schoolName||''))+'</span></div>';
  };
 })();
-</script><script src="./demo-sandbox.js"></script><script>
+</script><script>
+/* Load the isolated sandbox only for an explicit c=DEMO URL. */
+(function(){
+ const query=new URLSearchParams(window.location.search);
+ if(query.has('c')&&String(query.get('c')||'').trim().toUpperCase()==='DEMO'){
+  document.write('<script src="./demo-sandbox.js"><\/script>');
+ }
+})();
+</script><script>
 /* Load Supabase asynchronously for live tenants. A CDN stall is bounded and
    cannot block HTML parsing or leave the portal splash screen running forever. */
 (function(){
@@ -2044,9 +2052,11 @@ const hashParams=new URLSearchParams(location.hash.replace(/^#/,''));
 let requestedCode=(params.get('c')||params.get('school_code')||params.get('tenant')||params.get('school')||params.get('code')||
  hashParams.get('c')||hashParams.get('school_code')||hashParams.get('tenant')||hashParams.get('school')||'').trim().toUpperCase();
 if(!requestedCode){try{requestedCode=(sessionStorage.getItem('invited_school_code')||localStorage.getItem('invited_school_code')||sessionStorage.getItem('active_tenant_code')||localStorage.getItem('active_tenant_code')||'').trim().toUpperCase();}catch(_){}}
+const isDemoMode=params.has('c')&&String(params.get('c')||'').trim().toUpperCase()==='DEMO';
+if(!isDemoMode&&requestedCode==='DEMO')requestedCode='';
 const SUPABASE_URL='https://jlwdtlhlztbgpogqdabu.supabase.co';
 const SUPABASE_KEY='sb_publishable_-idvZBti_BY5Xn8xDxhqqw_p_Me6X8O';
-const isDemoMode=requestedCode==='DEMO';
+
 if(document.body)document.body.classList.toggle('welfare-demo-mode',isDemoMode);
 if(isDemoMode&&!document.getElementById('welfare-demo-dashboard-layout')){
  const demoStyle=document.createElement('style');demoStyle.id='welfare-demo-dashboard-layout';
@@ -3842,16 +3852,27 @@ function resetInactivityTimer(){
     $('loginError').textContent='You have been signed out after seven minutes of inactivity. Please sign in again.';
   },INACTIVITY_LIMIT_MS);
 }
-['pointerdown','pointermove','keydown','scroll','touchstart'].forEach(eventName=>{
+// Only live school tenants install document-wide inactivity watchers.
+if(!isDemoMode){
+ ['pointerdown','pointermove','keydown','scroll','touchstart'].forEach(eventName=>{
   document.addEventListener(eventName,()=>{
-    if(!$('dashboard').classList.contains('hidden')&&!isDemoMode) resetInactivityTimer();
+   if(!$('dashboard').classList.contains('hidden'))resetInactivityTimer();
   },{passive:true});
+ });
+}
+client.auth.onAuthStateChange(event=>{
+ if(event==='SIGNED_OUT'){
+  window.__welfareWelcomeLoginKey='';window.__welfareWelcomeShownForLogin='';
+  if(window.__welfareWelcomeTimer){clearTimeout(window.__welfareWelcomeTimer);window.__welfareWelcomeTimer=null;}
+  document.getElementById('loginWelcomeToast')?.remove();
+ }
 });
-client.auth.onAuthStateChange((event,session)=>{
-  if(event==='SIGNED_OUT'){window.__welfareWelcomeLoginKey='';window.__welfareWelcomeShownForLogin='';if(window.__welfareWelcomeTimer){clearTimeout(window.__welfareWelcomeTimer);window.__welfareWelcomeTimer=null;}document.getElementById('loginWelcomeToast')?.remove();}
-  if(session&&!isDemoMode) resetInactivityTimer();
+if(!isDemoMode){
+ client.auth.onAuthStateChange((event,session)=>{
+  if(session)resetInactivityTimer();
   else if(inactivityTimer){clearTimeout(inactivityTimer);inactivityTimer=null;}
-});
+ });
+}
 if(isDemoMode){
  Promise.resolve().then(()=>showDashboard()).catch(error=>{
   console.error('[DEMO] Portal startup recovered from an initialization error:',error);
