@@ -1914,7 +1914,57 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
  display:none!important;position:absolute!important;left:-9999px!important;top:-9999px!important;
  width:0!important;height:0!important;overflow:hidden!important;pointer-events:none!important;
 }
-</style></head><body>
+</style>
+<style id="tenant-header-school-name-flex-fix">
+/* Give the tenant identity the remaining header width without moving account controls. */
+header.top .top-brand-group{
+ flex:1 1 0%!important;
+ min-width:0!important;
+ max-width:100%!important;
+}
+header.top .top-brand-copy{
+ flex:1 1 0%!important;
+ min-width:0!important;
+ width:0!important;
+ max-width:100%!important;
+ overflow:hidden!important;
+}
+header.top .top-school-name{
+ display:block!important;
+ flex:1 1 auto!important;
+ min-width:0!important;
+ width:100%!important;
+ max-width:100%!important;
+ white-space:nowrap!important;
+ overflow:hidden!important;
+ text-overflow:ellipsis!important;
+ overflow-wrap:normal!important;
+}
+header.top .top-account-actions{
+ flex:0 0 auto!important;
+ min-width:max-content!important;
+ gap:clamp(3px,.8vw,7px)!important;
+}
+header.top .quick-actions-wrap,
+header.top #themeToggle,
+header.top #headerProfile{
+ flex:0 0 auto!important;
+ min-width:0!important;
+}
+header.top #themeToggle{margin:0!important}
+@media(max-width:430px){
+ header.top .top-brand-group{gap:5px!important}
+ header.top .top-brand-copy{min-width:0!important}
+ header.top .top-school-name{font-size:clamp(.76rem,3.4vw,.84rem)!important}
+ header.top .top-account-actions{gap:3px!important}
+ header.top #mobileNavToggle{
+  flex:0 0 34px!important;width:34px!important;min-width:34px!important;
+  height:35px!important;min-height:35px!important;
+ }
+}
+</style>
+
+</head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading Teachers Welfare Portal" aria-hidden="false">
  <div class="page-loader-card">
