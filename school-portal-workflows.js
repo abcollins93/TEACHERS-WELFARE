@@ -7,6 +7,14 @@ const displayWelfareReason=reason=>{const value=String(reason??'').trim();return
 window.displayWelfareReason=displayWelfareReason;
 const money=n=>Number(n||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
 const today=()=>new Date().toISOString().slice(0,10);
+const frameRender=(function(){
+ const pending=new WeakSet();
+ return function(key,render){
+  if(!key||pending.has(key))return;
+  pending.add(key);
+  requestAnimationFrame(()=>{pending.delete(key);render();});
+ };
+})();
 
 function wfDialog({kind='confirm',title='Please confirm',message='',confirmText='Confirm',cancelText='Cancel',placeholder='Enter your response…',responseMode='none'}={}){
  return new Promise(resolve=>{
@@ -1258,7 +1266,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const renderTeacherTables=()=>{const q=String($('wfTeacherSearch')?.value||'').trim().toLowerCase();const visible=teachers.filter(t=>[t.id,t.name,t.phone,t.rank,t.class_name,t.membership_type,t.employer].some(v=>String(v||'').toLowerCase().includes(q)));
  $('wfManageTeacherRows').innerHTML=visible.length?visible.map(t=>{const login=teacherLoginState(t);return '<tr><td class="wf-staff-id-cell"><span class="wf-staff-id-badge">'+esc(t.id)+'</span></td><td class="teacher-name-cell">'+esc(t.name)+'</td><td class="wf-phone-cell">'+esc(t.phone||'—')+'</td><td class="wf-accent-cell wf-rank-cell"><span class="wf-rank-badge">'+esc(t.rank||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-class-accent">'+esc(t.class_name||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-membership-badge">'+esc(t.membership_type||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-employer-badge">'+esc(t.employer||'—')+'</span></td><td><span class="wf-teacher-status '+(t.is_active===false?'inactive':'active')+'">'+(t.is_active===false?'Inactive':'Active')+'</span><br><span class="wf-login-status '+(login.activated?'active':'pending')+'">'+esc(login.label)+'</span></td><td><button type="button" class="wf-table-action wf-action-view" data-view-profile="'+esc(t.id)+'">View profile</button> <button type="button" class="wf-table-action wf-action-edit" data-wf-edit="'+esc(t.id)+'">Edit</button> <button type="button" class="wf-table-action '+(login.activated?'wf-action-reset':'wf-action-primary')+'" data-wf-activate="'+esc(t.id)+'">'+(login.activated?'✓ Reset login':'Activate login')+'</button> '+(t.is_active===false?'<button type="button" class="wf-table-action wf-action-primary" data-wf-restore="'+esc(t.id)+'">Restore</button>':'<button type="button" class="wf-table-action wf-action-danger" data-wf-remove="'+esc(t.id)+'">Deactivate</button>')+'</td></tr>';}).join(''):'<tr><td colspan="9">No matching teachers.</td></tr>';};
  renderTeacherTables();
- $('wfTeacherSearch').addEventListener('input',renderTeacherTables);
+ $('wfTeacherSearch').addEventListener('input',()=>frameRender($('wfManageTeacherRows'),renderTeacherTables));
  $('wfManageTeacherRows').addEventListener('click',async e=>{
    const viewButton=e.target.closest('[data-view-profile]');
    if(viewButton){selectedProfileTeacherId=String(viewButton.dataset.viewProfile);if(profileSelect)profileSelect.value=selectedProfileTeacherId;renderSelectedTeacherProfile();const nav=document.querySelector('.sidebar .navbtn[data-target="teacherProfileViewer"]');if(nav)nav.click();return;}
@@ -1327,7 +1335,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      return '<tr><td>'+teacherLabel(x.teacher_id)+'</td><td>'+esc(monthYear)+'</td><td>'+esc(x.reference||'—')+'</td><td>GHS '+money(x.amount)+'</td><td class="wf-payout-amount">GHS '+money(runningTotal)+'</td><td>'+esc(d||'—')+'</td><td>'+action+'</td></tr>';
     }).join(''):'<tr><td colspan="7">No matching contributions.</td></tr>';
   };
-  renderContributionLedger();$('wfLedgerSearch').addEventListener('input',renderContributionLedger);$('wfLedgerMonth').addEventListener('change',renderContributionLedger);
+  renderContributionLedger();$('wfLedgerSearch').addEventListener('input',()=>frameRender($('wfConRows'),renderContributionLedger));$('wfLedgerMonth').addEventListener('change',()=>frameRender($('wfConRows'),renderContributionLedger));
   const renderDuesMatrix=()=>{
     const rowsHost=$('wfDuesMatrixRows'),status=$('wfDuesMatrixStatus');
     if(!rowsHost)return;
@@ -1371,8 +1379,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     if(status)status.textContent=roster.length+' active member'+(roster.length===1?'':'s')+' shown · '+year+' · '+yearRecords+' active contribution record'+(yearRecords===1?'':'s');
   };
   renderDuesMatrix();
-  $('wfDuesMatrixYear')?.addEventListener('change',renderDuesMatrix);
-  $('wfDuesMatrixSearch')?.addEventListener('input',renderDuesMatrix);
+  $('wfDuesMatrixYear')?.addEventListener('change',()=>frameRender($('wfDuesMatrixRows'),renderDuesMatrix));
+   $('wfDuesMatrixSearch')?.addEventListener('input',()=>frameRender($('wfDuesMatrixRows'),renderDuesMatrix));
   const duesMatrixPdfButton=$('wfDuesMatrixPdf');
   if(duesMatrixPdfButton){
    duesMatrixPdfButton.addEventListener('click',async()=>{
