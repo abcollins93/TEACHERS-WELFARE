@@ -44,6 +44,7 @@
       function navigate(target, label) {
         if (redirecting) return;
         redirecting = true;
+        var retry = document.getElementById('gateway-retry'); if (retry) retry.remove();
         link.href = target.href;
         message.textContent = label || 'School verified. Opening your portal…';
         window.location.replace(target.href);
@@ -68,11 +69,26 @@
         try { localStorage.setItem('invited_school_code', code); localStorage.setItem('active_tenant_code', code); } catch (_) {}
         try { sessionStorage.setItem('invited_school_code', code); sessionStorage.setItem('active_tenant_code', code); } catch (_) {}
       }
-      (async function(){
-      function block(title, detail) {
+      async function verifyGateway() {
+      function block(title, detail, canRetry) {
         if (heading) heading.textContent = title;
         message.textContent = detail;
         link.style.display = 'none';
+        var oldRetry = document.getElementById('gateway-retry');
+        if (oldRetry) oldRetry.remove();
+        if (canRetry) {
+          var retry = document.createElement('button');
+          retry.id = 'gateway-retry';
+          retry.type = 'button';
+          retry.textContent = 'Retry Connection';
+          retry.style.cssText = 'margin-top:12px;padding:11px 18px;border:0;border-radius:12px;background:#f59e0b;color:#111827;font-weight:700;cursor:pointer;touch-action:manipulation';
+          retry.addEventListener('click', async function () {
+            retry.disabled = true;
+            retry.textContent = 'Retrying…';
+            await verifyGateway();
+          }, { once: true });
+          document.querySelector('main').appendChild(retry);
+        }
         document.title = title + ' | Teachers Welfare Fund';
       }
       if (!/^[A-Z0-9-]{2,32}$/.test(code)) {
@@ -93,7 +109,7 @@
               gatewayDeadline = window.setTimeout(function(){
                 if(gatewayController)gatewayController.abort();
                 reject(new Error('School gateway verification timed out.'));
-              }, 8000);
+              }, 15000);
             })
           ]);
           if (!response.ok) throw new Error('School access status could not be verified.');
@@ -120,9 +136,10 @@
         target.searchParams.delete('school');
         navigate(target, 'School verified. Opening your secure portal…');
       } catch (error) {
-        block('School gateway unavailable', 'We could not verify this school’s access status. For security, sign-in is blocked. Please try again later or contact the platform administrator.');
+        block('School gateway unavailable', 'We could not verify this school’s access status. For security, sign-in is blocked. Please try again.', true);
       }
-      })();
+      }
+      verifyGateway();
     })();
   </script>
 </body>
