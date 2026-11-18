@@ -1526,6 +1526,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      const renderedPixels=renderedCanvas.getContext('2d',{willReadFrequently:true})?.getImageData(0,0,Math.min(renderedCanvas.width,32),Math.min(renderedCanvas.height,32)).data;
      if(!renderedPixels||renderedCanvas.toDataURL('image/png').length<1000)throw new Error('The dues matrix page rendered empty. Please try again.');
      const blob=await pdfWorker.toPdf().output('blob');
+     report.remove();report=null; // Release the off-screen staging node before cache/download work.
      if(!(blob instanceof Blob)||blob.size<1000)throw new Error('The generated dues matrix PDF is empty. Please try again.');
      const pdfSignature=new Uint8Array(await blob.slice(0,5).arrayBuffer());
      if(String.fromCharCode(...pdfSignature)!=='%PDF-')throw new Error('The generated report is not a valid PDF document. Please try again.');
