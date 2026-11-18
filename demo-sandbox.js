@@ -231,5 +231,6 @@
   modal.querySelector('input[name="school"]').focus({preventScroll:true});
  }
 
- window.WelfareDemo={school,teachers,contributions,payouts,announcements,client,months,activeCon,activePay,summary,openSchoolSetupModal,setTeacher(index){activeTeacherIndex=Math.max(0,Math.min(teachers.length-1,Number(index)||0));}};
+ const dashboardMetricOrder=['teacherCount','contributionTotal','payoutTotal','monthlyContributionTotal','adminContributionRecordsMetric','netTotal','standardDuesMetric','lastActivity'];
+ window.WelfareDemo={school,teachers,contributions,payouts,announcements,client,months,activeCon,activePay,summary,dashboardMetricOrder,openSchoolSetupModal,setTeacher(index){activeTeacherIndex=Math.max(0,Math.min(teachers.length-1,Number(index)||0));}};
 })();
