@@ -554,6 +554,7 @@ input, select, textarea, button { max-width: 100%; }
 #schoolOverview>.dashboard-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch;gap:14px}
 #schoolOverview>.dashboard-metrics>.metric{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:11px;min-width:0;width:100%;height:auto;min-height:142px;padding:15px;overflow:hidden;border:1px solid #e8edf5;border-left:5px solid var(--metric-accent,#bd8a0b);border-radius:16px;background:#fff;color:#182235;box-shadow:0 8px 22px rgba(15,23,42,.065)}
 #schoolOverview>.dashboard-metrics>.metric:after{display:none}
+#schoolOverview>.dashboard-metrics>.metric[hidden]{display:none!important}
 #schoolOverview>.dashboard-metrics>.metric .metric-icon{display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;border-radius:11px;background:var(--metric-icon-bg,#eff6ff);color:var(--metric-accent,#2563eb);font-size:1.05rem}
 #schoolOverview>.dashboard-metrics>.metric .metric-content{display:block;min-width:0;width:100%;flex:1}
 #schoolOverview>.dashboard-metrics>.metric .metric-label{display:block;margin:0;color:#778196;font-size:.65rem;font-weight:800;letter-spacing:.035em;line-height:1.35;text-transform:uppercase;white-space:normal;overflow-wrap:normal;word-break:normal;hyphens:none}
