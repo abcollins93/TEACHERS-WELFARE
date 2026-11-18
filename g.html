@@ -116,7 +116,7 @@
           records = await Promise.race([
             response.json(),
             new Promise(function(_, reject){
-              gatewayJsonDeadline = window.setTimeout(function(){ reject(new Error('School gateway response timed out.')); }, 8000);
+              gatewayJsonDeadline = window.setTimeout(function(){ reject(new Error('School gateway response timed out.')); }, 15000);
             })
           ]);
         } finally {
