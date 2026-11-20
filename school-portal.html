@@ -4615,8 +4615,9 @@ window.generateTenantWelfarePdf=async function(o){
  const qr='twfqr'+id;
  const sign='<div class="twf-final-signoff'+(individual?' twf-member-final-signoff':'')+'"><div class="twf-signatures"><div class="twf-qr"><div id="'+qr+'"></div></div></div></div>';
   const disclaimer='<div class="twf-disclaimer">*** The School welfare is not liable for any financial loss resulting from disclosing your member/account details including password to Third Parties ***</div>';
- const host=document.createElement('div');host.className='twf-pdf '+orientation+(statistics?' twf-payment-statistics':'');host.style.cssText='position:fixed;left:-100000px;top:0;z-index:-1;background:#fff';window.applyWelfarePdfTenantWatermark(host,school.name,school);host.setAttribute('data-theme','light');host.style.colorScheme='light';host.innerHTML='<style>'+style+'</style><style>.twf-pdf{font:12px/1.4 Arial,sans-serif!important;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.twf-head h2{font-size:19px!important;line-height:1.12!important}.twf-head h1{font-size:25px!important;line-height:1.1!important}.twf-brand{font-size:12px!important}.twf-sub{font-size:12.5px!important;line-height:1.3!important}.twf-meta{font-size:11px!important;line-height:1.5!important}.twf-box h3,.twf-section{font-size:13px!important;line-height:1.25!important}.twf-details th,.twf-details td{font-size:10px!important;padding:8px 11px!important;line-height:1.35!important}.twf-table{font-size:10.2px!important;line-height:1.45!important}.twf-table th{font-size:10px!important;padding:7px 9px!important}.twf-table td{padding:7px 9px!important}.twf-metric small{font-size:9.5px!important}.twf-metric strong{font-size:15px!important;font-weight:800!important;line-height:1.2!important}.twf-disclaimer{font-size:8pt!important;font-weight:700!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;text-rendering:geometricPrecision!important}.twf-head-logo,.twf-photo,.twf-qr img,.twf-qr canvas{image-rendering:auto;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}</style><style>.twf-signatures{display:flex!important;justify-content:flex-end!important;align-items:flex-end!important;width:100%!important;max-width:100%!important;min-width:0!important}.twf-signatures .twf-qr{margin-left:auto!important;justify-self:auto!important;text-align:right!important}.twf-qr img,.twf-qr canvas{margin:0 0 2mm auto!important}.twf-pdf .twf-details{display:table!important;width:100%!important;max-width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;border:1px solid #94a3b8!important;border-radius:6px!important;overflow:hidden!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf .twf-details th,.twf-pdf .twf-details td{border:1px solid #94a3b8!important;padding:7px 10px!important;vertical-align:middle!important;overflow-wrap:anywhere!important;word-break:break-word!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf .twf-details th{text-align:left!important;background:#f8fafc!important;font-weight:700!important;white-space:nowrap!important}.twf-pdf .twf-details th:nth-child(1){width:17%!important}.twf-pdf .twf-details td:nth-child(2){width:33%!important;white-space:normal!important}.twf-pdf .twf-details th:nth-child(3){width:17%!important}.twf-pdf .twf-details td:nth-child(4){width:33%!important;white-space:normal!important}</style>'+head+body+sign+disclaimer;const pdfLightPaletteStyle=document.createElement('style');pdfLightPaletteStyle.textContent='.twf-pdf[data-theme="light"]{background:#ffffff!important;color:#17243a!important;color-scheme:light!important}.twf-pdf[data-theme="light"] .twf-metric{color:#17243a!important;border-color:#dbe3ee!important;box-shadow:none!important;filter:none!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf[data-theme="light"] .twf-metric.green{background:#ecfdf5!important;border-color:#a7f3d0!important}.twf-pdf[data-theme="light"] .twf-metric.red{background:#fff1f2!important;border-color:#fecdd3!important}.twf-pdf[data-theme="light"] .twf-metric.blue{background:#eff6ff!important;border-color:#bfdbfe!important}.twf-pdf[data-theme="light"] .twf-metric.gold{background:#fffbeb!important;border-color:#fde68a!important}.twf-pdf[data-theme="light"] .twf-metric small{color:#475569!important}.twf-pdf[data-theme="light"] .twf-metric strong{color:#102b4f!important}.twf-pdf[data-theme="light"] .twf-metric:before{filter:none!important}';host.appendChild(pdfLightPaletteStyle);document.body.appendChild(host);
- // Override the global hidden-template guard only while this A4 report is captured.
+ const host=document.createElement('div');host.className='twf-pdf '+orientation+(statistics?' twf-payment-statistics':'');host.setAttribute('data-welfare-pdf-staging','');host.style.cssText='display:block!important;visibility:visible!important;opacity:1!important;position:fixed!important;left:-10000px!important;top:0!important;right:auto!important;bottom:auto!important;z-index:0!important;width:794px!important;min-width:794px!important;max-width:794px!important;height:auto!important;min-height:1px!important;max-height:none!important;overflow:visible!important;pointer-events:none!important;margin:0!important;background:#fff!important';window.applyWelfarePdfTenantWatermark(host,school.name,school);host.setAttribute('data-theme','light');host.style.colorScheme='light';host.innerHTML='<style>'+style+'</style><style>.twf-pdf{font:12px/1.4 Arial,sans-serif!important;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.twf-head h2{font-size:19px!important;line-height:1.12!important}.twf-head h1{font-size:25px!important;line-height:1.1!important}.twf-brand{font-size:12px!important}.twf-sub{font-size:12.5px!important;line-height:1.3!important}.twf-meta{font-size:11px!important;line-height:1.5!important}.twf-box h3,.twf-section{font-size:13px!important;line-height:1.25!important}.twf-details th,.twf-details td{font-size:10px!important;padding:8px 11px!important;line-height:1.35!important}.twf-table{font-size:10.2px!important;line-height:1.45!important}.twf-table th{font-size:10px!important;padding:7px 9px!important}.twf-table td{padding:7px 9px!important}.twf-metric small{font-size:9.5px!important}.twf-metric strong{font-size:15px!important;font-weight:800!important;line-height:1.2!important}.twf-disclaimer{font-size:8pt!important;font-weight:700!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;text-rendering:geometricPrecision!important}.twf-head-logo,.twf-photo,.twf-qr img,.twf-qr canvas{image-rendering:auto;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}</style><style>.twf-signatures{display:flex!important;justify-content:flex-end!important;align-items:flex-end!important;width:100%!important;max-width:100%!important;min-width:0!important}.twf-signatures .twf-qr{margin-left:auto!important;justify-self:auto!important;text-align:right!important}.twf-qr img,.twf-qr canvas{margin:0 0 2mm auto!important}.twf-pdf .twf-details{display:table!important;width:100%!important;max-width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;border:1px solid #94a3b8!important;border-radius:6px!important;overflow:hidden!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf .twf-details th,.twf-pdf .twf-details td{border:1px solid #94a3b8!important;padding:7px 10px!important;vertical-align:middle!important;overflow-wrap:anywhere!important;word-break:break-word!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf .twf-details th{text-align:left!important;background:#f8fafc!important;font-weight:700!important;white-space:nowrap!important}.twf-pdf .twf-details th:nth-child(1){width:17%!important}.twf-pdf .twf-details td:nth-child(2){width:33%!important;white-space:normal!important}.twf-pdf .twf-details th:nth-child(3){width:17%!important}.twf-pdf .twf-details td:nth-child(4){width:33%!important;white-space:normal!important}</style>'+head+body+sign+disclaimer;const pdfLightPaletteStyle=document.createElement('style');pdfLightPaletteStyle.textContent='.twf-pdf[data-theme="light"]{background:#ffffff!important;color:#17243a!important;color-scheme:light!important}.twf-pdf[data-theme="light"] .twf-metric{color:#17243a!important;border-color:#dbe3ee!important;box-shadow:none!important;filter:none!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf[data-theme="light"] .twf-metric.green{background:#ecfdf5!important;border-color:#a7f3d0!important}.twf-pdf[data-theme="light"] .twf-metric.red{background:#fff1f2!important;border-color:#fecdd3!important}.twf-pdf[data-theme="light"] .twf-metric.blue{background:#eff6ff!important;border-color:#bfdbfe!important}.twf-pdf[data-theme="light"] .twf-metric.gold{background:#fffbeb!important;border-color:#fde68a!important}.twf-pdf[data-theme="light"] .twf-metric small{color:#475569!important}.twf-pdf[data-theme="light"] .twf-metric strong{color:#102b4f!important}.twf-pdf[data-theme="light"] .twf-metric:before{filter:none!important}';host.appendChild(pdfLightPaletteStyle);document.body.appendChild(host);
+ // Explicitly override every hidden-template dimension only for this attached
+ // off-screen staging node. Its 794px width is the CSS-pixel equivalent of A4.
  host.style.setProperty('display','block','important');
  host.style.setProperty('visibility','visible','important');
  host.style.setProperty('opacity','1','important');
@@ -4626,10 +4627,12 @@ window.generateTenantWelfarePdf=async function(o){
  host.style.setProperty('right','auto','important');
  host.style.setProperty('bottom','auto','important');
  host.style.setProperty('z-index','0','important');
- host.style.setProperty('width','210mm','important');
- host.style.setProperty('max-width','210mm','important');
+ host.style.setProperty('width','794px','important');
+ host.style.setProperty('min-width','794px','important');
+ host.style.setProperty('max-width','794px','important');
  host.style.setProperty('height','auto','important');
- host.style.setProperty('min-height','0','important');
+ host.style.setProperty('min-height','1px','important');
+ host.style.setProperty('max-height','none','important');
  host.style.setProperty('overflow','visible','important');
  host.style.setProperty('pointer-events','none','important');
   const passportImage=host.querySelector('[data-twf-passport]');
@@ -4655,28 +4658,30 @@ window.generateTenantWelfarePdf=async function(o){
  try{
   const qrNode=host.querySelector('#'+qr);
   if(window.QRCode&&qrNode)new window.QRCode(qrNode,{text:'https://abcollins93.github.io/TEACHERS-WELFARE/verify.html?c='+encodeURIComponent(schoolCode)+'&d='+encodeURIComponent(id),width:228,height:228,colorDark:'#030a16',colorLight:'#ffffff',correctLevel:window.QRCode.CorrectLevel.M});
-  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
-  if(document.fonts?.ready){try{await document.fonts.ready;}catch(_){}}
+  const waitForPdfFrame=()=>new Promise(resolve=>requestAnimationFrame(()=>resolve()));
+  if(document.fonts?.ready){try{await document.fonts.ready;}catch(fontError){console.warn('[Welfare PDF] Font readiness warning:',fontError?.message||fontError);}}
   const reportImages=Array.from(host.querySelectorAll('img'));
   await Promise.all(reportImages.map(async image=>{
    if(!image.complete){
     await new Promise(resolve=>{
-     const finish=()=>resolve();
+     let settled=false;
+     const finish=()=>{if(settled)return;settled=true;resolve();};
      image.addEventListener('load',finish,{once:true});
      image.addEventListener('error',finish,{once:true});
      setTimeout(finish,10000);
     });
    }
    if(image.complete&&image.naturalWidth>0&&typeof image.decode==='function'){
-    try{await image.decode();}catch(_){}
+    try{await image.decode();}catch(decodeError){console.warn('[Welfare PDF] Image decode warning:',decodeError?.message||decodeError);}
    }
    if(image.complete&&!image.naturalWidth)image.remove();
   }));
-  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+  await waitForPdfFrame();
+  await waitForPdfFrame();
   const reportText=String(host.textContent||'').replace(/\\s+/g,' ').trim();
-  const reportWidth=Math.ceil(host.getBoundingClientRect().width||host.scrollWidth);
-  const reportHeight=Math.ceil(host.getBoundingClientRect().height||host.scrollHeight);
-  if(!reportWidth||!reportHeight||reportText.length<200||!host.querySelector('.twf-head')){
+  const reportWidth=Math.max(794,Math.ceil(host.scrollWidth||host.getBoundingClientRect().width||0));
+  const reportHeight=Math.ceil(host.scrollHeight||host.getBoundingClientRect().height||0);
+  if(host.scrollWidth<=0||host.scrollHeight<=0||!reportWidth||!reportHeight||reportText.length<200||!host.querySelector('.twf-head')){
    throw new Error('The statement content did not finish laying out. No blank PDF was created.');
   }
   if(individual&&!host.querySelector('.member-info-section table tbody tr')){
@@ -4684,7 +4689,7 @@ window.generateTenantWelfarePdf=async function(o){
   }
   const safeCode=String(schoolCode||schoolName).replace(/[^a-z0-9_-]/gi,'_')||'school';
   filename=safeCode+'-'+(individual?'member-'+String(teacher.id||'statement').replace(/[^a-z0-9_-]/gi,'_')+'-statement':monthly?month+'-monthly-summary':annual?year+'-yearly-summary':statistics?year+'-statistics-of-payment':'complete-fund-summary')+'.pdf';
-  const pdfOptions={margin:[0,0,0,0],filename,image:{type:'png'},html2canvas:{scale:4,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0,windowWidth:Math.max(reportWidth,document.documentElement.clientWidth),windowHeight:Math.max(reportHeight,document.documentElement.clientHeight),width:reportWidth,height:reportHeight},jsPDF:{unit:'mm',format:'a4',orientation:'portrait',compress:true},pagebreak:{mode:statistics?['css']:['css','legacy'],avoid:['tr','.twf-metric','.twf-payment-row','.twf-signatures','.twf-final-signoff']}};
+  const pdfOptions={margin:[0,0,0,0],filename,image:{type:'png'},html2canvas:{scale:4,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0,windowWidth:Math.max(794,reportWidth,document.documentElement.clientWidth),windowHeight:Math.max(reportHeight,document.documentElement.clientHeight),width:reportWidth,height:reportHeight},jsPDF:{unit:'mm',format:'a4',orientation:'portrait',compress:true},pagebreak:{mode:statistics?['css']:['css','legacy'],avoid:['tr','.twf-metric','.twf-payment-row','.twf-signatures','.twf-final-signoff']}};
   const pdfWorker=window.html2pdf().set(pdfOptions).from(host);
   await pdfWorker.toCanvas();
   const renderedCanvas=await pdfWorker.get('canvas');
