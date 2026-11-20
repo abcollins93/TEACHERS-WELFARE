@@ -1665,6 +1665,14 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  // Bind report actions as soon as report controls and school-scoped data are ready.
  // Install these BEFORE optional settings requests so slow settings cannot leave
  // visible PDF buttons without click handlers.
+ const reportPdfFailure=(label,error,statusId,fallback)=>{
+   const message=String(error?.message||fallback||'The PDF operation failed.');
+   const stack=String(error?.stack||'No JavaScript stack was provided.');
+   console.error(label+'\nMessage: '+message+'\nStack:\n'+stack,error);
+   const status=statusId?document.getElementById(statusId):null;
+   if(status){status.style.whiteSpace='pre-wrap';status.style.overflowWrap='anywhere';}
+   if(statusId)msg(statusId,message+'\n'+stack.split('\\n').slice(0,9).join('\\n'),true);
+ };
  const assertShareableWelfarePdf=async generated=>{
    const blob=generated?.blob;
    if(!(blob instanceof Blob)||blob.size<5000)throw new Error('The PDF is empty or incomplete. Please regenerate the statement before sharing.');
@@ -1693,7 +1701,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
          preparedAdminShares.set(button.id,{key,generated,pdfFile,fileName,verificationUrl});
          msg(statusId,'PDF ready to share. Tap Share PDF to open your device share sheet.');
        }
-     }catch(error){console.warn('[School Welfare PDF] Share preparation deferred:',error?.message||error);}
+     }catch(error){reportPdfFailure('[School Welfare PDF] Admin report share preparation failed',error,statusId,'The report could not be prepared for sharing.');}
    })();
    adminSharePreparation.set(button.id,{key,task});
  };
@@ -1744,7 +1752,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      const cacheDetails={school_code:pdfOptions?.school?.school_code||window.__welfareCurrentSchool?.school_code,document_id:generated.documentId,document_type:pdfOptions?.type,period:pdfOptions?.month||pdfOptions?.year||'',academic_year:pdfOptions?.academicYear||''};
      if(typeof window.cacheWelfareStatementPdf==='function')Promise.resolve(window.cacheWelfareStatementPdf(generated.blob,generated.filename,cacheDetails)).catch(error=>console.warn('[School Welfare PDF] Local PDF cache deferred:',error?.message||error));
      downloadWorkflowBlob(generated.blob,generated.filename,statusId,successText,'Tap here to view downloaded PDF');
-   }catch(error){console.error('[School Welfare PDF]',error);msg(statusId,error?.message||'The PDF could not be generated. Check your connection and try again.',true);}
+   }catch(error){reportPdfFailure('[School Welfare PDF] Report download failed',error,statusId,'The PDF could not be generated. Check your connection and try again.');}
    finally{button.disabled=false;}
  };
  $('wfMonthlyPdf').addEventListener('click',()=>{
@@ -1819,8 +1827,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    })().catch(error=>{
      if(token===individualSharePreparationToken){
        preparedIndividualShare=null;
-       console.error('[School Welfare PDF] Individual share preparation failed:',error);
-       msg('wfStatementMsg',error?.message||'The statement PDF could not be prepared for sharing.',true);
+       reportPdfFailure('[School Welfare PDF] Individual member statement share preparation failed',error,'wfStatementMsg','The statement PDF could not be prepared for sharing.');
      }
    });
  };
