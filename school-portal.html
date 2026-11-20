@@ -4742,7 +4742,7 @@ window.generateTenantWelfarePdf=async function(o){
    // crest/passport host that blocks canvas drawing cannot blank the report.
    host.querySelectorAll('img').forEach(image=>{
     const source=String(image.currentSrc||image.src||'');
-    if(/^data:image\\//i.test(source))return;
+    if(/^data:image\//i.test(source))return;
     const frame=image.closest('[data-twf-photo-frame]')||image.parentElement;
     if(frame){
      const width=Math.max(24,Math.ceil(image.getBoundingClientRect().width||image.width||96));
