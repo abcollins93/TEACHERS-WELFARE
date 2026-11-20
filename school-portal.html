@@ -6276,6 +6276,73 @@ body.sidebar-open{overflow:hidden}
  };
 })();
 </script>
+<style id="tenant-school-name-mobile-full-fit">
+/* Final mobile header fit: show the complete tenant name while reserving fixed space for controls. */
+@media(max-width:760px){
+ header.top,
+ .app-header-group>header.top{
+  display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;
+  align-items:center!important;justify-content:space-between!important;
+  width:100%!important;height:auto!important;min-height:64px!important;
+  max-height:none!important;overflow:visible!important;
+  box-sizing:border-box!important;padding:8px 10px!important;gap:7px!important;
+ }
+ header.top .top-brand-group,
+ .app-header-group>header.top .top-brand-group{
+  display:flex!important;flex:1 1 auto!important;min-width:0!important;
+  width:auto!important;max-width:none!important;gap:6px!important;
+ }
+ header.top .top-brand-copy,
+ .app-header-group>header.top .top-brand-copy{
+  display:flex!important;flex:1 1 auto!important;min-width:0!important;
+  width:auto!important;max-width:100%!important;overflow:visible!important;
+ }
+ header.top .top-school-name,
+ .app-header-group>header.top .top-school-name{
+  display:block!important;flex:1 1 auto!important;min-width:0!important;
+  width:auto!important;max-width:100%!important;
+  white-space:normal!important;overflow:visible!important;
+  text-overflow:clip!important;word-break:normal!important;
+  overflow-wrap:break-word!important;hyphens:none!important;
+  font-size:clamp(.76rem,3.15vw,.9rem)!important;
+  line-height:1.18!important;letter-spacing:-.02em!important;
+  margin:0!important;
+ }
+ header.top .top-account-actions,
+ .app-header-group>header.top .top-account-actions{
+  display:flex!important;flex:0 0 auto!important;flex-wrap:nowrap!important;
+  align-items:center!important;justify-content:flex-end!important;
+  width:auto!important;min-width:max-content!important;gap:5px!important;
+ }
+ header.top .top-account-actions>*,
+ .app-header-group>header.top .top-account-actions>*{flex:0 0 auto!important}
+ header.top #mobileNavToggle,
+ .app-header-group>header.top #mobileNavToggle{
+  flex:0 0 35px!important;width:35px!important;min-width:35px!important;
+  height:35px!important;min-height:35px!important;
+ }
+ header.top #themeToggle,
+ .app-header-group>header.top #themeToggle{
+  flex:0 0 35px!important;width:35px!important;min-width:35px!important;
+  height:35px!important;min-height:35px!important;padding:0!important;font-size:0!important;
+ }
+ header.top #themeToggle i,
+ .app-header-group>header.top #themeToggle i{font-size:.95rem!important}
+ header.top .header-avatar,
+ .app-header-group>header.top .header-avatar{
+  flex:0 0 35px!important;width:35px!important;min-width:35px!important;height:35px!important;
+ }
+ header.top .top-brand-overline,
+ header.top .top-school-meta,
+ header.top #sectionPageTitle{display:none!important}
+}
+@media(max-width:360px){
+ header.top,.app-header-group>header.top{padding-left:8px!important;padding-right:8px!important;gap:5px!important}
+ header.top .top-brand-group,.app-header-group>header.top .top-brand-group{gap:5px!important}
+ header.top .top-account-actions,.app-header-group>header.top .top-account-actions{gap:4px!important}
+ header.top .top-school-name,.app-header-group>header.top .top-school-name{font-size:.74rem!important}
+}
+</style>
 <style id="welfare-mobile-input-performance">
 /* Input-only mobile responsiveness; preserves all existing visual styling. */
 button,a,.navbtn,[role="button"],[role="tab"],.tab-button,.metric[role="button"],.card[role="button"]{touch-action:manipulation}
