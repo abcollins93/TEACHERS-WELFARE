@@ -14,13 +14,13 @@
   ['Efua Antwi','GES/DEMO/007','Pupil Teacher','Primary 2','054 390 2281'],
   ['Daniel Agyeman','GES/DEMO/008','Assistant Director I','Primary 6','026 881 6042']
  ];
- const teachers=names.map((n,i)=>({id:'demo-teacher-'+(i+1),teacher_id:'demo-teacher-'+(i+1),name:n[0],staff_id:n[1],rank:n[2],class_name:n[3],phone:n[4],email:'teacher'+(i+1)+'@demo.welfare.local',is_active:true,status:'active',registration_date:'2025-04-01',joined_at:'2025-04-01',created_at:'2025-04-01T09:00:00.000Z',passport:null,school_id:school.id}));
- const months=[];for(let i=0;i<12;i++){const d=new Date(2025,3+i,1);months.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));}
+ const teachers=names.map((n,index)=>({id:'demo-teacher-'+(index+1),teacher_id:'demo-teacher-'+(index+1),name:n[0],staff_id:n[1],rank:n[2],class_name:n[3],phone:n[4],email:'teacher'+(index+1)+'@demo.welfare.local',is_active:true,status:'active',registration_date:'2025-04-01',joined_at:'2025-04-01',created_at:'2025-04-01T09:00:00.000Z',passport:null,school_id:school.id}));
+ const months=[];for(let index=0;index<12;index++){const d=new Date(2025,3+index,1);months.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));}
  const gaps=[[2,7],[4],[1,5,10],[3,8],[0,6],[2,9],[1,4,7,11],[5,10]];
  let contributions=[];
  teachers.forEach((teacher,ti)=>months.forEach((month,mi)=>{
   if(gaps[ti].includes(mi))return;
-  contributions.push({id:'demo-con-'+(ti+1)+'-'+(mi+1),teacher_id:teacher.id,school_id:school.id,amount:20,date:month+'-15',contribution_date:month+'-15',payment_date:month+'-15',reference:'DEMO-C'+String(ti+1).padStart(2,'0')+'-'+String(mi+1).padStart(2,'0'),status:'active',is_reversed:false,created_at:month+'-15T10:00:00.000Z'});
+  contributions.push({id:'demo-con-'+(tindex+1)+'-'+(mindex+1),teacher_id:teacher.id,school_id:school.id,amount:20,date:month+'-15',contribution_date:month+'-15',payment_date:month+'-15',reference:'DEMO-C'+String(tindex+1).padStart(2,'0')+'-'+String(mindex+1).padStart(2,'0'),status:'active',is_reversed:false,created_at:month+'-15T10:00:00.000Z'});
  }));
  let payouts=[
   {id:'demo-pay-1',teacher_id:teachers[0].id,school_id:school.id,amount:150,date:'2025-08-21',payout_date:'2025-08-21',reason:'Medical assistance',reference:'DEMO-PAY-001'},
