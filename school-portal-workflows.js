@@ -1037,7 +1037,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  #wfDuesMatrixCard .wf-dues-matrix-table td{padding:9px 8px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
  #wfDuesMatrixCard .wf-dues-matrix-table td:first-child{position:sticky;left:0;z-index:1;text-align:left;background:var(--surface,#fff);font-weight:800;min-width:190px}
  #wfDuesMatrixCard .wf-dues-matrix-teacher small{display:block;color:var(--muted);font-size:.68rem;font-weight:650}
- #wfDuesMatrixCard .wf-dues-matrix-cell-paid{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;max-width:none;min-width:max-content;padding:4px 5px;border-radius:7px;background:#dcfce7;color:#166534;font-size:.69rem;line-height:1.25;font-weight:850;white-space:nowrap;letter-spacing:-.01em}
+ #wfDuesMatrixCard .wf-dues-matrix-cell-paid{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;width:100%;max-width:100%;min-width:0;padding:3px 3px;border-radius:7px;background:#dcfce7;color:#166534;font-size:clamp(.58rem,2.3vw,.68rem);line-height:1.2;font-weight:850;white-space:normal;overflow-wrap:normal;word-break:keep-all;letter-spacing:-.02em;text-align:center}
  #wfDuesMatrixCard .wf-dues-matrix-cell-unpaid{color:#9aa5b5;font-weight:750}
  #wfDuesMatrixCard .wf-dues-matrix-table tbody tr:last-child td{border-bottom:0}
  .dark #wfDuesMatrixCard{background:#0b1d3a;color:#e6edf7;border-color:#26364d}
