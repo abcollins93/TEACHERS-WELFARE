@@ -4717,11 +4717,17 @@ window.generateTenantWelfarePdf=async function(o){
     const pixels=context?.getImageData(0,0,canvas.width,canvas.height).data;
     if(pixels){
      pixelInspectionAvailable=true;
-     // Sample more densely across the full page. A sparse fixed stride can
-     // miss small text and thin table borders on high-resolution A4 canvases.
-     const stride=Math.max(4,Math.floor(pixels.length/120000/4)*4);
-     for(let index=0;index<pixels.length;index+=stride){
-      if(pixels[index]<245||pixels[index+1]<245||pixels[index+2]<245)pixelSamples++;
+     // Inspect actual RGBA pixels across the page. A sparse fixed byte stride
+     // can repeatedly land in white gaps between glyphs and table borders.
+     // Sample one in every four pixels and stop once foreground content is
+     // confirmed; a genuinely blank canvas is scanned to the end.
+     const totalPixels=Math.floor(pixels.length/4);
+     for(let pixelIndex=0;pixelIndex<totalPixels;pixelIndex+=4){
+      const offset=pixelIndex*4;
+      if(pixels[offset]<245||pixels[offset+1]<245||pixels[offset+2]<245){
+       pixelSamples++;
+       if(pixelSamples>=64)break;
+      }
      }
     }
    }catch(canvasReadError){
@@ -4732,9 +4738,9 @@ window.generateTenantWelfarePdf=async function(o){
    }
    const png=canvas.toDataURL('image/png');
    if(png.length<3000)throw new Error('The statement canvas contains no usable rendered content.');
-   // Only reject a zero-pixel result when pixel inspection actually succeeded.
-   // The populated statement DOM and encoded canvas are also verified below.
-   if(pixelInspectionAvailable&&pixelSamples<2)throw new Error('The statement canvas appears blank after capture.');
+   // Reject only a genuinely empty canvas after broad pixel inspection.
+   // Dimensions, populated DOM and encoded PNG are independently verified.
+   if(pixelInspectionAvailable&&pixelSamples<64)throw new Error('The statement canvas appears blank after capture.');
    if(!statementContentReady())throw new Error('The populated statement node is no longer available.');
    return {worker,canvas,pixelSamples};
   };
