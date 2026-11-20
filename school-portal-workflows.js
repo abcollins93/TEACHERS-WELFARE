@@ -1683,8 +1683,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    if(current?.key===key)return;
    const task=(async()=>{
      try{
-       const generated=await window.generateTenantWelfarePdf(options);
-       if(!generated?.blob||!generated.blob.size)throw new Error('The PDF could not be prepared.');
+       const generated=await assertShareableWelfarePdf(await window.generateTenantWelfarePdf(options));
        const fileName=String(generated.filename||'Welfare_Report.pdf');
        const pdfFile=new File([generated.blob],fileName,{type:'application/pdf'});
        const schoolCode=options.school?.school_code||ctx.school_code||'';
@@ -1806,8 +1805,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    individualSharePreparation=(async()=>{
      const options=buildIndividualStatementOptions(tid,teacher);
      options.shareIntent=true;
-     const generated=await window.generateTenantWelfarePdf(options);
-     if(!generated?.blob||!generated.blob.size)throw new Error('The statement PDF could not be prepared.');
+     const generated=await assertShareableWelfarePdf(await window.generateTenantWelfarePdf(options));
      const fileName=String(generated.filename||'Welfare_Individual_Statement.pdf');
      const pdfFile=new File([generated.blob],fileName,{type:'application/pdf'});
      const schoolCode=options.school.school_code||'';
