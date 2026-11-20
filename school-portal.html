@@ -3918,7 +3918,7 @@ if(isDemoMode){
 }
 })();
 </script>
-<script src="school-portal-workflows.js?v=20261120-report-runtime-v2"></script>
+<script src="school-portal-workflows.js?v=20261120-report-runtime-v3"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
@@ -4692,25 +4692,63 @@ window.generateTenantWelfarePdf=async function(o){
   }
   const safeCode=String(schoolCode||schoolName).replace(/[^a-z0-9_-]/gi,'_')||'school';
   filename=safeCode+'-'+(individual?'member-'+String(teacher.id||'statement').replace(/[^a-z0-9_-]/gi,'_')+'-statement':monthly?month+'-monthly-summary':annual?year+'-yearly-summary':statistics?year+'-statistics-of-payment':'complete-fund-summary')+'.pdf';
-  const pdfOptions={margin:[0,0,0,0],filename,image:{type:'png'},html2canvas:{scale:4,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0,windowWidth:Math.max(794,reportWidth,document.documentElement.clientWidth),windowHeight:Math.max(reportHeight,document.documentElement.clientHeight),width:reportWidth,height:reportHeight},jsPDF:{unit:'mm',format:'a4',orientation:'portrait',compress:true},pagebreak:{mode:statistics?['css']:['css','legacy'],avoid:['tr','.twf-metric','.twf-payment-row','.twf-signatures','.twf-final-signoff']}};pdfOptions.html2canvas.onclone=(clonedDocument)=>{const clonedHost=clonedDocument.querySelector('[data-twf-statement-capture="'+id+'"]');if(!clonedHost)return;clonedHost.style.setProperty('display','block','important');clonedHost.style.setProperty('visibility','visible','important');clonedHost.style.setProperty('opacity','1','important');clonedHost.style.setProperty('position','fixed','important');clonedHost.style.setProperty('left','0px','important');clonedHost.style.setProperty('top','0px','important');clonedHost.style.setProperty('right','auto','important');clonedHost.style.setProperty('bottom','auto','important');clonedHost.style.setProperty('z-index','1','important');clonedHost.style.setProperty('width','794px','important');clonedHost.style.setProperty('min-width','794px','important');clonedHost.style.setProperty('max-width','794px','important');clonedHost.style.setProperty('height','auto','important');clonedHost.style.setProperty('overflow','visible','important');clonedHost.style.setProperty('background','#ffffff','important');clonedHost.style.setProperty('color','#0f172a','important');};
+  const pdfOptions={margin:[0,0,0,0],filename,image:{type:'png'},html2canvas:{scale:4,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0,windowWidth:Math.max(794,reportWidth,document.documentElement.clientWidth),windowHeight:Math.max(reportHeight,document.documentElement.clientHeight),width:reportWidth,height:reportHeight},jsPDF:{unit:'mm',format:'a4',orientation:'portrait',compress:true},pagebreak:{mode:statistics?['css']:['css','legacy'],avoid:['tr','.twf-metric','.twf-payment-row','.twf-signatures','.twf-final-signoff']}};pdfOptions.html2canvas.onclone=(clonedDocument)=>{
+   const clonedHost=clonedDocument.querySelector('[data-twf-statement-capture="'+id+'"]');
+   if(!clonedHost)throw new Error('The statement node was not present in the html2canvas capture clone.');
+   const cloneText=String(clonedHost.textContent||'').replace(/\\s+/g,' ').trim();
+   if(cloneText.length<200||!clonedHost.querySelector('.twf-head'))throw new Error('The html2canvas clone contains no populated statement content.');
+   clonedDocument.documentElement.style.setProperty('overflow','visible','important');
+   clonedDocument.body.style.setProperty('overflow','visible','important');
+   clonedHost.style.setProperty('display','block','important');
+   clonedHost.style.setProperty('visibility','visible','important');
+   clonedHost.style.setProperty('opacity','1','important');
+   clonedHost.style.setProperty('position','absolute','important');
+   clonedHost.style.setProperty('transform','none','important');
+   clonedHost.style.setProperty('left','0px','important');
+   clonedHost.style.setProperty('top','0px','important');
+   clonedHost.style.setProperty('right','auto','important');
+   clonedHost.style.setProperty('bottom','auto','important');
+   clonedHost.style.setProperty('z-index','1','important');
+   clonedHost.style.setProperty('width','794px','important');
+   clonedHost.style.setProperty('min-width','794px','important');
+   clonedHost.style.setProperty('max-width','794px','important');
+   clonedHost.style.setProperty('height','auto','important');
+   clonedHost.style.setProperty('min-height','1px','important');
+   clonedHost.style.setProperty('max-height','none','important');
+   clonedHost.style.setProperty('overflow','visible','important');
+   clonedHost.style.setProperty('background','#ffffff','important');
+   clonedHost.style.setProperty('color','#0f172a','important');
+   clonedHost.style.setProperty('color-scheme','light','important');
+  };
   // Capture the populated statement node itself. A failed external image must
   // never prevent the member details, transaction tables, QR block or footer
   // from being exported.
   const statementContentReady=()=>{
+   const previousDisplay=host.style.getPropertyValue('display');
+   const previousPriority=host.style.getPropertyPriority('display');
+   if(previousDisplay==='none')host.style.setProperty('display','block','important');
    const text=String(host.textContent||'').replace(/\\s+/g,' ').trim();
    const memberTable=host.querySelector('.member-info-section table tbody');
    const hasStatementSections=!individual||Boolean(memberTable&&host.querySelector('.twf-member-contributions tbody tr')&&host.querySelector('.twf-member-payouts tbody tr'));
-   return host.isConnected&&host.getBoundingClientRect().width>=700&&host.scrollHeight>0&&text.length>=200&&Boolean(host.querySelector('.twf-head'))&&hasStatementSections;
+   const ready=host.isConnected&&host.getBoundingClientRect().width>=700&&host.scrollHeight>0&&text.length>=200&&Boolean(host.querySelector('.twf-head'))&&hasStatementSections;
+   if(previousDisplay==='none')host.style.setProperty('display','none',previousPriority||'important');
+   return ready;
   };
   const captureStatement=async()=>{
    // Keep the live staging node outside the viewport. html2canvas moves only
    // its private cloned copy into the capture viewport via onclone above.
+   // html2pdf/html2canvas must clone a node inside the capture viewport.
+   // Keep the live source at the viewport origin but fully invisible; onclone
+   // makes only the private capture copy visible and paints it above the page.
+   host.style.setProperty('display','block','important');
+   host.style.setProperty('visibility','hidden','important');
+   host.style.setProperty('opacity','0','important');
    host.style.setProperty('position','fixed','important');
-   host.style.setProperty('left','-10000px','important');
+   host.style.setProperty('left','0px','important');
    host.style.setProperty('top','0px','important');
    host.style.setProperty('right','auto','important');
    host.style.setProperty('bottom','auto','important');
-   host.style.setProperty('z-index','0','important');
+   host.style.setProperty('z-index','-1','important');
    host.style.setProperty('width','794px','important');
    host.style.setProperty('min-width','794px','important');
    host.style.setProperty('max-width','794px','important');
@@ -4720,9 +4758,10 @@ window.generateTenantWelfarePdf=async function(o){
    host.style.setProperty('color','#0f172a','important');
    host.style.setProperty('color-scheme','light','important');
    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
-   const worker=window.html2pdf().set(pdfOptions).from(host);
-   await worker.toCanvas();
-   const canvas=await worker.get('canvas');
+   try{
+    const worker=window.html2pdf().set(pdfOptions).from(host);
+    await worker.toCanvas();
+    const canvas=await worker.get('canvas');
    if(!canvas||canvas.width<100||canvas.height<100)throw new Error('Statement canvas dimensions are invalid.');
    // Pixel inspection is advisory only: getImageData can throw on a canvas
    // containing an image without CORS permission. DOM readiness and a real
@@ -4757,8 +4796,14 @@ window.generateTenantWelfarePdf=async function(o){
    // Reject only a genuinely empty canvas after broad pixel inspection.
    // Dimensions, populated DOM and encoded PNG are independently verified.
    if(pixelInspectionAvailable&&pixelSamples<64)throw new Error('The statement canvas appears blank after capture (canvas '+canvas.width+'×'+canvas.height+', foreground pixels '+pixelSamples+', staging '+host.getBoundingClientRect().left+','+host.getBoundingClientRect().top+').');
-   if(!statementContentReady())throw new Error('The populated statement node is no longer available.');
-   return {worker,canvas,pixelSamples};
+    if(!statementContentReady())throw new Error('The populated statement node is no longer available.');
+    return {worker,canvas,pixelSamples};
+   }finally{
+    // Never leave the A4 staging/template visible in the live mobile portal.
+    host.style.setProperty('display','none','important');
+    host.style.setProperty('visibility','hidden','important');
+    host.style.setProperty('opacity','0','important');
+   }
   };
   let captured;
   try{
