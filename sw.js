@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_VERSION='twf-pwa-shell-v16';
+const CACHE_VERSION='twf-pwa-shell-v17';
 const STATEMENT_CACHE='twf-cached-statements-v1';
 const NETWORK_TIMEOUT_MS=12000;
 async function reportNetworkState(state,detail){
@@ -28,7 +28,7 @@ const SHELL_ASSETS=[
  './offline.html',
  './manifest.json',
  './pwa.js',
- './school-portal-workflows.js',
+ './school-portal-workflows.js?v=20261120-report-runtime-v2',
  './icons/welfare-portal.svg'
 ];
 const CDN_ASSETS=[
