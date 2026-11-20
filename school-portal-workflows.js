@@ -660,10 +660,10 @@ function addUI(){
  const duesMatrixYearSelect=$('wfDuesMatrixYear');
  {
    const reportMonthNow=new Date();
-   const monthNames=Array.from({length:12},(_,i)=>new Date(2000,i,1).toLocaleDateString('en-GH',{month:'long'}));
-   const reportYears=Array.from({length:11},(_,i)=>reportMonthNow.getFullYear()-i),paymentStatsYears=Array.from({length:13},(_,i)=>reportMonthNow.getFullYear()-10+i);
+   const monthNames=Array.from({length:12},(_,index)=>new Date(2000,index,1).toLocaleDateString('en-GH',{month:'long'}));
+   const reportYears=Array.from({length:11},(_,index)=>reportMonthNow.getFullYear()-index),paymentStatsYears=Array.from({length:13},(_,index)=>reportMonthNow.getFullYear()-10+index);
    if(reportMonthSelect&&reportYearSelect){
-     reportMonthSelect.replaceChildren(...monthNames.map((name,i)=>new Option(name,String(i+1).padStart(2,'0'))));
+     reportMonthSelect.replaceChildren(...monthNames.map((name,index)=>new Option(name,String(index+1).padStart(2,'0'))));
      reportYearSelect.replaceChildren(...reportYears.map(year=>new Option(String(year),String(year))));
      reportMonthSelect.disabled=false;reportYearSelect.disabled=false;
      reportMonthSelect.value=String(reportMonthNow.getMonth()+1).padStart(2,'0');
@@ -680,7 +680,7 @@ function addUI(){
      paymentStatsYearSelect.value=String(reportMonthNow.getFullYear());
    }
    if(duesMatrixYearSelect){
-     const matrixYears=Array.from({length:16},(_,i)=>reportMonthNow.getFullYear()-10+i);
+     const matrixYears=Array.from({length:16},(_,index)=>reportMonthNow.getFullYear()-10+index);
      duesMatrixYearSelect.replaceChildren(...matrixYears.map(year=>new Option(String(year),String(year))));
      duesMatrixYearSelect.value=String(reportMonthNow.getFullYear());
      duesMatrixYearSelect.disabled=false;
@@ -1015,7 +1015,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  #wfLedgerPanel td:nth-child(4){font-weight:850}
  .dark #wfLedgerPanel .wf-contrib-metric,.dark #wfLedgerPanel .wf-contrib-log{background:var(--surface,#101b2d)}
  @media(min-width:900px){#wfLedgerPanel .wf-contrib-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}
- @media(max-width:600px){#wfLedgerPanel .wf-contrib-filters,#wfLedgerPanel .wf-contrib-filters input{width:100%;max-width:none}}
+ @media(max-width:600px){#wfLedgerPanel .wf-contrib-filters,#wfLedgerPanel .wf-contrib-filters input{width:100%;max-width:none}#wfDuesMatrixCard .wf-dues-matrix-table{min-width:760px;font-size:.68rem}#wfDuesMatrixCard .wf-dues-matrix-table th{padding:8px 3px}#wfDuesMatrixCard .wf-dues-matrix-table td{padding:6px 3px}#wfDuesMatrixCard .wf-dues-matrix-table th:first-child,#wfDuesMatrixCard .wf-dues-matrix-table td:first-child{width:130px;min-width:130px}#wfDuesMatrixCard .wf-dues-matrix-cell-paid{font-size:.58rem;padding:3px 1px}}
  `;
  contribStyle.textContent+=`
  #wfDuesMatrixCard{grid-column:1/-1;position:relative;overflow:hidden;border:1px solid var(--line);border-top:5px solid #16a779!important;border-radius:17px;background:var(--surface,#fff);color:var(--text,var(--ink));box-shadow:0 10px 28px rgba(7,19,40,.06);padding:clamp(15px,2.2vw,22px)}
@@ -1031,11 +1031,11 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  #wfDuesMatrixCard .wf-dues-matrix-paid{color:#13865f}
  #wfDuesMatrixCard .wf-dues-matrix-unpaid{color:#9aa5b5}
  #wfDuesMatrixCard .wf-dues-matrix-scroll{width:100%;max-width:100%;overflow-x:auto;border:1px solid var(--line);border-radius:12px;overscroll-behavior-x:contain}
- #wfDuesMatrixCard .wf-dues-matrix-table{width:100%;min-width:900px;border-collapse:separate;border-spacing:0;font-size:.76rem}
+ #wfDuesMatrixCard .wf-dues-matrix-table{width:100%;min-width:760px;border-collapse:separate;border-spacing:0;font-size:.72rem;table-layout:fixed}
  #wfDuesMatrixCard .wf-dues-matrix-table th{position:sticky;top:0;z-index:1;padding:11px 9px;text-align:center;background:#edf4f2;color:#29443c;border-bottom:1px solid var(--line);white-space:nowrap}
- #wfDuesMatrixCard .wf-dues-matrix-table th:first-child{left:0;z-index:2;min-width:190px;text-align:left}
+ #wfDuesMatrixCard .wf-dues-matrix-table th:first-child{left:0;z-index:2;width:145px;min-width:145px;text-align:left}
  #wfDuesMatrixCard .wf-dues-matrix-table td{padding:9px 8px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
- #wfDuesMatrixCard .wf-dues-matrix-table td:first-child{position:sticky;left:0;z-index:1;text-align:left;background:var(--surface,#fff);font-weight:800;min-width:190px}
+ #wfDuesMatrixCard .wf-dues-matrix-table td:first-child{position:sticky;left:0;z-index:1;text-align:left;background:var(--surface,#fff);font-weight:800;width:145px;min-width:145px;white-space:normal;overflow-wrap:anywhere}
  #wfDuesMatrixCard .wf-dues-matrix-teacher small{display:block;color:var(--muted);font-size:.68rem;font-weight:650}
  #wfDuesMatrixCard .wf-dues-matrix-cell-paid{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;width:100%;max-width:100%;min-width:0;padding:3px 3px;border-radius:7px;background:#dcfce7;color:#166534;font-size:clamp(.58rem,2.3vw,.68rem);line-height:1.2;font-weight:850;white-space:normal;overflow-wrap:normal;word-break:keep-all;letter-spacing:-.02em;text-align:center}
  #wfDuesMatrixCard .wf-dues-matrix-cell-unpaid{color:#9aa5b5;font-weight:750}
@@ -2178,7 +2178,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   else if(extension==='xlsx'||extension==='xls'){const XLSX=await bulkLoadXlsx();const workbook=XLSX.read(await file.arrayBuffer(),{type:'array',raw:false});const first=workbook.SheetNames?.[0];if(!first)throw new Error('The workbook contains no worksheet.');matrix=XLSX.utils.sheet_to_json(workbook.Sheets[first],{header:1,defval:'',raw:false});}
   else throw new Error('Choose an .xlsx, .xls or .csv file.');
   if(!matrix?.length)throw new Error('The selected file is empty.');
-  const headers=matrix[0].map(bulkNormalizeHeader),columnIndex=bulkColumns.map(column=>headers.indexOf(bulkNormalizeHeader(column))),missingHeaders=bulkColumns.filter((column,i)=>columnIndex[i]<0);
+  const headers=matrix[0].map(bulkNormalizeHeader),columnIndex=bulkColumns.map(column=>headers.indexOf(bulkNormalizeHeader(column))),missingHeaders=bulkColumns.filter((column,index)=>columnIndex[index]<0);
   if(missingHeaders.length)throw new Error('Missing template columns: '+missingHeaders.join(', '));
   const records=matrix.slice(1).filter(row=>row.some(cell=>String(cell??'').trim()!=='')).map(row=>({id:String(row[columnIndex[0]]??'').trim(),name:String(row[columnIndex[1]]??'').trim(),phone:String(row[columnIndex[2]]??'').trim(),rank:String(row[columnIndex[3]]??'').trim(),class_name:String(row[columnIndex[4]]??'').trim(),membership_type:String(row[columnIndex[5]]??'').trim(),employer:String(row[columnIndex[6]]??'').trim()}));
   if(!records.length)throw new Error('No teacher rows were found beneath the header.');
