@@ -1665,6 +1665,13 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  // Bind report actions as soon as report controls and school-scoped data are ready.
  // Install these BEFORE optional settings requests so slow settings cannot leave
  // visible PDF buttons without click handlers.
+ const assertShareableWelfarePdf=async generated=>{
+   const blob=generated?.blob;
+   if(!(blob instanceof Blob)||blob.size<5000)throw new Error('The PDF is empty or incomplete. Please regenerate the statement before sharing.');
+   const signature=new Uint8Array(await blob.slice(0,5).arrayBuffer());
+   if(String.fromCharCode(...signature)!=='%PDF-')throw new Error('The generated file is not a valid PDF. Please regenerate it before sharing.');
+   return generated;
+ };
  const preparedAdminShares=new Map();
  const adminSharePreparation=new Map();
  const adminShareKey=options=>[options.type,options.month||'',options.year||''].join('|');
