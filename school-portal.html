@@ -4719,10 +4719,10 @@ window.generateTenantWelfarePdf=async function(o){
      pixelInspectionAvailable=true;
      // Inspect actual RGBA pixels across the page. A sparse fixed byte stride
      // can repeatedly land in white gaps between glyphs and table borders.
-     // Sample one in every four pixels and stop once foreground content is
-     // confirmed; a genuinely blank canvas is scanned to the end.
+     // Inspect each pixel until foreground content is confirmed; a genuinely
+     // blank canvas is scanned to the end.
      const totalPixels=Math.floor(pixels.length/4);
-     for(let pixelIndex=0;pixelIndex<totalPixels;pixelIndex+=4){
+     for(let pixelIndex=0;pixelIndex<totalPixels;pixelIndex++){
       const offset=pixelIndex*4;
       if(pixels[offset]<245||pixels[offset+1]<245||pixels[offset+2]<245){
        pixelSamples++;
