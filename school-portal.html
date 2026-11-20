@@ -4703,6 +4703,25 @@ window.generateTenantWelfarePdf=async function(o){
    return host.isConnected&&host.getBoundingClientRect().width>=700&&host.scrollHeight>0&&text.length>=200&&Boolean(host.querySelector('.twf-head'))&&hasStatementSections;
   };
   const captureStatement=async()=>{
+   // The staging host is kept far off-screen while the statement is assembled.
+   // html2canvas on Android can return a white canvas when asked to rasterize a
+   // fixed-position target whose left edge is thousands of pixels outside the
+   // cloned viewport. Move the target into the cloned viewport only for the
+   // capture; it remains fixed, non-interactive and behind portal content.
+   host.style.setProperty('position','fixed','important');
+   host.style.setProperty('left','0px','important');
+   host.style.setProperty('top','0px','important');
+   host.style.setProperty('right','auto','important');
+   host.style.setProperty('bottom','auto','important');
+   host.style.setProperty('z-index','-1','important');
+   host.style.setProperty('width','794px','important');
+   host.style.setProperty('min-width','794px','important');
+   host.style.setProperty('max-width','794px','important');
+   host.style.setProperty('height','auto','important');
+   host.style.setProperty('overflow','visible','important');
+   host.style.setProperty('background','#ffffff','important');
+   host.style.setProperty('color','#0f172a','important');
+   host.style.setProperty('color-scheme','light','important');
    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
    const worker=window.html2pdf().set(pdfOptions).from(host);
    await worker.toCanvas();
@@ -4740,7 +4759,7 @@ window.generateTenantWelfarePdf=async function(o){
    if(png.length<3000)throw new Error('The statement canvas contains no usable rendered content.');
    // Reject only a genuinely empty canvas after broad pixel inspection.
    // Dimensions, populated DOM and encoded PNG are independently verified.
-   if(pixelInspectionAvailable&&pixelSamples<64)throw new Error('The statement canvas appears blank after capture.');
+   if(pixelInspectionAvailable&&pixelSamples<64)throw new Error('The statement canvas appears blank after capture (canvas '+canvas.width+'×'+canvas.height+', foreground pixels '+pixelSamples+', staging '+host.getBoundingClientRect().left+','+host.getBoundingClientRect().top+').');
    if(!statementContentReady())throw new Error('The populated statement node is no longer available.');
    return {worker,canvas,pixelSamples};
   };
