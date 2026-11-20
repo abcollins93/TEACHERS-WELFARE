@@ -4726,9 +4726,9 @@ window.generateTenantWelfarePdf=async function(o){
    }
    const png=canvas.toDataURL('image/png');
    if(png.length<3000)throw new Error('The statement canvas contains no usable rendered content.');
-   // A valid populated DOM can be mostly white (for example, a member with
-   // no transactions); do not reject it solely because sparse pixel sampling
-   // finds fewer than an arbitrary number of dark pixels.
+   // A very low pixel count signals that html2canvas may have captured only
+   // the white staging background. Retry after replacing external images.
+   if(pixelSamples<8)throw new Error('The statement canvas appears blank after capture.');
    if(!statementContentReady())throw new Error('The populated statement node is no longer available.');
    return {worker,canvas,pixelSamples};
   };
