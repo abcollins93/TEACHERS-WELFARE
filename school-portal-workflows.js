@@ -1671,7 +1671,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    console.error(label+'\nMessage: '+message+'\nStack:\n'+stack,error);
    const status=statusId?document.getElementById(statusId):null;
    if(status){status.style.whiteSpace='pre-wrap';status.style.overflowWrap='anywhere';}
-   if(statusId)msg(statusId,message+'\n'+stack.split('\\n').slice(0,9).join('\\n'),true);
+   if(statusId)msg(statusId,message+'\n'+stack.split('\n').slice(0,9).join('\n'),true);
  };
  const assertShareableWelfarePdf=async generated=>{
    const blob=generated?.blob;
