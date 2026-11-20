@@ -1030,8 +1030,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  #wfDuesMatrixCard .wf-dues-matrix-paid,#wfDuesMatrixCard .wf-dues-matrix-unpaid{display:inline-flex;align-items:center;gap:4px;font-weight:850}
  #wfDuesMatrixCard .wf-dues-matrix-paid{color:#13865f}
  #wfDuesMatrixCard .wf-dues-matrix-unpaid{color:#9aa5b5}
-#wfReportsPanel,#wfReportsPanel .wf-reports-card{width:100%;max-width:100%;min-width:0;overflow-x:hidden;box-sizing:border-box}
-   #wfDuesMatrixCard .wf-dues-matrix-scroll{width:100%;max-width:100%;overflow-x:auto;border:1px solid var(--line);border-radius:12px;overscroll-behavior-x:contain}
+ #wfDuesMatrixCard .wf-dues-matrix-scroll{width:100%;max-width:100%;overflow-x:auto;border:1px solid var(--line);border-radius:12px;overscroll-behavior-x:contain}
  #wfDuesMatrixCard .wf-dues-matrix-table{width:100%;min-width:760px;border-collapse:separate;border-spacing:0;font-size:.72rem;table-layout:fixed}
  #wfDuesMatrixCard .wf-dues-matrix-table th{position:sticky;top:0;z-index:1;padding:11px 9px;text-align:center;background:#edf4f2;color:#29443c;border-bottom:1px solid var(--line);white-space:nowrap}
  #wfDuesMatrixCard .wf-dues-matrix-table th:first-child{left:0;z-index:2;width:145px;min-width:145px;text-align:left}
