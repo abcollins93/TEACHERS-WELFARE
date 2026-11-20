@@ -4476,6 +4476,23 @@ window.generateTenantWelfarePdf=async function(o){
  const qr='twfqr'+id;
  const sign='<div class="twf-final-signoff"><div class="twf-signatures"><div class="twf-qr"><div id="'+qr+'"></div></div></div></div>';
  const host=document.createElement('div');host.className='twf-pdf '+orientation+(statistics?' twf-payment-statistics':'');host.setAttribute('data-welfare-pdf-staging','');host.style.cssText='display:none!important;position:absolute!important;left:-9999px!important;top:-9999px!important;width:0!important;height:0!important;overflow:hidden!important;pointer-events:none!important;background:#fff';window.applyWelfarePdfTenantWatermark(host,school.name,school);host.setAttribute('data-theme','light');host.style.colorScheme='light';host.innerHTML='<style>'+style+'</style><style>.twf-pdf{font:12px/1.4 Arial,sans-serif!important;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.twf-head h2{font-size:19px!important;line-height:1.12!important}.twf-head h1{font-size:25px!important;line-height:1.1!important}.twf-brand{font-size:12px!important}.twf-sub{font-size:12.5px!important;line-height:1.3!important}.twf-meta{font-size:11px!important;line-height:1.5!important}.twf-box h3,.twf-section{font-size:13px!important;line-height:1.25!important}.twf-details th,.twf-details td{font-size:10px!important;padding:8px 11px!important;line-height:1.35!important}.twf-table{font-size:10.2px!important;line-height:1.45!important}.twf-table th{font-size:10px!important;padding:7px 9px!important}.twf-table td{padding:7px 9px!important}.twf-metric small{font-size:9.5px!important}.twf-metric strong{font-size:15px!important;font-weight:800!important;line-height:1.2!important}.twf-disclaimer{font-size:8pt!important;font-weight:700!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;text-rendering:geometricPrecision!important}.twf-head-logo,.twf-photo,.twf-qr img,.twf-qr canvas{image-rendering:auto;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}</style><style>.twf-signatures{display:flex!important;justify-content:flex-end!important;align-items:flex-end!important;width:100%!important;max-width:100%!important;min-width:0!important}.twf-signatures .twf-qr{margin-left:auto!important;justify-self:auto!important;text-align:right!important}.twf-qr img,.twf-qr canvas{margin:0 0 2mm auto!important}.twf-pdf .twf-details{display:table!important;width:100%!important;max-width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;border:1px solid #94a3b8!important;border-radius:6px!important;overflow:hidden!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf .twf-details th,.twf-pdf .twf-details td{border:1px solid #94a3b8!important;padding:7px 10px!important;vertical-align:middle!important;overflow-wrap:anywhere!important;word-break:break-word!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf .twf-details th{text-align:left!important;background:#f8fafc!important;font-weight:700!important;white-space:nowrap!important}.twf-pdf .twf-details th:nth-child(1){width:17%!important}.twf-pdf .twf-details td:nth-child(2){width:33%!important;white-space:normal!important}.twf-pdf .twf-details th:nth-child(3){width:17%!important}.twf-pdf .twf-details td:nth-child(4){width:33%!important;white-space:normal!important}</style>'+head+body+sign+disclaimer;const pdfLightPaletteStyle=document.createElement('style');pdfLightPaletteStyle.textContent='.twf-pdf[data-theme="light"]{background:#ffffff!important;color:#17243a!important;color-scheme:light!important}.twf-pdf[data-theme="light"] .twf-metric{color:#17243a!important;border-color:#dbe3ee!important;box-shadow:none!important;filter:none!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf[data-theme="light"] .twf-metric.green{background:#ecfdf5!important;border-color:#a7f3d0!important}.twf-pdf[data-theme="light"] .twf-metric.red{background:#fff1f2!important;border-color:#fecdd3!important}.twf-pdf[data-theme="light"] .twf-metric.blue{background:#eff6ff!important;border-color:#bfdbfe!important}.twf-pdf[data-theme="light"] .twf-metric.gold{background:#fffbeb!important;border-color:#fde68a!important}.twf-pdf[data-theme="light"] .twf-metric small{color:#475569!important}.twf-pdf[data-theme="light"] .twf-metric strong{color:#102b4f!important}.twf-pdf[data-theme="light"] .twf-metric:before{filter:none!important}';host.appendChild(pdfLightPaletteStyle);document.body.appendChild(host);
+ // The portal keeps PDF templates hidden globally. Override that guard only
+ // for this attached, off-screen A4 capture surface.
+ host.style.setProperty('display','block','important');
+ host.style.setProperty('visibility','visible','important');
+ host.style.setProperty('opacity','1','important');
+ host.style.setProperty('position','fixed','important');
+ host.style.setProperty('left','-10000px','important');
+ host.style.setProperty('top','0','important');
+ host.style.setProperty('right','auto','important');
+ host.style.setProperty('bottom','auto','important');
+ host.style.setProperty('z-index','0','important');
+ host.style.setProperty('width','210mm','important');
+ host.style.setProperty('max-width','210mm','important');
+ host.style.setProperty('height','auto','important');
+ host.style.setProperty('min-height','0','important');
+ host.style.setProperty('overflow','visible','important');
+ host.style.setProperty('pointer-events','none','important');
  // Enable a measurable off-screen surface only for this capture. The host is
  // removed in the generator's finally block as soon as PDF rendering completes.
  host.style.setProperty('display','block','important');
@@ -4623,11 +4640,58 @@ window.generateTenantWelfarePdf=async function(o){
   const qrNode=host.querySelector('#'+qr);
   if(window.QRCode&&qrNode)new window.QRCode(qrNode,{text:'https://abcollins93.github.io/TEACHERS-WELFARE/verify.html?c='+encodeURIComponent(schoolCode)+'&d='+encodeURIComponent(id),width:228,height:228,colorDark:'#030a16',colorLight:'#ffffff',correctLevel:window.QRCode.CorrectLevel.M});
   await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
-  host.style.position='relative';host.style.left='auto';host.style.top='auto';
+  if(document.fonts?.ready){try{await document.fonts.ready;}catch(_){}}
+  const reportImages=Array.from(host.querySelectorAll('img'));
+  await Promise.all(reportImages.map(async image=>{
+   if(!image.complete){
+    await new Promise(resolve=>{
+     const finish=()=>resolve();
+     image.addEventListener('load',finish,{once:true});
+     image.addEventListener('error',finish,{once:true});
+     setTimeout(finish,10000);
+    });
+   }
+   if(image.complete&&image.naturalWidth>0&&typeof image.decode==='function'){
+    try{await image.decode();}catch(_){}
+   }
+   if(image.complete&&!image.naturalWidth)image.remove();
+  }));
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+  const reportText=String(host.textContent||'').replace(/\\s+/g,' ').trim();
+  const reportWidth=Math.ceil(host.getBoundingClientRect().width||host.scrollWidth);
+  const reportHeight=Math.ceil(host.getBoundingClientRect().height||host.scrollHeight);
+  if(!reportWidth||!reportHeight||reportText.length<200||!host.querySelector('.twf-head')){
+   throw new Error('The statement content did not finish laying out. No blank PDF was created.');
+  }
+  if(individual&&!host.querySelector('.member-info-section table tbody tr')){
+   throw new Error('The member information table is missing. No blank PDF was created.');
+  }
   const safeCode=String(schoolCode||schoolName).replace(/[^a-z0-9_-]/gi,'_')||'school';
   filename=safeCode+'-'+(individual?'member-'+String(teacher.id||'statement').replace(/[^a-z0-9_-]/gi,'_')+'-statement':monthly?month+'-monthly-summary':annual?year+'-yearly-summary':statistics?year+'-statistics-of-payment':'complete-fund-summary')+'.pdf';
-  const pdfResponse=await window.html2pdf().set({margin:[0,0,0,0],filename,image:{type:'png'},html2canvas:{scale:4,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0},jsPDF:{unit:'mm',format:'a4',orientation:'portrait',compress:true},pagebreak:{mode:statistics?['css']:['css','legacy'],avoid:['tr','.twf-metric','.twf-payment-row','.twf-signatures','.twf-final-signoff']}}).from(host).outputPdf('blob');
-  pdfBlob=new Blob([pdfResponse],{type:'application/pdf'});
+  const pdfOptions={margin:[0,0,0,0],filename,image:{type:'png'},html2canvas:{scale:4,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0,windowWidth:Math.max(reportWidth,document.documentElement.clientWidth),windowHeight:Math.max(reportHeight,document.documentElement.clientHeight),width:reportWidth,height:reportHeight},jsPDF:{unit:'mm',format:'a4',orientation:'portrait',compress:true},pagebreak:{mode:statistics?['css']:['css','legacy'],avoid:['tr','.twf-metric','.twf-payment-row','.twf-signatures','.twf-final-signoff']}};
+  const pdfWorker=window.html2pdf().set(pdfOptions).from(host);
+  await pdfWorker.toCanvas();
+  const renderedCanvas=await pdfWorker.get('canvas');
+  if(!renderedCanvas||renderedCanvas.width<100||renderedCanvas.height<100){
+   throw new Error('The statement page could not be rendered. No blank PDF was created.');
+  }
+  const renderedContext=renderedCanvas.getContext('2d',{willReadFrequently:true});
+  const renderedPixels=renderedContext?.getImageData(0,0,renderedCanvas.width,renderedCanvas.height).data;
+  let visiblePixelSamples=0;
+  if(renderedPixels){
+   const stride=Math.max(4,Math.floor(renderedPixels.length/12000/4)*4);
+   for(let index=0;index<renderedPixels.length;index+=stride){
+    if(renderedPixels[index]<238||renderedPixels[index+1]<238||renderedPixels[index+2]<238)visiblePixelSamples++;
+   }
+  }
+  if(!renderedPixels||visiblePixelSamples<25||renderedCanvas.toDataURL('image/png').length<10000){
+   throw new Error('The statement rendered as an empty page. Please try again; no blank PDF was created.');
+  }
+  const pdfResponse=await pdfWorker.toPdf().output('blob');
+  pdfBlob=pdfResponse instanceof Blob?pdfResponse:new Blob([pdfResponse],{type:'application/pdf'});
+  if(pdfBlob.size<5000)throw new Error('The generated statement PDF is unexpectedly small and may be blank. Please try again.');
+  const pdfSignature=new Uint8Array(await pdfBlob.slice(0,5).arrayBuffer());
+  if(String.fromCharCode(...pdfSignature)!=='%PDF-')throw new Error('The generated statement is not a valid PDF document. Please try again.');
  }finally{host.remove();}
  return {documentId:id,blob:pdfBlob,filename};
 };
