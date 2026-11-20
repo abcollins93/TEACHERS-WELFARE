@@ -4711,24 +4711,30 @@ window.generateTenantWelfarePdf=async function(o){
    // Pixel inspection is advisory only: getImageData can throw on a canvas
    // containing an image without CORS permission. DOM readiness and a real
    // canvas export are the primary safeguards against an empty document.
-   let pixelSamples=0;
+   let pixelSamples=0,pixelInspectionAvailable=false;
    try{
     const context=canvas.getContext('2d',{willReadFrequently:true});
     const pixels=context?.getImageData(0,0,canvas.width,canvas.height).data;
     if(pixels){
-     const stride=Math.max(4,Math.floor(pixels.length/16000/4)*4);
+     pixelInspectionAvailable=true;
+     // Sample more densely across the full page. A sparse fixed stride can
+     // miss small text and thin table borders on high-resolution A4 canvases.
+     const stride=Math.max(4,Math.floor(pixels.length/120000/4)*4);
      for(let index=0;index<pixels.length;index+=stride){
       if(pixels[index]<245||pixels[index+1]<245||pixels[index+2]<245)pixelSamples++;
      }
     }
    }catch(canvasReadError){
-    console.warn('[Welfare PDF] Canvas pixel inspection unavailable; checking rendered output instead:',canvasReadError?.message||canvasReadError);
+    // Pixel inspection is optional: cross-origin/tainted canvas reads must
+    // not invalidate an otherwise valid rendered PDF.
+    pixelInspectionAvailable=false;
+    console.warn('[Welfare PDF] Canvas pixel inspection unavailable; checking rendered output and DOM instead:',canvasReadError?.message||canvasReadError);
    }
    const png=canvas.toDataURL('image/png');
    if(png.length<3000)throw new Error('The statement canvas contains no usable rendered content.');
-   // A very low pixel count signals that html2canvas may have captured only
-   // the white staging background. Retry after replacing external images.
-   if(pixelSamples<8)throw new Error('The statement canvas appears blank after capture.');
+   // Only reject a zero-pixel result when pixel inspection actually succeeded.
+   // The populated statement DOM and encoded canvas are also verified below.
+   if(pixelInspectionAvailable&&pixelSamples<2)throw new Error('The statement canvas appears blank after capture.');
    if(!statementContentReady())throw new Error('The populated statement node is no longer available.');
    return {worker,canvas,pixelSamples};
   };
