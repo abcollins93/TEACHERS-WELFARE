@@ -4475,7 +4475,7 @@ window.generateTenantWelfarePdf=async function(o){
  }
  const qr='twfqr'+id;
  const sign='<div class="twf-final-signoff"><div class="twf-signatures"><div class="twf-qr"><div id="'+qr+'"></div></div></div></div>';
- const host=document.createElement('div');host.className='twf-pdf '+orientation+(statistics?' twf-payment-statistics':'');host.setAttribute('data-welfare-pdf-staging','');host.style.cssText='display:none!important;position:absolute!important;left:-9999px!important;top:-9999px!important;width:0!important;height:0!important;overflow:hidden!important;pointer-events:none!important;background:#fff';window.applyWelfarePdfTenantWatermark(host,school.name,school);host.setAttribute('data-theme','light');host.style.colorScheme='light';host.innerHTML='<style>'+style+'</style><style>.twf-pdf{font:12px/1.4 Arial,sans-serif!important;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.twf-head h2{font-size:19px!important;line-height:1.12!important}.twf-head h1{font-size:25px!important;line-height:1.1!important}.twf-brand{font-size:12px!important}.twf-sub{font-size:12.5px!important;line-height:1.3!important}.twf-meta{font-size:11px!important;line-height:1.5!important}.twf-box h3,.twf-section{font-size:13px!important;line-height:1.25!important}.twf-details th,.twf-details td{font-size:10px!important;padding:8px 11px!important;line-height:1.35!important}.twf-table{font-size:10.2px!important;line-height:1.45!important}.twf-table th{font-size:10px!important;padding:7px 9px!important}.twf-table td{padding:7px 9px!important}.twf-metric small{font-size:9.5px!important}.twf-metric strong{font-size:15px!important;font-weight:800!important;line-height:1.2!important}.twf-disclaimer{font-size:8pt!important;font-weight:700!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;text-rendering:geometricPrecision!important}.twf-head-logo,.twf-photo,.twf-qr img,.twf-qr canvas{image-rendering:auto;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}</style><style>.twf-signatures{display:flex!important;justify-content:flex-end!important;align-items:flex-end!important;width:100%!important;max-width:100%!important;min-width:0!important}.twf-signatures .twf-qr{margin-left:auto!important;justify-self:auto!important;text-align:right!important}.twf-qr img,.twf-qr canvas{margin:0 0 2mm auto!important}.twf-pdf .twf-details{display:table!important;width:100%!important;max-width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;border:1px solid #94a3b8!important;border-radius:6px!important;overflow:hidden!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf .twf-details th,.twf-pdf .twf-details td{border:1px solid #94a3b8!important;padding:7px 10px!important;vertical-align:middle!important;overflow-wrap:anywhere!important;word-break:break-word!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf .twf-details th{text-align:left!important;background:#f8fafc!important;font-weight:700!important;white-space:nowrap!important}.twf-pdf .twf-details th:nth-child(1){width:17%!important}.twf-pdf .twf-details td:nth-child(2){width:33%!important;white-space:normal!important}.twf-pdf .twf-details th:nth-child(3){width:17%!important}.twf-pdf .twf-details td:nth-child(4){width:33%!important;white-space:normal!important}</style>'+head+body+sign+disclaimer;const pdfLightPaletteStyle=document.createElement('style');pdfLightPaletteStyle.textContent='.twf-pdf[data-theme="light"]{background:#ffffff!important;color:#17243a!important;color-scheme:light!important}.twf-pdf[data-theme="light"] .twf-metric{color:#17243a!important;border-color:#dbe3ee!important;box-shadow:none!important;filter:none!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf[data-theme="light"] .twf-metric.green{background:#ecfdf5!important;border-color:#a7f3d0!important}.twf-pdf[data-theme="light"] .twf-metric.red{background:#fff1f2!important;border-color:#fecdd3!important}.twf-pdf[data-theme="light"] .twf-metric.blue{background:#eff6ff!important;border-color:#bfdbfe!important}.twf-pdf[data-theme="light"] .twf-metric.gold{background:#fffbeb!important;border-color:#fde68a!important}.twf-pdf[data-theme="light"] .twf-metric small{color:#475569!important}.twf-pdf[data-theme="light"] .twf-metric strong{color:#102b4f!important}.twf-pdf[data-theme="light"] .twf-metric:before{filter:none!important}';host.appendChild(pdfLightPaletteStyle);document.body.appendChild(host);
+ const host=document.createElement('div');host.className='twf-pdf '+orientation+(statistics?' twf-payment-statistics':'');host.setAttribute('data-welfare-pdf-staging','');host.style.cssText='display:none!important;position:absolute!important;left:-9999px!important;top:-9999px!important;width:0!important;height:0!important;overflow:hidden!important;pointer-events:none!important;background:#fff';window.applyWelfarePdfTenantWatermark(host,school.name,school);host.setAttribute('data-theme','light');host.style.colorScheme='light';host.innerHTML='<style>'+style+'</style><style>.twf-pdf{font:12px/1.4 Arial,sans-serif!important;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.twf-head h2{font-size:19px!important;line-height:1.12!important}.twf-head h1{font-size:25px!important;line-height:1.1!important}.twf-brand{font-size:12px!important}.twf-sub{font-size:12.5px!important;line-height:1.3!important}.twf-meta{font-size:11px!important;line-height:1.5!important}.twf-box h3,.twf-section{font-size:13px!important;line-height:1.25!important}.twf-details th,.twf-details td{font-size:10px!important;padding:8px 11px!important;line-height:1.35!important}.twf-table{font-size:10.2px!important;line-height:1.45!important}.twf-table th{font-size:10px!important;padding:7px 9px!important}.twf-table td{padding:7px 9px!important}.twf-metric small{font-size:9.5px!important}.twf-metric strong{font-size:15px!important;font-weight:800!important;line-height:1.2!important}.twf-disclaimer{font-size:8pt!important;font-weight:700!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;text-rendering:geometricPrecision!important}.twf-head-logo,.twf-photo,.twf-qr img,.twf-qr canvas{image-rendering:auto;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}</style><style>.twf-signatures{display:flex!important;justify-content:flex-end!important;align-items:flex-end!important;width:100%!important;max-width:100%!important;min-width:0!important}.twf-signatures .twf-qr{margin-left:auto!important;justify-self:auto!important;text-align:right!important}.twf-qr img,.twf-qr canvas{margin:0 0 2mm auto!important}.twf-pdf .twf-details{display:table!important;width:100%!important;max-width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;border:1px solid #000000!important;border-radius:6px!important;overflow:hidden!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf .twf-details th,.twf-pdf .twf-details td{border:1px solid #000000!important;padding:7px 10px!important;vertical-align:middle!important;overflow-wrap:anywhere!important;word-break:break-word!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf .twf-details th{text-align:left!important;background:#f8fafc!important;font-weight:700!important;white-space:nowrap!important}.twf-pdf .twf-details th:nth-child(1){width:17%!important}.twf-pdf .twf-details td:nth-child(2){width:33%!important;white-space:normal!important}.twf-pdf .twf-details th:nth-child(3){width:17%!important}.twf-pdf .twf-details td:nth-child(4){width:33%!important;white-space:normal!important}</style>'+head+body+sign+disclaimer;const pdfLightPaletteStyle=document.createElement('style');pdfLightPaletteStyle.textContent='.twf-pdf[data-theme="light"]{background:#ffffff!important;color:#17243a!important;color-scheme:light!important}.twf-pdf[data-theme="light"] .twf-metric{color:#17243a!important;border-color:#dbe3ee!important;box-shadow:none!important;filter:none!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf[data-theme="light"] .twf-metric.green{background:#ecfdf5!important;border-color:#a7f3d0!important}.twf-pdf[data-theme="light"] .twf-metric.red{background:#fff1f2!important;border-color:#fecdd3!important}.twf-pdf[data-theme="light"] .twf-metric.blue{background:#eff6ff!important;border-color:#bfdbfe!important}.twf-pdf[data-theme="light"] .twf-metric.gold{background:#fffbeb!important;border-color:#fde68a!important}.twf-pdf[data-theme="light"] .twf-metric small{color:#475569!important}.twf-pdf[data-theme="light"] .twf-metric strong{color:#102b4f!important}.twf-pdf[data-theme="light"] .twf-metric:before{filter:none!important}';host.appendChild(pdfLightPaletteStyle);document.body.appendChild(host);
  // The portal keeps PDF templates hidden globally. Override that guard only
  // for this attached, off-screen A4 capture surface.
  host.style.setProperty('display','block','important');
@@ -4674,8 +4674,11 @@ window.generateTenantWelfarePdf=async function(o){
    if(image.complete&&image.naturalWidth>0&&typeof image.decode==='function'){
     try{await image.decode();}catch(decodeError){console.warn('[Welfare PDF] Image decode warning:',decodeError?.message||decodeError);}
    }
-   if(image.complete&&!image.naturalWidth)image.remove();
+   // Only failed images are removed here; successful school crest/passport
+   // images remain available to the first capture attempt.
+   if(!image.complete||image.naturalWidth<=0)image.remove();
   }));
+  if(document.fonts?.ready){try{await document.fonts.ready;}catch(fontError){console.warn('[Welfare PDF] Font readiness warning:',fontError?.message||fontError);}}
   await waitForPdfFrame();
   await waitForPdfFrame();
   const reportText=String(host.textContent||'').replace(/\\s+/g,' ').trim();
@@ -4690,24 +4693,73 @@ window.generateTenantWelfarePdf=async function(o){
   const safeCode=String(schoolCode||schoolName).replace(/[^a-z0-9_-]/gi,'_')||'school';
   filename=safeCode+'-'+(individual?'member-'+String(teacher.id||'statement').replace(/[^a-z0-9_-]/gi,'_')+'-statement':monthly?month+'-monthly-summary':annual?year+'-yearly-summary':statistics?year+'-statistics-of-payment':'complete-fund-summary')+'.pdf';
   const pdfOptions={margin:[0,0,0,0],filename,image:{type:'png'},html2canvas:{scale:4,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0,windowWidth:Math.max(794,reportWidth,document.documentElement.clientWidth),windowHeight:Math.max(reportHeight,document.documentElement.clientHeight),width:reportWidth,height:reportHeight},jsPDF:{unit:'mm',format:'a4',orientation:'portrait',compress:true},pagebreak:{mode:statistics?['css']:['css','legacy'],avoid:['tr','.twf-metric','.twf-payment-row','.twf-signatures','.twf-final-signoff']}};
-  const pdfWorker=window.html2pdf().set(pdfOptions).from(host);
-  await pdfWorker.toCanvas();
-  const renderedCanvas=await pdfWorker.get('canvas');
-  if(!renderedCanvas||renderedCanvas.width<100||renderedCanvas.height<100){
-   throw new Error('The statement page could not be rendered. No blank PDF was created.');
-  }
-  const renderedContext=renderedCanvas.getContext('2d',{willReadFrequently:true});
-  const renderedPixels=renderedContext?.getImageData(0,0,renderedCanvas.width,renderedCanvas.height).data;
-  let visiblePixelSamples=0;
-  if(renderedPixels){
-   const stride=Math.max(4,Math.floor(renderedPixels.length/12000/4)*4);
-   for(let index=0;index<renderedPixels.length;index+=stride){
-    if(renderedPixels[index]<238||renderedPixels[index+1]<238||renderedPixels[index+2]<238)visiblePixelSamples++;
+  // Capture the populated statement node itself. A failed external image must
+  // never prevent the member details, transaction tables, QR block or footer
+  // from being exported.
+  const statementContentReady=()=>{
+   const text=String(host.textContent||'').replace(/\\s+/g,' ').trim();
+   const memberTable=host.querySelector('.member-info-section table tbody');
+   const hasStatementSections=!individual||Boolean(memberTable&&host.querySelector('.twf-member-contributions tbody tr')&&host.querySelector('.twf-member-payouts tbody tr'));
+   return host.isConnected&&host.getBoundingClientRect().width>=700&&host.scrollHeight>0&&text.length>=200&&Boolean(host.querySelector('.twf-head'))&&hasStatementSections;
+  };
+  const captureStatement=async()=>{
+   await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+   const worker=window.html2pdf().set(pdfOptions).from(host);
+   await worker.toCanvas();
+   const canvas=await worker.get('canvas');
+   if(!canvas||canvas.width<100||canvas.height<100)throw new Error('Statement canvas dimensions are invalid.');
+   // Pixel inspection is advisory only: getImageData can throw on a canvas
+   // containing an image without CORS permission. DOM readiness and a real
+   // canvas export are the primary safeguards against an empty document.
+   let pixelSamples=0;
+   try{
+    const context=canvas.getContext('2d',{willReadFrequently:true});
+    const pixels=context?.getImageData(0,0,canvas.width,canvas.height).data;
+    if(pixels){
+     const stride=Math.max(4,Math.floor(pixels.length/16000/4)*4);
+     for(let index=0;index<pixels.length;index+=stride){
+      if(pixels[index]<245||pixels[index+1]<245||pixels[index+2]<245)pixelSamples++;
+     }
+    }
+   }catch(canvasReadError){
+    console.warn('[Welfare PDF] Canvas pixel inspection unavailable; checking rendered output instead:',canvasReadError?.message||canvasReadError);
    }
+   const png=canvas.toDataURL('image/png');
+   if(png.length<3000)throw new Error('The statement canvas contains no usable rendered content.');
+   // A valid populated DOM can be mostly white (for example, a member with
+   // no transactions); do not reject it solely because sparse pixel sampling
+   // finds fewer than an arbitrary number of dark pixels.
+   if(!statementContentReady())throw new Error('The populated statement node is no longer available.');
+   return {worker,canvas,pixelSamples};
+  };
+  let captured;
+  try{
+   captured=await captureStatement();
+  }catch(firstCaptureError){
+   console.warn('[Welfare PDF] Initial statement capture failed; retrying without external images:',firstCaptureError?.message||firstCaptureError);
+   // Keep locally generated/data-URI images (including the generated QR).
+   // Replace external images with dimension-preserving placeholders so a
+   // crest/passport host that blocks canvas drawing cannot blank the report.
+   host.querySelectorAll('img').forEach(image=>{
+    const source=String(image.currentSrc||image.src||'');
+    if(/^data:image\\//i.test(source))return;
+    const frame=image.closest('[data-twf-photo-frame]')||image.parentElement;
+    if(frame){
+     const width=Math.max(24,Math.ceil(image.getBoundingClientRect().width||image.width||96));
+     const height=Math.max(24,Math.ceil(image.getBoundingClientRect().height||image.height||48));
+     const placeholder=document.createElement('div');
+     placeholder.setAttribute('data-welfare-image-fallback','');
+     placeholder.style.cssText='display:grid;place-items:center;box-sizing:border-box;width:'+width+'px;height:'+height+'px;max-width:100%;border:1px solid #cbd5e1;background:#f8fafc;color:#64748b;font:9px Arial,sans-serif;text-align:center;overflow:hidden';
+     placeholder.textContent=frame.hasAttribute('data-twf-photo-frame')?'PASSPORT PHOTO':'SCHOOL CREST';
+     image.replaceWith(placeholder);
+    }else image.remove();
+   });
+   await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+   if(!statementContentReady())throw new Error('The populated statement could not be recovered after an image loading error. No blank PDF was created.');
+   captured=await captureStatement();
   }
-  if(!renderedPixels||visiblePixelSamples<25||renderedCanvas.toDataURL('image/png').length<10000){
-   throw new Error('The statement rendered as an empty page. Please try again; no blank PDF was created.');
-  }
+  const pdfWorker=captured.worker;
+  const renderedCanvas=captured.canvas;
   const pdfResponse=await pdfWorker.toPdf().output('blob');
   pdfBlob=pdfResponse instanceof Blob?pdfResponse:new Blob([pdfResponse],{type:'application/pdf'});
   if(pdfBlob.size<5000)throw new Error('The generated statement PDF is unexpectedly small and may be blank. Please try again.');
