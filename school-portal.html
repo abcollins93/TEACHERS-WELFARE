@@ -3918,7 +3918,7 @@ if(isDemoMode){
 }
 })();
 </script>
-<script src="school-portal-workflows.js?v=20261120-report-runtime-v3"></script>
+<script src="school-portal-workflows.js?v=20261120-report-runtime-v4"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
@@ -4692,18 +4692,25 @@ window.generateTenantWelfarePdf=async function(o){
   }
   const safeCode=String(schoolCode||schoolName).replace(/[^a-z0-9_-]/gi,'_')||'school';
   filename=safeCode+'-'+(individual?'member-'+String(teacher.id||'statement').replace(/[^a-z0-9_-]/gi,'_')+'-statement':monthly?month+'-monthly-summary':annual?year+'-yearly-summary':statistics?year+'-statistics-of-payment':'complete-fund-summary')+'.pdf';
-  const pdfOptions={margin:[0,0,0,0],filename,image:{type:'png'},html2canvas:{scale:4,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0,windowWidth:Math.max(794,reportWidth,document.documentElement.clientWidth),windowHeight:Math.max(reportHeight,document.documentElement.clientHeight),width:reportWidth,height:reportHeight},jsPDF:{unit:'mm',format:'a4',orientation:'portrait',compress:true},pagebreak:{mode:statistics?['css']:['css','legacy'],avoid:['tr','.twf-metric','.twf-payment-row','.twf-signatures','.twf-final-signoff']}};pdfOptions.html2canvas.onclone=(clonedDocument)=>{
+  const pdfOptions={margin:[0,0,0,0],filename,image:{type:'png'},html2canvas:{scale:4,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0,windowWidth:Math.max(794,reportWidth,document.documentElement.clientWidth),windowHeight:Math.max(reportHeight,document.documentElement.clientHeight),width:reportWidth,height:reportHeight},jsPDF:{unit:'mm',format:'a4',orientation:'portrait',compress:true},pagebreak:{mode:statistics?['css']:['css','legacy'],avoid:['tr','.twf-metric','.twf-payment-row','.twf-signatures','.twf-final-signoff']}};let statementCloneDiagnostics={found:false,childElementCount:0,innerTextLength:0,headerDisplay:'missing',headerVisibility:'missing',headerColor:'missing',headerBackground:'missing'};
+  pdfOptions.html2canvas.onclone=(clonedDocument)=>{
    const clonedHost=clonedDocument.querySelector('[data-twf-statement-capture="'+id+'"]');
    if(!clonedHost)throw new Error('The statement node was not present in the html2canvas capture clone.');
-   const cloneText=String(clonedHost.textContent||'').replace(/\\s+/g,' ').trim();
-   if(cloneText.length<200||!clonedHost.querySelector('.twf-head'))throw new Error('The html2canvas clone contains no populated statement content.');
+   const cloneText=String(clonedHost.innerText||clonedHost.textContent||'').trim();
+   const cloneHeader=clonedHost.querySelector('.twf-head');
+   if(cloneText.length<200||!cloneHeader)throw new Error('The html2canvas clone contains no populated statement content (children '+clonedHost.childElementCount+', text '+cloneText.length+').');
    clonedDocument.documentElement.style.setProperty('overflow','visible','important');
    clonedDocument.body.style.setProperty('overflow','visible','important');
+   clonedDocument.documentElement.style.setProperty('background','#ffffff','important');
+   clonedDocument.body.style.setProperty('background','#ffffff','important');
    clonedHost.style.setProperty('display','block','important');
    clonedHost.style.setProperty('visibility','visible','important');
    clonedHost.style.setProperty('opacity','1','important');
    clonedHost.style.setProperty('position','absolute','important');
    clonedHost.style.setProperty('transform','none','important');
+   clonedHost.style.setProperty('filter','none','important');
+   clonedHost.style.setProperty('clip','auto','important');
+   clonedHost.style.setProperty('clip-path','none','important');
    clonedHost.style.setProperty('left','0px','important');
    clonedHost.style.setProperty('top','0px','important');
    clonedHost.style.setProperty('right','auto','important');
@@ -4719,6 +4726,24 @@ window.generateTenantWelfarePdf=async function(o){
    clonedHost.style.setProperty('background','#ffffff','important');
    clonedHost.style.setProperty('color','#0f172a','important');
    clonedHost.style.setProperty('color-scheme','light','important');
+   // Neutralize inherited mobile/dark-mode effects on the cloned report only.
+   clonedHost.querySelectorAll('*').forEach(node=>{
+    node.style.setProperty('visibility','visible','important');
+    node.style.setProperty('opacity','1','important');
+    node.style.setProperty('filter','none','important');
+    node.style.setProperty('transform','none','important');
+    node.style.setProperty('mix-blend-mode','normal','important');
+    node.style.setProperty('text-shadow','none','important');
+   });
+   cloneHeader.style.setProperty('color','#172b4d','important');
+   cloneHeader.style.setProperty('background-color','#ffffff','important');
+   statementCloneDiagnostics={
+    found:true,childElementCount:clonedHost.childElementCount,innerTextLength:cloneText.length,
+    headerDisplay:getComputedStyle(cloneHeader).display,
+    headerVisibility:getComputedStyle(cloneHeader).visibility,
+    headerColor:getComputedStyle(cloneHeader).color,
+    headerBackground:getComputedStyle(cloneHeader).backgroundColor
+   };
   };
   // Capture the populated statement node itself. A failed external image must
   // never prevent the member details, transaction tables, QR block or footer
@@ -4767,23 +4792,26 @@ window.generateTenantWelfarePdf=async function(o){
    // containing an image without CORS permission. DOM readiness and a real
    // canvas export are the primary safeguards against an empty document.
    let pixelSamples=0,pixelInspectionAvailable=false;
+   let pixelSummary='unavailable';
    try{
     const context=canvas.getContext('2d',{willReadFrequently:true});
     const pixels=context?.getImageData(0,0,canvas.width,canvas.height).data;
     if(pixels){
      pixelInspectionAvailable=true;
-     // Inspect actual RGBA pixels across the page. A sparse fixed byte stride
-     // can repeatedly land in white gaps between glyphs and table borders.
-     // Inspect each pixel until foreground content is confirmed; a genuinely
-     // blank canvas is scanned to the end.
+     let opaquePixels=0,nonWhitePixels=0,transparentPixels=0,minChannel=255,maxChannel=0;
      const totalPixels=Math.floor(pixels.length/4);
+     // Sample a regular grid over the full page as well as scanning for dark
+     // foreground. This reports alpha and color range even when RGB is white.
+     const sampleStride=Math.max(1,Math.floor(totalPixels/4096));
      for(let pixelIndex=0;pixelIndex<totalPixels;pixelIndex++){
-      const offset=pixelIndex*4;
-      if(pixels[offset]<245||pixels[offset+1]<245||pixels[offset+2]<245){
-       pixelSamples++;
-       if(pixelSamples>=64)break;
-      }
+      const offset=pixelIndex*4,red=pixels[offset],green=pixels[offset+1],blue=pixels[offset+2],alpha=pixels[offset+3];
+      if(alpha>0)opaquePixels++;else transparentPixels++;
+      if(red<minChannel)minChannel=red;if(green<minChannel)minChannel=green;if(blue<minChannel)minChannel=blue;
+      if(red>maxChannel)maxChannel=red;if(green>maxChannel)maxChannel=green;if(blue>maxChannel)maxChannel=blue;
+      if(pixelIndex%sampleStride===0&&alpha>0&&(red<250||green<250||blue<250))nonWhitePixels++;
+      if(red<245||green<245||blue<245){pixelSamples++;if(pixelSamples>=64)break;}
      }
+     pixelSummary='opaque '+opaquePixels+', transparent '+transparentPixels+', sampled non-white '+nonWhitePixels+', channel range '+minChannel+'-'+maxChannel;
     }
    }catch(canvasReadError){
     // Pixel inspection is optional: cross-origin/tainted canvas reads must
@@ -4795,7 +4823,19 @@ window.generateTenantWelfarePdf=async function(o){
    if(png.length<3000)throw new Error('The statement canvas contains no usable rendered content.');
    // Reject only a genuinely empty canvas after broad pixel inspection.
    // Dimensions, populated DOM and encoded PNG are independently verified.
-   if(pixelInspectionAvailable&&pixelSamples<64)throw new Error('The statement canvas appears blank after capture (canvas '+canvas.width+'×'+canvas.height+', foreground pixels '+pixelSamples+', staging '+host.getBoundingClientRect().left+','+host.getBoundingClientRect().top+').');
+   if(pixelInspectionAvailable&&pixelSamples<64){
+    const liveText=String(host.innerText||host.textContent||'').trim();
+    const liveHeader=host.querySelector('.twf-head');
+    const liveStyle=liveHeader?getComputedStyle(liveHeader):null;
+    const details='canvas '+canvas.width+'×'+canvas.height+', foreground pixels '+pixelSamples+', '+pixelSummary+
+     ', staging '+host.getBoundingClientRect().left+','+host.getBoundingClientRect().top+
+     ', live children '+host.childElementCount+', live text '+liveText.length+
+     ', clone children '+statementCloneDiagnostics.childElementCount+', clone text '+statementCloneDiagnostics.innerTextLength+
+     ', clone header '+statementCloneDiagnostics.headerDisplay+'/'+statementCloneDiagnostics.headerVisibility+
+     ' color '+statementCloneDiagnostics.headerColor+' background '+statementCloneDiagnostics.headerBackground+
+     ', live header '+(liveStyle?liveStyle.display+'/'+liveStyle.visibility+' color '+liveStyle.color+' background '+liveStyle.backgroundColor:'missing');
+    throw new Error('The statement canvas appears blank after capture ('+details+').');
+   }
     if(!statementContentReady())throw new Error('The populated statement node is no longer available.');
     return {worker,canvas,pixelSamples};
    }finally{
