@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_VERSION='twf-pwa-shell-v29-executive-summary-jspdf';
+const CACHE_VERSION='twf-pwa-shell-v30-executive-summary-hydration-v5';
 const STATEMENT_CACHE='twf-cached-statements-v1';
 const NETWORK_TIMEOUT_MS=12000;
 async function reportNetworkState(state,detail){
@@ -22,13 +22,13 @@ const SHELL_ASSETS=[
  './',
  './index.html',
  './school-portal.html',
- './demo-sandbox.js?v=20261121-executive-summary-jspdf-v3',
+ './demo-sandbox.js?v=20261121-executive-summary-hydration-v5',
  './set-password.html',
  './g.html',
  './offline.html',
  './manifest.json',
  './pwa.js',
- './school-portal-workflows.js?v=20261121-executive-summary-jspdf-v3',
+ './school-portal-workflows.js?v=20261121-executive-summary-hydration-v5',
  './icons/welfare-portal.svg'
 ];
 const CDN_ASSETS=[
