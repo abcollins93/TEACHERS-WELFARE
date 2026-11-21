@@ -54,7 +54,7 @@
 (function(){
  const query=new URLSearchParams(window.location.search);
  if(query.has('c')&&String(query.get('c')||'').trim().toUpperCase()==='DEMO'){
-  document.write('<script src="./demo-sandbox.js"><\/script>');
+  document.write('<script src="./demo-sandbox.js?v=20261121-mobile-performance-v1"><\/script>');
  }
 })();
 </script><script>
@@ -4164,6 +4164,7 @@ if(isDemoMode){
       target.focus({preventScroll:true});
     }
     button.dataset.mountAttempts = '0';
+    window.__welfareActivePortalView = requestedId;
     closeSidebar();
   });
 })();
