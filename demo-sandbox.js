@@ -3,6 +3,19 @@
  'use strict';
  const demoQuery=new URLSearchParams(window.location.search);
  if(!demoQuery.has('c')||String(demoQuery.get('c')||'').trim().toUpperCase()!=='DEMO')return;
+
+ /* Keep DEMO figures and role/status labels visually consistent with live tenants. */
+ document.documentElement.classList.add('welfare-demo-mode');
+ if(!document.getElementById('welfare-demo-visual-polish')){
+  const style=document.createElement('style');style.id='welfare-demo-visual-polish';
+  style.textContent=`
+   .welfare-demo-mode :where(.metric strong,.metric-value,.currency,.money,[class*="amount"],[class*="total"],[class*="balance"],[class*="count"],[class*="staff-id"],[class*="phone"]) { font-variant-numeric:tabular-nums lining-nums;font-feature-settings:"tnum" 1,"lnum" 1; }
+   .welfare-demo-mode :where(.teacher-dashboard-status,.wf-admin-pill,.wf-payout-status,.status-pill,.role-pill,.verified-badge,.admin-access-badge) { display:inline-flex;align-items:center;gap:5px;min-height:23px;padding:4px 9px;border:1px solid rgba(100,116,139,.28);border-radius:999px;line-height:1.25;font-weight:750;white-space:nowrap; }
+   .welfare-demo-mode :where(.empty-state,.wf-empty-state) { padding:18px 14px;border:1px dashed rgba(148,163,184,.38);border-radius:12px;text-align:center; }
+  `;
+  document.head.appendChild(style);
+ }
+
  const school={id:'demo-school-local',name:'DEMO BASIC SCHOOL',school_code:'DEMO',school_type:'Basic',region:'Ashanti Region',district:'Kumasi Metro',status:'active',monthly_dues:20};
  const names=[
   ['Akosua Mensah','GES/DEMO/001','Principal Superintendent','Primary 6','024 310 2201'],
