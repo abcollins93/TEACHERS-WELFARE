@@ -764,7 +764,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  let workflowUserId='demo-local-admin';
  if(!isLocalDemo){
   if(!workflowSchoolKey||!workflowSchoolCode)throw new Error('The verified school ID or school code is missing. Refresh the school gateway and retry.');
-  const requestedCode=String(new URLSearchParams(location.search).get('c')||'').trim().toUpperCase();
+  const requestedCodeRaw=String(new URLSearchParams(location.search).get('c')||'').trim().toUpperCase();
+  const requestedCode=requestedCodeRaw==='NTONSO-A-0'?'NTONSO-A-01':requestedCodeRaw;
   if(requestedCode&&requestedCode!==workflowSchoolCode)throw new Error('The signed-in school does not match this gateway link. Sign in through the correct school URL.');
   const sessionResult=await awaitWorkflowAuth(client.auth.getSession(),15000,'Administrator session restoration timed out.');
   if(sessionResult?.error)throw new Error('Administrator session restoration failed: '+(sessionResult.error.message||'Please sign in again.'));
