@@ -1226,43 +1226,44 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const profileMoney=n=>'GH₵ '+Number(n||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
  const profileDate=v=>{if(!v)return '—';const d=new Date(v);return Number.isNaN(d.getTime())?String(v):d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});};
  const renderSelectedTeacherProfile=()=>{
-  const sourceTeacher=teachers.find(x=>String(x.id)===selectedProfileTeacherId);
+  if(!selectedProfileTeacherId&&teachers.length)selectedProfileTeacherId=String(teachers[0].id);
+  const sourceTeacher=teachers.find(x=>String(x.id)===String(selectedProfileTeacherId));
   if(!sourceTeacher){
    const nameNode=$('tpName');if(nameNode)nameNode.textContent=tr.error?'Teacher profile could not be loaded':'No teacher profiles are registered for this school.';
    const personalNode=$('tpPersonalRows');if(personalNode)personalNode.innerHTML='<div class="tp-field"><small>PROFILE STATUS</small><strong>'+(tr.error?'The school teacher register could not be reached.':'No teacher records were returned.')+'</strong></div><button type="button" class="wf-table-action" data-wf-retry-profile>Retry loading profile</button>';
    const professionalNode=$('tpProfessionalRows');if(professionalNode)professionalNode.innerHTML='';
    const financeNode=$('tpFinanceRows');if(financeNode)financeNode.innerHTML='<div class="tp-finance"><span>Financial history</span><strong class="finance-empty">Unavailable</strong></div>';
-   return;
+   const avatarNode=$('tpAvatar');if(avatarNode)avatarNode.textContent='—';
+   const statusNode=$('tpStatus');if(statusNode)statusNode.textContent='Unavailable';
+   return false;
   }
   const t=typeof window.normalizeTeacherProfileRecord==='function'?window.normalizeTeacherProfileRecord(sourceTeacher):sourceTeacher;
   const tc=activeCons.filter(x=>String(x.teacher_id)===String(t.id)),tp=activePays.filter(x=>String(x.teacher_id)===String(t.id));
   const dues=tc.reduce((n,x)=>n+Number(x.amount||0),0),paid=tp.reduce((n,x)=>n+Number(x.amount||0),0);
   const recent=[...tc].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')))[0];
-  const parts=String(t.name||'').trim().split(/\\s+/).filter(Boolean),initials=parts.slice(0,2).map(x=>x[0]).join('').toUpperCase()||'—';
-  $('tpStatus').textContent=t.is_active===false?'Inactive':'Active';$('tpStatus').style.cssText+=';background:'+(t.is_active===false?'#fee2e2':'#dcfce7')+';color:'+(t.is_active===false?'#b91c1c':'#166534');
+  const parts=String(t.name||'').trim().split(/\s+/).filter(Boolean),initials=parts.slice(0,2).map(x=>x[0]).join('').toUpperCase()||'—';
+  const setText=(id,value)=>{const node=$(id);if(node)node.textContent=String(value??'—');};
+  const status=$('tpStatus');if(status){status.textContent=t.is_active===false?'Inactive':'Active';status.style.cssText+=';background:'+(t.is_active===false?'#fee2e2':'#dcfce7')+';color:'+(t.is_active===false?'#b91c1c':'#166534');}
   const profileAvatar=$('tpAvatar');
-  profileAvatar.textContent=initials;
-  profileAvatar.style.overflow='hidden';
-  if(t.passport){
-   const photo=document.createElement('img');
-   photo.src=t.passport;
-   photo.alt='Passport photograph of '+String(t.name||'teacher');
-   photo.loading='eager';
-   photo.decoding='async';
-   photo.style.cssText='display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit';
-   photo.onerror=()=>{photo.remove();profileAvatar.textContent=initials;};
-   profileAvatar.replaceChildren(photo);
+  if(profileAvatar){
+   profileAvatar.textContent=initials;profileAvatar.style.overflow='hidden';
+   if(t.passport){
+    const photo=document.createElement('img');photo.src=t.passport;photo.alt='Passport photograph of '+String(t.name||'teacher');photo.loading='eager';photo.decoding='async';
+    photo.style.cssText='display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit';
+    photo.onerror=()=>{photo.remove();profileAvatar.textContent=initials;};profileAvatar.replaceChildren(photo);
+   }
   }
-  $('tpName').textContent=t.name||'—';$('tpRank').textContent=t.rank||'—';$('tpStaffId').textContent='Staff ID: '+t.id;
-  $('tpRegistration').textContent=profileDate(t.registration_date||t.created_at||t.date_registered);$('tpMembership').textContent=t.membership_type||t.membership||'—';
-  $('tpPersonalRows').innerHTML=profileRows([['FULL NAME',t.name],['PHONE NUMBER',t.phone],['SCHOOL / INSTITUTION',school.name],['DISTRICT & REGION',[school.district,school.region].filter(Boolean).join(' · ')]]);
-  $('tpProfessionalRows').innerHTML=profileRows([['Staff ID',t.id],['Professional Rank',t.rank],['CLASS / SUBJECT',t.class_name],['Employer',t.employer||school.employer]]);
-  $('tpFinanceRows').innerHTML=[
+  setText('tpName',t.name||'—');setText('tpRank',t.rank||'—');setText('tpStaffId','Staff ID: '+t.id);
+  setText('tpRegistration',profileDate(t.registration_date||t.created_at||t.date_registered));setText('tpMembership',t.membership_type||t.membership||'—');
+  const personal=$('tpPersonalRows');if(personal)personal.innerHTML=profileRows([['FULL NAME',t.name],['PHONE NUMBER',t.phone],['SCHOOL / INSTITUTION',school.name],['DISTRICT & REGION',[school.district,school.region].filter(Boolean).join(' · ')]]);
+  const professional=$('tpProfessionalRows');if(professional)professional.innerHTML=profileRows([['Staff ID',t.id],['Professional Rank',t.rank],['CLASS / SUBJECT',t.class_name],['Employer',t.employer||school.employer]]);
+  const finance=$('tpFinanceRows');if(finance)finance.innerHTML=[
    '<div class="tp-finance"><span>Total Dues Contributed</span><strong class="finance-positive">'+esc(profileMoney(dues))+'</strong></div>',
    '<div class="tp-finance"><span>Total Welfare Payouts Received</span><strong class="finance-payout">'+esc(profileMoney(paid))+'</strong></div>',
    '<div class="tp-finance"><span>Total Payments Recorded</span><strong>'+(tc.length?String(tc.length):'0 Payments')+'</strong></div>',
    '<div class="tp-finance"><span>Most Recent Contribution</span><strong'+(recent?'':' class="finance-empty"')+'>'+esc(recent?profileDate(recent.date):'—')+'</strong></div>'
   ].join('');
+  return true;
  };
  if(profileSelect){profileSelect.innerHTML=teachers.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name||t.id)+' ('+esc(t.id)+')</option>').join('');profileSelect.value=selectedProfileTeacherId;profileSelect.addEventListener('change',()=>{selectedProfileTeacherId=profileSelect.value;renderSelectedTeacherProfile();});}
  $('teacherProfileViewer')?.addEventListener('click',async event=>{const retry=event.target.closest('[data-wf-retry-profile]');if(!retry)return;retry.disabled=true;retry.textContent='Retrying…';try{await window.__welfareEnsureTeacherRegisterLoaded(ctx.school_code);msg('wfTeacherMsg','Teacher profile refreshed successfully.');}catch(error){retry.disabled=false;retry.textContent='Retry loading profile';const statusNode=$('tpPersonalRows')?.querySelector('strong');if(statusNode)statusNode.textContent=error?.message||'The profile could not be loaded. Please retry.';}});
@@ -1277,8 +1278,12 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    profileSelect.innerHTML=teachers.map(row=>'<option value="'+esc(row.id)+'">'+esc(row.name||row.id)+' ('+esc(row.id)+')</option>').join('');
    profileSelect.value=selectedProfileTeacherId;
   }
-  renderSelectedTeacherProfile();
-  return !!teachers.length;
+  const rendered=renderSelectedTeacherProfile();
+  return rendered;
+ };
+ window.__welfareRenderActiveProfileViewer=()=>{
+  if(window.__welfareCurrentRole==='teacher')return window.__welfareRefreshMemberProfileViewer?.()??false;
+  return window.__welfareRenderAdminProfileViewer?.()??false;
  };
  window.__welfareRefreshAdminProfileViewer=async()=>{
   // Never blank a populated profile while refreshing. Keep the last verified
