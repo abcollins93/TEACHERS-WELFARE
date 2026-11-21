@@ -13,7 +13,7 @@
     const school=schoolContext&&typeof schoolContext==='object'?schoolContext:(window.__welfareCurrentSchool||{});
     const saved=[school.academic_year,school.academicYear,school.current_academic_year,school.currentAcademicYear,school.school_year,school.schoolYear]
      .map(value=>String(value??'').trim()).find(value=>/^\\d{4}\\s*[/–-]\\s*\\d{4}$/.test(value));
-    if(saved)return saved.replace(/\\s+/g,'').replace(/[–-]/,'/');
+    if(saved)return saved.replace(/\s+/g,'').replace(/[–-]/,'/');
     let date=referenceDate instanceof Date?referenceDate:new Date(referenceDate||Date.now());
     if(Number.isNaN(date.getTime()))date=new Date();
     const configuredMonth=Number(school.academic_year_start_month??school.academicYearStartMonth);
@@ -3863,7 +3863,7 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
     if(document.fonts?.ready)await document.fonts.ready.catch(()=>{});
     const registerRows=Array.from(report.querySelectorAll('table tbody tr')).filter(row=>row.children.length>1&&!/no matching teachers/i.test(String(row.innerText||row.textContent||''))).length;
-    const reportText=String(report.innerText||report.textContent||'').replace(/\\s+/g,' ').trim();
+    const reportText=String(report.innerText||report.textContent||'').replace(/\s+/g,' ').trim();
     if(!report.querySelector('.sws-head h1')||!reportText.includes('Teacher register')||!registerRows){
      throw new Error('The executive summary has no complete school register content to export. Please wait for the teacher register to finish loading.');
     }
@@ -3894,7 +3894,7 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
      // Browser canvas draws all fallback text (including the GH₵ glyph) before
      // jsPDF places the finished pages into the A4 document.
      const headers=Array.from(table.querySelectorAll('thead th')).map(th=>String(th.textContent||'').trim());
-     const rows=Array.from(table.querySelectorAll('tbody tr')).map(tr=>Array.from(tr.children).map(td=>String(td.innerText||td.textContent||'').replace(/\\s+/g,' ').trim()));
+     const rows=Array.from(table.querySelectorAll('tbody tr')).map(tr=>Array.from(tr.children).map(td=>String(td.innerText||td.textContent||'').replace(/\s+/g,' ').trim()));
      const width=1680,pageHeight=Math.round(width*210/297),margin=58,usable=width-margin*2;
      const rowFont=17,lineHeight=22,padX=10,padY=10;
      const measureCanvas=document.createElement('canvas'),measure=measureCanvas.getContext('2d');
@@ -5019,7 +5019,7 @@ window.generateTenantWelfarePdf=async function(o){
   if(document.fonts?.ready){try{await document.fonts.ready;}catch(fontError){console.warn('[Welfare PDF] Font readiness warning:',fontError?.message||fontError);}}
   await waitForPdfFrame();
   await waitForPdfFrame();
-  const reportText=String(host.textContent||'').replace(/\\s+/g,' ').trim();
+  const reportText=String(host.textContent||'').replace(/\s+/g,' ').trim();
   const reportWidth=Math.max(794,Math.ceil(host.scrollWidth||host.getBoundingClientRect().width||0));
   const reportHeight=Math.ceil(host.scrollHeight||host.getBoundingClientRect().height||0);
   if(host.scrollWidth<=0||host.scrollHeight<=0||!reportWidth||!reportHeight||reportText.length<200||!host.querySelector('.twf-head')){
@@ -5096,7 +5096,7 @@ window.generateTenantWelfarePdf=async function(o){
    const previousDisplay=host.style.getPropertyValue('display');
    const previousPriority=host.style.getPropertyPriority('display');
    if(previousDisplay==='none')host.style.setProperty('display','block','important');
-   const text=String(host.textContent||'').replace(/\\s+/g,' ').trim();
+   const text=String(host.textContent||'').replace(/\s+/g,' ').trim();
    const memberTable=host.querySelector('.member-info-section table tbody');
    const hasStatementSections=!individual||Boolean(memberTable&&host.querySelector('.twf-member-contributions tbody tr')&&host.querySelector('.twf-member-payouts tbody tr'));
    const ready=host.isConnected&&host.getBoundingClientRect().width>=700&&host.scrollHeight>0&&text.length>=200&&Boolean(host.querySelector('.twf-head'))&&hasStatementSections;
