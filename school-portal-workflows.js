@@ -1092,7 +1092,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      </div>
     </article>
     <article class="panel teacher-profile-accent teacher-profile-accent-blue" style="margin:0;padding:22px"><h3><i class="fa-solid fa-address-card"></i> Personal &amp; Contact Information</h3><div id="tpPersonalRows" class="tp-fields"></div><p class="muted">To update your official personal or contact information, contact the Executive Administrator.</p><button type="button" class="secondary" id="tpEditContact">Edit Contact Info</button></article>
-    <article class="panel teacher-profile-accent teacher-profile-accent-gold" style="margin:0;padding:22px"><h3><i class="fa-solid fa-briefcase"></i> Professional &amp; Employment Details</h3><div id="tpProfessionalRows" class="tp-fields"></div></article>
+    <article class="panel teacher-profile-accent teacher-profile-accent-gold teacher-professional-details-card" style="margin:0;padding:22px"><div class="teacher-professional-card-head"><h3><i class="fa-solid fa-briefcase" aria-hidden="true"></i> Professional &amp; Employment Details</h3><span class="teacher-professional-secure"><i class="fa-solid fa-clipboard-check" aria-hidden="true"></i> EMPLOYMENT RECORD</span></div><div id="tpProfessionalRows" class="tp-fields"></div></article>
     <article class="panel teacher-profile-accent teacher-profile-accent-purple" style="margin:0;padding:22px"><h3><i class="fa-solid fa-wallet" aria-hidden="true"></i> Welfare Membership &amp; Financial Summary</h3><div id="tpFinanceRows"></div></article>
    </div>
    <style>
@@ -1125,7 +1125,23 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     #teacherProfilePrint:hover:not(:disabled){background:linear-gradient(120deg,#db2777,#be185d)!important;border-color:#be185d!important}
     @media(max-width:760px){#teacherProfileContent{grid-template-columns:1fr!important}#teacherProfileViewer .teacher-profile-accent{border-top-left-radius:17px!important;border-top-right-radius:17px!important}#teacherProfilePrint{width:100%}}
     @media print{body *{visibility:hidden!important}#teacherProfileViewer,#teacherProfileViewer *{visibility:visible!important}#teacherProfileViewer{position:absolute;inset:0;width:100%;margin:0!important}#teacherProfilePrint,#teacherProfileSelect,#teacherProfileViewer label,#tpEditContact{display:none!important}}
-   </style>`;
+   
+    #teacherProfileViewer .teacher-professional-details-card{border:1px solid #e2e8f0!important;border-top:4px solid #d6a637!important;background:#fff}
+    #teacherProfileViewer .teacher-professional-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 16px}
+    #teacherProfileViewer .teacher-professional-card-head h3{display:flex;align-items:center;gap:9px;margin:0;color:#172b49;font-size:1.02rem;font-weight:850}
+    #teacherProfileViewer .teacher-professional-card-head h3>i{color:#b88716}
+    #teacherProfileViewer .teacher-professional-secure{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border:1px solid #f2dfaa;border-radius:999px;background:#fff8e6;color:#8a6410;font-size:.62rem;font-weight:850;letter-spacing:.055em}
+    #teacherProfileViewer .teacher-professional-details-card .tp-fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    #teacherProfileViewer .teacher-professional-details-card .tp-field{min-width:0;border:1px solid #e2e8f0;background:#f8fafc;border-radius:13px;padding:13px 14px}
+    #teacherProfileViewer .teacher-professional-details-card .tp-field small{color:#64748b;font-size:.68rem;font-weight:850;letter-spacing:.075em;line-height:1.3;margin-bottom:7px}
+    #teacherProfileViewer .teacher-professional-details-card .tp-field strong{color:#172b49;font-size:.91rem;font-weight:800;line-height:1.45;overflow-wrap:anywhere}
+    .dark #teacherProfileViewer .teacher-professional-details-card{background:var(--panel)!important;border-color:var(--line)!important}
+    .dark #teacherProfileViewer .teacher-professional-card-head h3,.dark #teacherProfileViewer .teacher-professional-details-card .tp-field strong{color:#e5edf8}
+    .dark #teacherProfileViewer .teacher-professional-secure{background:#302817;border-color:#66532a;color:#f5d98a}
+    .dark #teacherProfileViewer .teacher-professional-details-card .tp-field{background:rgba(148,163,184,.07);border-color:var(--line)}
+    .dark #teacherProfileViewer .teacher-professional-details-card .tp-field small{color:#a9b8cc}
+    @media(max-width:600px){#teacherProfileViewer .teacher-professional-details-card{padding:16px!important}#teacherProfileViewer .teacher-professional-card-head{align-items:flex-start;margin-bottom:13px}#teacherProfileViewer .teacher-professional-details-card .tp-fields{grid-template-columns:1fr;gap:9px}#teacherProfileViewer .teacher-professional-details-card .tp-field{padding:12px 13px;border-radius:12px}}
+</style>`;
   const wf=$('workflows');profileHost.insertBefore(p,wf&&wf.parentElement===profileHost?wf:null);
  }
  const profileSelect=$('teacherProfileSelect');
