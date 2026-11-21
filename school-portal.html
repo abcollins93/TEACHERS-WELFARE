@@ -3674,8 +3674,13 @@ async function showDashboardInternal(){
   try{await client.auth.signOut();}catch(_){}
   return;
  }
- const {data:{user},error:userErr}=await withPortalTimeout(client.auth.getUser(),15000,'Administrator session check timed out.');
- if(userErr||!user){window.__welfareWelcomeLoginKey='';window.__welfareWelcomeShownForLogin='';$('login').classList.remove('hidden');$('dashboard').classList.add('hidden');return;}
+ const {data:sessionState,error:sessionError}=await withPortalTimeout(client.auth.getSession(),15000,'Administrator session restoration timed out.');
+ if(sessionError)throw new Error('Your administrator session could not be restored. Check your connection and sign in again.');
+ let activeSession=sessionState?.session||null;
+ if(activeSession?.access_token&&Number(activeSession.expires_at||0)>0&&Number(activeSession.expires_at)*1000<Date.now()+60000){const refreshed=await withPortalTimeout(client.auth.refreshSession(),15000,'Administrator session refresh timed out.');if(refreshed?.error||!refreshed?.data?.session?.access_token)throw new Error('Your administrator session expired and could not be refreshed. Please sign in again.');activeSession=refreshed.data.session;}
+ if(!activeSession?.access_token){window.__welfareWelcomeLoginKey='';window.__welfareWelcomeShownForLogin='';$('loginError').textContent='Your administrator session is not active yet. Please sign in again.';$('login').classList.remove('hidden');$('dashboard').classList.add('hidden');window.finishTenantSkeletons?.();return;}
+ const {data:{user},error:userErr}=await withPortalTimeout(client.auth.getUser(),15000,'Administrator identity verification timed out.');
+ if(userErr||!user||String(activeSession.user?.id||'')!==String(user.id||''))throw new Error('Your administrator session could not be verified. Please sign in again.');
  window.__welfareWelcomeLoginKey=String(user.id||'');
  window.startTenantSkeletons?.();
  const {data:teacherProfiles,error:teacherProfileError}=await withPortalTimeout(client.rpc('get_my_teacher_profile'),15000,'Teacher account verification timed out.');
@@ -3731,6 +3736,8 @@ async function showDashboardInternal(){
    window.finishTenantSkeletons?.();
    $('login').classList.remove('hidden');$('dashboard').classList.add('hidden');return;
  }
+ window.__welfareAdminSessionUserId=String(user.id||'');
+ window.__welfareCurrentSchool=school;
  setHeaderProfile(user, user.user_metadata?.full_name || user.user_metadata?.name || user.email || 'School Administrator', 'School Administrator', user.user_metadata?.avatar_url || user.user_metadata?.picture || null);
  setTenantFooter(school);
  $('login').classList.add('hidden');$('dashboard').classList.remove('hidden');
@@ -3753,6 +3760,8 @@ async function showDashboardInternal(){
     if(result===false)throw new Error('Workflow module reported incomplete initialization.');
   }).catch(workflowError=>{
     console.error('[School Welfare] Workflow initialization deferred/failed:',workflowError?.message||workflowError);
+    window.__welfareWorkflowMountPromise=null;
+    return false;
   });
   window.__welfareWorkflowMountPromise=workflowMount;
  const readDashboardSource=(promise,label)=>withPortalTimeout(promise,20000,label+' timed out.').catch(error=>({data:null,error}));
@@ -4237,7 +4246,7 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
  }
 });
 $('teacherForgotPreview').addEventListener('click',()=>{ $('teacherLoginMessage').className='muted';$('teacherLoginMessage').textContent='For secure recovery, contact your school administrator to verify your identity and reset your account.';});
-$('loginForm').addEventListener('submit',async e=>{e.preventDefault();showPageLoader('Signing you in securely');$('loginError').textContent='';$('loginError').className='error';$('loginBtn').disabled=true;$('loginBtn').textContent='Signing in…';let authenticated=false;try{const {data,error}=await withPortalTimeout(client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value}),10000,'Administrator sign-in timed out. Please check your connection and try again.');if(error||!data.user)throw new Error('credentials');authenticated=true;await showDashboard();}catch(err){if(!authenticated){$('loginError').textContent='Sign-in failed. Check your administrator email and password, or use the password setup link from your invitation.';await withPortalTimeout(client.auth.signOut(),3000,'Session cleanup timed out.').catch(()=>{});}else{$('login').classList.remove('hidden');$('dashboard').classList.add('hidden');$('loginError').textContent='Your credentials were accepted, but school verification or dashboard loading failed. Check that this URL uses your registered school code and that your administrator account is assigned to that school. Your session has been preserved.';}}finally{$('loginBtn').disabled=!!code&&!/^[A-Z0-9-]{3,32}$/.test(code);$('loginBtn').textContent='Sign in securely';hidePageLoader();}});
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();showPageLoader('Signing you in securely');$('loginError').textContent='';$('loginError').className='error';$('loginBtn').disabled=true;$('loginBtn').textContent='Signing in…';let authenticated=false;try{const {data,error}=await withPortalTimeout(client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value}),10000,'Administrator sign-in timed out. Please check your connection and try again.');if(error||!data.user)throw new Error('credentials');authenticated=true;if(data.session?.access_token&&data.session?.refresh_token){const {error:sessionSetError}=await withPortalTimeout(client.auth.setSession({access_token:data.session.access_token,refresh_token:data.session.refresh_token}),12000,'Administrator session setup timed out.');if(sessionSetError)throw new Error('Your credentials were accepted, but the secure administrator session could not be established. Please sign in again.');}await showDashboard();}catch(err){if(!authenticated){$('loginError').textContent='Sign-in failed. Check your administrator email and password, or use the password setup link from your invitation.';await withPortalTimeout(client.auth.signOut(),3000,'Session cleanup timed out.').catch(()=>{});}else{$('login').classList.remove('hidden');$('dashboard').classList.add('hidden');$('loginError').textContent='Your credentials were accepted, but school verification or dashboard loading failed. Check that this URL uses your registered school code and that your administrator account is assigned to that school. Your session has been preserved.';}}finally{$('loginBtn').disabled=!!code&&!/^[A-Z0-9-]{3,32}$/.test(code);$('loginBtn').textContent='Sign in securely';hidePageLoader();}});
 $('forgotPassword').addEventListener('click',async()=>{
  const email=$('email').value.trim();
  $('loginError').textContent='';
