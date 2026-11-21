@@ -1260,11 +1260,13 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  $('tpEditContact')?.addEventListener('click',()=>wfNotice('To update official contact details, contact the Executive Administrator.'));
  renderSelectedTeacherProfile();
  window.__welfareRefreshAdminProfileViewer=async()=>{
-  if(!teachers.length){
-   try{await reloadTeacherRegisterForExport();}
-   catch(error){console.warn('[School Welfare] Profile viewer roster refresh failed:',error?.message||error);return false;}
+  try{await reloadTeacherRegisterForExport();}
+  catch(error){console.warn('[School Welfare] Profile viewer roster refresh failed:',error?.message||error);tr={data:[],error};renderSelectedTeacherProfile();return false;}
+  if(typeof refreshWorkflow==='function'){
+   const financialReady=await refreshWorkflow();
+   if(!financialReady)console.warn('[School Welfare] Profile viewer financial history is incomplete; retry the contribution/payout sections.');
   }
-  if(!teachers.length)return false;
+  if(!teachers.length){renderSelectedTeacherProfile();return false;}
   if(!selectedProfileTeacherId||!teachers.some(item=>String(item.id)===String(selectedProfileTeacherId)))selectedProfileTeacherId=String(teachers[0].id);
   if(profileSelect)profileSelect.value=selectedProfileTeacherId;
   renderSelectedTeacherProfile();return !!$('tpName')?.textContent;
