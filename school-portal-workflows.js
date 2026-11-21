@@ -779,7 +779,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   workflowUserId=String(identity.data.user.id);
   if(window.__welfareAdminSessionUserId&&String(window.__welfareAdminSessionUserId)!==workflowUserId)throw new Error('The active administrator account changed. Refresh the portal before continuing.');
  }
- if(workflowSchoolKey&&window.__welfareWorkflowReadySchoolId===workflowSchoolKey&&window.__welfareWorkflowReadyUserId===workflowUserId&&$('workflows')&&$('wfAdminPanel')&&$('teacherProfileViewer')&&$('schoolTeachers')&&$('wfContributionPanel')&&$('wfPayoutPanel'))return true;
+ if(workflowSchoolKey&&window.__welfareWorkflowReadySchoolId===workflowSchoolKey&&window.__welfareWorkflowReadyUserId===workflowUserId&&$('workflows')&&$('wfAdminPanel')&&$('teacherProfileViewer')&&$('schoolTeachers')&&$('wfAdminContributionPanel')&&$('wfAdminPayoutPanel'))return true;
  if(window.__welfareWorkflowReadySchoolId&&window.__welfareWorkflowReadySchoolId!==workflowSchoolKey){window.__welfareWorkflowReadySchoolId=null;window.__welfareWorkflowReadyUserId=null;}
  window.__welfareCurrentRole='admin';
  window.__welfareCurrentSchool=school;
