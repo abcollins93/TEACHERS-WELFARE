@@ -7089,6 +7089,32 @@ header.top .top-school-name{display:block!important;width:100%!important;max-wid
  header.top .top-account-actions{flex:0 1 auto!important;min-width:max-content!important}
 }
 @media(max-width:420px){header.top .top-school-name{font-size:.78rem!important;line-height:1.15!important}}
+
+/* Lightweight visual polish: aligned figures, consistent pills, and calm loading states. */
+:where(.metric strong, .metric-value, .currency, .money, [class*="amount"], [class*="total"], [class*="balance"], [class*="count"], [class*="staff-id"], [class*="phone"], [id*="Amount"], [id*="Total"], [id*="Balance"], [id*="Count"], #teacherIdStaffId, #teacherIdPhone, #teacherOwnStaffId, #teacherOwnPhone, #teacherActiveMembers, #teacherPayoutTotal, #teacherCurrentFund, #teacherContributionTotal, #teacherOwnContributionTotal, #teacherOwnPayoutTotal) {
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+input[type="tel"], input[inputmode="numeric"], input[inputmode="decimal"] { font-variant-numeric: tabular-nums lining-nums; }
+:where(.teacher-dashboard-status, .teacher-id-status, .wf-admin-pill, .wf-payout-status, .wf-restricted-badge, .wf-admin-status, .wf-teacher-register-badge, .portal-hero-badge, .gateway-school-badge, .status-pill, .role-pill, .verified-badge, .admin-access-badge) {
+  display:inline-flex; align-items:center; justify-content:center; gap:5px; min-height:23px; padding:4px 9px;
+  border:1px solid rgba(100,116,139,.28); border-radius:999px; line-height:1.25; font-weight:750; white-space:nowrap;
+}
+:where(.teacher-dashboard-status.reversed, .wf-admin-pill.reversed, .wf-payout-status.reversed) { border-color:rgba(190,24,93,.28); }
+:where(.skeleton, .loading-skeleton, [data-skeleton="true"]) {
+ position:relative; overflow:hidden; color:transparent!important; border-radius:8px;
+ background:linear-gradient(90deg,rgba(148,163,184,.12),rgba(148,163,184,.22),rgba(148,163,184,.12));
+ background-size:220% 100%; animation:welfare-skeleton-shift 1.5s ease-in-out infinite;
+}
+:where(.skeleton, .loading-skeleton, [data-skeleton="true"]) * { visibility:hidden; }
+@keyframes welfare-skeleton-shift { 0%{background-position:100% 0} 100%{background-position:-120% 0} }
+:where(.empty-state, .wf-empty-state, .empty) { color:var(--muted,#718096); text-align:center; line-height:1.55; }
+:where(.empty-state, .wf-empty-state) { padding:18px 14px; border:1px dashed rgba(148,163,184,.38); border-radius:12px; background:rgba(148,163,184,.045); }
+:where(td[colspan]) { color:var(--muted,#718096); }
+.dark :where(.teacher-dashboard-status,.teacher-id-status,.wf-admin-pill,.wf-payout-status,.wf-restricted-badge,.wf-admin-status,.wf-teacher-register-badge,.status-pill,.role-pill,.verified-badge,.admin-access-badge) { border-color:rgba(148,163,184,.34); }
+.dark :where(.empty-state,.wf-empty-state) { border-color:rgba(148,163,184,.28); background:rgba(148,163,184,.07); }
+@media(prefers-reduced-motion:reduce) { :where(.skeleton,.loading-skeleton,[data-skeleton="true"]) { animation:none; } }
+
 </style>
 <script id="welfare-cedi-display-normalizer">
 (function(){
