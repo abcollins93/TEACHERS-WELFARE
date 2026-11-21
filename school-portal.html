@@ -280,8 +280,8 @@ body:has(#login:not(.hidden)) main{max-width:760px;margin:0 auto;padding:clamp(1
 @media(max-width:950px){#mobileNavToggle{display:inline-flex;position:fixed;top:12px;left:12px;z-index:9989;box-shadow:0 5px 18px rgba(0,0,0,.2);border:1px solid var(--line);border-radius:12px}}
 @media(max-width:950px){
  #dashboard .dash-layout{display:block}
- #dashboard .sidebar{position:fixed;z-index:2001;left:0;top:0;bottom:0;width:min(290px,84vw);height:100dvh;overflow-y:auto;display:block;border-radius:0 20px 20px 0;padding:16px;transform:translateX(-105%);transition:transform .25s ease;box-shadow:18px 0 55px #0005}
- #dashboard .sidebar.is-mobile-open{transform:translateX(0)}
+ #dashboard .sidebar{position:fixed;z-index:2001;left:0;top:0;bottom:0;width:min(290px,84vw);height:100dvh;overflow-y:auto;display:block;border-radius:0 20px 20px 0;padding:16px;transform:translateX(-105%);opacity:0;visibility:hidden;pointer-events:none;will-change:transform,opacity;transition:transform .22s ease,opacity .18s ease,visibility .22s ease;box-shadow:18px 0 55px #0005}
+ #dashboard .sidebar.is-mobile-open{transform:translateX(0);opacity:1;visibility:visible;pointer-events:auto}
  #dashboard .sidebar .school-chip{min-width:0;margin-bottom:12px}
  #dashboard .sidebar .navbtn{width:100%;display:flex;flex-direction:row;justify-content:flex-start;min-height:46px;text-align:left;gap:10px;padding:12px;margin:4px 0}
  #dashboard .sidebar .navbtn span{display:inline;font-size:.82rem}
@@ -1916,6 +1916,44 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
 }
 </style></head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
+<script id="mobile-drawer-first-tap">
+(function(){
+ function setMobileDrawerOpen(isOpen){
+  const sidebar=document.getElementById('schoolSidebar');
+  const overlay=document.getElementById('mobile-nav-overlay');
+  const toggle=document.getElementById('mobileNavToggle');
+  if(!sidebar)return;
+  sidebar.classList.toggle('is-mobile-open',!!isOpen);
+  if(overlay){overlay.classList.toggle('is-open',!!isOpen);overlay.setAttribute('aria-hidden',String(!isOpen));}
+  if(toggle){
+   toggle.setAttribute('aria-expanded',String(!!isOpen));
+   toggle.setAttribute('aria-label',isOpen?'Close navigation menu':'Open navigation menu');
+   toggle.setAttribute('title',isOpen?'Close navigation menu':'Open navigation menu');
+   const icon=toggle.querySelector('i');
+   if(icon)icon.className=isOpen?'fa-solid fa-xmark':'fa-solid fa-bars';
+  }
+  document.body.classList.toggle('sidebar-open',!!isOpen);
+ }
+ window.__welfareSetMobileNavOpen=setMobileDrawerOpen;
+ // Register before the large portal application script so the very first tap
+ // never waits for tenant hydration, workflow mounting, or report rendering.
+ document.addEventListener('click',event=>{
+  const target=event.target?.closest?.('#mobileNavToggle');
+  if(target){
+   event.preventDefault();
+   const sidebar=document.getElementById('schoolSidebar');
+   if(!sidebar)return;
+   setMobileDrawerOpen(!sidebar.classList.contains('is-mobile-open'));
+   event.__welfareMobileNavHandled=true;
+   return;
+  }
+  if(event.target?.closest?.('#mobile-nav-overlay')){
+   setMobileDrawerOpen(false);
+   event.__welfareMobileNavHandled=true;
+  }
+ },true);
+})();
+</script>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading Teachers Welfare Portal" aria-hidden="false">
  <div class="page-loader-card">
   <img class="page-loader-logo" src="./icons/welfare-portal.svg" alt="Teachers Welfare Portal shield logo" width="112" height="112" fetchpriority="high">
@@ -2183,6 +2221,7 @@ $('themeToggle').addEventListener('click',()=>{const dark=!document.documentElem
 const sidebar=$('sidebarCollapse')?.closest('.sidebar');
 const mobileNavOverlay=$('mobile-nav-overlay');
 function syncMobileNavState(isOpen){
+ if(typeof window.__welfareSetMobileNavOpen==='function'){window.__welfareSetMobileNavOpen(isOpen);return;}
  if(!sidebar)return;
  sidebar.classList.toggle('is-mobile-open',isOpen);
  mobileNavOverlay?.classList.toggle('is-open',isOpen);
@@ -2200,6 +2239,7 @@ function closeMobileNav(){syncMobileNavState(false);}
 function openMobileNav(){syncMobileNavState(true);}
 /* Document-level delegation survives dashboard/view content replacement. */
 document.addEventListener('click',event=>{
+ if(event.__welfareMobileNavHandled)return;
  const toggle=event.target.closest('#mobileNavToggle');
  if(toggle){
   event.preventDefault();
