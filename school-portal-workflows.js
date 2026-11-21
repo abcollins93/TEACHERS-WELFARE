@@ -1546,8 +1546,12 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     }
    });
   }
+  let payoutDataRevision=0,lastPayoutRenderKey='';
   const renderPayoutLedger=()=>{
     const q=String($('wfPayoutSearch')?.value||'').trim().toLowerCase();
+    const renderKey=q+'|'+payoutDataRevision;
+    if(renderKey===lastPayoutRenderKey)return;
+    lastPayoutRenderKey=renderKey;
     const rows=pays.filter(x=>[x.teacher_id,window.displayWelfareReason(x.reason),x.reference,teacherById.get(String(x.teacher_id))?.name].some(v=>String(v||'').toLowerCase().includes(q)));
     const totalPayout=activePays.reduce((n,x)=>n+Number(x.amount||0),0),currentFund=activeCons.reduce((n,x)=>n+Number(x.amount||0),0)-totalPayout,activeMembers=teachers.filter(t=>t.is_active!==false).length;
     $('wfPayoutTotal').textContent=pr.error?'Unavailable':'GHS '+money(totalPayout);
@@ -1555,7 +1559,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     $('wfPayoutActiveMembers').textContent=tr.error?'Unavailable':String(activeMembers);
     $('wfPayRows').innerHTML=pr.error?'<tr><td colspan="6">Payout records could not be loaded. Check the school account permissions and try again.</td></tr>':rows.length?rows.map(x=>{const rawDate=String(x.date||'');const displayDate=rawDate&&/^\d{4}-\d{2}-\d{2}/.test(rawDate)?new Date(rawDate.slice(0,10)+'T00:00:00').toLocaleDateString('en-GB'):(rawDate||'—');return '<tr><td class="wf-payout-reference">'+esc(x.reference||'—')+'</td><td class="wf-payout-beneficiary">'+teacherLabel(x.teacher_id)+'</td><td>'+esc(window.displayWelfareReason(x.reason||'Welfare support'))+'</td><td class="wf-payout-amount">GHS '+money(x.amount)+'</td><td>'+esc(displayDate)+'</td><td>'+reversalCell('payout',x)+'</td></tr>'}).join(''):'<tr><td colspan="6">No matching payouts.</td></tr>';
   };
-  renderPayoutLedger();$('wfPayoutSearch').addEventListener('input',renderPayoutLedger);
+  renderPayoutLedger();$('wfPayoutSearch').addEventListener('input',()=>frameRender($('wfPayRows'),renderPayoutLedger));
   // Reload transaction data in place; keep the authenticated dashboard and
   // currently selected section mounted after a contribution or payout is saved.
   const refreshWorkflow=async()=>{
@@ -1564,7 +1568,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
       loadSource('payout ledger refresh',()=>client.from('payouts').select('id,teacher_id,amount,date,reason,reference').eq('school_id',ctx.id).order('date',{ascending:false})),
       loadSource('transaction reversals refresh',()=>client.from('transaction_reversals').select('transaction_type,transaction_id,reason,created_at').eq('school_id',ctx.id))
     ]);
-    cr=nextCon;pr=nextPay;rr=nextRev;
+    cr=nextCon;pr=nextPay;rr=nextRev;payoutDataRevision++;lastPayoutRenderKey='';
     cons=nextCon.data||[];pays=nextPay.data||[];reversals=nextRev.data||[];
     reversed.clear();
     reversals.forEach(item=>reversed.add(item.transaction_type+':'+item.transaction_id));
@@ -1976,15 +1980,19 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  async function loadAudit(){
    const {data,error}=await client.from('audit_logs').select('time_string,actor_name,action,details,status,category').eq('school_id',ctx.id).order('created_at',{ascending:false}).limit(300);
    if(error){msg('wfAuditMsg','Audit history is unavailable under the current school permissions.',true);$('wfAuditRows').innerHTML='<tr><td colspan="5">No audit records could be loaded.</td></tr>';return;}
-   auditRows=data||[];renderAudit();
+   auditRows=data||[];lastAuditRenderKey='';renderAudit();
  }
+ let lastAuditRenderKey='';
  function renderAudit(){
    const q=($('wfAuditSearch').value||'').toLowerCase(),cat=$('wfAuditCategory').value;
+   const renderKey=q+'|'+cat+'|'+auditRows.length;
+   if(renderKey===lastAuditRenderKey)return;
+   lastAuditRenderKey=renderKey;
    const rows=auditRows.filter(x=>(!cat||x.category===cat)&&[x.time_string,x.actor_name,x.action,x.details,x.status,x.category].some(v=>String(v||'').toLowerCase().includes(q)));
    $('wfAuditRows').innerHTML=rows.length?rows.map(x=>'<tr><td>'+esc(x.time_string||'—')+'</td><td>'+esc(x.actor_name||'—')+'</td><td>'+esc(x.action||'—')+'</td><td>'+esc(x.details||'—')+'</td><td>'+esc(x.status||'—')+'</td></tr>').join(''):'<tr><td colspan="5">No matching audit entries.</td></tr>';
    msg('wfAuditMsg',rows.length+' audit entr'+(rows.length===1?'y':'ies')+' shown.');
  }
- $('wfAuditSearch').addEventListener('input',renderAudit);$('wfAuditCategory').addEventListener('change',renderAudit);
+ $('wfAuditSearch').addEventListener('input',()=>frameRender($('wfAuditRows'),renderAudit));$('wfAuditCategory').addEventListener('change',()=>frameRender($('wfAuditRows'),renderAudit));
  $('wfAuditExport').onclick=()=>{
    const q=($('wfAuditSearch').value||'').toLowerCase(),cat=$('wfAuditCategory').value;
    const filtered=auditRows.filter(x=>(!cat||x.category===cat)&&[x.time_string,x.actor_name,x.action,x.details,x.status,x.category].some(v=>String(v||'').toLowerCase().includes(q)));
