@@ -3780,14 +3780,32 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
  };
  const schoolPdfButton=$('downloadSchoolPdf'); if(schoolPdfButton)schoolPdfButton.onclick=async()=>{
   if(schoolPdfButton.disabled)return;
-  if(!window.html2canvas||!(window.jspdf?.jsPDF||window.jsPDF)){window.showWelfareDialog('alert','The PDF drawing libraries are still loading. Please wait a moment and retry.');return;}
-  const sourceTable=document.querySelector('#wfManageTeacherRows')?.closest('table')||document.querySelector('#wfTeacherRegisterPanel table')||document.querySelector('#schoolTeachers table');
-  if(!sourceTable){window.showWelfareDialog('alert','The teacher register is still loading. Please try again in a moment.');return;}
   const originalButtonHtml=schoolPdfButton.innerHTML;
   let progress=document.getElementById('schoolPdfProgress');
   if(!progress){progress=document.createElement('p');progress.id='schoolPdfProgress';progress.className='muted';progress.setAttribute('role','status');progress.setAttribute('aria-live','polite');schoolPdfButton.insertAdjacentElement('afterend',progress);}
-  schoolPdfButton.disabled=true;schoolPdfButton.setAttribute('aria-busy','true');schoolPdfButton.innerHTML='<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Preparing PDF…';progress.textContent='Preparing your school summary PDF…';progress.className='muted';await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  schoolPdfButton.disabled=true;schoolPdfButton.setAttribute('aria-busy','true');schoolPdfButton.innerHTML='<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Preparing PDF…';progress.textContent='Loading the school teacher register…';progress.className='muted';
   try{
+   const mountPromise=window.__welfareWorkflowMountPromise;
+   if(mountPromise)await mountPromise;
+   const activeCode=String(school.school_code||school.schoolCode||new URLSearchParams(location.search).get('c')||'').trim().toUpperCase();
+   if(!activeCode)throw new Error('The active school code could not be verified. Refresh the portal and retry.');
+   let teacherRows=[];
+   if(typeof window.__welfareEnsureTeacherRegisterLoaded==='function')teacherRows=await window.__welfareEnsureTeacherRegisterLoaded(activeCode);
+   else if(activeCode==='DEMO'&&typeof window.WelfareDemo?.loadTeacherRegister==='function')teacherRows=await window.WelfareDemo.loadTeacherRegister(activeCode);
+   else throw new Error('The school teacher register service is not ready. Refresh the portal and retry.');
+   teacherRows=Array.isArray(teacherRows)?teacherRows:[];
+   if(!teacherRows.length)throw new Error('This school has no registered members. Add members to the teacher register before exporting the executive summary.');
+   const sourceTable=document.createElement('table'),tableHead=document.createElement('thead'),headRow=document.createElement('tr'),tableBody=document.createElement('tbody');
+   ['Staff ID','Name','Phone','Rank','Class','Membership Type','Employer','Status','Profile actions'].forEach(label=>{const cell=document.createElement('th');cell.textContent=label;headRow.appendChild(cell);});
+   tableHead.appendChild(headRow);
+   teacherRows.forEach(teacher=>{
+    const row=document.createElement('tr');
+    [teacher.id,teacher.name,teacher.phone,teacher.rank,teacher.class_name,teacher.membership_type,teacher.employer,teacher.is_active===false?'Inactive':'Active',''].forEach(value=>{const cell=document.createElement('td');cell.textContent=String(value??'—');row.appendChild(cell);});
+    tableBody.appendChild(row);
+   });
+   sourceTable.append(tableHead,tableBody);
+   progress.textContent='Preparing the executive school summary…';
+   await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
    const report=document.createElement('div');
    const issued=new Date(),documentId='TWF-SUM-'+issued.toISOString().replace(/\\D/g,'').slice(0,14)+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
    const code=String(school.school_code||'—'),schoolName=String(school.name||'School Welfare Fund');
@@ -3822,10 +3840,11 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
    table.style.cssText='width:100%;max-width:100%;table-layout:fixed;border-collapse:collapse;border-spacing:0;font-family:Arial,sans-serif;';
    const widths=['11%','18%','11%','13%','10%','13%','13%','11%'];
    table.querySelectorAll('tr').forEach(row=>Array.from(row.children).forEach((cell,index)=>{if(widths[index])cell.style.width=widths[index];}));
-   const totalTeachers=String($('teacherCount')?.textContent||'0');
-   const contributions=String($('contributionTotal')?.textContent||'0.00');
-   const payouts=String($('payoutTotal')?.textContent||'0.00');
-   const balance=String($('netTotal')?.textContent||'0.00');
+   const totalTeachers=String(teacherRows.filter(teacher=>teacher.is_active!==false).length);
+   const formatExecutiveMoney=id=>{const raw=String($(id)?.textContent||'0').trim();const numeric=Number(raw.replace(/[^0-9.\\-]/g,''));return 'GH₵ '+(Number.isFinite(numeric)?numeric.toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2}):raw.replace(/^GH₵\\s*/,''));};
+   const contributions=formatExecutiveMoney('contributionTotal');
+   const payouts=formatExecutiveMoney('payoutTotal');
+   const balance=formatExecutiveMoney('netTotal');
    const qrId='schoolSummaryQr'+Date.now();
    report.className='school-welfare-summary-pdf';report.setAttribute('data-welfare-pdf-staging','');
    report.style.cssText='display:none!important;visibility:hidden!important;position:fixed!important;left:0!important;top:0!important;transform:translateX(-110%)!important;width:297mm!important;min-width:297mm!important;max-width:297mm!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;opacity:1!important;pointer-events:none!important;margin:0;padding:7mm 8mm;box-sizing:border-box;background:#ffffff!important;color:#172235!important;color-scheme:light!important;font-family:Arial,sans-serif;font-size:10px;line-height:1.35;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;';
@@ -3834,7 +3853,7 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
     '</style>'+
     '<header class="sws-head'+(window.getWelfareTenantLogoDataUrl?.(school)?'':' sws-head-no-logo')+'">'+(window.getWelfareTenantLogoDataUrl?.(school)?'<img class="sws-head-logo" style="background:transparent!important;background-color:transparent!important;border:none!important;outline:none!important;box-shadow:none!important;padding:0!important;border-radius:0!important;object-fit:contain;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important" src="'+escPdf(window.getWelfareTenantLogoDataUrl(school))+'" alt="'+escPdf(schoolName)+' school logo">':'')+'<div class="sws-head-copy"><h2>GHANA EDUCATION SERVICE</h2><h1>'+escPdf(schoolName)+'</h1><div class="sws-brand">TEACHERS WELFARE FUND</div><div class="sws-title">SCHOOL WELFARE FUND — SUMMARY STATEMENT</div></div></header>'+
     '<div class="sws-meta"><div><b>Document ID:</b> '+escPdf(documentId)+'<br><b>School code:</b> '+escPdf(code)+'</div><div><b>District:</b> '+escPdf(school.district||'—')+'<br><b>Region:</b> '+escPdf(school.region||'—')+'</div><div style="text-align:right"><b>Date issued:</b> '+escPdf(issued.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}))+'</div></div>'+
-    '<div class="sws-kpis"><div class="sws-kpi"><small>Registered teachers</small><strong>'+escPdf(totalTeachers)+'</strong></div><div class="sws-kpi"><small>Total contributions</small><strong>GH₵ '+escPdf(contributions)+'</strong></div><div class="sws-kpi"><small>Total welfare payouts</small><strong>GH₵ '+escPdf(payouts)+'</strong></div><div class="sws-kpi"><small>Net fund balance</small><strong>GH₵ '+escPdf(balance)+'</strong></div></div>'+
+    '<div class="sws-kpis"><div class="sws-kpi"><small>Registered teachers</small><strong>'+escPdf(totalTeachers)+'</strong></div><div class="sws-kpi"><small>Total contributions</small><strong>'+escPdf(contributions)+'</strong></div><div class="sws-kpi"><small>Total welfare payouts</small><strong>'+escPdf(payouts)+'</strong></div><div class="sws-kpi"><small>Net fund balance</small><strong>'+escPdf(balance)+'</strong></div></div>'+
     '<div class="sws-section"><h3>Teacher register</h3><span>Official school membership register</span></div>'+table.outerHTML+
     '<div class="sws-signatures"><div class="sws-qr"><div id="'+qrId+'"></div></div></div>'+
      '<div class="sws-disclaimer">*** The School welfare is not liable for any financial loss resulting from disclosing your member/account details including password to Third Parties ***</div>';
@@ -3860,7 +3879,7 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
    try{
     const qrNode=report.querySelector('#'+qrId);
     if(window.QRCode&&qrNode)new window.QRCode(qrNode,{text:'https://abcollins93.github.io/TEACHERS-WELFARE/verify.html?c='+encodeURIComponent(code)+'&d='+encodeURIComponent(documentId),width:300,height:300,colorDark:'#030a16',colorLight:'#ffffff',correctLevel:window.QRCode.CorrectLevel.M});
-    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(resolve,80))));
     if(document.fonts?.ready)await document.fonts.ready.catch(()=>{});
     const registerRows=Array.from(report.querySelectorAll('table tbody tr')).filter(row=>row.children.length>1&&!/no matching teachers/i.test(String(row.innerText||row.textContent||''))).length;
     const reportText=String(report.innerText||report.textContent||'').replace(/\s+/g,' ').trim();
