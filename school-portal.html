@@ -3023,7 +3023,15 @@ async function renderTeacherDashboard(profile,school){
    return;
   }
   if(!window.html2pdf)return statementStatus('The PDF service is unavailable. Check your internet connection and try again.',true);
-  statementButton.disabled=true;if($('teacherStatementShare'))$('teacherStatementShare').disabled=true;statementStatus(sharePdf?'Preparing your PDF for sharing…':'Verifying your account and preparing your statement…');
+  const isDownload=!sharePdf,originalButtonHtml=statementButton.innerHTML;
+  statementButton.disabled=true;if($('teacherStatementShare'))$('teacherStatementShare').disabled=true;
+  if(isDownload){
+   statementButton.setAttribute('aria-busy','true');
+   statementButton.innerHTML='<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Preparing PDF…';
+   statementStatus('Preparing your statement PDF…');
+   // Paint the loading indicator before authentication, data retrieval or PDF rendering.
+   await new Promise(resolve=>requestAnimationFrame(resolve));
+  }else statementStatus('Preparing your PDF for sharing…');
   try{
    const {data:{user:verifiedUser},error:authError}=await client.auth.getUser();
    if(authError||!verifiedUser?.id)throw new Error('Your authenticated session could not be verified. Please sign in again.');
@@ -3148,7 +3156,10 @@ async function renderTeacherDashboard(profile,school){
   }catch(error){
    console.error('[Teacher statement] PDF generation failed:',error);
    statementStatus(error?.message||'The PDF could not be generated. Please try again.',true);
-  }finally{statementButton.disabled=false;if($('teacherStatementShare'))$('teacherStatementShare').disabled=false;}
+  }finally{
+   if(isDownload){statementButton.innerHTML=originalButtonHtml;statementButton.removeAttribute('aria-busy');}
+   statementButton.disabled=false;if($('teacherStatementShare'))$('teacherStatementShare').disabled=false;
+  }
  }
  statementButton?.addEventListener('click',()=>downloadTeacherStatement(false));
  $('teacherStatementShare')?.addEventListener('click',()=>{
