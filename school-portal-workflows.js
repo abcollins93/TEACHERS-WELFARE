@@ -1445,7 +1445,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      const totalsRow='<tr class="wf-dm-totals"><th scope="row">MONTHLY TOTAL</th>'+monthTotals.map(amount=>'<td>GHS '+money(amount)+'</td>').join('')+'<td>GHS '+money(grandTotal)+'</td></tr>';
      const qrId='wfDuesMatrixQr_'+documentId.replace(/-/g,'');
      report=document.createElement('div');report.id=reportHostId;report.className='school-welfare-summary-pdf wf-dues-matrix-pdf';
-     report.setAttribute('data-welfare-pdf-staging','');report.style.cssText='display:none!important;position:absolute!important;left:-9999px!important;top:-9999px!important;width:0!important;height:0!important;overflow:hidden!important;pointer-events:none!important;margin:0;padding:6mm 7mm;box-sizing:border-box;background:#ffffff!important;color:#000000!important;font-family:Arial,Helvetica,sans-serif';
+     report.setAttribute('data-welfare-pdf-staging','');report.style.cssText='display:none!important;visibility:hidden!important;opacity:0!important;position:fixed!important;left:-10000px!important;top:0!important;width:281mm!important;min-width:281mm!important;max-width:281mm!important;height:auto!important;min-height:150mm!important;max-height:none!important;overflow:visible!important;pointer-events:none!important;margin:0;padding:6mm 7mm;box-sizing:border-box;background:#ffffff!important;color:#14213d!important;color-scheme:light!important;font-family:Arial,Helvetica,sans-serif';
      report.innerHTML='<style>'+
       '#'+reportHostId+'{background:#fff!important;color:#14213d!important;font-family:Arial,Helvetica,sans-serif!important;font-size:8pt!important;line-height:1.3!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'+
       '#'+reportHostId+' .wf-dm-header{display:grid;grid-template-columns:18mm 1fr 24mm;align-items:center;gap:5mm;margin:0 0 3mm;min-height:19mm}'+
@@ -1480,18 +1480,24 @@ window.initSchoolWorkflows=async function(client,school,refresh){
       '<div class="sws-disclaimer">*** The School welfare is not liable for any financial loss resulting from disclosing your member/account details including password to Third Parties ***</div>';
      if(typeof window.applyWelfarePdfTenantWatermark==='function')window.applyWelfarePdfTenantWatermark(report,schoolName,ctx);
      document.body.appendChild(report);
-     // Temporarily make the export node measurable, but keep it fully off-screen.
-     // The finally block removes it immediately after capture/download preparation.
-     report.style.setProperty('display','block','important');
-     report.style.setProperty('position','absolute','important');
-     report.style.setProperty('left','-100000px','important');
+     // Keep the A4 template hidden while it is assembled. It becomes a
+     // measurable off-screen capture source only for the rasterization window.
+     report.style.setProperty('display','none','important');
+     report.style.setProperty('visibility','hidden','important');
+     report.style.setProperty('opacity','0','important');
+     report.style.setProperty('position','fixed','important');
+     report.style.setProperty('left','-10000px','important');
      report.style.setProperty('top','0','important');
      report.style.setProperty('width','281mm','important');
      report.style.setProperty('min-width','281mm','important');
      report.style.setProperty('max-width','281mm','important');
      report.style.setProperty('height','auto','important');
      report.style.setProperty('min-height','150mm','important');
+     report.style.setProperty('max-height','none','important');
      report.style.setProperty('overflow','visible','important');
+     report.style.setProperty('background','#ffffff','important');
+     report.style.setProperty('color','#14213d','important');
+     report.style.setProperty('color-scheme','light','important');
      report.style.setProperty('pointer-events','none','important');
      const qrNode=report.querySelector('#'+qrId);
      if(includeVerificationQr){
@@ -1518,14 +1524,39 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      }));
      const reportWidth=Math.ceil(report.getBoundingClientRect().width||report.scrollWidth);
      const reportHeight=Math.ceil(report.getBoundingClientRect().height||report.scrollHeight);
-     if(!reportWidth||!reportHeight||!report.querySelector('.wf-dm-table tbody tr'))throw new Error('The dues matrix report did not finish rendering. Please try again.');
+     const tableBody=report.querySelector('.wf-dm-table tbody');
+     const tableRows=tableBody?.querySelectorAll('tr')?.length||0;
+     const reportText=String(report.textContent||'').replace(/\\s+/g,' ').trim();
+     if(reportWidth<700||reportHeight<100||tableRows<2||reportText.length<100||!report.querySelector('.wf-dm-header h1')||!report.querySelector('.wf-dm-meta'))throw new Error('The dues matrix report did not finish rendering with its school header, reporting year and member rows. Please try again.');
      const pdfOptions={margin:0,filename,image:{type:'png'},html2canvas:{scale:3,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,scrollX:0,scrollY:0,windowWidth:Math.max(reportWidth,document.documentElement.clientWidth),windowHeight:Math.max(reportHeight,document.documentElement.clientHeight),width:reportWidth,height:reportHeight},jsPDF:{unit:'mm',format:'a4',orientation:'landscape',compress:true},pagebreak:{mode:['css'],avoid:['tr','.wf-dm-bottom']}};
-     const pdfWorker=window.html2pdf().set(pdfOptions).from(report);
-     await pdfWorker.toCanvas();
-     const renderedCanvas=await pdfWorker.get('canvas');
-     if(!renderedCanvas||renderedCanvas.width<1||renderedCanvas.height<1)throw new Error('The dues matrix page could not be rendered. No blank PDF was downloaded.');
-     const renderedPixels=renderedCanvas.getContext('2d',{willReadFrequently:true})?.getImageData(0,0,Math.min(renderedCanvas.width,32),Math.min(renderedCanvas.height,32)).data;
-     if(!renderedPixels||renderedCanvas.toDataURL('image/png').length<1000)throw new Error('The dues matrix page rendered empty. Please try again.');
+     if(typeof window.html2canvas!=='function')throw new Error('The PDF image renderer is unavailable. Refresh the portal and try again.');
+     // Match the proven member-statement pipeline: capture the populated DOM
+     // directly, then hand the verified canvas to html2pdf for A4 pagination.
+     // html2pdf.from(report).toCanvas() can clone an off-screen, zero-viewport
+     // staging node into an entirely white canvas on mobile browsers.
+     report.style.setProperty('display','block','important');
+     report.style.setProperty('visibility','visible','important');
+     report.style.setProperty('opacity','1','important');
+     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+     const renderedCanvas=await window.html2canvas(report,pdfOptions.html2canvas);
+     if(!renderedCanvas||renderedCanvas.width<100||renderedCanvas.height<100)throw new Error('The dues matrix canvas dimensions are invalid. No blank PDF was downloaded.');
+     const context=renderedCanvas.getContext('2d',{willReadFrequently:true});
+     const pixels=context?.getImageData(0,0,renderedCanvas.width,renderedCanvas.height).data;
+     if(!pixels)throw new Error('The dues matrix canvas could not be verified. No blank PDF was downloaded.');
+     let foregroundSamples=0,opaqueSamples=0;
+     const totalPixels=Math.floor(pixels.length/4),sampleStride=Math.max(1,Math.floor(totalPixels/20000));
+     for(let index=0;index<totalPixels;index+=sampleStride){
+      const offset=index*4,red=pixels[offset],green=pixels[offset+1],blue=pixels[offset+2],alpha=pixels[offset+3];
+      if(alpha>0)opaqueSamples++;
+      if(alpha>0&&(red<242||green<242||blue<242))foregroundSamples++;
+     }
+     const pngData=renderedCanvas.toDataURL('image/png');
+     if(opaqueSamples<100||foregroundSamples<50||pngData.length<5000)throw new Error('The dues matrix canvas appears blank after capture (canvas '+renderedCanvas.width+'×'+renderedCanvas.height+', foreground samples '+foregroundSamples+'). No blank PDF was downloaded.');
+     // Restore the hidden-template rule immediately after rasterization.
+     report.style.setProperty('display','none','important');
+     report.style.setProperty('visibility','hidden','important');
+     report.style.setProperty('opacity','0','important');
+     const pdfWorker=window.html2pdf().set(pdfOptions).from(renderedCanvas);
      const blob=await pdfWorker.toPdf().output('blob');
      report.remove();report=null; // Release the off-screen staging node before cache/download work.
      if(!(blob instanceof Blob)||blob.size<1000)throw new Error('The generated dues matrix PDF is empty. Please try again.');
@@ -1542,7 +1573,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      console.error('[School Welfare] Dues matrix PDF failed:',error);
      if(status){status.textContent=error?.message||'The dues matrix PDF could not be generated.';status.className='error';}
     }finally{
-     report?.remove();button.disabled=false;button.removeAttribute('aria-busy');button.innerHTML=original;
+     if(report){report.style.setProperty('display','none','important');report.style.setProperty('visibility','hidden','important');report.style.setProperty('opacity','0','important');report.remove();report=null;}
+     button.disabled=false;button.removeAttribute('aria-busy');button.innerHTML=original;
     }
    });
   }
