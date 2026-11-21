@@ -1324,8 +1324,11 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const options='<option value="">Choose teacher</option>'+teachers.filter(t=>t.is_active!==false).map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name)+' ('+esc(t.id)+')</option>').join('');
  ['wfConTeacher','wfPayTeacher','wfStatementTeacher'].forEach(id=>{const select=$(id);if(select&&select.innerHTML!==options)select.innerHTML=options;});
  const reversalCell=(type,x)=>reversed.has(type+':'+x.id)?'<strong class="wf-reversed-label">REVERSED</strong> <span class="muted">· '+esc(reversals.find(r=>r.transaction_type===type&&String(r.transaction_id)===String(x.id))?.reason||'Reason recorded')+'</span>':'<button type="button" class="wf-reverse-action" data-wf-reverse="'+type+'" data-wf-id="'+esc(x.id)+'"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Reverse</button>';
+ let lastContributionLedgerRender=null;
  const renderContributionLedger=()=>{
     const q=String($('wfLedgerSearch')?.value||'').trim().toLowerCase(),month=$('wfLedgerMonth')?.value||'';
+    if(lastContributionLedgerRender&&lastContributionLedgerRender.q===q&&lastContributionLedgerRender.month===month&&lastContributionLedgerRender.cons===cons&&lastContributionLedgerRender.activeCons===activeCons&&lastContributionLedgerRender.activePays===activePays&&lastContributionLedgerRender.teachers===teachers&&lastContributionLedgerRender.reversed===reversed&&lastContributionLedgerRender.contributionError===!!cr.error&&lastContributionLedgerRender.payoutError===!!pr.error)return;
+    lastContributionLedgerRender={q,month,cons,activeCons,activePays,teachers,reversed,contributionError:!!cr.error,payoutError:!!pr.error};
     const rows=cons.filter(x=>(!month||String(x.date||'').startsWith(month))&&[x.teacher_id,x.reference,teacherById.get(String(x.teacher_id))?.name].some(v=>String(v||'').toLowerCase().includes(q))).sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||String(a.id||'').localeCompare(String(b.id||'')));
     const totalCon=activeCons.reduce((n,x)=>n+Number(x.amount||0),0),totalPay=activePays.reduce((n,x)=>n+Number(x.amount||0),0);
     $('wfConTotal').textContent=cr.error?'Unavailable':'GHS '+'GHS '+money(totalCon);
@@ -1340,7 +1343,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      return '<tr><td>'+teacherLabel(x.teacher_id)+'</td><td>'+esc(monthYear)+'</td><td>'+esc(x.reference||'—')+'</td><td>GHS '+money(x.amount)+'</td><td class="wf-payout-amount">GHS '+money(runningTotal)+'</td><td>'+esc(d||'—')+'</td><td>'+action+'</td></tr>';
     }).join(''):'<tr><td colspan="7">No matching contributions.</td></tr>';
   };
-  renderContributionLedger();$('wfLedgerSearch').addEventListener('input',()=>frameRender($('wfConRows'),renderContributionLedger));$('wfLedgerMonth').addEventListener('change',()=>frameRender($('wfConRows'),renderContributionLedger));
+  frameRender($('wfConRows'),renderContributionLedger);$('wfLedgerSearch').addEventListener('input',()=>frameRender($('wfConRows'),renderContributionLedger));$('wfLedgerMonth').addEventListener('change',()=>frameRender($('wfConRows'),renderContributionLedger));
   let lastDuesMatrixRender=null;
   const renderDuesMatrix=()=>{
     const rowsHost=$('wfDuesMatrixRows'),status=$('wfDuesMatrixStatus');
@@ -1553,8 +1556,11 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     }
    });
   }
-  const renderPayoutLedger=()=>{
+  let lastPayoutLedgerRender=null;
+ const renderPayoutLedger=()=>{
     const q=String($('wfPayoutSearch')?.value||'').trim().toLowerCase();
+    if(lastPayoutLedgerRender&&lastPayoutLedgerRender.q===q&&lastPayoutLedgerRender.pays===pays&&lastPayoutLedgerRender.activePays===activePays&&lastPayoutLedgerRender.activeCons===activeCons&&lastPayoutLedgerRender.teachers===teachers&&lastPayoutLedgerRender.reversed===reversed&&lastPayoutLedgerRender.payoutError===!!pr.error&&lastPayoutLedgerRender.contributionError===!!cr.error)return;
+    lastPayoutLedgerRender={q,pays,activePays,activeCons,teachers,reversed,payoutError:!!pr.error,contributionError:!!cr.error};
     const rows=pays.filter(x=>[x.teacher_id,window.displayWelfareReason(x.reason),x.reference,teacherById.get(String(x.teacher_id))?.name].some(v=>String(v||'').toLowerCase().includes(q)));
     const totalPayout=activePays.reduce((n,x)=>n+Number(x.amount||0),0),currentFund=activeCons.reduce((n,x)=>n+Number(x.amount||0),0)-totalPayout,activeMembers=teachers.filter(t=>t.is_active!==false).length;
     $('wfPayoutTotal').textContent=pr.error?'Unavailable':'GHS '+money(totalPayout);
@@ -1562,7 +1568,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     $('wfPayoutActiveMembers').textContent=tr.error?'Unavailable':String(activeMembers);
     $('wfPayRows').innerHTML=pr.error?'<tr><td colspan="6">Payout records could not be loaded. Check the school account permissions and try again.</td></tr>':rows.length?rows.map(x=>{const rawDate=String(x.date||'');const displayDate=rawDate&&/^\d{4}-\d{2}-\d{2}/.test(rawDate)?new Date(rawDate.slice(0,10)+'T00:00:00').toLocaleDateString('en-GB'):(rawDate||'—');return '<tr><td class="wf-payout-reference">'+esc(x.reference||'—')+'</td><td class="wf-payout-beneficiary">'+teacherLabel(x.teacher_id)+'</td><td>'+esc(window.displayWelfareReason(x.reason||'Welfare support'))+'</td><td class="wf-payout-amount">GHS '+money(x.amount)+'</td><td>'+esc(displayDate)+'</td><td>'+reversalCell('payout',x)+'</td></tr>'}).join(''):'<tr><td colspan="6">No matching payouts.</td></tr>';
   };
-  renderPayoutLedger();$('wfPayoutSearch').addEventListener('input',renderPayoutLedger);
+  frameRender($('wfPayRows'),renderPayoutLedger);$('wfPayoutSearch').addEventListener('input',()=>frameRender($('wfPayRows'),renderPayoutLedger));
   // Reload transaction data in place; keep the authenticated dashboard and
   // currently selected section mounted after a contribution or payout is saved.
   const refreshWorkflow=async()=>{
