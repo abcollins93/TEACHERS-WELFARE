@@ -1808,8 +1808,14 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const runWelfarePdf=async(button,statusId,successText,buildOptions,sharePdf=false)=>{
    if(sharePdf){sharePreparedAdminReport(button,statusId,buildOptions);return;}
    if(button.disabled)return;
-   button.disabled=true;msg(statusId,'Preparing PDF…');
+   const originalButtonMarkup=button.innerHTML;
+   button.disabled=true;
+   button.setAttribute('aria-busy','true');
+   button.innerHTML='<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Preparing PDF…';
+   msg(statusId,'Preparing PDF…');
    try{
+     // Let the browser paint the immediate pressed/busy state before A4 staging,
+     // image decoding, canvas capture, and PDF encoding begin.
      await yieldToBrowser();
      if(typeof window.generateTenantWelfarePdf!=='function')throw new Error('The PDF generator is unavailable. Reload the portal and try again.');
      const pdfOptions=buildOptions();
@@ -1818,7 +1824,11 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      if(typeof window.cacheWelfareStatementPdf==='function')Promise.resolve(window.cacheWelfareStatementPdf(generated.blob,generated.filename,cacheDetails)).catch(error=>console.warn('[School Welfare PDF] Local PDF cache deferred:',error?.message||error));
      downloadWorkflowBlob(generated.blob,generated.filename,statusId,successText,'Tap here to view downloaded PDF');
    }catch(error){reportPdfFailure('[School Welfare PDF] Report download failed',error,statusId,'The PDF could not be generated. Check your connection and try again.');}
-   finally{button.disabled=false;}
+   finally{
+     button.disabled=false;
+     button.removeAttribute('aria-busy');
+     button.innerHTML=originalButtonMarkup;
+   }
  };
  $('wfMonthlyPdf').addEventListener('click',()=>{
    const selectedMonth=$('wfReportMonth').value,selectedYear=$('wfReportYear').value;
