@@ -1540,7 +1540,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      const reportWidth=Math.ceil(report.getBoundingClientRect().width||report.scrollWidth);
      const reportHeight=Math.ceil(report.getBoundingClientRect().height||report.scrollHeight);
      if(!reportWidth||!reportHeight||!report.querySelector('.wf-dm-table tbody tr'))throw new Error('The dues matrix report did not finish rendering. Please try again.');
-     const pdfOptions={margin:0,filename,image:{type:'png'},html2canvas:{scale:3,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,scrollX:0,scrollY:0,windowWidth:Math.max(reportWidth,document.documentElement.clientWidth),windowHeight:Math.max(reportHeight,document.documentElement.clientHeight),width:reportWidth,height:reportHeight},jsPDF:{unit:'mm',format:'a4',orientation:'landscape',compress:true},pagebreak:{mode:['css'],avoid:['tr','.wf-dm-bottom']}};
+     const pdfOptions={margin:0,filename,image:{type:'png'},html2canvas:{scale:Math.min(1.5,window.devicePixelRatio||1.5),useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,scrollX:0,scrollY:0,windowWidth:Math.max(reportWidth,document.documentElement.clientWidth),windowHeight:Math.max(reportHeight,document.documentElement.clientHeight),width:reportWidth,height:reportHeight},jsPDF:{unit:'mm',format:'a4',orientation:'landscape',compress:true},pagebreak:{mode:['css'],avoid:['tr','.wf-dm-bottom']}};
      const pdfWorker=window.html2pdf().set(pdfOptions).from(report);
      await pdfWorker.toCanvas();
      // Canvas capture is complete; immediately hide the staging DOM before
@@ -1551,7 +1551,9 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      const renderedCanvas=await pdfWorker.get('canvas');
      if(!renderedCanvas||renderedCanvas.width<1||renderedCanvas.height<1)throw new Error('The dues matrix page could not be rendered. No blank PDF was downloaded.');
      const renderedPixels=renderedCanvas.getContext('2d',{willReadFrequently:true})?.getImageData(0,0,Math.min(renderedCanvas.width,32),Math.min(renderedCanvas.height,32)).data;
-     if(!renderedPixels||renderedCanvas.toDataURL('image/png').length<1000)throw new Error('The dues matrix page rendered empty. Please try again.');
+     const renderedPng=await new Promise(resolve=>renderedCanvas.toBlob(resolve,'image/png'));
+     if(!renderedPixels||!renderedPng||renderedPng.size<1000)throw new Error('The dues matrix page rendered empty. Please try again.');
+     await yieldToBrowser();
      const blob=await pdfWorker.toPdf().output('blob');
      report.remove();report=null; // Release the off-screen staging node before cache/download work.
      if(!(blob instanceof Blob)||blob.size<1000)throw new Error('The generated dues matrix PDF is empty. Please try again.');
