@@ -4698,19 +4698,12 @@ window.generateTenantWelfarePdf=async function(o){
   if(document.fonts?.ready){try{await document.fonts.ready;}catch(fontError){console.warn('[Welfare PDF] Font readiness warning:',fontError?.message||fontError);}}
   await waitForPdfFrame();
   await waitForPdfFrame();
-  // Briefly reveal the off-screen node for accurate dimensions, then hide it
-  // again before canvas capture begins.
-  host.style.setProperty('display','block','important');
-  host.style.setProperty('visibility','visible','important');
-  host.style.setProperty('opacity','1','important');
+  // Keep the live A4 staging node display:none!important until the actual
+  // capture begins. Text and required-section checks do not require layout.
   const reportText=String(host.textContent||'').replace(/\\s+/g,' ').trim();
-  const reportWidth=Math.max(794,Math.ceil(host.scrollWidth||host.getBoundingClientRect().width||0));
-  const reportHeight=Math.ceil(host.scrollHeight||host.getBoundingClientRect().height||0);
-  host.style.setProperty('display','none','important');
-  host.style.setProperty('visibility','hidden','important');
-  host.style.setProperty('opacity','0','important');
-  if(reportWidth<=0||reportHeight<=0||reportText.length<200||!host.querySelector('.twf-head')){
-   throw new Error('The statement content did not finish laying out. No blank PDF was created.');
+  let reportWidth=794,reportHeight=1123;
+  if(reportText.length<200||!host.querySelector('.twf-head')){
+   throw new Error('The statement content did not finish building. No blank PDF was created.');
   }
   if(individual&&!host.querySelector('.member-info-section table tbody tr')){
    throw new Error('The member information table is missing. No blank PDF was created.');
@@ -4780,15 +4773,10 @@ window.generateTenantWelfarePdf=async function(o){
   // never prevent the member details, transaction tables, QR block or footer
   // from being exported.
   const statementContentReady=()=>{
-   const previousDisplay=host.style.getPropertyValue('display');
-   const previousPriority=host.style.getPropertyPriority('display');
-   if(previousDisplay==='none')host.style.setProperty('display','block','important');
    const text=String(host.textContent||'').replace(/\\s+/g,' ').trim();
    const memberTable=host.querySelector('.member-info-section table tbody');
    const hasStatementSections=!individual||Boolean(memberTable&&host.querySelector('.twf-member-contributions tbody tr')&&host.querySelector('.twf-member-payouts tbody tr'));
-   const ready=host.isConnected&&host.getBoundingClientRect().width>=700&&host.scrollHeight>0&&text.length>=200&&Boolean(host.querySelector('.twf-head'))&&hasStatementSections;
-   if(previousDisplay==='none')host.style.setProperty('display','none',previousPriority||'important');
-   return ready;
+   return host.isConnected&&host.getBoundingClientRect().width>=700&&host.scrollHeight>0&&text.length>=200&&Boolean(host.querySelector('.twf-head'))&&hasStatementSections;
   };
   const captureStatement=async()=>{
    // Keep the live staging node outside the viewport. html2canvas moves only
@@ -4818,6 +4806,15 @@ window.generateTenantWelfarePdf=async function(o){
    host.style.setProperty('color-scheme','light','important');
    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
    try{
+    // Measure only while the renderer is actively capturing. The staging node
+    // is restored to display:none!important in this function's finally block.
+    reportWidth=Math.max(794,Math.ceil(host.scrollWidth||host.getBoundingClientRect().width||794));
+    reportHeight=Math.max(1123,Math.ceil(host.scrollHeight||host.getBoundingClientRect().height||1123));
+    pdfOptions.html2canvas.width=reportWidth;
+    pdfOptions.html2canvas.height=reportHeight;
+    pdfOptions.html2canvas.windowWidth=Math.max(794,reportWidth,document.documentElement.clientWidth);
+    pdfOptions.html2canvas.windowHeight=Math.max(reportHeight,document.documentElement.clientHeight);
+    if(!statementContentReady())throw new Error('The populated statement content is not ready for capture.');
     if(typeof window.html2canvas!=='function')throw new Error('The statement rendering engine is unavailable. Refresh the portal and try again.');
     // Bypass html2pdf's internal DOM-clone/container pipeline. The v4 clone
     // diagnostics proved that its cloned statement was populated and visible,
@@ -4911,7 +4908,8 @@ window.generateTenantWelfarePdf=async function(o){
     }else image.remove();
    });
    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
-   if(!statementContentReady())throw new Error('The populated statement could not be recovered after an image loading error. No blank PDF was created.');
+   // captureStatement performs readiness and dimensions checks after it
+   // temporarily reveals the off-screen node for the active capture only.
    captured=await captureStatement();
   }
   const pdfWorker=captured.worker;
