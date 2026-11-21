@@ -1976,7 +1976,38 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
 #dashboard #wfTeacherRegisterPanel .wf-teacher-register-table{margin-top:12px}
 #dashboard #schoolName,#dashboard .top h1,#dashboard .school-chip strong{max-width:100%}
 }
-</style></head><body>
+</style>
+<style id="mobile-scroll-paint-tuning">
+/* Mobile scroll/paint performance: reduce large blur and shadow surfaces without
+   changing layout, navigation geometry, PDF capture templates or tenant flows. */
+@media (max-width: 768px) {
+ html { scroll-behavior: auto !important; }
+ .panel, .metric, .support, .top, .school-chip,
+ #schoolOverview .portal-hero-badge,
+ #page-loader {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+ }
+ .panel, .metric, .support {
+  box-shadow: 0 3px 12px rgba(11,29,58,.045) !important;
+ }
+ .top { box-shadow: none !important; }
+ .sidebar { box-shadow: 8px 0 22px rgba(3,10,22,.16) !important; }
+ .metric, .panel, .support { transition: none !important; }
+ button:hover, .metric:hover { transform: none !important; }
+ #adminActivityTicker .admin-ticker-track,
+ .teacher-ticker-track { will-change: auto; }
+ .table-wrap, .wf-dues-matrix-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+ }
+}
+@media (max-width: 480px) {
+ .panel, .support { border-radius: 14px; }
+ .metric { border-radius: 14px; }
+}
+</style>
+</head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading Teachers Welfare Portal" aria-hidden="false">
  <div class="page-loader-card">
