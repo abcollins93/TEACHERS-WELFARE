@@ -3785,8 +3785,15 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
   if(!progress){progress=document.createElement('p');progress.id='schoolPdfProgress';progress.className='muted';progress.setAttribute('role','status');progress.setAttribute('aria-live','polite');schoolPdfButton.parentElement.insertAdjacentElement('afterend',progress);}
   schoolPdfButton.disabled=true;schoolPdfButton.setAttribute('aria-busy','true');schoolPdfButton.innerHTML='<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Preparing PDF…';progress.textContent='Loading the school teacher register…';progress.className='muted';
   try{
-   const mountPromise=window.__welfareWorkflowMountPromise;
-   if(mountPromise)await mountPromise;
+   // DEMO has its own idle-scheduled mount promise; live schools publish
+   // theirs after dashboard hydration. Force the appropriate mount if needed.
+   if(isDemoMode){
+    const demoMount=demoWorkflowMountPromise||scheduleDemoAdminWorkflows(school);
+    if(demoMount)await demoMount;
+   }else if(window.__welfareWorkflowMountPromise)await window.__welfareWorkflowMountPromise;
+   if(typeof window.__welfareEnsureTeacherRegisterLoaded!=='function'&&typeof window.initSchoolWorkflows==='function'){
+    await window.initSchoolWorkflows(client,school,showDashboard);
+   }
    const activeCode=String(school.school_code||school.schoolCode||new URLSearchParams(location.search).get('c')||'').trim().toUpperCase();
    if(!activeCode)throw new Error('The active school code could not be verified. Refresh the portal and retry.');
    let teacherRows=[],registerLoadError=null;
