@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_VERSION='twf-pwa-shell-v27-executive-summary-canvas';
+const CACHE_VERSION='twf-pwa-shell-v28-executive-summary-jspdf';
 const STATEMENT_CACHE='twf-cached-statements-v1';
 const NETWORK_TIMEOUT_MS=12000;
 async function reportNetworkState(state,detail){
@@ -22,19 +22,20 @@ const SHELL_ASSETS=[
  './',
  './index.html',
  './school-portal.html',
- './demo-sandbox.js?v=20261121-executive-summary-canvas-v1',
+ './demo-sandbox.js?v=20261121-executive-summary-jspdf-v2',
  './set-password.html',
  './g.html',
  './offline.html',
  './manifest.json',
  './pwa.js',
- './school-portal-workflows.js?v=20261121-executive-summary-canvas-v1',
+ './school-portal-workflows.js?v=20261121-executive-summary-jspdf-v2',
  './icons/welfare-portal.svg'
 ];
 const CDN_ASSETS=[
  'https://cdn.tailwindcss.com',
  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css',
+ 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
  'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',
  'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',
  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
