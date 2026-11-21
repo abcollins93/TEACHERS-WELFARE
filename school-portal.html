@@ -54,7 +54,7 @@
 (function(){
  const query=new URLSearchParams(window.location.search);
  if(query.has('c')&&String(query.get('c')||'').trim().toUpperCase()==='DEMO'){
-  document.write('<script src="./demo-sandbox.js?v=20261121-tenant-render-routing-v8"><\/script>');
+  document.write('<script src="./demo-sandbox.js?v=20261121-tenant-hydration-render-v9"><\/script>');
  }
 })();
 </script><script>
@@ -4332,7 +4332,7 @@ if(isDemoMode){
 }
 })();
 </script>
-<script src="school-portal-workflows.js?v=20261121-tenant-render-routing-v8"></script>
+<script src="school-portal-workflows.js?v=20261121-tenant-hydration-render-v9"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
@@ -4414,10 +4414,25 @@ if(isDemoMode){
     // Resolve the requested node on every attempt and re-apply view state only
     // once it exists, so a first click during initialization cannot strand the UI.
     const findTarget = () => document.getElementById(requestedId);
+    const adminWorkflowTargets=['teacherProfileViewer','schoolTeachers','wfAdminContributionPanel','wfAdminPayoutPanel','wfStatementPanel','wfReportsPanel','wfAdminPanel','wfAuditPanel'];
+    if(window.__welfareCurrentRole==='admin'&&adminWorkflowTargets.includes(requestedId)){
+      const pendingMount=window.__welfareWorkflowMountPromise;
+      if(pendingMount)await Promise.race([pendingMount.catch(()=>false),new Promise(resolve=>window.setTimeout(()=>resolve(false),22000))]);
+    }
     let target = findTarget();
     if(requestedId==='teacherProfileViewer'&&window.__welfareCurrentRole!=='teacher'){
-      const pendingMount=window.__welfareWorkflowMountPromise;if(pendingMount)await Promise.race([pendingMount.catch(()=>false),new Promise(resolve=>window.setTimeout(()=>resolve(false),22000))]);
-      target=findTarget();if(typeof window.__welfareRefreshAdminProfileViewer==='function')window.__welfareRefreshAdminProfileViewer();
+      if(typeof window.__welfareRefreshAdminProfileViewer==='function')await window.__welfareRefreshAdminProfileViewer();
+      target=findTarget();
+    }
+    if(window.__welfareCurrentRole==='admin'&&['wfAdminContributionPanel','wfAdminPayoutPanel'].includes(requestedId)&&typeof window.__welfareRefreshAdminWorkspace==='function'){
+      try{await Promise.race([window.__welfareRefreshAdminWorkspace(),new Promise(resolve=>window.setTimeout(()=>resolve(false),25000))]);}
+      catch(refreshError){console.warn('[School Welfare] Financial workspace refresh deferred:',refreshError?.message||refreshError);}
+      target=findTarget();
+    }
+    if(window.__welfareCurrentRole==='admin'&&requestedId==='schoolTeachers'&&typeof window.__welfareEnsureTeacherRegisterLoaded==='function'){
+      try{await window.__welfareEnsureTeacherRegisterLoaded(window.__welfareCurrentSchool?.school_code);}
+      catch(registerError){console.warn('[School Welfare] Teacher register refresh deferred:',registerError?.message||registerError);}
+      target=findTarget();
     }
     if(requestedId==='wfTeacherPanel'&&window.__welfareCurrentRole==='teacher'){
       const ready=window.__welfareMemberProfileReady;if(ready)await Promise.race([ready,new Promise(resolve=>window.setTimeout(()=>resolve(false),22000))]);
