@@ -85,19 +85,32 @@
  });
 })();
 </script><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><script>
+// Capture-phase delegation survives gateway rerenders and auth handlers that
+// stop bubbling. Resolve the paired field by id first, then by its wrapper.
 document.addEventListener('click',event=>{
- const toggle=event.target.closest('.password-toggle');
+ const path=typeof event.composedPath==='function'?event.composedPath():[];
+ const toggle=path.find(node=>node&&node.matches&&node.matches('.password-toggle'))
+  ||(event.target&&event.target.closest?event.target.closest('.password-toggle'):null);
  if(!toggle)return;
- const input=document.getElementById(toggle.dataset.passwordTarget);
+ event.preventDefault();
+ const wrapper=toggle.closest('.password-field');
+ const targetId=toggle.getAttribute('data-password-target');
+ const input=(targetId&&document.getElementById(targetId))||(wrapper&&wrapper.querySelector('input'));
  if(!input)return;
  const showing=input.type==='password';
  input.type=showing?'text':'password';
  toggle.setAttribute('aria-label',showing?'Hide password':'Show password');
  toggle.setAttribute('title',showing?'Hide password':'Show password');
  toggle.setAttribute('aria-pressed',String(showing));
- toggle.innerHTML='<i class="fa-solid '+(showing?'fa-eye-slash':'fa-eye')+'" aria-hidden="true"></i>';
+ const icon=toggle.querySelector('i');
+ if(icon){
+  icon.classList.toggle('fa-eye',!showing);
+  icon.classList.toggle('fa-eye-slash',showing);
+ }else{
+  toggle.innerHTML='<i class="fa-solid '+(showing?'fa-eye-slash':'fa-eye')+'" aria-hidden="true"></i>';
+ }
  input.focus({preventScroll:true});
-});
+},true);
 
 </script><script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script><script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" media="print" onload="this.media='all'">
 <style>
