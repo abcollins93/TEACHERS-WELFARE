@@ -1522,6 +1522,11 @@ window.initSchoolWorkflows=async function(client,school,refresh){
       if(typeof image.decode==='function'){try{await image.decode();return;}catch(_){}}
       await new Promise(resolve=>{image.addEventListener('load',resolve,{once:true});image.addEventListener('error',resolve,{once:true});});
      }));
+     // Reveal only for layout measurement and rasterization. This node is
+     // fixed off-screen, so it cannot flash over the portal on mobile.
+     report.style.setProperty('display','block','important');
+     report.style.setProperty('visibility','visible','important');
+     report.style.setProperty('opacity','1','important');
      const reportWidth=Math.ceil(report.getBoundingClientRect().width||report.scrollWidth);
      const reportHeight=Math.ceil(report.getBoundingClientRect().height||report.scrollHeight);
      const tableBody=report.querySelector('.wf-dm-table tbody');
