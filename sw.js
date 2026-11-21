@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_VERSION='twf-pwa-shell-v23-profile-contact-cedi';
+const CACHE_VERSION='twf-pwa-shell-v24-pdf-name-guard';
 const STATEMENT_CACHE='twf-cached-statements-v1';
 const NETWORK_TIMEOUT_MS=12000;
 async function reportNetworkState(state,detail){
@@ -22,13 +22,13 @@ const SHELL_ASSETS=[
  './',
  './index.html',
  './school-portal.html',
- './demo-sandbox.js?v=20261121-profile-contact-cedi-v2',
+ './demo-sandbox.js?v=20261121-pdf-name-guard-v3',
  './set-password.html',
  './g.html',
  './offline.html',
  './manifest.json',
  './pwa.js',
- './school-portal-workflows.js?v=20261121-profile-contact-cedi-v2',
+ './school-portal-workflows.js?v=20261121-pdf-name-guard-v3',
  './icons/welfare-portal.svg'
 ];
 const CDN_ASSETS=[
