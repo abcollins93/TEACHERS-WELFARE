@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_VERSION='twf-pwa-shell-v25-teachers-members-mobile';
+const CACHE_VERSION='twf-pwa-shell-v26-summary-export-recovery';
 const STATEMENT_CACHE='twf-cached-statements-v1';
 const NETWORK_TIMEOUT_MS=12000;
 async function reportNetworkState(state,detail){
@@ -22,13 +22,13 @@ const SHELL_ASSETS=[
  './',
  './index.html',
  './school-portal.html',
- './demo-sandbox.js?v=20261121-teachers-members-mobile-v1',
+ './demo-sandbox.js?v=20261121-summary-export-recovery-v1',
  './set-password.html',
  './g.html',
  './offline.html',
  './manifest.json',
  './pwa.js',
- './school-portal-workflows.js?v=20261121-teachers-members-mobile-v1',
+ './school-portal-workflows.js?v=20261121-summary-export-recovery-v1',
  './icons/welfare-portal.svg'
 ];
 const CDN_ASSETS=[
