@@ -808,16 +808,29 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   }
  }
  let standardMonthlyDues=0;
- // This workflow-only preference read must not stall account Settings or the
- // rest of the administrator workspace. Use the saved value when it responds;
- // otherwise keep the safe zero/default and allow the workflow to finish mounting.
+ const updateDashboardStandardDues=amount=>{
+  const metric=$('standardDuesMetric');
+  if(!metric||$('teacherStandardMonthlyDuesAmount'))return;
+  const value=Number(amount);
+  if(Number.isFinite(value)&&value>=0)metric.textContent='GHS '+value.toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
+ };
+ // Read the school-scoped configured rate. The dashboard shell is already
+ // visible by the time this lazy workflow mounts, so hydrate its metric here
+ // rather than relying on a settings input that is created later.
  const initialDuesResult=await Promise.race([
   client.from('system_settings').select('value').eq('school_id',ctx.id).eq('key','standard_dues').maybeSingle(),
   new Promise(resolve=>setTimeout(()=>resolve({data:null,error:{message:'Timed out while loading standard monthly dues.'}}),8000))
  ]);
  const {data:initialDuesSetting,error:initialDuesError}=initialDuesResult||{};
- if(!initialDuesError&&initialDuesSetting){standardMonthlyDues=Number(initialDuesSetting.value||0);$('wfMonthlyDues').value=standardMonthlyDues;}
- else if(initialDuesError)console.warn('[School settings] Could not load saved standard monthly dues:',initialDuesError.message);
+ const configuredDuesValue=initialDuesSetting?.value;
+ const configuredDues= configuredDuesValue!==null&&configuredDuesValue!==undefined&&String(configuredDuesValue).trim()!==''?Number(configuredDuesValue):NaN;
+ const fallbackCandidates=[ctx.monthly_dues,ctx.standard_monthly_dues,ctx.standardMonthlyDues,window.schoolSettings?.monthly_dues,20];
+ const fallbackDues=fallbackCandidates.map(Number).find(value=>Number.isFinite(value)&&value>=0);
+ standardMonthlyDues=!initialDuesError&&Number.isFinite(configuredDues)&&configuredDues>=0?configuredDues:(fallbackDues??20);
+ const duesInput=$('wfMonthlyDues');
+ if(duesInput)duesInput.value=String(standardMonthlyDues);
+ updateDashboardStandardDues(standardMonthlyDues);
+ if(initialDuesError)console.warn('[School settings] Could not load saved standard monthly dues; using the available school/default rate:',initialDuesError.message);
  // Capture the monthly dues form submit before any browser-level form navigation can occur.
  const duesForm=$('wfDuesForm');
  if(duesForm){
@@ -835,6 +848,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
        );
        if(error)throw error;
        standardMonthlyDues=value;
+       updateDashboardStandardDues(standardMonthlyDues);
        const auditOk=await audit(client,ctx,'Update monthly dues','GHS '+value.toFixed(2));
        msg('wfDuesMsg',auditOk?'Standard monthly dues updated successfully.':'Monthly dues were saved, but the audit entry could not be recorded.',!auditOk);
      }catch(error){
