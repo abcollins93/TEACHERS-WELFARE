@@ -1327,8 +1327,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  let lastContributionLedgerRender=null;
  const renderContributionLedger=()=>{
     const q=String($('wfLedgerSearch')?.value||'').trim().toLowerCase(),month=$('wfLedgerMonth')?.value||'';
-    if(lastContributionLedgerRender&&lastContributionLedgerRender.q===q&&lastContributionLedgerRender.month===month&&lastContributionLedgerRender.cons===cons&&lastContributionLedgerRender.activeCons===activeCons&&lastContributionLedgerRender.activePays===activePays&&lastContributionLedgerRender.teachers===teachers&&lastContributionLedgerRender.reversed===reversed&&lastContributionLedgerRender.contributionError===!!cr.error&&lastContributionLedgerRender.payoutError===!!pr.error)return;
-    lastContributionLedgerRender={q,month,cons,activeCons,activePays,teachers,reversed,contributionError:!!cr.error,payoutError:!!pr.error};
+    if(lastContributionLedgerRender&&lastContributionLedgerRender.q===q&&lastContributionLedgerRender.month===month&&lastContributionLedgerRender.cons===cons&&lastContributionLedgerRender.activeCons===activeCons&&lastContributionLedgerRender.activePays===activePays&&lastContributionLedgerRender.teachers===teachers&&lastContributionLedgerRender.reversed===reversed&&lastContributionLedgerRender.reversedSize===reversed.size&&lastContributionLedgerRender.consLength===cons.length&&lastContributionLedgerRender.contributionError===!!cr.error&&lastContributionLedgerRender.payoutError===!!pr.error)return;
+    lastContributionLedgerRender={q,month,cons,activeCons,activePays,teachers,reversed,reversedSize:reversed.size,consLength:cons.length,contributionError:!!cr.error,payoutError:!!pr.error};
     const rows=cons.filter(x=>(!month||String(x.date||'').startsWith(month))&&[x.teacher_id,x.reference,teacherById.get(String(x.teacher_id))?.name].some(v=>String(v||'').toLowerCase().includes(q))).sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||String(a.id||'').localeCompare(String(b.id||'')));
     const totalCon=activeCons.reduce((n,x)=>n+Number(x.amount||0),0),totalPay=activePays.reduce((n,x)=>n+Number(x.amount||0),0);
     $('wfConTotal').textContent=cr.error?'Unavailable':'GHS '+'GHS '+money(totalCon);
@@ -1576,8 +1576,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   let lastPayoutLedgerRender=null;
  const renderPayoutLedger=()=>{
     const q=String($('wfPayoutSearch')?.value||'').trim().toLowerCase();
-    if(lastPayoutLedgerRender&&lastPayoutLedgerRender.q===q&&lastPayoutLedgerRender.pays===pays&&lastPayoutLedgerRender.activePays===activePays&&lastPayoutLedgerRender.activeCons===activeCons&&lastPayoutLedgerRender.teachers===teachers&&lastPayoutLedgerRender.reversed===reversed&&lastPayoutLedgerRender.payoutError===!!pr.error&&lastPayoutLedgerRender.contributionError===!!cr.error)return;
-    lastPayoutLedgerRender={q,pays,activePays,activeCons,teachers,reversed,payoutError:!!pr.error,contributionError:!!cr.error};
+    if(lastPayoutLedgerRender&&lastPayoutLedgerRender.q===q&&lastPayoutLedgerRender.pays===pays&&lastPayoutLedgerRender.activePays===activePays&&lastPayoutLedgerRender.activeCons===activeCons&&lastPayoutLedgerRender.teachers===teachers&&lastPayoutLedgerRender.reversed===reversed&&lastPayoutLedgerRender.reversedSize===reversed.size&&lastPayoutLedgerRender.paysLength===pays.length&&lastPayoutLedgerRender.payoutError===!!pr.error&&lastPayoutLedgerRender.contributionError===!!cr.error)return;
+    lastPayoutLedgerRender={q,pays,activePays,activeCons,teachers,reversed,reversedSize:reversed.size,paysLength:pays.length,payoutError:!!pr.error,contributionError:!!cr.error};
     const rows=pays.filter(x=>[x.teacher_id,window.displayWelfareReason(x.reason),x.reference,teacherById.get(String(x.teacher_id))?.name].some(v=>String(v||'').toLowerCase().includes(q)));
     const totalPayout=activePays.reduce((n,x)=>n+Number(x.amount||0),0),currentFund=activeCons.reduce((n,x)=>n+Number(x.amount||0),0)-totalPayout,activeMembers=teachers.filter(t=>t.is_active!==false).length;
     $('wfPayoutTotal').textContent=pr.error?'Unavailable':'GHS '+money(totalPayout);
@@ -2006,15 +2006,18 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  async function loadAudit(){
    const {data,error}=await client.from('audit_logs').select('time_string,actor_name,action,details,status,category').eq('school_id',ctx.id).order('created_at',{ascending:false}).limit(300);
    if(error){msg('wfAuditMsg','Audit history is unavailable under the current school permissions.',true);$('wfAuditRows').innerHTML='<tr><td colspan="5">No audit records could be loaded.</td></tr>';return;}
-   auditRows=data||[];renderAudit();
+   auditRows=data||[];frameRender($('wfAuditRows'),renderAudit);
  }
+ let lastAuditRender=null;
  function renderAudit(){
    const q=($('wfAuditSearch').value||'').toLowerCase(),cat=$('wfAuditCategory').value;
+   if(lastAuditRender&&lastAuditRender.rows===auditRows&&lastAuditRender.q===q&&lastAuditRender.category===cat)return;
+   lastAuditRender={rows:auditRows,q,category:cat};
    const rows=auditRows.filter(x=>(!cat||x.category===cat)&&[x.time_string,x.actor_name,x.action,x.details,x.status,x.category].some(v=>String(v||'').toLowerCase().includes(q)));
    $('wfAuditRows').innerHTML=rows.length?rows.map(x=>'<tr><td>'+esc(x.time_string||'—')+'</td><td>'+esc(x.actor_name||'—')+'</td><td>'+esc(x.action||'—')+'</td><td>'+esc(x.details||'—')+'</td><td>'+esc(x.status||'—')+'</td></tr>').join(''):'<tr><td colspan="5">No matching audit entries.</td></tr>';
    msg('wfAuditMsg',rows.length+' audit entr'+(rows.length===1?'y':'ies')+' shown.');
  }
- $('wfAuditSearch').addEventListener('input',renderAudit);$('wfAuditCategory').addEventListener('change',renderAudit);
+ $('wfAuditSearch').addEventListener('input',()=>frameRender($('wfAuditRows'),renderAudit));$('wfAuditCategory').addEventListener('change',()=>frameRender($('wfAuditRows'),renderAudit));
  $('wfAuditExport').onclick=()=>{
    const q=($('wfAuditSearch').value||'').toLowerCase(),cat=$('wfAuditCategory').value;
    const filtered=auditRows.filter(x=>(!cat||x.category===cat)&&[x.time_string,x.actor_name,x.action,x.details,x.status,x.category].some(v=>String(v||'').toLowerCase().includes(q)));
