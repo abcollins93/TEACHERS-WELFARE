@@ -3828,7 +3828,7 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
    const balance=String($('netTotal')?.textContent||'0.00');
    const qrId='schoolSummaryQr'+Date.now();
    report.className='school-welfare-summary-pdf';report.setAttribute('data-welfare-pdf-staging','');
-   report.style.cssText='display:none!important;position:absolute!important;left:-9999px!important;top:-9999px!important;width:0!important;height:0!important;overflow:hidden!important;pointer-events:none!important;margin:0;padding:7mm 8mm;box-sizing:border-box;background:#fff;color:#172235;font-family:Arial,sans-serif;font-size:10px;line-height:1.35;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;';
+   report.style.cssText='display:none!important;visibility:hidden!important;position:fixed!important;left:0!important;top:0!important;transform:translateX(-110%)!important;width:297mm!important;min-width:297mm!important;max-width:297mm!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;opacity:1!important;pointer-events:none!important;margin:0;padding:7mm 8mm;box-sizing:border-box;background:#ffffff!important;color:#172235!important;color-scheme:light!important;font-family:Arial,sans-serif;font-size:10px;line-height:1.35;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;';
    report.innerHTML='<style>'+
     '.school-welfare-summary-pdf *{box-sizing:border-box}.sws-head{text-align:center;border-bottom:2px solid #17365d;padding:0 0 3mm;margin:0 0 2.5mm}.sws-head h2{font-size:17px;line-height:1.15;letter-spacing:.5px;color:#17365d;margin:0 0 2px}.sws-head h1{font-size:23px;line-height:1.12;color:#153c78;margin:0 0 2px}.sws-brand{font-size:10px;font-weight:800;letter-spacing:1.2px;color:#a97810}.sws-title{font-size:11px;font-weight:700;color:#526176;margin-top:3px}.sws-meta{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px;padding:0 0 2mm;margin-bottom:2mm;border-bottom:1px solid #d9e1eb;color:#334155;font-size:9px}.sws-meta b{color:#172b4d}.sws-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:0 0 3mm}.sws-head-logo{display:block;width:14mm;height:14mm;object-fit:contain;background:transparent!important;background-color:transparent!important;border:none!important;outline:none!important;box-shadow:none!important;padding:0!important;border-radius:0!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.sws-kpi{border:1px solid #dbe3ee;border-left:3px solid #2878d0;border-radius:5px;background:#f8fbff;padding:6px 8px;min-width:0}.sws-kpi:nth-child(2){border-left-color:#23945f}.sws-kpi:nth-child(3){border-left-color:#db2777}.sws-kpi:nth-child(4){border-left-color:#b88925;background:#fffbeb}.sws-kpi small{display:block;font-size:8px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:#64748b}.sws-kpi strong{display:block;margin-top:2px;font-size:14px;font-weight:800;color:#142d52;white-space:nowrap}.sws-section{display:flex;align-items:center;justify-content:space-between;margin:0 0 1.5mm;color:#17365d}.sws-section h3{margin:0;font-size:11px;letter-spacing:.3px;text-transform:uppercase}.sws-section span{font-size:8px;color:#64748b}.sws-signatures{display:flex;justify-content:flex-end;align-items:flex-end;margin-top:2.5mm;break-inside:avoid;page-break-inside:avoid}.sws-signatures .sws-qr{margin-left:auto;text-align:right}.sws-sign{text-align:center;font-size:8px;color:#334155;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}.sws-sign-image{width:100%;height:16mm;min-height:16mm;flex:0 0 16mm;display:flex;align-items:flex-end;justify-content:center;margin:0;padding:0}.sws-sign-image img{display:block;max-width:42mm;max-height:15mm;object-fit:contain;margin:0 auto}.sws-line{height:8mm;border-bottom:1px solid #64748b;margin-bottom:2mm}.sws-sign b{color:#172b4d;font-size:8px}.sws-qr{align-self:end;text-align:center;font-size:6px;color:#64748b}.sws-qr img,.sws-qr canvas{display:block;width:19mm!important;height:19mm!important;margin:0 auto 1mm}.sws-footer{border-top:1px solid #d9e1eb;margin-top:1mm;padding-top:.75mm;text-align:center;color:#64748b;font-size:7px}.sws-disclaimer{font-weight:700!important;display:block;width:100%;max-width:100%;box-sizing:border-box;margin:2mm 0 0;padding:1.1mm 0;border-top:1px dotted #64748b;border-bottom:1px dotted #64748b;color:#475569;font-family:Arial,sans-serif;font-size:8pt;font-weight:700!important;line-height:1.2;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.school-welfare-summary-pdf table,.school-welfare-summary-pdf table thead,.school-welfare-summary-pdf table tbody,.school-welfare-summary-pdf table tr,.school-welfare-summary-pdf table th,.school-welfare-summary-pdf table td{border:1px solid #000000!important;border-collapse:collapse!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.school-welfare-summary-pdf table{font-size:10px!important;line-height:1.4!important}.school-welfare-summary-pdf table th,.school-welfare-summary-pdf table td{font-size:10px!important;padding:7px 9px!important;line-height:1.35!important}.school-welfare-summary-pdf table thead{display:table-header-group}.school-welfare-summary-pdf table tr{break-inside:avoid!important;page-break-inside:avoid!important}.school-welfare-summary-pdf table th,.school-welfare-summary-pdf table td{max-width:0}@media print{.school-welfare-summary-pdf{width:297mm!important;max-width:297mm!important;height:auto!important;min-height:0!important;margin:0!important;padding:7mm 8mm!important;box-sizing:border-box!important}}'+
     '</style>'+
@@ -3843,8 +3843,14 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
    // Activate this A4 surface only for the off-screen canvas/PDF capture.
    report.style.setProperty('display','block','important');
    report.style.setProperty('position','absolute','important');
-   report.style.setProperty('left','-100000px','important');
+   report.style.setProperty('left','0','important');
    report.style.setProperty('top','0','important');
+   report.style.setProperty('transform','translateX(-110%)','important');
+   report.style.setProperty('visibility','visible','important');
+   report.style.setProperty('opacity','1','important');
+   report.style.setProperty('z-index','-1','important');
+   report.style.setProperty('background','#ffffff','important');
+   report.style.setProperty('color','#172235','important');
    report.style.setProperty('width','297mm','important');
    report.style.setProperty('max-width','297mm','important');
    report.style.setProperty('height','auto','important');
@@ -3855,8 +3861,26 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
     const qrNode=report.querySelector('#'+qrId);
     if(window.QRCode&&qrNode)new window.QRCode(qrNode,{text:'https://abcollins93.github.io/TEACHERS-WELFARE/verify.html?c='+encodeURIComponent(code)+'&d='+encodeURIComponent(documentId),width:300,height:300,colorDark:'#030a16',colorLight:'#ffffff',correctLevel:window.QRCode.CorrectLevel.M});
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    if(document.fonts?.ready)await document.fonts.ready.catch(()=>{});
+    const registerRows=report.querySelectorAll('table tbody tr').length;
+    const reportText=String(report.innerText||report.textContent||'').replace(/\\s+/g,' ').trim();
+    if(!report.querySelector('.sws-head h1')||!reportText.includes('Teacher register')||!registerRows){
+     throw new Error('The executive summary has no complete school register content to export. Please wait for the teacher register to finish loading.');
+    }
+    const canvasOptions={scale:2,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,scrollX:0,scrollY:0,windowWidth:Math.max(document.documentElement.clientWidth,Math.ceil(report.getBoundingClientRect().width)),windowHeight:Math.max(document.documentElement.clientHeight,Math.ceil(report.getBoundingClientRect().height)),onclone:function(clonedDocument){
+     const clonedReport=clonedDocument.querySelector('[data-welfare-pdf-staging]');
+     if(clonedReport){clonedReport.style.setProperty('display','block','important');clonedReport.style.setProperty('visibility','visible','important');clonedReport.style.setProperty('opacity','1','important');clonedReport.style.setProperty('position','static','important');clonedReport.style.setProperty('transform','none','important');clonedReport.style.setProperty('width','297mm','important');clonedReport.style.setProperty('height','auto','important');clonedReport.style.setProperty('overflow','visible','important');clonedReport.style.setProperty('background','#ffffff','important');clonedReport.style.setProperty('color','#172235','important');}
+    }};
+    const proofCanvas=await window.html2canvas(report,canvasOptions);
+    const proofContext=proofCanvas.getContext('2d',{willReadFrequently:true});
+    if(!proofContext||proofCanvas.width<300||proofCanvas.height<200)throw new Error('The executive summary could not be painted to a usable PDF canvas. Please try again.');
+    const proofPixels=proofContext.getImageData(0,0,proofCanvas.width,proofCanvas.height).data;
+    let visibleInkPixels=0;
+    for(let pixel=0;pixel<proofPixels.length;pixel+=16){const red=proofPixels[pixel],green=proofPixels[pixel+1],blue=proofPixels[pixel+2],alpha=proofPixels[pixel+3];if(alpha>0&&(red<238||green<238||blue<238))visibleInkPixels++;}
+    if(visibleInkPixels<35)throw new Error('The executive summary canvas is blank. No PDF was downloaded; please retry after the school register is visible.');
     const filename=(code.replace(/[^a-z0-9_-]/gi,'_')||'school')+'-welfare-summary.pdf';
-    const blob=await window.html2pdf().set({margin:0,filename,image:{type:'png'},html2canvas:{scale:4,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0},jsPDF:{unit:'mm',format:'a4',orientation:'landscape',compress:true},pagebreak:{mode:['css'],avoid:['tr','.sws-kpi','.sws-signatures']}}).from(report).outputPdf('blob');
+    const blob=await window.html2pdf().set({margin:0,filename,image:{type:'png'},html2canvas:{scale:4,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,scrollX:0,scrollY:0,windowWidth:canvasOptions.windowWidth,windowHeight:canvasOptions.windowHeight,onclone:canvasOptions.onclone},jsPDF:{unit:'mm',format:'a4',orientation:'landscape',compress:true},pagebreak:{mode:['css'],avoid:['tr','.sws-kpi','.sws-signatures']}}).from(report).outputPdf('blob');
+    if(!(blob instanceof Blob)||blob.size<5000)throw new Error('The executive summary PDF output is incomplete. No blank PDF was downloaded; please try again.');
     const verificationPayload={
      school_code:code,document_id:documentId,document_type:'executive-summary',
      period:'School-wide summary',academic_year:window.getCurrentAcademicYear()
@@ -3876,7 +3900,7 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
      catch(cacheError){console.warn('[School Welfare] Summary PDF local cache deferred:',cacheError?.message||cacheError);}
     }
     window.downloadWelfareBlob(blob,filename,progress,'Executive school PDF summary is ready.');
-   }finally{report.remove();}
+   }finally{report.style.setProperty('display','none','important');report.style.setProperty('visibility','hidden','important');report.style.setProperty('opacity','0','important');report.remove();}
   }catch(error){console.error('[School Welfare] School summary PDF failed:',error);progress.textContent=error?.message||'The school PDF could not be generated. Please try again.';progress.className='error';}
   finally{schoolPdfButton.disabled=false;schoolPdfButton.removeAttribute('aria-busy');schoolPdfButton.innerHTML=originalButtonHtml;}
  };
