@@ -2540,7 +2540,7 @@ async function renderTeacherDashboard(profile,school){
     <div><small class="muted">REGISTRATION DATE</small><strong id="teacherOwnRegistration">—</strong></div><div><small class="muted">MEMBERSHIP TYPE</small><strong id="teacherOwnMembership">—</strong></div>
    </div>
   </article>
-  <article class="panel teacher-profile-accent teacher-profile-accent-blue" style="margin:0;padding:22px"><h3><i class="fa-solid fa-address-card"></i> Personal &amp; Contact Information</h3><div id="teacherOwnPersonalRows" class="teacher-own-profile-fields"></div><p class="muted">To update official personal or contact information, contact your school administrator.</p></article>
+  <article class="panel teacher-profile-accent teacher-profile-accent-blue teacher-personal-contact-card" style="margin:0;padding:22px"><div class="teacher-contact-card-head"><h3><i class="fa-solid fa-address-card" aria-hidden="true"></i> Personal &amp; Contact Information</h3><span class="teacher-contact-secure"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> VERIFIED PROFILE</span></div><div id="teacherOwnPersonalRows" class="teacher-own-profile-fields"></div><div class="teacher-contact-card-foot"><p class="muted" id="teacherOwnContactHelp">Need to change your official details? Request an update from your school administrator.</p><button type="button" id="teacherOwnEditContact" class="teacher-contact-edit-button"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> Edit Contact Info</button></div><p id="teacherOwnContactNotice" class="teacher-contact-notice" role="status" aria-live="polite" hidden></p></article>
   <article class="panel teacher-profile-accent teacher-profile-accent-gold" style="margin:0;padding:22px"><h3><i class="fa-solid fa-briefcase"></i> Professional &amp; Employment Details</h3><div id="teacherOwnProfessionalRows" class="teacher-own-profile-fields"></div></article>
   <article class="panel teacher-profile-accent teacher-profile-accent-purple" style="margin:0;padding:22px"><h3><i class="fa-solid fa-wallet" aria-hidden="true"></i> Welfare Membership &amp; Financial Summary</h3><div id="teacherOwnFinanceRows" class="teacher-own-finance-rows"></div></article>
  </div>
@@ -2552,6 +2552,31 @@ async function renderTeacherDashboard(profile,school){
   #wfTeacherPanel .teacher-profile-accent-blue{border-top-color:#3b82f6!important}
   #wfTeacherPanel .teacher-profile-accent-gold{border-top-color:#d6a637!important}
   #wfTeacherPanel .teacher-profile-accent-purple{border-top-color:#8b5cf6!important}
+  #wfTeacherPanel .teacher-personal-contact-card{border:1px solid var(--line)!important;border-top:4px solid #3b82f6!important;background:#fff}
+  #wfTeacherPanel .teacher-contact-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  #wfTeacherPanel .teacher-contact-card-head h3{margin:0;display:flex;align-items:center;gap:9px;color:#172b49;font-size:1.02rem;font-weight:850}
+  #wfTeacherPanel .teacher-contact-card-head h3>i{color:#2563eb}
+  #wfTeacherPanel .teacher-contact-secure{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border:1px solid #dbeafe;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-size:.62rem;font-weight:850;letter-spacing:.055em}
+  #wfTeacherPanel .teacher-own-profile-fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  #wfTeacherPanel .teacher-own-profile-fields .tp-field{min-width:0;border:1px solid #e2e8f0;background:#f8fafc;border-radius:13px;padding:13px 14px}
+  #wfTeacherPanel .teacher-own-profile-fields .tp-field small{display:block;color:#64748b;font-size:.68rem;font-weight:850;letter-spacing:.075em;line-height:1.3;margin-bottom:7px}
+  #wfTeacherPanel .teacher-own-profile-fields .tp-field strong{display:block;color:#172b49;font-size:.91rem;font-weight:800;line-height:1.45;overflow-wrap:anywhere}
+  #wfTeacherPanel .teacher-contact-card-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px}
+  #wfTeacherPanel .teacher-contact-card-foot p{margin:0;max-width:36ch;font-size:.78rem;line-height:1.45}
+  #wfTeacherPanel .teacher-contact-edit-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:0 0 auto;min-height:40px;padding:9px 13px;border:1px solid #1d4ed8;border-radius:11px;background:#eff6ff;color:#1d4ed8;font-size:.8rem;font-weight:850;cursor:pointer;transition:background-color .12s ease,border-color .12s ease,color .12s ease,transform .12s ease}
+  #wfTeacherPanel .teacher-contact-edit-button:hover{background:#dbeafe;border-color:#1e40af;color:#1e40af}
+  #wfTeacherPanel .teacher-contact-edit-button:active{transform:translateY(1px);background:#bfdbfe}
+  #wfTeacherPanel .teacher-contact-edit-button:focus-visible{outline:3px solid rgba(59,130,246,.28);outline-offset:2px}
+  #wfTeacherPanel .teacher-contact-notice{margin:10px 0 0;padding:9px 11px;border:1px solid #bfdbfe;border-radius:10px;background:#eff6ff;color:#1e40af;font-size:.8rem;line-height:1.45}
+  .dark #wfTeacherPanel .teacher-personal-contact-card{background:var(--panel)!important}
+  .dark #wfTeacherPanel .teacher-contact-card-head h3,.dark #wfTeacherPanel .teacher-own-profile-fields .tp-field strong{color:#e5edf8}
+  .dark #wfTeacherPanel .teacher-contact-secure{background:#172b49;border-color:#2d4a72;color:#bfdbfe}
+  .dark #wfTeacherPanel .teacher-own-profile-fields .tp-field{background:rgba(148,163,184,.07);border-color:var(--line)}
+  .dark #wfTeacherPanel .teacher-own-profile-fields .tp-field small{color:#a9b8cc}
+  .dark #wfTeacherPanel .teacher-contact-edit-button{background:#172b49;border-color:#4779c7;color:#bfdbfe}
+  .dark #wfTeacherPanel .teacher-contact-edit-button:hover{background:#203d65}
+  .dark #wfTeacherPanel .teacher-contact-notice{background:#172b49;border-color:#365985;color:#bfdbfe}
+  @media(max-width:600px){#wfTeacherPanel .teacher-personal-contact-card{padding:16px!important}#wfTeacherPanel .teacher-own-profile-fields{grid-template-columns:1fr;gap:9px}#wfTeacherPanel .teacher-own-profile-fields .tp-field{padding:12px 13px;border-radius:12px}#wfTeacherPanel .teacher-contact-card-head{align-items:flex-start;margin-bottom:13px}#wfTeacherPanel .teacher-contact-card-foot{align-items:stretch;flex-direction:column;gap:10px}#wfTeacherPanel .teacher-contact-edit-button{width:100%;min-height:43px}}
   #wfTeacherPanel .teacher-own-profile-fields{display:grid;gap:10px}
   #wfTeacherPanel .teacher-own-profile-fields .tp-field{border:1px solid var(--line);background:rgba(120,130,150,.06);border-radius:12px;padding:11px 13px}
   #wfTeacherPanel .teacher-own-profile-fields .tp-field small{display:block;color:var(--muted);font-size:.68rem;font-weight:850;letter-spacing:.06em;margin-bottom:5px}
@@ -2957,6 +2982,13 @@ async function renderTeacherDashboard(profile,school){
  $('teacherOwnRegistration').textContent=profileDate(profileRegistration);
  $('teacherOwnMembership').textContent=profileMembership||'Not specified';
  $('teacherOwnPersonalRows').innerHTML=profileFieldRows([['FULL NAME',teacherName,'Unnamed Teacher'],['PHONE NUMBER',profilePhone,'Not provided'],['SCHOOL / INSTITUTION',school.name],['DISTRICT & REGION',[school.district,school.region].filter(Boolean).join(' · ')]]);
+ const editContactButton=$('teacherOwnEditContact');
+ editContactButton?.addEventListener('click',()=>{
+  const notice=$('teacherOwnContactNotice');
+  if(!notice)return;
+  notice.hidden=false;
+  notice.textContent='For security, official contact details are updated by your school administrator. Please contact them to request a change.';
+ });
  $('teacherOwnProfessionalRows').innerHTML=profileFieldRows([['Staff ID',teacherId],['Professional Rank',profileRank],['CLASS / SUBJECT',profileClass,'Not assigned'],['Employer',firstProfileValue(teacherRecord?.employer,teacherRecord?.employer_name,profile.employer,profile.employer_name,school.name)]]);
  const ownRecentContribution=activeTeacherContributionRows.length?[...activeTeacherContributionRows].sort((a,b)=>String(b.contribution_date||b.date||'').localeCompare(String(a.contribution_date||a.date||'')))[0]:null;
  const ownRecentContributionDate=ownRecentContribution?profileDate(ownRecentContribution.contribution_date||ownRecentContribution.date):'—';
