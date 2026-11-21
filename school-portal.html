@@ -3891,67 +3891,67 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
     const PdfConstructor=window.jspdf?.jsPDF||window.jsPDF||window.jspdf?.default;
     if(typeof PdfConstructor!=='function')throw new Error('The PDF drawing engine is unavailable. Please reload the portal and retry.');
     const makeVectorFallback=()=>{
-     const pdf=new PdfConstructor({orientation:'landscape',unit:'mm',format:'a4',compress:true});
-     const pageW=297,pageH=210,margin=12,usableW=pageW-margin*2;
-     let y=margin;
-     const ink='#172b4d';
-     const write=(value,x,yy,size=8,style='normal',color=ink)=>{
-      pdf.setFont('helvetica',style);pdf.setFontSize(size);pdf.setTextColor(color);
-      const lines=pdf.splitTextToSize(String(value??'—'),usableW-(x-margin));
-      pdf.text(lines,x,yy);return lines.length*size*0.42;
-     };
-     pdf.setFillColor(255,255,255);pdf.rect(0,0,pageW,pageH,'F');
-     y+=write('GHANA EDUCATION SERVICE',margin,y,14,'bold','#17365d')+2;
-     y+=write(schoolName,margin,y,17,'bold','#153c78')+1;
-     y+=write('TEACHERS WELFARE FUND  |  SCHOOL WELFARE FUND — SUMMARY STATEMENT',margin,y,9,'bold','#8a6415')+4;
-     pdf.setDrawColor(23,54,93);pdf.setLineWidth(.7);pdf.line(margin,y,pageW-margin,y);y+=6;
-     const meta=[
-      'Document ID: '+documentId+'    School code: '+code,
-      'District: '+String(school.district||'—')+'    Region: '+String(school.region||'—'),
-      'Date issued: '+issued.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})
-     ];
-     meta.forEach(line=>{y+=write(line,margin,y,8)+1;});
-     y+=3;
-     const metrics=[
-      ['REGISTERED TEACHERS',totalTeachers],
-      ['TOTAL CONTRIBUTIONS',contributions],
-      ['TOTAL WELFARE PAYOUTS',payouts],
-      ['NET FUND BALANCE',balance]
-     ];
-     const gap=4,boxW=(usableW-gap*3)/4;
-     metrics.forEach((metric,index)=>{
-      const x=margin+index*(boxW+gap);
-      pdf.setFillColor(247,250,254);pdf.setDrawColor(205,216,230);pdf.roundedRect(x,y,boxW,17,1.5,1.5,'FD');
-      pdf.setFont('helvetica','bold');pdf.setFontSize(7);pdf.setTextColor(90,105,125);pdf.text(metric[0],x+3,y+6);
-      pdf.setFontSize(11);pdf.setTextColor(20,45,82);pdf.text(String(metric[1]),x+3,y+13);
-     });
-     y+=24;
-     pdf.setFont('helvetica','bold');pdf.setFontSize(10);pdf.setTextColor(23,54,93);pdf.text('TEACHER REGISTER',margin,y);y+=5;
+     // Browser canvas draws all fallback text (including the GH₵ glyph) before
+     // jsPDF places the finished pages into the A4 document.
      const headers=Array.from(table.querySelectorAll('thead th')).map(th=>String(th.textContent||'').trim());
      const rows=Array.from(table.querySelectorAll('tbody tr')).map(tr=>Array.from(tr.children).map(td=>String(td.innerText||td.textContent||'').replace(/\\s+/g,' ').trim()));
-     const widths=headers.map(()=>usableW/Math.max(1,headers.length));
-     const drawRow=(values,isHeader)=>{
-      const wrapped=values.map((value,index)=>pdf.splitTextToSize(String(value||'—'),Math.max(12,widths[index]-3)));
-      const maxLines=Math.max(1,...wrapped.map(lines=>lines.length));
-      const rowH=Math.max(7,maxLines*3.4+3);
-      if(y+rowH>pageH-margin){pdf.addPage('a4','landscape');pdf.setFillColor(255,255,255);pdf.rect(0,0,pageW,pageH,'F');y=margin;}
-      let x=margin;
-      values.forEach((_,index)=>{
-       if(isHeader)pdf.setFillColor(231,238,247);else pdf.setFillColor(255,255,255);
-       pdf.setDrawColor(185,198,214);pdf.rect(x,y,widths[index],rowH,'FD');
-       pdf.setFont('helvetica',isHeader?'bold':'normal');pdf.setFontSize(isHeader?6.2:6.5);
-       pdf.setTextColor(isHeader?'#193451':'#26364a');
-       pdf.text(wrapped[index].slice(0,3),x+1.5,y+3.5);
-       x+=widths[index];
-      });
-      y+=rowH;
+     const width=1680,pageHeight=Math.round(width*210/297),margin=58,usable=width-margin*2;
+     const rowFont=17,lineHeight=22,padX=10,padY=10;
+     const measureCanvas=document.createElement('canvas'),measure=measureCanvas.getContext('2d');
+     measure.font='17px Arial,sans-serif';
+     const wrap=(value,maxWidth)=>{
+      const words=String(value||'—').split(/\\s+/);const lines=[];let line='';
+      words.forEach(word=>{const candidate=line?line+' '+word:word;if(line&&measure.measureText(candidate).width>maxWidth){lines.push(line);line=word;}else line=candidate;});
+      if(line)lines.push(line);return lines.length?lines:['—'];
      };
-     if(headers.length)drawRow(headers,true);
-     rows.forEach(row=>drawRow(row,false));
-     const pages=pdf.getNumberOfPages();
-     for(let page=1;page<=pages;page++){
-      pdf.setPage(page);pdf.setFont('helvetica','normal');pdf.setFontSize(7);pdf.setTextColor(100,116,139);
-      pdf.text('School welfare summary • '+code,pageW-margin,pageH-5,{align:'right'});
+     const colWidths=headers.map(()=>usable/Math.max(1,headers.length));
+     const prepared=[headers,...rows].map((values,index)=>{
+      measure.font=index===0?'bold 16px Arial,sans-serif':'17px Arial,sans-serif';
+      const cells=values.map((value,col)=>wrap(value,Math.max(30,colWidths[col]-padX*2)));
+      return {cells,height:Math.max(44,Math.max(1,...cells.map(lines=>lines.length))*lineHeight+padY*2),header:index===0};
+     });
+     const totalHeight=Math.max(pageHeight,560+prepared.reduce((sum,row)=>sum+row.height,0)+70);
+     const canvas=document.createElement('canvas');canvas.width=width;canvas.height=totalHeight;
+     const ctx=canvas.getContext('2d');ctx.fillStyle='#ffffff';ctx.fillRect(0,0,width,totalHeight);
+     let y=60;
+     ctx.textAlign='left';ctx.textBaseline='alphabetic';
+     ctx.fillStyle='#17365d';ctx.font='bold 30px Arial,sans-serif';ctx.fillText('GHANA EDUCATION SERVICE',margin,y);y+=43;
+     ctx.fillStyle='#153c78';ctx.font='bold 38px Arial,sans-serif';ctx.fillText(schoolName,margin,y);y+=39;
+     ctx.fillStyle='#8a6415';ctx.font='bold 19px Arial,sans-serif';ctx.fillText('TEACHERS WELFARE FUND  |  SCHOOL WELFARE FUND — SUMMARY STATEMENT',margin,y);y+=25;
+     ctx.strokeStyle='#17365d';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(margin,y);ctx.lineTo(width-margin,y);ctx.stroke();y+=30;
+     ctx.fillStyle='#334155';ctx.font='17px Arial,sans-serif';
+     ctx.fillText('Document ID: '+documentId+'    School code: '+code,margin,y);y+=25;
+     ctx.fillText('District: '+String(school.district||'—')+'    Region: '+String(school.region||'—'),margin,y);y+=25;
+     ctx.fillText('Date issued: '+issued.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}),margin,y);y+=32;
+     const metrics=[['REGISTERED TEACHERS',totalTeachers],['TOTAL CONTRIBUTIONS',contributions],['TOTAL WELFARE PAYOUTS',payouts],['NET FUND BALANCE',balance]];
+     const gap=14,boxW=(usable-gap*3)/4;
+     metrics.forEach((metric,index)=>{
+      const x=margin+index*(boxW+gap);ctx.fillStyle='#f4f8fd';ctx.strokeStyle='#cbd5e1';ctx.lineWidth=2;ctx.fillRect(x,y,boxW,82);ctx.strokeRect(x,y,boxW,82);
+      ctx.fillStyle='#64748b';ctx.font='bold 15px Arial,sans-serif';ctx.fillText(metric[0],x+14,y+27);
+      ctx.fillStyle='#142d52';ctx.font='bold 25px Arial,sans-serif';ctx.fillText(String(metric[1]),x+14,y+62);
+     });y+=112;
+     ctx.fillStyle='#17365d';ctx.font='bold 21px Arial,sans-serif';ctx.fillText('TEACHER REGISTER',margin,y);y+=18;
+     prepared.forEach(row=>{
+      const height=row.height;let x=margin;
+      row.cells.forEach((lines,index)=>{
+       ctx.fillStyle=row.header?'#e7eef7':'#ffffff';ctx.strokeStyle='#b9c6d6';ctx.lineWidth=1.5;
+       ctx.fillRect(x,y,colWidths[index],height);ctx.strokeRect(x,y,colWidths[index],height);
+       ctx.fillStyle=row.header?'#193451':'#26364a';ctx.font=row.header?'bold 16px Arial,sans-serif':'17px Arial,sans-serif';
+       lines.forEach((line,lineIndex)=>ctx.fillText(line,x+padX,y+padY+17+lineIndex*lineHeight,Math.max(20,colWidths[index]-padX*2)));
+       x+=colWidths[index];
+      });
+      y+=height;
+     });
+     const pdf=new PdfConstructor({orientation:'landscape',unit:'mm',format:'a4',compress:true});
+     let sourceY=0,page=0;
+     while(sourceY<canvas.height){
+      const sliceHeight=Math.min(pageHeight,canvas.height-sourceY);
+      const slice=document.createElement('canvas');slice.width=width;slice.height=sliceHeight;
+      const sliceContext=slice.getContext('2d');sliceContext.fillStyle='#ffffff';sliceContext.fillRect(0,0,width,sliceHeight);
+      sliceContext.drawImage(canvas,0,sourceY,width,sliceHeight,0,0,width,sliceHeight);
+      if(page>0)pdf.addPage('a4','landscape');
+      pdf.addImage(slice.toDataURL('image/png'),'PNG',0,0,297,sliceHeight/width*297,undefined,'FAST');
+      sourceY+=sliceHeight;page++;
      }
      return pdf;
     };
