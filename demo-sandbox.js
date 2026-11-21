@@ -119,7 +119,7 @@
   };}},
   auth:{
    async getUser(){return {data:{user:currentAuthUser()},error:null};},
-   async getSession(){return {data:{session:{access_token:'demo-local-session',user:currentAuthUser()}},error:null};},
+   async getSession(){return {data:{session:{access_token:'demo-local-session',refresh_token:'demo-local-refresh',expires_at:4102444800,user:currentAuthUser()}},error:null};},
    onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}};},
    async signOut(){return {error:null};},
    async signInWithPassword(){return {data:{user:currentAuthUser()},error:null};}
