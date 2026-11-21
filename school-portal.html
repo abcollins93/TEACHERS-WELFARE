@@ -3911,7 +3911,9 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
     // Mobile WebViews can expose an incomplete staging DOM. Validate and, if
     // necessary, rebuild the actual table attached to the report from hydrated rows.
     const reportHeading=report.querySelector('.sws-head h1');
-    const reportRegisterTable=report.querySelector('.sws-section + table');
+    let reportRegisterTable=report.querySelector('.sws-section')?.nextElementSibling;
+    if(String(reportRegisterTable?.tagName||'').toLowerCase()!=='table')reportRegisterTable=report.querySelector('table');
+    if(!reportRegisterTable&&report.querySelector('.sws-section')){reportRegisterTable=table.cloneNode(true);report.querySelector('.sws-section').insertAdjacentElement('afterend',reportRegisterTable);}
     let reportRegisterBody=reportRegisterTable?.querySelector('tbody');
     let registerRows=reportRegisterBody?.querySelectorAll('tr').length||0;
     if(!registerRows&&teacherRows.length&&reportRegisterTable){
