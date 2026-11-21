@@ -4447,17 +4447,32 @@ if(isDemoMode){
     // current screen responsive and resume this navigation as soon as the
     // authenticated tenant workspace has mounted.
     if(!target&&window.__welfareCurrentRole==='admin'&&adminWorkflowTargets.includes(requestedId)){
+      // Show the selected destination immediately instead of leaving the user
+      // on the previous section while the workflow bundle finishes mounting.
+      window.__welfareActivePortalView=requestedId;
+      const placeholderId='sidebarNavigationPlaceholder';
+      let placeholder=document.getElementById(placeholderId);
+      if(!placeholder){placeholder=document.createElement('section');placeholder.id=placeholderId;placeholder.className='panel';placeholder.setAttribute('role','status');placeholder.setAttribute('aria-live','polite');}
+      const title=button.querySelector('span')?.textContent?.trim()||'Selected section';
+      placeholder.innerHTML='<div style="display:flex;align-items:center;gap:10px"><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i><div><strong>'+title+'</strong><div class="muted">Opening your school workspace…</div></div></div>';
+      const host=document.getElementById('schoolOverview')?.parentElement||dashboardRoot?.querySelector('.dash-layout>div');
+      if(host&&!placeholder.isConnected)host.insertBefore(placeholder,document.getElementById('workflows')||null);
+      ['schoolOverview','teacherProfileViewer','schoolTeachers','wfTeacherPanel','wfContributionPanel','wfPayoutPanel','wfAdminContributionPanel','wfAdminPayoutPanel','wfStatementPanel','wfReportsPanel','wfAdminPanel','wfAuditView','teacherWorkspace','workflows'].forEach(id=>{
+        const view=document.getElementById(id);
+        if(view&&view!==placeholder){view.classList.add('hidden');view.style.setProperty('display','none','important');view.setAttribute('aria-hidden','true');}
+      });
+      placeholder.classList.remove('hidden');placeholder.style.setProperty('display','block','important');placeholder.removeAttribute('aria-hidden');
+      let attempts=0;
+      const resumeWhenMounted=()=>{
+        if(window.__welfareActivePortalView!==requestedId){placeholder.remove();return;}
+        if(findTarget()){placeholder.remove();button.dataset.mountAttempts='0';button.click();return;}
+        if(++attempts<40){window.setTimeout(resumeWhenMounted,100);return;}
+        placeholder.innerHTML='<strong>'+title+'</strong><p class="muted">This section is taking longer than expected. Please refresh the portal and try again.</p>';
+      };
       const pendingMount=window.__welfareWorkflowMountPromise;
-      if(pendingMount){
-        window.__welfareActivePortalView=requestedId;
-        pendingMount.then(()=>{
-          if(window.__welfareActivePortalView===requestedId&&findTarget()){
-            button.dataset.mountAttempts='0';
-            button.click();
-          }
-        }).catch(error=>console.warn('[School Welfare] Deferred sidebar destination could not mount:',error?.message||error));
-        return;
-      }
+      if(pendingMount)Promise.resolve(pendingMount).then(()=>window.requestAnimationFrame(resumeWhenMounted),resumeWhenMounted);
+      else window.requestAnimationFrame(resumeWhenMounted);
+      return;
     }
     // Populate the selected profile from its authenticated role-specific source
     // before visibility changes, then repeat after reveal to cover late mounts.
