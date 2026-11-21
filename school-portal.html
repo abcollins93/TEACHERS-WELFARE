@@ -1914,6 +1914,26 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
  #dashboard .metric:hover,#dashboard .navbtn:hover{transform:none!important}
 }
 </style>
+<style id="welfare-touch-scroll-fast-path">
+/* Fast mobile input and low-cost scrolling; presentation only. */
+:where(button,a,[role="button"],[role="tab"],.navbtn,.tab,.toggle,.password-toggle,[data-action],[data-card-action],.teacher-dashboard-statement,.metric){
+ touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+}
+:where(button,a,[role="button"],[role="tab"],.navbtn,.tab,.toggle,.password-toggle,[data-action],[data-card-action]):active{opacity:.88;filter:none}
+@media(hover:none) and (pointer:coarse){
+ html{scroll-behavior:auto!important}
+ body{background-image:none}
+ #dashboard,#workflows,.dash-layout,.sidebar,.table-wrap,.wf-dues-matrix-scroll,[data-scroll-container]{-webkit-overflow-scrolling:touch}
+ #dashboard .panel,#dashboard .metric,#dashboard .support,#dashboard .sidebar,
+ #workflows .panel,#wfAdminPanel .panel,.teacher-dashboard-ledger-card,.teacher-dashboard-profile,
+ .teacher-profile-accent,#teacherProfileViewer,#wfTeacherPanel,.wf-payout-view,#wfReportsPanel.wf-reports-view{
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:0 1px 5px rgba(11,29,58,.045)!important;
+ }
+ #dashboard .metric,#dashboard .navbtn,#dashboard button,#workflows button{transition:background-color .1s ease,border-color .1s ease,color .1s ease,opacity .1s ease!important}
+ #dashboard .metric:hover,#dashboard .navbtn:hover,#dashboard button:hover,#workflows button:hover{transform:none!important;filter:none!important}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}:where(button,a,[role="button"],[role="tab"],.navbtn,.tab,.toggle,.password-toggle,[data-action]){transition:none!important}}
+</style>
 <style id="teachers-members-mobile-polish-v1">
 #dashboard #schoolTeachers>div:first-child{align-items:center!important;gap:12px!important;padding:0 0 13px!important;border-bottom:1px solid var(--line);position:relative}
 #dashboard #schoolTeachers>div:first-child:before{content:"";position:absolute;left:0;bottom:-1px;width:54px;height:2px;border-radius:2px;background:var(--gold)}
