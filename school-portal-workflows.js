@@ -831,7 +831,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   new Promise(resolve=>setTimeout(()=>resolve({data:null,error:{message:'Timed out while loading standard monthly dues.'}}),8000))
  ]);
  const {data:initialDuesSetting,error:initialDuesError}=initialDuesResult||{};
- if(!initialDuesError&&initialDuesSetting){standardMonthlyDues=Number(initialDuesSetting.value||0);$('wfMonthlyDues').value=standardMonthlyDues;}
+ if(!initialDuesError&&initialDuesSetting){standardMonthlyDues=Number(initialDuesSetting.value||0);$('wfMonthlyDues').value=standardMonthlyDues;if(standardMonthlyDues>0)window.updateSchoolMonthlyDuesMetric?.(standardMonthlyDues);}
  else if(initialDuesError)console.warn('[School settings] Could not load saved standard monthly dues:',initialDuesError.message);
  // Capture the monthly dues form submit before any browser-level form navigation can occur.
  const duesForm=$('wfDuesForm');
@@ -850,6 +850,9 @@ window.initSchoolWorkflows=async function(client,school,refresh){
        );
        if(error)throw error;
        standardMonthlyDues=value;
+       if(ctx&&typeof ctx==='object'){ctx.monthly_dues=value;window.__welfareCurrentSchool=ctx;}
+       window.schoolSettings=Object.assign({},window.schoolSettings||{},{standard_dues:value,monthly_dues:value});
+       window.updateSchoolMonthlyDuesMetric?.(value);
        const auditOk=await audit(client,ctx,'Update monthly dues','GH₵ '+value.toFixed(2));
        msg('wfDuesMsg',auditOk?'Standard monthly dues updated successfully.':'Monthly dues were saved, but the audit entry could not be recorded.',!auditOk);
      }catch(error){
