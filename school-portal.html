@@ -4964,7 +4964,7 @@ window.downloadWelfareBlob=function(blob,fileName,statusNode,successText,sourceB
  }
  if(targetStatus){
    targetStatus.textContent=successText||'Your file is ready.';
-   targetStatus.className=(targetStatus.className||'muted').replace(/\\b(error|muted)\\b/g,'').trim()+' wf-download-feedback';
+   targetStatus.className=(targetStatus.className||'muted').replace(/\b(error|muted)\b/g,'').trim()+' wf-download-feedback';
    targetStatus.querySelectorAll('a[data-wf-download-link]').forEach(existing=>existing.remove());
    targetStatus.appendChild(document.createTextNode(' '));
    targetStatus.appendChild(fallback);
