@@ -4476,14 +4476,8 @@ if(isDemoMode){
       else window.requestAnimationFrame(resumeWhenMounted);
       return;
     }
-    // Populate the selected profile from its authenticated role-specific source
-    // before visibility changes, then repeat after reveal to cover late mounts.
-    if(requestedId==='teacherProfileViewer'&&window.__welfareCurrentRole==='admin'){
-      (window.__welfareRenderActiveProfileViewer||window.__welfareDemoRenderProfileViewer||window.__welfareRenderAdminProfileViewer)?.();
-      target=findTarget();
-    }else if(requestedId==='wfTeacherPanel'&&window.__welfareCurrentRole==='teacher'){
-      (window.__welfareRenderActiveProfileViewer||window.__welfareDemoRenderProfileViewer||window.__welfareRefreshMemberProfileViewer)?.();
-    }
+    // Reveal the destination first. Profile fields are rendered once immediately
+    // after visibility is applied; network-backed refreshes remain in the RAF task.
     window.__welfareActivePortalView=requestedId;
     const scheduleSectionRefresh=()=>{
       window.requestAnimationFrame(()=>{
@@ -4649,18 +4643,20 @@ if(isDemoMode){
       if (active) item.setAttribute('aria-current','page');
       else item.removeAttribute('aria-current');
     });
-    closeSidebar();
-    // Let the browser commit visibility changes before scrolling; avoid a
-     // synchronous layout read that blocks the first tap on mobile.
-     scheduleSectionRefresh();
-    window.requestAnimationFrame(()=>target.scrollIntoView({behavior:'smooth',block:'start'}));
+    // The drawer was closed at the start of this click. Commit the selected
+    // view now; expensive refresh work is queued after the browser paints it.
+    // Keep the profile render synchronous but run it only once, after reveal.
+    scheduleSectionRefresh();
+    window.requestAnimationFrame(()=>{
+      if(window.__welfareActivePortalView!==requestedId)return;
+      target.scrollIntoView({behavior:'smooth',block:'start'});
+    });
     if (typeof target.focus === 'function') {
       if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex','-1');
       target.focus({preventScroll:true});
     }
     button.dataset.mountAttempts = '0';
     window.__welfareActivePortalView = requestedId;
-    closeSidebar();
   });
 })();
 </script>
