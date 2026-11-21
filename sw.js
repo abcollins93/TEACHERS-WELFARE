@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_VERSION='twf-pwa-shell-v30-executive-summary-hydration-v5';
+const CACHE_VERSION='twf-pwa-shell-v31-password-visibility';
 const STATEMENT_CACHE='twf-cached-statements-v1';
 const NETWORK_TIMEOUT_MS=12000;
 async function reportNetworkState(state,detail){
