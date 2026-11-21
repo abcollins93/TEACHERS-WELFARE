@@ -54,7 +54,7 @@
 (function(){
  const query=new URLSearchParams(window.location.search);
  if(query.has('c')&&String(query.get('c')||'').trim().toUpperCase()==='DEMO'){
-  document.write('<script src="./demo-sandbox.js?v=20261121-executive-summary-hydration-v5"><\/script>');
+  document.write('<script src="./demo-sandbox.js?v=20261121-post-login-hydration-v6"><\/script>');
  }
 })();
 </script><script>
@@ -2495,7 +2495,8 @@ async function renderTeacherDashboard(profile,school){
  }
  window.__welfareCurrentRole='teacher';
  window.__welfareCurrentSchool=school;
- const {data:{user}}=await client.auth.getUser();
+ window.__welfareMemberProfileReady=new Promise(resolve=>{window.__welfareResolveMemberProfileReady=resolve;});
+ const {data:{user}}=await withPortalTimeout(client.auth.getUser(),12000,'Your member session could not be refreshed in time.');
  const teacherId=String(profile.teacher_id||profile.id||'');
  let teacherName=window.__welfareTeacherDisplayName||profile.name||profile.full_name||profile.fullName||user?.user_metadata?.full_name||teacherId;
  let teacherAvatar=null,teacherRecord=null;
@@ -2770,17 +2771,12 @@ async function renderTeacherDashboard(profile,school){
   }).join('');
   if(primary&&clone){primary.innerHTML=items;clone.innerHTML=items;}
  };
- await refreshTeacherTicker();
+ void refreshTeacherTicker().catch(error=>{ticker.classList.add('hidden');console.warn('[Teacher live ticker] Feed refresh deferred:',error?.message||error);});
  document.querySelectorAll('.teacher-workspace-panel').forEach(panel=>panel.classList.add('hidden'));
  $('schoolOverview').classList.remove('hidden');
+ const readTeacherRpc=(name)=>withPortalTimeout(client.rpc(name),20000,'The '+name.replace(/_/g,' ')+' request timed out.').catch(error=>({data:null,error}));
  const [{data:cs,error:ce},{data:ps,error:pe},{data:schoolPayoutData,error:spe},{data:personalContributionFeed,error:pcfe},{data:schoolFundRows,error:sfse},{data:registeredMemberCount,error:registeredMemberCountError},{data:teacherStandardDues,error:teacherStandardDuesError}]=await Promise.all([
-  client.rpc('get_my_teacher_contributions'),
-  client.rpc('get_my_teacher_payouts'),
-  client.rpc('get_my_school_welfare_payout_feed'),
-  client.rpc('get_my_teacher_contribution_feed'),
-  client.rpc('get_my_school_fund_summary'),
-  client.rpc('get_my_school_registered_member_count'),
-  client.rpc('get_my_teacher_school_standard_dues')
+  readTeacherRpc('get_my_teacher_contributions'),readTeacherRpc('get_my_teacher_payouts'),readTeacherRpc('get_my_school_welfare_payout_feed'),readTeacherRpc('get_my_teacher_contribution_feed'),readTeacherRpc('get_my_school_fund_summary'),readTeacherRpc('get_my_school_registered_member_count'),readTeacherRpc('get_my_teacher_school_standard_dues')
  ]);
  // Personal records remain bound to auth.uid(); school-wide payouts expose limited fields only.
  let contributionLoadError=pcfe,schoolPayoutLoadError=spe,schoolFundSummaryError=sfse;
@@ -3107,6 +3103,21 @@ async function renderTeacherDashboard(profile,school){
   '<div class="tp-finance"><span>Total Payments Recorded</span><strong>'+(ownPaymentCount?String(ownPaymentCount):'0 Payments')+'</strong></div>',
   '<div class="tp-finance"><span>Most Recent Contribution</span><strong'+(ownRecentContribution?'':' class="finance-empty"')+'>'+escapeHtml(ownRecentContributionDate)+'</strong></div>'
  ].join('');
+ window.__welfareRefreshMemberProfileViewer=()=>{
+  $('teacherOwnName').textContent=teacherName||'Unnamed Teacher';$('teacherOwnRank').textContent=profileRank||'Not specified';$('teacherOwnStaffId').textContent='Staff ID: '+teacherId;
+  $('teacherOwnRegistration').textContent=profileDate(profileRegistration);$('teacherOwnMembership').textContent=profileMembership||'Not specified';
+  $('teacherOwnPersonalRows').innerHTML=profileFieldRows([['FULL NAME',teacherName,'Unnamed Teacher'],['PHONE NUMBER',profilePhone,'Not provided'],['SCHOOL / INSTITUTION',school.name],['DISTRICT & REGION',[school.district,school.region].filter(Boolean).join(' · ')]]);
+  $('teacherOwnProfessionalRows').innerHTML=profileFieldRows([['Staff ID',teacherId],['Professional Rank',profileRank],['CLASS / SUBJECT',profileClass,'Not assigned'],['Employer',firstProfileValue(teacherRecord?.employer,teacherRecord?.employer_name,profile.employer,profile.employer_name,school.name)]]);
+  const refreshedTotal=activeTeacherContributionRows.reduce((sum,row)=>sum+Number(row.amount||0),0),refreshedPayout=payouts.reduce((sum,row)=>sum+Number(row.amount||0),0);
+  const recent=[...activeTeacherContributionRows].sort((a,b)=>String(b.contribution_date||b.date||'').localeCompare(String(a.contribution_date||a.date||'')))[0];
+  $('teacherOwnFinanceRows').innerHTML=[
+   '<div class="tp-finance"><span>Total Dues Contributed</span><strong class="finance-positive">'+escapeHtml(cash(refreshedTotal))+'</strong></div>',
+   '<div class="tp-finance"><span>Total Welfare Payouts Received</span><strong class="finance-payout">'+escapeHtml(cash(refreshedPayout))+'</strong></div>',
+   '<div class="tp-finance"><span>Total Payments Recorded</span><strong>'+(activeTeacherContributionRows.length?String(activeTeacherContributionRows.length):'0 Payments')+'</strong></div>',
+   '<div class="tp-finance"><span>Most Recent Contribution</span><strong'+(recent?'':' class="finance-empty"')+'>'+escapeHtml(recent?profileDate(recent.contribution_date||recent.date):'—')+'</strong></div>'
+  ].join('');return true;
+ };
+ window.__welfareResolveMemberProfileReady?.(true);window.__welfareResolveMemberProfileReady=null;
  $('teacherOwnProfilePrint')?.addEventListener('click',()=>window.print());
 
  $('teacherContributionsState').textContent=contributionLoadError?'Could not load your contribution records securely.':activeTeacherContributionCount()?activeTeacherContributionCount()+' active personal record(s)':'No active contribution records are available yet.';
@@ -3548,6 +3559,7 @@ function scheduleDemoAdminWorkflows(school){
   else window.setTimeout(run,60);
  }).then(result=>{
   if(!result)demoWorkflowMountPromise=null;
+  window.__welfareWorkflowMountPromise=demoWorkflowMountPromise;
   if(demoRole==='teacher'){
    window.__welfareCurrentRole='teacher';
    const activityTicker=document.getElementById('adminActivityTicker');
@@ -3730,20 +3742,20 @@ async function showDashboardInternal(){
  // Start Settings as soon as the authenticated tenant context is known. Do not await it:
  // dashboard query failures or workflow startup must never prevent the Settings view mounting.
  void startAccountSettingsInitialization(client,school,'admin');
- const [teachersRes,contribRes,payoutsRes,reversalsRes,duesSettingsRes,latestActivity]=await withPortalTimeout(Promise.all([
-  client.from('teachers').select('id,name,phone,rank,class_name').eq('school_id',school.id).order('name'),
-  client.from('contributions').select('*').eq('school_id',school.id),
-  client.from('payouts').select('id,amount').eq('school_id',school.id),
-  client.from('transaction_reversals').select('transaction_type,transaction_id').eq('school_id',school.id),
-  client.from('system_settings').select('key,value').eq('school_id',school.id),
+ const readDashboardSource=(promise,label)=>withPortalTimeout(promise,20000,label+' timed out.').catch(error=>({data:null,error}));
+ const [teachersRes,contribRes,payoutsRes,reversalsRes,duesSettingsRes,latestActivity]=await Promise.all([
+  readDashboardSource(client.from('teachers').select('id,name,phone,rank,class_name').eq('school_id',school.id).order('name'),'Teacher register'),
+  readDashboardSource(client.from('contributions').select('*').eq('school_id',school.id),'Contribution ledger'),
+  readDashboardSource(client.from('payouts').select('id,amount').eq('school_id',school.id),'Payout ledger'),
+  readDashboardSource(client.from('transaction_reversals').select('transaction_type,transaction_id').eq('school_id',school.id),'Transaction reversal ledger'),
+  readDashboardSource(client.from('system_settings').select('key,value').eq('school_id',school.id),'School settings'),
   Promise.all([
-   client.from('contributions').select('date').eq('school_id',school.id).order('date',{ascending:false}).limit(1),
-   client.from('payouts').select('date').eq('school_id',school.id).order('date',{ascending:false}).limit(1)
+   readDashboardSource(client.from('contributions').select('date').eq('school_id',school.id).order('date',{ascending:false}).limit(1),'Latest contribution date'),
+   readDashboardSource(client.from('payouts').select('date').eq('school_id',school.id).order('date',{ascending:false}).limit(1),'Latest payout date')
   ])
- ]),12000,'School dashboard records timed out. Please retry after checking your connection.');
- const err=[teachersRes.error,contribRes.error,payoutsRes.error,reversalsRes.error].find(Boolean);
- if(err){window.finishTenantSkeletons?.();console.warn('School records could not be loaded:',err);return;}
+ ]);
  const teachers=teachersRes.data||[], contributions=contribRes.data||[], payouts=payoutsRes.data||[], reversals=reversalsRes.data||[];
+ [teachersRes,contribRes,payoutsRes,reversalsRes].filter(result=>result.error).forEach(result=>console.warn('[School Welfare] Partial tenant dashboard hydration:',result.error?.message||result.error));
  const reversedContributions=new Set(reversals.filter(r=>r.transaction_type==='contribution').map(r=>String(r.transaction_id)));
  const resolvedMonthlyDues=window.resolveSchoolMonthlyDues?.(school,duesSettingsRes?.data,contributions.filter(row=>!reversedContributions.has(String(row.id))));
  if(resolvedMonthlyDues)window.updateSchoolMonthlyDuesMetric?.(resolvedMonthlyDues);
@@ -3751,11 +3763,11 @@ async function showDashboardInternal(){
  const c=contributions.filter(r=>!reversedContributions.has(String(r.id))).reduce((sum,r)=>sum+Number(r.amount||0),0);
   const now=new Date();const monthKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');const monthContributions=contributions.filter(r=>!reversedContributions.has(String(r.id))&&String(r.date||'').slice(0,7)===monthKey).reduce((sum,r)=>sum+Number(r.amount||0),0);
  const p=payouts.filter(r=>!reversedPayouts.has(String(r.id))).reduce((sum,r)=>sum+Number(r.amount||0),0);
- $('teacherCount').textContent=teachers.length;if($('monthlyContributionTotal'))$('monthlyContributionTotal').textContent='GH₵ '+money(monthContributions);$('contributionTotal').textContent='GH₵ '+money(c);$('payoutTotal').textContent='GH₵ '+money(p);$('netTotal').textContent='GH₵ '+money(c-p);$('lastActivity').textContent='Loading…';
+ $('teacherCount').textContent=teachersRes.error?'Unavailable':String(teachers.length);if($('monthlyContributionTotal'))$('monthlyContributionTotal').textContent=contribRes.error?'Unavailable':'GH₵ '+money(monthContributions);$('contributionTotal').textContent=contribRes.error?'Unavailable':'GH₵ '+money(c);$('payoutTotal').textContent=payoutsRes.error?'Unavailable':'GH₵ '+money(p);$('netTotal').textContent=(contribRes.error||payoutsRes.error||reversalsRes.error)?'Unavailable':'GH₵ '+money(c-p);$('lastActivity').textContent='Loading…';
  // The Teachers & Members workflow owns roster rendering and teacher-login
  // provisioning. The retired #teacherRows element is intentionally not used.
 const activityDates=latestActivity.flatMap(x=>x.data||[]).map(x=>x.date).filter(Boolean).sort().reverse();
-$('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'No records';
+$('lastActivity').textContent=latestActivity.some(item=>item.error)?'Unavailable':activityDates[0]?new Date(activityDates[0]+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'No records';
 // Finish the visible dashboard shell without waiting for the Admin workspace.
   // Its tenant-scoped panels hydrate independently after first paint.
   const workflowMount=new Promise(resolve=>{
@@ -4320,7 +4332,7 @@ if(isDemoMode){
 }
 })();
 </script>
-<script src="school-portal-workflows.js?v=20261121-executive-summary-hydration-v5"></script>
+<script src="school-portal-workflows.js?v=20261121-post-login-hydration-v6"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
@@ -4360,7 +4372,7 @@ if(isDemoMode){
   });
   // The primary navigation handler above owns open/close state. Avoid a
   // second click listener that could reopen the backdrop after it is closed.
-  document.addEventListener('click', function(event){
+  document.addEventListener('click', async function(event){
     const button = event.target.closest('.navbtn[data-target]');
     if (!button) return;
     event.preventDefault();
@@ -4397,6 +4409,14 @@ if(isDemoMode){
     // once it exists, so a first click during initialization cannot strand the UI.
     const findTarget = () => document.getElementById(requestedId);
     let target = findTarget();
+    if(requestedId==='teacherProfileViewer'&&window.__welfareCurrentRole!=='teacher'){
+      const pendingMount=window.__welfareWorkflowMountPromise;if(pendingMount)await Promise.race([pendingMount.catch(()=>false),new Promise(resolve=>window.setTimeout(()=>resolve(false),22000))]);
+      target=findTarget();if(typeof window.__welfareRefreshAdminProfileViewer==='function')window.__welfareRefreshAdminProfileViewer();
+    }
+    if(requestedId==='wfTeacherPanel'&&window.__welfareCurrentRole==='teacher'){
+      const ready=window.__welfareMemberProfileReady;if(ready)await Promise.race([ready,new Promise(resolve=>window.setTimeout(()=>resolve(false),22000))]);
+      if(typeof window.__welfareRefreshMemberProfileViewer==='function')window.__welfareRefreshMemberProfileViewer();target=findTarget();
+    }
     if (target && window.__welfareActivePortalView === requestedId &&
         !target.classList.contains('hidden') && !target.closest('.hidden')) {
       closeSidebar();
