@@ -3315,12 +3315,12 @@ async function waitForSchoolWorkflows(timeoutMs=10000){
 // Keep one initialization promise per authenticated tenant/role to avoid duplicate setup.
 function resolveSchoolMonthlyDues(school,settingsRows,contributionRows){
  const candidates=[];
- const add=value=>{if(value===null||value===undefined||String(value).trim()==='')return;const n=Number(String(value).replace(/[₵,\\s]/g,''));if(Number.isFinite(n)&&n>0)candidates.push(n);};
+ const add=value=>{if(value===null||value===undefined||String(value).trim()==='')return;const n=Number(String(value).replace(/[^0-9.+-]/g,''));if(Number.isFinite(n)&&n>0)candidates.push(n);};
  const keys=['standard_dues','standard_monthly_dues','monthly_dues','monthly_dues_amount','monthly_contribution','monthly_contribution_amount','welfare_dues','welfare_monthly_dues','contribution_rate','monthly_rate'];
  const scan=source=>{if(!source||typeof source!=='object')return;for(const key of keys){add(source[key]);add(source[key.toUpperCase()]);}if(source.settings&&typeof source.settings==='object')scan(source.settings);if(source.welfare_settings&&typeof source.welfare_settings==='object')scan(source.welfare_settings);};
- scan(school);scan(window.schoolSettings);scan(window.__welfareCurrentSchool);
  const rows=Array.isArray(settingsRows)?settingsRows:(settingsRows&&typeof settingsRows==='object'?[settingsRows]:[]);
  rows.forEach(row=>{const key=String(row?.key||row?.setting_key||row?.name||'').toLowerCase();if(keys.includes(key))add(row.value??row.setting_value??row.amount);});
+ scan(window.schoolSettings);scan(school);scan(window.__welfareCurrentSchool);
  if(candidates.length)return candidates[0];
  const amounts=(Array.isArray(contributionRows)?contributionRows:[]).filter(row=>{const status=String(row?.status||row?.transaction_status||'active').toLowerCase();return Number(row?.amount)>0&&!['reversed','inactive','deleted','cancelled','canceled','void','archived'].includes(status)&&!row?.is_reversed&&!row?.reversed_at;}).map(row=>Math.round(Number(row.amount)*100)/100);
  if(amounts.length){const counts=new Map();amounts.forEach(amount=>counts.set(amount,(counts.get(amount)||0)+1));return [...counts.entries()].sort((a,b)=>b[1]-a[1]||b[0]-a[0])[0][0];}
@@ -3592,7 +3592,7 @@ async function showDashboardInternal(){
  void startAccountSettingsInitialization(client,school,'admin');
  const [teachersRes,contribRes,payoutsRes,reversalsRes,duesSettingsRes,latestActivity]=await withPortalTimeout(Promise.all([
   client.from('teachers').select('id,name,phone,rank,class_name').eq('school_id',school.id).order('name'),
-  client.from('contributions').select('id,amount,date').eq('school_id',school.id),
+  client.from('contributions').select('*').eq('school_id',school.id),
   client.from('payouts').select('id,amount').eq('school_id',school.id),
   client.from('transaction_reversals').select('transaction_type,transaction_id').eq('school_id',school.id),
   client.from('system_settings').select('key,value').eq('school_id',school.id),
@@ -3604,9 +3604,9 @@ async function showDashboardInternal(){
  const err=[teachersRes.error,contribRes.error,payoutsRes.error,reversalsRes.error].find(Boolean);
  if(err){window.finishTenantSkeletons?.();console.warn('School records could not be loaded:',err);return;}
  const teachers=teachersRes.data||[], contributions=contribRes.data||[], payouts=payoutsRes.data||[], reversals=reversalsRes.data||[];
- const resolvedMonthlyDues=window.resolveSchoolMonthlyDues?.(school,duesSettingsRes?.data,contributions);
- if(resolvedMonthlyDues)window.updateSchoolMonthlyDuesMetric?.(resolvedMonthlyDues);
  const reversedContributions=new Set(reversals.filter(r=>r.transaction_type==='contribution').map(r=>String(r.transaction_id)));
+ const resolvedMonthlyDues=window.resolveSchoolMonthlyDues?.(school,duesSettingsRes?.data,contributions.filter(row=>!reversedContributions.has(String(row.id))));
+ if(resolvedMonthlyDues)window.updateSchoolMonthlyDuesMetric?.(resolvedMonthlyDues);
  const reversedPayouts=new Set(reversals.filter(r=>r.transaction_type==='payout').map(r=>String(r.transaction_id)));
  const c=contributions.filter(r=>!reversedContributions.has(String(r.id))).reduce((sum,r)=>sum+Number(r.amount||0),0);
   const now=new Date();const monthKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');const monthContributions=contributions.filter(r=>!reversedContributions.has(String(r.id))&&String(r.date||'').slice(0,7)===monthKey).reduce((sum,r)=>sum+Number(r.amount||0),0);
