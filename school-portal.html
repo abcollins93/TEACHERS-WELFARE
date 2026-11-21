@@ -54,7 +54,7 @@
 (function(){
  const query=new URLSearchParams(window.location.search);
  if(query.has('c')&&String(query.get('c')||'').trim().toUpperCase()==='DEMO'){
-  document.write('<script src="./demo-sandbox.js?v=20261121-mobile-interaction-v19"><\/script>');
+  document.write('<script src="./demo-sandbox.js?v=20261121-workflow-recovery-v20"><\/script>');
  }
 })();
 </script><script>
@@ -3797,7 +3797,7 @@ async function showDashboardInternal(){
     if(dashboard){
      if(!notice){notice=document.createElement('section');notice.id='adminWorkflowMountError';notice.className='panel';notice.style.cssText='border:1px solid #f0b4b4;background:#fff7f7;color:#8f1d24;padding:14px 16px;margin:12px 0';dashboard.insertBefore(notice,dashboard.firstChild);}
      const diagnostic=window.__welfareWorkflowLastError;const diagnosticMessage=diagnostic?.message||workflowError?.message||'Secure data loading failed';const diagnosticStage=diagnostic?.stage?' ['+diagnostic.stage+']':'';notice.replaceChildren(document.createTextNode('Administrator sections could not finish loading: '+String(diagnosticMessage)+diagnosticStage+'. '));
-     const retry=document.createElement('button');retry.type='button';retry.className='secondary';retry.textContent='Retry loading administrator sections';retry.addEventListener('click',async()=>{window.__welfareWorkflowLastError=null;retry.disabled=true;retry.textContent='Retrying…';notice.firstChild.textContent='Retrying secure administrator data… ';try{const ready=await waitForSchoolWorkflows();if(!ready)throw new Error('The workflow script is not available yet. Refresh and retry.');const result=await window.initSchoolWorkflows(client,school,showDashboard);if(result){notice.remove();window.__welfareWorkflowMountPromise=Promise.resolve(true);}else throw new Error('The administrator workspace could not be initialized.');}catch(retryError){const diagnostic=window.__welfareWorkflowLastError;notice.firstChild.textContent=String(diagnostic?.message||retryError?.message||'Administrator data is still unavailable.')+(diagnostic?.stage?' ['+diagnostic.stage+']':'')+'. ';retry.disabled=false;retry.textContent='Retry loading administrator sections';}});notice.appendChild(retry);
+     const retry=document.createElement('button');retry.type='button';retry.className='secondary';retry.textContent='Retry loading administrator sections';retry.addEventListener('click',async()=>{window.__welfareWorkflowLastError=null;retry.disabled=true;retry.textContent='Retrying…';notice.firstChild.textContent='Retrying secure administrator data… ';try{let ready=await waitForSchoolWorkflows(12000);if(!ready){const recoveryScript=document.createElement('script');recoveryScript.src='./school-portal-workflows.js?v=20261121-workflow-recovery-v20&retry='+Date.now();recoveryScript.async=true;document.head.appendChild(recoveryScript);ready=await waitForSchoolWorkflows(12000);}if(!ready)throw new Error('The workflow bundle could not be reloaded. Check your connection and retry.');const result=await window.initSchoolWorkflows(client,school,showDashboard);if(result){notice.remove();window.__welfareWorkflowMountPromise=Promise.resolve(true);}else throw new Error('The administrator workspace could not be initialized.');}catch(retryError){const diagnostic=window.__welfareWorkflowLastError;notice.firstChild.textContent=String(diagnostic?.message||retryError?.message||'Administrator data is still unavailable.')+(diagnostic?.stage?' ['+diagnostic.stage+']':'')+'. ';retry.disabled=false;retry.textContent='Retry loading administrator sections';}});notice.appendChild(retry);
     }
     return false;
   });
@@ -4379,7 +4379,7 @@ if(isDemoMode){
 }
 })();
 </script>
-<script src="school-portal-workflows.js?v=20261121-mobile-interaction-v19"></script>
+<script src="school-portal-workflows.js?v=20261121-workflow-recovery-v20"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
