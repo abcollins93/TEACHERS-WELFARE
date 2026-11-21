@@ -4399,7 +4399,7 @@ if(isDemoMode){
   });
   // The primary navigation handler above owns open/close state. Avoid a
   // second click listener that could reopen the backdrop after it is closed.
-  document.addEventListener('click', async function(event){
+  document.addEventListener('click', function(event){
     const button = event.target.closest('.navbtn[data-target]');
     if (!button) return;
     event.preventDefault();
@@ -4443,15 +4443,29 @@ if(isDemoMode){
     const findTarget = () => document.getElementById(requestedId);
     const adminWorkflowTargets=['teacherProfileViewer','schoolTeachers','wfAdminContributionPanel','wfAdminPayoutPanel','wfStatementPanel','wfReportsPanel','wfAdminPanel','wfAuditPanel'];
     let target = findTarget();
-    // Wait for a mount only when the destination does not exist yet.
+    // Never block a tap while the workflow bundle is mounting. Keep the
+    // current screen responsive and resume this navigation as soon as the
+    // authenticated tenant workspace has mounted.
     if(!target&&window.__welfareCurrentRole==='admin'&&adminWorkflowTargets.includes(requestedId)){
       const pendingMount=window.__welfareWorkflowMountPromise;
-      if(pendingMount)await Promise.race([pendingMount.catch(()=>false),new Promise(resolve=>window.setTimeout(()=>resolve(false),12000))]);
-      target=findTarget();
+      if(pendingMount){
+        window.__welfareActivePortalView=requestedId;
+        pendingMount.then(()=>{
+          if(window.__welfareActivePortalView===requestedId&&findTarget()){
+            button.dataset.mountAttempts='0';
+            button.click();
+          }
+        }).catch(error=>console.warn('[School Welfare] Deferred sidebar destination could not mount:',error?.message||error));
+        return;
+      }
     }
+    // Populate the selected profile from its authenticated role-specific source
+    // before visibility changes, then repeat after reveal to cover late mounts.
     if(requestedId==='teacherProfileViewer'&&window.__welfareCurrentRole==='admin'){
       window.__welfareRenderAdminProfileViewer?.();
       target=findTarget();
+    }else if(requestedId==='wfTeacherPanel'&&window.__welfareCurrentRole==='teacher'){
+      window.__welfareRefreshMemberProfileViewer?.();
     }
     window.__welfareActivePortalView=requestedId;
     const scheduleSectionRefresh=()=>{
@@ -4470,11 +4484,8 @@ if(isDemoMode){
         }).catch(error=>console.warn('[School Welfare] Background section refresh deferred:',error?.message||error));
       });
     };
-    if (target && !target.classList.contains('hidden') && !target.closest('.hidden')) {
-      scheduleSectionRefresh();
-      closeSidebar();
-      return;
-    }
+    // Continue through the same reveal path even when the target is already
+    // visible: this clears stale inline display/aria states and refreshes titles.
     if (!target) {
       const attempts = Number(button.dataset.mountAttempts || 0);
       const dashboardVisible = dashboardRoot && !dashboardRoot.classList.contains('hidden');
@@ -4557,6 +4568,12 @@ if(isDemoMode){
       ancestor.removeAttribute('aria-hidden');
       if(ancestor===dashboardRoot)break;
       ancestor = ancestor.parentElement;
+    }
+    if(requestedId==='teacherProfileViewer'&&window.__welfareCurrentRole==='admin'){
+      window.__welfareRenderAdminProfileViewer?.();
+      target=document.getElementById('teacherProfileViewer')||target;
+    }else if(requestedId==='wfTeacherPanel'&&window.__welfareCurrentRole==='teacher'){
+      window.__welfareRefreshMemberProfileViewer?.();
     }
     if (requestedId === 'schoolTeachers') {
       // The register is mounted dynamically inside this section. A previous
