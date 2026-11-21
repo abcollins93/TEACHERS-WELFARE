@@ -3761,6 +3761,13 @@ async function showDashboardInternal(){
   }).catch(workflowError=>{
     console.error('[School Welfare] Workflow initialization deferred/failed:',workflowError?.message||workflowError);
     window.__welfareWorkflowMountPromise=null;
+    const dashboard=document.getElementById('dashboard');
+    let notice=document.getElementById('adminWorkflowMountError');
+    if(dashboard){
+     if(!notice){notice=document.createElement('section');notice.id='adminWorkflowMountError';notice.className='panel';notice.style.cssText='border:1px solid #f0b4b4;background:#fff7f7;color:#8f1d24;padding:14px 16px;margin:12px 0';dashboard.insertBefore(notice,dashboard.firstChild);}
+     notice.replaceChildren(document.createTextNode('Administrator sections could not finish loading: '+String(workflowError?.message||'Secure data loading failed')+'. '));
+     const retry=document.createElement('button');retry.type='button';retry.className='secondary';retry.textContent='Retry loading administrator sections';retry.addEventListener('click',async()=>{retry.disabled=true;retry.textContent='Retrying…';notice.firstChild.textContent='Retrying secure administrator data… ';try{const ready=await waitForSchoolWorkflows();if(!ready)throw new Error('The workflow script is not available yet. Refresh and retry.');const result=await window.initSchoolWorkflows(client,school,showDashboard);if(result){notice.remove();window.__welfareWorkflowMountPromise=Promise.resolve(true);}else throw new Error('The administrator workspace could not be initialized.');}catch(retryError){notice.firstChild.textContent=String(retryError?.message||'Administrator data is still unavailable.')+' ';retry.disabled=false;retry.textContent='Retry loading administrator sections';}});notice.appendChild(retry);
+    }
     return false;
   });
   window.__welfareWorkflowMountPromise=workflowMount;
