@@ -22,7 +22,7 @@ const SHELL_ASSETS=[
  './',
  './index.html',
  './school-portal.html',
- './demo-sandbox.js',
+ './demo-sandbox.js?v=20261121-mobile-performance-v1',
  './set-password.html',
  './g.html',
  './offline.html',
