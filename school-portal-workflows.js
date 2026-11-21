@@ -15,6 +15,9 @@ const frameRender=(function(){
   requestAnimationFrame(()=>{pending.delete(key);render();});
  };
 })();
+const yieldToBrowser=()=>window.WelfareDemo?.yieldToBrowser
+ ?window.WelfareDemo.yieldToBrowser()
+ :new Promise(resolve=>requestAnimationFrame(()=>setTimeout(resolve,0)));
 
 function wfDialog({kind='confirm',title='Please confirm',message='',confirmText='Confirm',cancelText='Cancel',placeholder='Enter your response…',responseMode='none'}={}){
  return new Promise(resolve=>{
@@ -1319,7 +1322,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  window.applyDashboardMetricLayout?.();
  const adminContributionRecordsCount=$('adminContributionRecordsCount');if(adminContributionRecordsCount)adminContributionRecordsCount.textContent=(cr.error||rr.error)?'Unavailable':String(activeCons.length);
  const options='<option value="">Choose teacher</option>'+teachers.filter(t=>t.is_active!==false).map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name)+' ('+esc(t.id)+')</option>').join('');
- $('wfConTeacher').innerHTML=options;$('wfPayTeacher').innerHTML=options;$('wfStatementTeacher').innerHTML=options;
+ ['wfConTeacher','wfPayTeacher','wfStatementTeacher'].forEach(id=>{const select=$(id);if(select&&select.innerHTML!==options)select.innerHTML=options;});
  const reversalCell=(type,x)=>reversed.has(type+':'+x.id)?'<strong class="wf-reversed-label">REVERSED</strong> <span class="muted">· '+esc(reversals.find(r=>r.transaction_type===type&&String(r.transaction_id)===String(x.id))?.reason||'Reason recorded')+'</span>':'<button type="button" class="wf-reverse-action" data-wf-reverse="'+type+'" data-wf-id="'+esc(x.id)+'"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Reverse</button>';
  const renderContributionLedger=()=>{
     const q=String($('wfLedgerSearch')?.value||'').trim().toLowerCase(),month=$('wfLedgerMonth')?.value||'';
@@ -1338,21 +1341,24 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     }).join(''):'<tr><td colspan="7">No matching contributions.</td></tr>';
   };
   renderContributionLedger();$('wfLedgerSearch').addEventListener('input',()=>frameRender($('wfConRows'),renderContributionLedger));$('wfLedgerMonth').addEventListener('change',()=>frameRender($('wfConRows'),renderContributionLedger));
+  let lastDuesMatrixRender=null;
   const renderDuesMatrix=()=>{
     const rowsHost=$('wfDuesMatrixRows'),status=$('wfDuesMatrixStatus');
     if(!rowsHost)return;
+    const year=String($('wfDuesMatrixYear')?.value||'');
+    const query=String($('wfDuesMatrixSearch')?.value||'').trim().toLowerCase();
+    if(lastDuesMatrixRender&&lastDuesMatrixRender.year===year&&lastDuesMatrixRender.query===query&&lastDuesMatrixRender.teachers===teachers&&lastDuesMatrixRender.contributions===activeCons&&lastDuesMatrixRender.teacherError===!!tr.error&&lastDuesMatrixRender.contributionError===!!cr.error&&lastDuesMatrixRender.reversalError===!!rr.error)return;
+    lastDuesMatrixRender={year,query,teachers,contributions:activeCons,teacherError:!!tr.error,contributionError:!!cr.error,reversalError:!!rr.error};
     if(tr.error||cr.error||rr.error){
       rowsHost.innerHTML='<tr><td colspan="13">The teacher register, contribution ledger, or reversal status could not be verified. The matrix is unavailable to avoid showing incorrect paid status.</td></tr>';
       if(status)status.textContent='Unavailable — check school data access and refresh.';
       return;
     }
-    const year=String($('wfDuesMatrixYear')?.value||'');
     if(!/^\d{4}$/.test(year)){
       rowsHost.innerHTML='<tr><td colspan="13">Choose a valid reporting year.</td></tr>';
       if(status)status.textContent='';
       return;
     }
-    const query=String($('wfDuesMatrixSearch')?.value||'').trim().toLowerCase();
     const roster=teachers.filter(teacher=>teacher.is_active!==false&&[
       teacher.name,teacher.id,teacher.staff_id,teacher.staffId
     ].some(value=>String(value??'').toLowerCase().includes(query)));
@@ -1380,7 +1386,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     const yearRecords=activeCons.filter(item=>String(item.date||'').slice(0,4)===year).length;
     if(status)status.textContent=roster.length+' active member'+(roster.length===1?'':'s')+' shown · '+year+' · '+yearRecords+' active contribution record'+(yearRecords===1?'':'s');
   };
-  renderDuesMatrix();
+  frameRender($('wfDuesMatrixRows'),renderDuesMatrix);
   $('wfDuesMatrixYear')?.addEventListener('change',()=>frameRender($('wfDuesMatrixRows'),renderDuesMatrix));
    $('wfDuesMatrixSearch')?.addEventListener('input',()=>frameRender($('wfDuesMatrixRows'),renderDuesMatrix));
   const duesMatrixPdfButton=$('wfDuesMatrixPdf');
@@ -1393,6 +1399,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     const reportHostId='wfDuesMatrixPdfHost';
     let report=null;
     try{
+     await yieldToBrowser();
      if(tr.error||cr.error||rr.error)throw new Error('The school roster, contribution ledger, and reversal status must all be available before this official report can be issued.');
      if(typeof window.html2pdf!=='function')throw new Error('The PDF library is unavailable. Check your connection and try again.');
      // Verification is best-effort for this report: a slow or unavailable
@@ -1580,7 +1587,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     const monthKey=getDashboardMonthKey();
     if($('monthlyContributionTotal'))$('monthlyContributionTotal').textContent=cr.error?'Unavailable':'GHS '+money(activeCons.filter(item=>String(item.date||'').slice(0,7)===monthKey).reduce((sum,item)=>sum+Number(item.amount||0),0));
     renderContributionLedger();
-    renderDuesMatrix();
+    frameRender($('wfDuesMatrixRows'),renderDuesMatrix);
     renderPayoutLedger();
     renderSelectedTeacherProfile();
     await refreshAdminActivityTicker();
@@ -1691,6 +1698,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    if(current?.key===key)return;
    const task=(async()=>{
      try{
+       await yieldToBrowser();
        const generated=await assertShareableWelfarePdf(await window.generateTenantWelfarePdf(options));
        const fileName=String(generated.filename||'Welfare_Report.pdf');
        const pdfFile=new File([generated.blob],fileName,{type:'application/pdf'});
@@ -1746,6 +1754,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    if(button.disabled)return;
    button.disabled=true;msg(statusId,'Preparing PDF…');
    try{
+     await yieldToBrowser();
      if(typeof window.generateTenantWelfarePdf!=='function')throw new Error('The PDF generator is unavailable. Reload the portal and try again.');
      const pdfOptions=buildOptions();
      const generated=await window.generateTenantWelfarePdf(pdfOptions);
@@ -1811,6 +1820,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    if(typeof window.generateTenantWelfarePdf!=='function'){msg('wfStatementMsg','The PDF generator is unavailable. Reload the portal and try again.',true);return;}
    msg('wfStatementMsg','Preparing statement for one-tap sharing…');
    individualSharePreparation=(async()=>{
+     await yieldToBrowser();
      const options=buildIndividualStatementOptions(tid,teacher);
      options.shareIntent=true;
      const generated=await assertShareableWelfarePdf(await window.generateTenantWelfarePdf(options));
@@ -1894,8 +1904,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    if(opened)msg('wfStatementMsg','Verification link opened in WhatsApp. No PDF file was attached.');
    else downloadWorkflowBlob(prepared.generated.blob,prepared.fileName,'wfStatementMsg','File sharing is not supported here. Your PDF has been downloaded instead.','Tap here to view downloaded PDF');
  });
- // Prepare the currently selected member as soon as the report controls are ready.
- prepareIndividualStatementShare();
+ // Do not generate a full A4 PDF during workflow startup. A member selection
+ // starts share preparation; downloads remain fully on-demand.
 
  const buildMonthlyShareOptions=()=>{
    const selectedMonth=$('wfReportMonth').value,selectedYear=$('wfReportYear').value;
@@ -1903,19 +1913,16 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    return {type:'monthly',month:selectedYear+'-'+selectedMonth,school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},contributions:activeCons,payouts:activePays,teachers,academicYear:window.getCurrentAcademicYear(),standardMonthlyDues};
  };
  $('wfMonthlyShare').addEventListener('click',()=>{try{return runWelfarePdf($('wfMonthlyShare'),'wfReportMsg','Monthly summary PDF shared successfully.',buildMonthlyShareOptions,true);}catch(error){msg('wfReportMsg',error.message,true);}});
- prepareAdminReportShare($('wfMonthlyShare'),'wfReportMsg',buildMonthlyShareOptions);
  $('wfReportMonth').addEventListener('change',()=>prepareAdminReportShare($('wfMonthlyShare'),'wfReportMsg',buildMonthlyShareOptions));
  $('wfReportYear').addEventListener('change',()=>prepareAdminReportShare($('wfMonthlyShare'),'wfReportMsg',buildMonthlyShareOptions));
  const buildCompleteShareOptions=()=>({type:'complete',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},contributions:activeCons,payouts:activePays,teachers,academicYear:window.getCurrentAcademicYear(),standardMonthlyDues});
  $('wfCompleteShare').addEventListener('click',()=>runWelfarePdf($('wfCompleteShare'),'wfReportMsg','Complete fund summary PDF shared successfully.',buildCompleteShareOptions,true));
- prepareAdminReportShare($('wfCompleteShare'),'wfReportMsg',buildCompleteShareOptions);
  const buildAnnualShareOptions=()=>{
    const selectedYear=$('wfAnnualYear').value;
    if(!/^\d{4}$/.test(selectedYear||''))throw new Error('Choose a valid reporting year.');
    return {type:'annual',year:selectedYear,school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},contributions:activeCons,payouts:activePays,teachers,academicYear:window.getCurrentAcademicYear(),standardMonthlyDues};
  };
  $('wfAnnualShare').addEventListener('click',()=>{try{return runWelfarePdf($('wfAnnualShare'),'wfReportMsg','Yearly summary PDF shared successfully.',buildAnnualShareOptions,true);}catch(error){msg('wfReportMsg',error.message,true);}});
- prepareAdminReportShare($('wfAnnualShare'),'wfReportMsg',buildAnnualShareOptions);
  $('wfAnnualYear').addEventListener('change',()=>prepareAdminReportShare($('wfAnnualShare'),'wfReportMsg',buildAnnualShareOptions));
  $('wfStatementShare').addEventListener('click',()=>{
    const tid=$('wfStatementTeacher').value,teacher=teachers.find(t=>String(t.id)===String(tid));
