@@ -1236,7 +1236,10 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const renderSelectedTeacherProfile=()=>{
   const profileTeachers=getProfileTeacherRows();
   if(!selectedProfileTeacherId&&profileTeachers.length)selectedProfileTeacherId=String(profileTeachers[0].id);
-  const sourceTeacher=profileTeachers.find(x=>String(x.id)===String(selectedProfileTeacherId));
+  let sourceTeacher=profileTeachers.find(x=>String(x.id)===String(selectedProfileTeacherId));
+  // A stale selection (for example after a roster refresh or account switch)
+  // must never leave the profile viewer blank while tenant-scoped rows exist.
+  if(!sourceTeacher&&profileTeachers.length){sourceTeacher=profileTeachers[0];selectedProfileTeacherId=String(sourceTeacher.id);if(profileSelect)profileSelect.value=selectedProfileTeacherId;}
   if(!sourceTeacher){
    const nameNode=$('tpName');if(nameNode)nameNode.textContent=tr.error?'Teacher profile could not be loaded':'No teacher profiles are registered for this school.';
    const personalNode=$('tpPersonalRows');if(personalNode)personalNode.innerHTML='<div class="tp-field"><small>PROFILE STATUS</small><strong>'+(tr.error?'The school teacher register could not be reached.':'No teacher records were returned.')+'</strong></div><button type="button" class="wf-table-action" data-wf-retry-profile>Retry loading profile</button>';
@@ -1290,7 +1293,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   }
   const rendered=renderSelectedTeacherProfile();
   const panel=$('teacherProfileViewer');
-  if(panel){panel.classList.remove('hidden');panel.removeAttribute('hidden');panel.style.removeProperty('display');panel.style.removeProperty('visibility');panel.removeAttribute('aria-hidden');}
+  if(panel){panel.classList.remove('hidden');panel.removeAttribute('hidden');panel.style.setProperty('display','block','important');panel.style.setProperty('visibility','visible','important');panel.removeAttribute('aria-hidden');}
   return rendered;
  };
  window.__welfareRenderActiveProfileViewer=()=>{
