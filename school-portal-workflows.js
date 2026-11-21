@@ -2,6 +2,20 @@
 (function(){
 'use strict';
 const $=id=>document.getElementById(id);
+
+/* Shared badge and numeric treatment for workflow-rendered content. */
+(function(){
+ if(document.getElementById('welfare-workflow-visual-polish'))return;
+ const style=document.createElement('style'); style.id='welfare-workflow-visual-polish';
+ style.textContent=`
+  :where(.wf-admin-pill,.wf-payout-status,.wf-admin-status,.wf-restricted-badge,.wf-teacher-register-badge,.teacher-dashboard-status) { display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:23px;padding:4px 9px;border:1px solid rgba(100,116,139,.28);border-radius:999px;line-height:1.25;font-weight:750;white-space:nowrap; }
+  :where(.wf-payout-metric strong,.teacher-dashboard-contribution-amount,.teacher-dashboard-payout-amount,.wf-currency,.wf-money,[class*="amount"],[class*="total"],[class*="balance"],[class*="count"]) { font-variant-numeric:tabular-nums lining-nums;font-feature-settings:"tnum" 1,"lnum" 1; }
+  .dark :where(.wf-admin-pill,.wf-payout-status,.wf-admin-status,.wf-restricted-badge,.wf-teacher-register-badge,.teacher-dashboard-status) { border-color:rgba(148,163,184,.34); }
+  :where(.wf-empty-state,.empty-state) { padding:18px 14px;border:1px dashed rgba(148,163,184,.38);border-radius:12px;color:var(--muted,#718096);text-align:center;background:rgba(148,163,184,.045); }
+ `;
+ document.head.appendChild(style);
+})();
+
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const displayWelfareReason=reason=>{const value=String(reason??'').trim();return value?value.replace(/^Bereavement Assistance$/i,'Condolence Support'):'—';};
 window.displayWelfareReason=displayWelfareReason;
