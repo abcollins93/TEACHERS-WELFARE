@@ -1,6 +1,8 @@
 /* School-scoped welfare workflows. Uses the authenticated Supabase client created by school-portal.html. */
 (function(){
 'use strict';
+window.__welfareWorkflowBundleState='loading';
+window.__welfareWorkflowBundleVersion='20261121-workflow-recovery-v21';
 const $=id=>document.getElementById(id);
 
 /* Shared badge and numeric treatment for workflow-rendered content. */
@@ -2662,4 +2664,6 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    return false;
  }
 };
+window.__welfareWorkflowBundleState='ready';
+window.dispatchEvent(new Event('welfare-workflows-ready'));
 })();
