@@ -1269,17 +1269,39 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  $('teacherProfilePrint')?.addEventListener('click',()=>window.print());
  $('tpEditContact')?.addEventListener('click',()=>wfNotice('To update official contact details, contact the Executive Administrator.'));
  renderSelectedTeacherProfile();
+ // A synchronous cached render is the first response to Profile viewer navigation.
+ // Network-backed roster and ledger refreshes are deliberately kept separate.
+ window.__welfareRenderAdminProfileViewer=()=>{
+  if(!selectedProfileTeacherId&&teachers[0])selectedProfileTeacherId=String(teachers[0].id);
+  if(profileSelect){
+   profileSelect.innerHTML=teachers.map(row=>'<option value="'+esc(row.id)+'">'+esc(row.name||row.id)+' ('+esc(row.id)+')</option>').join('');
+   profileSelect.value=selectedProfileTeacherId;
+  }
+  renderSelectedTeacherProfile();
+  return !!teachers.length;
+ };
  window.__welfareRefreshAdminProfileViewer=async()=>{
-  try{await reloadTeacherRegisterForExport();}
-  catch(error){console.warn('[School Welfare] Profile viewer roster refresh failed:',error?.message||error);tr={data:[],error};teachers=[];selectedProfileTeacherId='';renderTeacherTables();renderSelectedTeacherProfile();return false;}
+  // Never blank a populated profile while refreshing. Keep the last verified
+  // tenant-scoped roster visible if a transient network refresh fails.
+  window.__welfareRenderAdminProfileViewer();
+  try{
+   await reloadTeacherRegisterForExport();
+  }catch(error){
+   console.warn('[School Welfare] Profile viewer roster refresh deferred:',error?.message||error);
+   if(!teachers.length){
+    tr={data:[],error};
+    renderSelectedTeacherProfile();
+   }
+   return false;
+  }
   if(typeof refreshWorkflow==='function'){
    const financialReady=await refreshWorkflow();
    if(!financialReady)console.warn('[School Welfare] Profile viewer financial history is incomplete; retry the contribution/payout sections.');
   }
-  if(!teachers.length){renderSelectedTeacherProfile();return false;}
-  if(!selectedProfileTeacherId||!teachers.some(item=>String(item.id)===String(selectedProfileTeacherId)))selectedProfileTeacherId=String(teachers[0].id);
+  if(!selectedProfileTeacherId||!teachers.some(item=>String(item.id)===String(selectedProfileTeacherId)))selectedProfileTeacherId=teachers[0]?String(teachers[0].id):'';
   if(profileSelect)profileSelect.value=selectedProfileTeacherId;
-  renderSelectedTeacherProfile();return !!$('tpName')?.textContent;
+  window.__welfareRenderAdminProfileViewer();
+  return !!teachers.length;
  };
 
  const teacherLabel=id=>{const t=teacherById.get(String(id));return t?esc(t.name)+' ('+esc(t.id)+')':esc(id||'—')};
