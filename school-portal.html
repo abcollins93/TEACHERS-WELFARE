@@ -54,7 +54,7 @@
 (function(){
  const query=new URLSearchParams(window.location.search);
  if(query.has('c')&&String(query.get('c')||'').trim().toUpperCase()==='DEMO'){
-  document.write('<script src="./demo-sandbox.js?v=20261121-profile-contact-cedi-v2"><\/script>');
+  document.write('<script src="./demo-sandbox.js?v=20261121-pdf-name-guard-v3"><\/script>');
  }
 })();
 </script><script>
@@ -3152,7 +3152,7 @@ async function renderTeacherDashboard(profile,school){
    const generatedStatement=await window.generateTenantWelfarePdf(statementPdfOptions);
    const pdfBlob=generatedStatement?.blob;
    const rawFilename=String(generatedStatement?.filename||'Welfare_Statement_Report.pdf');
-   const filename=(rawFilename.replace(/\\.pdf$/i,'')||'Welfare_Statement_Report')+'.pdf';
+   const filename=(rawFilename.replace(/\.pdf$/i,'')||'Welfare_Statement_Report')+'.pdf';
    if(!(pdfBlob instanceof Blob))throw new Error('The generated personal statement PDF is unavailable.');
    if(sharePdf&&prepareOnly){
     const pdfFile=new File([pdfBlob],filename,{type:'application/pdf'});
@@ -5001,7 +5001,7 @@ window.generateTenantWelfarePdf=async function(o){
 };
 window.downloadWelfareBlob=function(blob,fileName,statusNode,successText,sourceButton=null){
  if(!(blob instanceof Blob))throw new Error('The generated file is unavailable.');
- const filename=(String(fileName||'Welfare_Statement_Report').replace(/\\.pdf$/i,'')||'Welfare_Statement_Report')+'.pdf';
+ const filename=(String(fileName||'Welfare_Statement_Report').replace(/\.pdf$/i,'')||'Welfare_Statement_Report')+'.pdf';
  const pdfBlob=blob.type==='application/pdf'?blob:new Blob([blob],{type:'application/pdf'});
  const url=window.URL.createObjectURL(pdfBlob);
  const link=document.createElement('a');
