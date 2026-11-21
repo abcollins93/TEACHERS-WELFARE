@@ -20,7 +20,7 @@
  let contributions=[];
  teachers.forEach((teacher,ti)=>months.forEach((month,mi)=>{
   if(gaps[ti].includes(mi))return;
-  contributions.push({id:'demo-con-'+(tindex+1)+'-'+(mindex+1),teacher_id:teacher.id,school_id:school.id,amount:20,date:month+'-15',contribution_date:month+'-15',payment_date:month+'-15',reference:'DEMO-C'+String(tindex+1).padStart(2,'0')+'-'+String(mindex+1).padStart(2,'0'),status:'active',is_reversed:false,created_at:month+'-15T10:00:00.000Z'});
+  contributions.push({id:'demo-con-'+(ti+1)+'-'+(mi+1),teacher_id:teacher.id,school_id:school.id,amount:20,date:month+'-15',contribution_date:month+'-15',payment_date:month+'-15',reference:'DEMO-C'+String(tindex+1).padStart(2,'0')+'-'+String(mindex+1).padStart(2,'0'),status:'active',is_reversed:false,created_at:month+'-15T10:00:00.000Z'});
  }));
  let payouts=[
   {id:'demo-pay-1',teacher_id:teachers[0].id,school_id:school.id,amount:150,date:'2025-08-21',payout_date:'2025-08-21',reason:'Medical assistance',reference:'DEMO-PAY-001'},
@@ -232,5 +232,5 @@
   modal.querySelector('input[name="school"]').focus({preventScroll:true});
  }
 
- window.WelfareDemo={school,teachers,contributions,payouts,announcements,client,months,activeCon,activePay,summary,openSchoolSetupModal,setTeacher(index){activeTeacherIndex=Math.max(0,Math.min(teachers.length-1,Number(index)||0));}};
+ window.WelfareDemo={school,teachers,contributions,payouts,announcements,client,months,activeCon,activePay,summary,openSchoolSetupModal,async loadTeacherRegister(schoolCode){if(String(schoolCode||'').trim().toUpperCase()!=='DEMO'||String(new URLSearchParams(window.location.search).get('c')||'').trim().toUpperCase()!=='DEMO')throw new Error('The DEMO teacher register is available only inside the isolated DEMO tenant.');return clone(teachers);},setTeacher(index){activeTeacherIndex=Math.max(0,Math.min(teachers.length-1,Number(index)||0));}};
 })();
