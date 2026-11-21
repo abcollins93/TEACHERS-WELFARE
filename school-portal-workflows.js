@@ -141,7 +141,7 @@ const RANK_OPTIONS=[
 ];
 const rankOptionsMarkup=()=>'<option value="">Select Rank / Grade</option>'+RANK_OPTIONS.map(rank=>'<option value="'+esc(rank)+'">'+esc(rank)+'</option>').join('');
 const csvCell=v=>{let s=String(v??'');if(/^[\s]*[=+@\-\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';};
-const downloadWorkflowBlob=(blob,fileName,statusId,successText,viewLabel)=>{
+const downloadWorkflowBlob=(blob,fileName,statusId,successText,viewLabel,sourceButton=null)=>{
  if(!(blob instanceof Blob))throw new Error('The generated file is unavailable.');
  const isPdf=/\\.pdf$/i.test(String(fileName||''))||/pdf/i.test(String(viewLabel||''))||/PDF/i.test(String(successText||''));
  const filename=isPdf?(String(fileName||'Welfare_Statement_Report').replace(/\\.pdf$/i,'')||'Welfare_Statement_Report')+'.pdf':String(fileName||'download');
@@ -152,17 +152,33 @@ const downloadWorkflowBlob=(blob,fileName,statusId,successText,viewLabel)=>{
  document.body.appendChild(link);
  link.click();
  document.body.removeChild(link);
- const status=$(statusId);
+ let status=$(statusId);
+ const card=sourceButton?.closest('.wf-report-card');
+ if(card){
+   status=card.querySelector('.wf-download-feedback');
+   if(!status){
+    status=document.createElement('p');
+    status.className='wf-report-message wf-download-feedback';
+    status.setAttribute('role','status');
+    status.setAttribute('aria-live','polite');
+    const actions=sourceButton.closest('.wf-report-actions,.wf-dues-matrix-export-actions')||sourceButton.parentElement;
+    if(actions&&card.contains(actions))actions.insertAdjacentElement('afterend',status);
+    else card.appendChild(status);
+   }
+ }
  if(status){
    status.textContent=successText;
-   status.className='muted';
+   status.className=(status.className||'muted').replace(/\\b(error|muted)\\b/g,'').trim()+' wf-download-feedback';
    const fallback=document.createElement('a');
    fallback.href=url;
    fallback.target='_blank';
    fallback.rel='noopener';
    fallback.textContent=viewLabel||'Tap here to view downloaded PDF';
    fallback.style.cssText='display:inline-block;margin:7px 0;padding:8px 12px;border-radius:8px;background:#eaf2ff;color:#12376b;font-weight:800;text-decoration:underline;overflow-wrap:anywhere';
-   status.insertAdjacentElement('afterend',fallback);
+   status.querySelectorAll('a[data-wf-download-link]').forEach(link=>link.remove());
+   fallback.setAttribute('data-wf-download-link','');
+   status.appendChild(document.createTextNode(' '));
+   status.appendChild(fallback);
  }
  setTimeout(()=>URL.revokeObjectURL(url),10*60*1000);
 };
@@ -1571,7 +1587,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
        period:'Calendar year '+selectedYear,academic_year:window.getCurrentAcademicYear()
       });}catch(cacheError){console.warn('[School Welfare] Dues matrix PDF cache unavailable; continuing with download:',cacheError?.message||cacheError);}
      }
-     window.downloadWelfareBlob(blob,filename,status,'Official dues matrix PDF for '+selectedYear+' is ready.');
+     window.downloadWelfareBlob(blob,filename,status,'Official dues matrix PDF for '+selectedYear+' is ready.',button);
     }catch(error){
      console.error('[School Welfare] Dues matrix PDF failed:',error);
      if(status){status.textContent=error?.message||'The dues matrix PDF could not be generated.';status.className='error';}
@@ -1795,7 +1811,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      const generated=await window.generateTenantWelfarePdf(pdfOptions);
      const cacheDetails={school_code:pdfOptions?.school?.school_code||window.__welfareCurrentSchool?.school_code,document_id:generated.documentId,document_type:pdfOptions?.type,period:pdfOptions?.month||pdfOptions?.year||'',academic_year:pdfOptions?.academicYear||''};
      if(typeof window.cacheWelfareStatementPdf==='function')Promise.resolve(window.cacheWelfareStatementPdf(generated.blob,generated.filename,cacheDetails)).catch(error=>console.warn('[School Welfare PDF] Local PDF cache deferred:',error?.message||error));
-     downloadWorkflowBlob(generated.blob,generated.filename,statusId,successText,'Tap here to view downloaded PDF');
+     downloadWorkflowBlob(generated.blob,generated.filename,statusId,successText,'Tap here to view downloaded PDF',button);
    }catch(error){reportPdfFailure('[School Welfare PDF] Report download failed',error,statusId,'The PDF could not be generated. Check your connection and try again.');}
    finally{
      button.innerHTML=original;button.disabled=false;button.removeAttribute('aria-busy');
