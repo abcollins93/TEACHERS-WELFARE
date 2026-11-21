@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_VERSION='twf-pwa-shell-v34-offline-resilience';
+const CACHE_VERSION='twf-pwa-shell-v35-hydration-network-pass-through';
 const STATEMENT_CACHE='twf-cached-statements-v1';
 const NETWORK_TIMEOUT_MS=8000;
 const STATIC_TIMEOUT_MS=6500;
@@ -23,13 +23,13 @@ const SHELL_ASSETS=[
  './',
  './index.html',
  './school-portal.html',
- './demo-sandbox.js?v=20261121-executive-summary-hydration-v5',
+ './demo-sandbox.js?v=20261121-post-login-hydration-v6',
  './set-password.html',
  './g.html',
  './offline.html',
  './manifest.json',
  './pwa.js',
- './school-portal-workflows.js?v=20261121-executive-summary-hydration-v5',
+ './school-portal-workflows.js?v=20261121-post-login-hydration-v6',
  './icons/welfare-portal.svg'
 ];
 const CDN_ASSETS=[
@@ -66,19 +66,9 @@ self.addEventListener('activate',event=>{
    await self.clients.claim();
  })());
 });
-function isSensitiveRequest(url){
- return /\/auth\/v1\/|\/rest\/v1\/|\/functions\/v1\/|\/storage\/v1\//i.test(url.pathname);
-}
 self.addEventListener('fetch',event=>{
  const request=event.request;
  const url=new URL(request.url);
- if(isSensitiveRequest(url)){
-   event.respondWith((async()=>{
-    try{return await timedFetch(request,NETWORK_TIMEOUT_MS);}
-    catch(_){return new Response(JSON.stringify({message:'Network unavailable or too slow. Cached portal statements may still be opened.'}),{status:504,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});}
-   })());
-   return;
- }
  if(request.method!=='GET')return;
  if(url.origin!==self.location.origin){
    const trustedStaticHosts=['cdnjs.cloudflare.com','cdn.jsdelivr.net','cdn.tailwindcss.com','fonts.googleapis.com','fonts.gstatic.com'];
@@ -92,13 +82,6 @@ self.addEventListener('fetch',event=>{
        if(response&&(response.ok||response.type==='opaque'))cache.put(request,response.clone()).catch(()=>{});
        return response;
      }catch(_){return cached||Response.error();}
-   })());
-   return;
- }
- if(isSensitiveRequest(url)){
-   event.respondWith((async()=>{
-    try{return await timedFetch(request,NETWORK_TIMEOUT_MS);}
-    catch(_){return new Response(JSON.stringify({message:'Network unavailable or too slow. Cached portal statements may still be opened.'}),{status:504,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});}
    })());
    return;
  }
