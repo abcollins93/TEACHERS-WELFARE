@@ -1393,6 +1393,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     const reportHostId='wfDuesMatrixPdfHost';
     let report=null;
     try{
+     await new Promise(resolve=>requestAnimationFrame(resolve));
      if(tr.error||cr.error||rr.error)throw new Error('The school roster, contribution ledger, and reversal status must all be available before this official report can be issued.');
      if(typeof window.html2pdf!=='function')throw new Error('The PDF library is unavailable. Check your connection and try again.');
      // Verification is best-effort for this report: a slow or unavailable
@@ -1781,9 +1782,14 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  };
  const runWelfarePdf=async(button,statusId,successText,buildOptions,sharePdf=false)=>{
    if(sharePdf){sharePreparedAdminReport(button,statusId,buildOptions);return;}
-   if(button.disabled)return;
-   button.disabled=true;msg(statusId,'Preparing PDF…');
+   if(!button||button.disabled)return;
+   const original=button.innerHTML;
+   button.disabled=true;button.setAttribute('aria-busy','true');
+   button.innerHTML='<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Preparing PDF…';
    try{
+     // Give the browser a paint opportunity so the spinner is visible before
+     // authentication-independent report assembly and canvas/PDF work begins.
+     await new Promise(resolve=>requestAnimationFrame(resolve));
      if(typeof window.generateTenantWelfarePdf!=='function')throw new Error('The PDF generator is unavailable. Reload the portal and try again.');
      const pdfOptions=buildOptions();
      const generated=await window.generateTenantWelfarePdf(pdfOptions);
@@ -1791,7 +1797,9 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      if(typeof window.cacheWelfareStatementPdf==='function')Promise.resolve(window.cacheWelfareStatementPdf(generated.blob,generated.filename,cacheDetails)).catch(error=>console.warn('[School Welfare PDF] Local PDF cache deferred:',error?.message||error));
      downloadWorkflowBlob(generated.blob,generated.filename,statusId,successText,'Tap here to view downloaded PDF');
    }catch(error){reportPdfFailure('[School Welfare PDF] Report download failed',error,statusId,'The PDF could not be generated. Check your connection and try again.');}
-   finally{button.disabled=false;}
+   finally{
+     button.innerHTML=original;button.disabled=false;button.removeAttribute('aria-busy');
+   }
  };
  $('wfMonthlyPdf').addEventListener('click',()=>{
    const selectedMonth=$('wfReportMonth').value,selectedYear=$('wfReportYear').value;
