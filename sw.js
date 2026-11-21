@@ -28,7 +28,7 @@ const SHELL_ASSETS=[
  './offline.html',
  './manifest.json',
  './pwa.js',
- './school-portal-workflows.js?v=20261120-report-runtime-v2',
+ './school-portal-workflows.js?v=20261121-ui-responsive-v1',
  './icons/welfare-portal.svg'
 ];
 const CDN_ASSETS=[
