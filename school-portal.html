@@ -54,7 +54,7 @@
 (function(){
  const query=new URLSearchParams(window.location.search);
  if(query.has('c')&&String(query.get('c')||'').trim().toUpperCase()==='DEMO'){
-  document.write('<script src="./demo-sandbox.js?v=20261121-sidebar-profile-v17"><\/script>');
+  document.write('<script src="./demo-sandbox.js?v=20261121-mobile-interaction-v18"><\/script>');
  }
 })();
 </script><script>
@@ -4359,7 +4359,7 @@ if(isDemoMode){
 }
 })();
 </script>
-<script src="school-portal-workflows.js?v=20261121-sidebar-profile-v17"></script>
+<script src="school-portal-workflows.js?v=20261121-mobile-interaction-v18"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
@@ -7226,5 +7226,22 @@ input[type="tel"], input[inputmode="numeric"], input[inputmode="decimal"] { font
  window.formatWelfareCurrency=value=>'GH₵ '+Number(value||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
 })();
 </script>
+
+<style id="welfare-mobile-interaction-performance">
+/* Mobile interaction and paint budget: keep taps immediate and scrolling composited. */
+:where(button,a,[role="button"],[role="tab"],.navbtn,.tab,.toggle,.password-toggle,[data-action],.teacher-dashboard-statement){touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+:where(button,a,[role="button"],[role="tab"],.navbtn,.tab,.toggle,.password-toggle,[data-action]){cursor:pointer}
+:where(button,a,[role="button"],[role="tab"],.navbtn,.tab,.toggle,.password-toggle,[data-action]):active{filter:brightness(.96)}
+@media(hover:none) and (pointer:coarse){
+ html{scroll-behavior:auto!important}
+ #dashboard,.sidebar,.wf-admin-quick-pills,.wf-dues-matrix-scroll,[data-scroll-container]{-webkit-overflow-scrolling:touch}
+ #dashboard .panel,#dashboard .metric,#dashboard .support,#workflows .panel,#wfAdminPanel .panel,.teacher-dashboard-ledger-card,.teacher-dashboard-profile,.wf-payout-view,#wfReportsPanel.wf-reports-view{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:0 3px 12px rgba(11,29,58,.055)!important}
+ #dashboard .overview-top,header.top,#mobile-nav-overlay{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+ .sidebar{box-shadow:8px 0 22px rgba(3,10,22,.18)!important}
+ button:hover:not(:disabled),.navbtn:hover,.panel:hover,.metric:hover{transform:none!important;filter:none}
+ :where(button,a,[role="button"],[role="tab"],.navbtn,.tab,.toggle,.password-toggle,[data-action]){transition:background-color .1s ease,border-color .1s ease,color .1s ease!important}
+}
+@media(prefers-reduced-motion:reduce){:where(button,a,[role="button"],[role="tab"],.navbtn,.tab,.toggle,.password-toggle,[data-action]){transition:none!important}}
+</style>
 </body>
 </html>
