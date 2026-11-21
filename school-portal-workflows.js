@@ -1556,21 +1556,21 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      report=document.createElement('div');report.id=reportHostId;report.className='school-welfare-summary-pdf wf-dues-matrix-pdf';
      report.setAttribute('data-welfare-pdf-staging','');report.style.cssText='display:none!important;visibility:hidden!important;opacity:0!important;position:fixed!important;left:-10000px!important;top:0!important;width:281mm!important;min-width:281mm!important;max-width:281mm!important;height:auto!important;min-height:150mm!important;max-height:none!important;overflow:visible!important;pointer-events:none!important;margin:0;padding:6mm 7mm;box-sizing:border-box;background:#ffffff!important;color:#14213d!important;color-scheme:light!important;font-family:Arial,Helvetica,sans-serif';
      report.innerHTML='<style>'+
-      '#'+reportHostId+'{background:#fff!important;color:#14213d!important;font-family:Arial,Helvetica,sans-serif!important;font-size:8pt!important;line-height:1.3!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'+
+      '#'+reportHostId+'{background:#fff!important;color:#14213d!important;font-family:Arial,Helvetica,sans-serif!important;font-size:9.5pt!important;line-height:1.4!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'+
       '#'+reportHostId+' .wf-dm-header{display:grid;grid-template-columns:18mm 1fr 24mm;align-items:center;gap:5mm;margin:0 0 3mm;min-height:19mm}'+
       '#'+reportHostId+' .wf-dm-crest{display:block;width:17mm;height:17mm;object-fit:contain;background:transparent!important;border:0!important;outline:0!important;box-shadow:none!important;padding:0!important;border-radius:0!important}'+
       '#'+reportHostId+' .wf-dm-crest-placeholder{width:17mm;height:17mm;display:flex;align-items:center;justify-content:center;color:#64748b;font-size:22pt}'+
       '#'+reportHostId+' .wf-dm-heading{text-align:center}'+
-      '#'+reportHostId+' .wf-dm-heading h2{margin:0;font-size:9pt;letter-spacing:1px;color:#17365d}'+
-      '#'+reportHostId+' .wf-dm-heading h1{margin:1mm 0;font-size:15pt;line-height:1.15;color:#142d52}'+
-      '#'+reportHostId+' .wf-dm-heading p{margin:0;font-size:8pt;font-weight:700;letter-spacing:.8px;color:#0f766e}'+
-      '#'+reportHostId+' .wf-dm-meta{display:flex;justify-content:space-between;gap:8px;margin:0 0 2.5mm;padding:2mm 0;border-top:1px solid #cbd5e1;border-bottom:1px solid #cbd5e1;font-size:7pt}'+
-      '#'+reportHostId+' .wf-dm-table{width:100%;table-layout:fixed;border-collapse:collapse!important;white-space:normal!important;font-size:7pt!important;line-height:1.2!important}'+
-      '#'+reportHostId+' .wf-dm-table th,#'+reportHostId+' .wf-dm-table td{border:1px solid #000000!important;padding:1.65mm .8mm!important;text-align:center;vertical-align:middle;overflow-wrap:anywhere;color:#14213d;background:#fff}'+
-      '#'+reportHostId+' .wf-dm-table thead th{background:#e8f3ef!important;color:#064e3b!important;font-size:7pt!important;font-weight:800!important}'+
-      '#'+reportHostId+' .wf-dm-table .wf-dm-member{width:47mm;text-align:left!important}'+
+      '#'+reportHostId+' .wf-dm-heading h2{margin:0;font-size:10.5pt;letter-spacing:1px;color:#17365d}'+
+      '#'+reportHostId+' .wf-dm-heading h1{margin:1mm 0;font-size:17pt;line-height:1.18;color:#142d52}'+
+      '#'+reportHostId+' .wf-dm-heading p{margin:0;font-size:9.5pt;font-weight:700;letter-spacing:.8px;color:#0f766e}'+
+      '#'+reportHostId+' .wf-dm-meta{display:flex;justify-content:space-between;gap:8px;margin:0 0 2.5mm;padding:2mm 0;border-top:1px solid #cbd5e1;border-bottom:1px solid #cbd5e1;font-size:8.5pt}'+
+      '#'+reportHostId+' .wf-dm-table{width:100%;table-layout:fixed;border-collapse:collapse!important;white-space:normal!important;font-size:8.2pt!important;line-height:1.3!important}'+
+      '#'+reportHostId+' .wf-dm-table th,#'+reportHostId+' .wf-dm-table td{border:1px solid #000000!important;padding:1.9mm .65mm!important;text-align:center;vertical-align:middle;overflow-wrap:anywhere;color:#14213d;background:#fff}'+
+      '#'+reportHostId+' .wf-dm-table thead th{background:#e8f3ef!important;color:#064e3b!important;font-size:8.2pt!important;font-weight:800!important}'+
+      '#'+reportHostId+' .wf-dm-table .wf-dm-member{width:43mm;text-align:left!important}'+
       '#'+reportHostId+' .wf-dm-table .wf-dm-member strong{display:block;font-size:7pt}'+
-      '#'+reportHostId+' .wf-dm-table .wf-dm-member small{display:block;margin-top:.6mm;font-size:6pt;color:#475569}'+
+      '#'+reportHostId+' .wf-dm-table .wf-dm-member small{display:block;margin-top:.6mm;font-size:7pt;color:#475569}'+
       '#'+reportHostId+' .wf-dm-table .is-paid{font-weight:700;color:#065f46}'+
       '#'+reportHostId+' .wf-dm-table .is-unpaid{color:#64748b}'+
       '#'+reportHostId+' .wf-dm-table .wf-dm-total{font-weight:800;background:#f1f5f9!important}'+
@@ -1579,12 +1579,12 @@ window.initSchoolWorkflows=async function(client,school,refresh){
       '#'+reportHostId+' .wf-dm-summary{font-size:8pt;font-weight:800;color:#064e3b}'+
       '#'+reportHostId+' .wf-dm-qr{text-align:right;min-width:23mm;font-size:6pt;color:#475569}'+
       '#'+reportHostId+' .wf-dm-qr img,#'+reportHostId+' .wf-dm-qr canvas{display:block;width:19mm!important;height:19mm!important;margin:0 0 1mm auto!important}'+
-      '#'+reportHostId+' .sws-disclaimer{font-weight:700!important;display:block;width:100%;max-width:100%;box-sizing:border-box;margin:2mm 0 0;padding:1mm 0;border-top:1px dotted #64748b;border-bottom:1px dotted #64748b;color:#334155;font-family:Arial,sans-serif;font-size:7pt;font-weight:700!important;line-height:1.2;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'+
+      '#'+reportHostId+' .sws-disclaimer{font-weight:700!important;display:block;width:100%;max-width:100%;box-sizing:border-box;margin:2mm 0 0;padding:1mm 0;border-top:1px dotted #64748b;border-bottom:1px dotted #64748b;color:#334155;font-family:Arial,sans-serif;font-size:8pt;font-weight:700!important;line-height:1.3;text-align:center;white-space:normal;overflow-wrap:anywhere}'+
       '@media print{#'+reportHostId+'{width:281mm!important;max-width:281mm!important;margin:0!important;padding:6mm 7mm!important;box-sizing:border-box!important}}'+
       '</style>'+
       '<header class="wf-dm-header">'+logoMarkup+'<div class="wf-dm-heading"><h2>GHANA EDUCATION SERVICE</h2><h1>'+escapePdf(schoolName)+'</h1><p>MONTH-BY-MONTH DUES MATRIX</p></div><div></div></header>'+
       '<div class="wf-dm-meta"><span><b>School code:</b> '+escapePdf(schoolCode)+'</span><span><b>Calendar year:</b> '+selectedYear+'</span><span><b>Members:</b> '+matrixRows.length+'</span><span><b>Date issued:</b> '+issued.toLocaleDateString('en-GB')+'</span></div>'+
-      '<table class="wf-dm-table"><colgroup><col style="width:47mm">'+monthNames.map(()=>'<col>').join('')+'<col style="width:24mm"></colgroup><thead><tr><th scope="col">Teacher / Staff ID</th>'+headCells+'<th scope="col">Row Total</th></tr></thead><tbody>'+bodyRows+totalsRow+'</tbody></table>'+
+      '<table class="wf-dm-table"><colgroup><col style="width:43mm">'+monthNames.map(()=>'<col>').join('')+'<col style="width:22mm"></colgroup><thead><tr><th scope="col">Teacher / Staff ID</th>'+headCells+'<th scope="col">Row Total</th></tr></thead><tbody>'+bodyRows+totalsRow+'</tbody></table>'+
       '<div class="wf-dm-bottom"><div class="wf-dm-summary">School contribution total for '+selectedYear+': GH₵ '+money(grandTotal)+'<br>Active members included: '+matrixRows.length+(searchTerm?'<br>Search filter: '+escapePdf($('wfDuesMatrixSearch')?.value||''):'')+'</div>'+(includeVerificationQr?'<div class="wf-dm-qr"><div id="'+qrId+'"></div>Scan to verify this official report</div>':'')+'</div>'+
       '<div class="sws-disclaimer">*** The School welfare is not liable for any financial loss resulting from disclosing your member/account details including password to Third Parties ***</div>';
      if(typeof window.applyWelfarePdfTenantWatermark==='function')window.applyWelfarePdfTenantWatermark(report,schoolName,ctx);
