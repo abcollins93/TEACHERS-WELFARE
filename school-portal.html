@@ -54,7 +54,7 @@
 (function(){
  const query=new URLSearchParams(window.location.search);
  if(query.has('c')&&String(query.get('c')||'').trim().toUpperCase()==='DEMO'){
-  document.write('<script src="./demo-sandbox.js?v=20261121-unified-pdf-loading-v1"><\/script>');
+  document.write('<script src="./demo-sandbox.js?v=20261121-card-pdf-feedback-v1"><\/script>');
  }
 })();
 </script><script>
@@ -3151,7 +3151,7 @@ async function renderTeacherDashboard(profile,school){
       else window.downloadWelfareBlob(pdfBlob,filename,statementMessage,'File sharing is not supported here. Your PDF statement has been downloaded instead.');
      }
     }
-   }else window.downloadWelfareBlob(pdfBlob,filename,statementMessage,'Your personal PDF statement is ready.');
+   }else window.downloadWelfareBlob(pdfBlob,filename,statementMessage,'Your personal PDF statement is ready.',statementButton);
   }catch(error){
    console.error('[Teacher statement] PDF generation failed:',error);
    statementStatus(error?.message||'The PDF could not be generated. Please try again.',true);
@@ -3945,7 +3945,7 @@ if(isDemoMode){
 }
 })();
 </script>
-<script src="school-portal-workflows.js?v=20261121-unified-pdf-loading-v1"></script>
+<script src="school-portal-workflows.js?v=20261121-card-pdf-feedback-v1"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
@@ -4929,7 +4929,7 @@ window.generateTenantWelfarePdf=async function(o){
  }finally{host.remove();}
  return {documentId:id,blob:pdfBlob,filename};
 };
-window.downloadWelfareBlob=function(blob,fileName,statusNode,successText){
+window.downloadWelfareBlob=function(blob,fileName,statusNode,successText,sourceButton=null){
  if(!(blob instanceof Blob))throw new Error('The generated file is unavailable.');
  const filename=(String(fileName||'Welfare_Statement_Report').replace(/\\.pdf$/i,'')||'Welfare_Statement_Report')+'.pdf';
  const pdfBlob=blob.type==='application/pdf'?blob:new Blob([blob],{type:'application/pdf'});
@@ -4947,10 +4947,27 @@ window.downloadWelfareBlob=function(blob,fileName,statusNode,successText){
  fallback.target='_blank';
  fallback.rel='noopener';
  fallback.textContent='Tap here to view downloaded PDF';
- if(statusNode){
-   statusNode.textContent=successText||'Your file is ready.';
-   statusNode.className='muted';
-   statusNode.insertAdjacentElement('afterend',fallback);
+ fallback.setAttribute('data-wf-download-link','');
+ let targetStatus=statusNode;
+ const card=sourceButton?.closest('.wf-report-card');
+ if(card){
+   targetStatus=card.querySelector('.wf-download-feedback')||targetStatus;
+   if(!targetStatus){
+    targetStatus=document.createElement('p');
+    targetStatus.className='wf-report-message wf-download-feedback';
+    targetStatus.setAttribute('role','status');
+    targetStatus.setAttribute('aria-live','polite');
+    const actions=sourceButton.closest('.wf-report-actions,.wf-dues-matrix-export-actions')||sourceButton.parentElement;
+    if(actions&&card.contains(actions))actions.insertAdjacentElement('afterend',targetStatus);
+    else card.appendChild(targetStatus);
+   }
+ }
+ if(targetStatus){
+   targetStatus.textContent=successText||'Your file is ready.';
+   targetStatus.className=(targetStatus.className||'muted').replace(/\\b(error|muted)\\b/g,'').trim()+' wf-download-feedback';
+   targetStatus.querySelectorAll('a[data-wf-download-link]').forEach(existing=>existing.remove());
+   targetStatus.appendChild(document.createTextNode(' '));
+   targetStatus.appendChild(fallback);
  }else{
    const button=document.getElementById('downloadSchoolPdf');
    if(button)button.insertAdjacentElement('afterend',fallback);
