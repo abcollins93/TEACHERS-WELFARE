@@ -4649,7 +4649,7 @@ if(isDemoMode){
     scheduleSectionRefresh();
     window.requestAnimationFrame(()=>{
       if(window.__welfareActivePortalView!==requestedId)return;
-      target.scrollIntoView({behavior:'smooth',block:'start'});
+      target.scrollIntoView({behavior:'auto',block:'start'});
     });
     if (typeof target.focus === 'function') {
       if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex','-1');
