@@ -938,7 +938,10 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    if(primary&&clone){primary.innerHTML=items;clone.innerHTML=items;}
  };
  await refreshAdminActivityTicker();
- if(!isLocalDemo)window.__adminActivityTickerTimer=setInterval(refreshAdminActivityTicker,30000);
+ if(!isLocalDemo)window.__adminActivityTickerTimer=setInterval(()=>{
+   if(document.visibilityState!=='visible'||navigator.onLine===false)return;
+   refreshAdminActivityTicker().catch(error=>console.warn('[Administrator activity ticker] Refresh deferred:',error?.message||error));
+ },120000);
 
  const adminTeacherProfileNav=document.querySelector('.sidebar .navbtn[data-target="wfTeacherPanel"]');
  if(adminTeacherProfileNav){adminTeacherProfileNav.style.display='none';adminTeacherProfileNav.setAttribute('aria-hidden','true');}
@@ -1339,6 +1342,17 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const reloadTeacherRegisterForExport=async()=>{
   if(teacherRegisterReloadPromise)return teacherRegisterReloadPromise;
   teacherRegisterReloadPromise=(async()=>{
+   const expectedCode=String(ctx.school_code||ctx.schoolCode||'').trim().toUpperCase();
+   const cachedState=window.__welfareTeacherRegisterState;
+   const cachedRows=Array.isArray(cachedState?.rows)?cachedState.rows:null;
+   const cacheMatches=String(cachedState?.schoolId||'')===String(ctx.id||'')
+    &&String(cachedState?.schoolCode||'').trim().toUpperCase()===expectedCode
+    &&!!expectedCode&&cachedRows!==null;
+   if(cacheMatches){
+    // Data was loaded under this authenticated school context moments ago.
+    // Clone it for PDF assembly; do not add a network dependency to export.
+    return cachedRows.map(row=>({...row}));
+   }
    let next;
    if(isLocalDemo&&typeof window.WelfareDemo?.loadTeacherRegister==='function'){
     const rows=await window.WelfareDemo.loadTeacherRegister(ctx.school_code);
