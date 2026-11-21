@@ -3570,7 +3570,7 @@ async function showDashboardInternal(){
  const adminGreeting=$('dashboardGreeting');if(adminGreeting)adminGreeting.textContent='HI, ADMIN!';
  const accountTitle=document.querySelector('.sidebar-account-copy strong');if(accountTitle)accountTitle.textContent='School Administrator';
  // RLS must return only the school assigned to this authenticated administrator.
- const {data:school,error}=await withPortalTimeout(client.from('schools').select('id,name,school_code,school_type,region,district,status,monthly_dues,monthlyDues,standard_dues,standard_monthly_dues').eq('school_code',code).maybeSingle(),8000,'School profile lookup timed out.');
+ const {data:school,error}=await withPortalTimeout(client.from('schools').select('*').eq('school_code',code).maybeSingle(),8000,'School profile lookup timed out.');
  if(error||!school||school.status!=='active'){
    // Keep the authenticated session intact so a school-mapping/RLS problem is not mistaken for a failed password or page refresh.
    $('loginError').textContent=error
