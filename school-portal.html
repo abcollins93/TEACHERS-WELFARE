@@ -4792,23 +4792,24 @@ window.generateTenantWelfarePdf=async function(o){
    let pixelSummary='unavailable';
    try{
     const context=canvas.getContext('2d',{willReadFrequently:true});
-    const pixels=context?.getImageData(0,0,canvas.width,canvas.height).data;
-    if(pixels){
+    if(context&&canvas.width>0&&canvas.height>0){
      pixelInspectionAvailable=true;
-     let opaquePixels=0,nonWhitePixels=0,transparentPixels=0,minChannel=255,maxChannel=0;
-     const totalPixels=Math.floor(pixels.length/4);
-     // Inspect a bounded grid (at most about 4,096 pixels). A full 16M-pixel
-     // scan after html2canvas can freeze touch and navigation on mid-range phones.
-     const sampleStride=Math.max(1,Math.ceil(totalPixels/4096));
-     let sampledPixels=0;
-     for(let pixelIndex=0;pixelIndex<totalPixels;pixelIndex+=sampleStride){
-      const offset=pixelIndex*4,red=pixels[offset],green=pixels[offset+1],blue=pixels[offset+2],alpha=pixels[offset+3];
-      sampledPixels++;
-      if(alpha>0)opaquePixels++;else transparentPixels++;
-      if(red<minChannel)minChannel=red;if(green<minChannel)minChannel=green;if(blue<minChannel)minChannel=blue;
-      if(red>maxChannel)maxChannel=red;if(green>maxChannel)maxChannel=green;if(blue>maxChannel)maxChannel=blue;
-      if(alpha>0&&(red<250||green<250||blue<250))nonWhitePixels++;
-      if(red<245||green<245||blue<245)pixelSamples++;
+     let opaquePixels=0,nonWhitePixels=0,transparentPixels=0,minChannel=255,maxChannel=0,sampledPixels=0;
+     // Read sixteen small tiles across the page instead of allocating a
+     // full-canvas ImageData buffer (which can exceed 60 MB on mobile).
+     const tileSize=16,columns=4,rows=4;
+     for(let row=0;row<rows;row++)for(let column=0;column<columns;column++){
+      const x=Math.min(Math.max(0,canvas.width-tileSize),Math.floor((canvas.width-tileSize)*column/(columns-1)));
+      const y=Math.min(Math.max(0,canvas.height-tileSize),Math.floor((canvas.height-tileSize)*row/(rows-1)));
+      const pixels=context.getImageData(x,y,Math.min(tileSize,canvas.width),Math.min(tileSize,canvas.height)).data;
+      for(let offset=0;offset<pixels.length;offset+=4){
+       const red=pixels[offset],green=pixels[offset+1],blue=pixels[offset+2],alpha=pixels[offset+3];sampledPixels++;
+       if(alpha>0)opaquePixels++;else transparentPixels++;
+       if(red<minChannel)minChannel=red;if(green<minChannel)minChannel=green;if(blue<minChannel)minChannel=blue;
+       if(red>maxChannel)maxChannel=red;if(green>maxChannel)maxChannel=green;if(blue>maxChannel)maxChannel=blue;
+       if(alpha>0&&(red<250||green<250||blue<250))nonWhitePixels++;
+       if(red<245||green<245||blue<245)pixelSamples++;
+      }
      }
      pixelSummary='sampled '+sampledPixels+' pixels, opaque '+opaquePixels+', transparent '+transparentPixels+', non-white '+nonWhitePixels+', channel range '+minChannel+'-'+maxChannel;
     }
@@ -4818,8 +4819,8 @@ window.generateTenantWelfarePdf=async function(o){
     pixelInspectionAvailable=false;
     console.warn('[Welfare PDF] Canvas pixel inspection unavailable; checking rendered output and DOM instead:',canvasReadError?.message||canvasReadError);
    }
-   const png=canvas.toDataURL('image/png');
-   if(png.length<3000)throw new Error('The statement canvas contains no usable rendered content.');
+   const pngBlob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+   if(!pngBlob||pngBlob.size<3000)throw new Error('The statement canvas contains no usable rendered content.');
    // Reject only a genuinely empty canvas after broad pixel inspection.
    // Dimensions, populated DOM and encoded PNG are independently verified.
    if(pixelInspectionAvailable&&pixelSamples<64){
