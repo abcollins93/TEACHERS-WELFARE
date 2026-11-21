@@ -1225,9 +1225,18 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const profileRows=rows=>rows.map(([k,v])=>'<div class="tp-field"><small>'+esc(k)+'</small><strong>'+esc(v||'—')+'</strong></div>').join('');
  const profileMoney=n=>'GH₵ '+Number(n||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
  const profileDate=v=>{if(!v)return '—';const d=new Date(v);return Number.isNaN(d.getTime())?String(v):d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});};
+ const getProfileTeacherRows=()=>{
+  const cached=window.__welfareTeacherRegisterState;
+  const cachedRows=cached&&String(cached.schoolId||'')===String(ctx.id||'')&&String(cached.schoolCode||'').toUpperCase()===String(ctx.school_code||ctx.schoolCode||'').toUpperCase()&&Array.isArray(cached.rows)?cached.rows:[];
+  if(teachers.length)return teachers;
+  if(cachedRows.length)return cachedRows;
+  if(client?.__welfareDemo&&Array.isArray(window.WelfareDemo?.teachers))return window.WelfareDemo.teachers;
+  return [];
+ };
  const renderSelectedTeacherProfile=()=>{
-  if(!selectedProfileTeacherId&&teachers.length)selectedProfileTeacherId=String(teachers[0].id);
-  const sourceTeacher=teachers.find(x=>String(x.id)===String(selectedProfileTeacherId));
+  const profileTeachers=getProfileTeacherRows();
+  if(!selectedProfileTeacherId&&profileTeachers.length)selectedProfileTeacherId=String(profileTeachers[0].id);
+  const sourceTeacher=profileTeachers.find(x=>String(x.id)===String(selectedProfileTeacherId));
   if(!sourceTeacher){
    const nameNode=$('tpName');if(nameNode)nameNode.textContent=tr.error?'Teacher profile could not be loaded':'No teacher profiles are registered for this school.';
    const personalNode=$('tpPersonalRows');if(personalNode)personalNode.innerHTML='<div class="tp-field"><small>PROFILE STATUS</small><strong>'+(tr.error?'The school teacher register could not be reached.':'No teacher records were returned.')+'</strong></div><button type="button" class="wf-table-action" data-wf-retry-profile>Retry loading profile</button>';
@@ -1265,7 +1274,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   ].join('');
   return true;
  };
- if(profileSelect){profileSelect.innerHTML=teachers.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name||t.id)+' ('+esc(t.id)+')</option>').join('');profileSelect.value=selectedProfileTeacherId;profileSelect.addEventListener('change',()=>{selectedProfileTeacherId=profileSelect.value;renderSelectedTeacherProfile();});}
+ if(profileSelect){profileSelect.innerHTML=getProfileTeacherRows().map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name||t.id)+' ('+esc(t.id)+')</option>').join('');profileSelect.value=selectedProfileTeacherId;profileSelect.addEventListener('change',()=>{selectedProfileTeacherId=profileSelect.value;renderSelectedTeacherProfile();});}
  $('teacherProfileViewer')?.addEventListener('click',async event=>{const retry=event.target.closest('[data-wf-retry-profile]');if(!retry)return;retry.disabled=true;retry.textContent='Retrying…';try{await window.__welfareEnsureTeacherRegisterLoaded(ctx.school_code);msg('wfTeacherMsg','Teacher profile refreshed successfully.');}catch(error){retry.disabled=false;retry.textContent='Retry loading profile';const statusNode=$('tpPersonalRows')?.querySelector('strong');if(statusNode)statusNode.textContent=error?.message||'The profile could not be loaded. Please retry.';}});
  $('teacherProfilePrint')?.addEventListener('click',()=>window.print());
  $('tpEditContact')?.addEventListener('click',()=>wfNotice('To update official contact details, contact the Executive Administrator.'));
@@ -1273,12 +1282,15 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  // A synchronous cached render is the first response to Profile viewer navigation.
  // Network-backed roster and ledger refreshes are deliberately kept separate.
  window.__welfareRenderAdminProfileViewer=()=>{
-  if(!selectedProfileTeacherId&&teachers[0])selectedProfileTeacherId=String(teachers[0].id);
+  const profileTeachers=getProfileTeacherRows();
+  if(!selectedProfileTeacherId&&profileTeachers[0])selectedProfileTeacherId=String(profileTeachers[0].id);
   if(profileSelect){
-   profileSelect.innerHTML=teachers.map(row=>'<option value="'+esc(row.id)+'">'+esc(row.name||row.id)+' ('+esc(row.id)+')</option>').join('');
+   profileSelect.innerHTML=profileTeachers.map(row=>'<option value="'+esc(row.id)+'">'+esc(row.name||row.id)+' ('+esc(row.id)+')</option>').join('');
    profileSelect.value=selectedProfileTeacherId;
   }
   const rendered=renderSelectedTeacherProfile();
+  const panel=$('teacherProfileViewer');
+  if(panel){panel.classList.remove('hidden');panel.removeAttribute('hidden');panel.style.removeProperty('display');panel.style.removeProperty('visibility');panel.removeAttribute('aria-hidden');}
   return rendered;
  };
  window.__welfareRenderActiveProfileViewer=()=>{
