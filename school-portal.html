@@ -54,7 +54,7 @@
 (function(){
  const query=new URLSearchParams(window.location.search);
  if(query.has('c')&&String(query.get('c')||'').trim().toUpperCase()==='DEMO'){
-  document.write('<script src="./demo-sandbox.js?v=20261121-monthly-dues-v1"><\/script>');
+  document.write('<script src="./demo-sandbox.js?v=20261121-profile-contact-cedi-v2"><\/script>');
  }
 })();
 </script><script>
@@ -6732,5 +6732,58 @@ body.sidebar-open{overflow:hidden}
 /* Input-only mobile responsiveness; preserves all existing visual styling. */
 button,a,.navbtn,[role="button"],[role="tab"],.tab-button,.metric[role="button"],.card[role="button"]{touch-action:manipulation}
 </style>
+
+<style id="profile-contact-header-and-cedi-final">
+/* Final profile-card cascade: these selectors intentionally outrank the older generic .tp-field rules. */
+#wfTeacherPanel .teacher-personal-contact-card .teacher-own-profile-fields{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+#wfTeacherPanel .teacher-personal-contact-card .teacher-own-profile-fields .tp-field{min-width:0!important;border:1px solid rgba(15,23,42,.08)!important;background:#f8fafc!important;border-radius:13px!important;padding:13px 14px!important;box-shadow:none!important}
+#wfTeacherPanel .teacher-personal-contact-card .teacher-own-profile-fields .tp-field small{display:block!important;color:#64748b!important;font-size:.68rem!important;font-weight:850!important;letter-spacing:.075em!important;line-height:1.3!important;margin:0 0 7px!important;text-transform:uppercase!important}
+#wfTeacherPanel .teacher-personal-contact-card .teacher-own-profile-fields .tp-field strong{display:block!important;color:#172b49!important;font-size:.91rem!important;font-weight:800!important;line-height:1.45!important;overflow-wrap:anywhere!important}
+#wfTeacherPanel .teacher-personal-contact-card .teacher-contact-card-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;flex-wrap:wrap!important;margin:0 0 15px!important}
+#wfTeacherPanel .teacher-personal-contact-card .teacher-contact-edit-button{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;min-height:43px!important;padding:10px 15px!important;border:1px solid #1d4ed8!important;border-radius:11px!important;background:#1d4ed8!important;color:#fff!important;font-size:.82rem!important;font-weight:850!important;letter-spacing:.005em!important;box-shadow:0 3px 9px rgba(29,78,216,.16)!important}
+#wfTeacherPanel .teacher-personal-contact-card .teacher-contact-edit-button:hover{background:#1e40af!important;border-color:#1e40af!important}
+#wfTeacherPanel .teacher-personal-contact-card .teacher-contact-edit-button:active{transform:scale(.985)!important}
+#wfTeacherPanel .teacher-personal-contact-card .teacher-contact-edit-button:focus-visible{outline:3px solid rgba(59,130,246,.28)!important;outline-offset:2px!important}
+.dark #wfTeacherPanel .teacher-personal-contact-card .teacher-own-profile-fields .tp-field{background:#101f35!important;border-color:rgba(148,163,184,.2)!important}
+.dark #wfTeacherPanel .teacher-personal-contact-card .teacher-own-profile-fields .tp-field small{color:#a9b8cc!important}
+.dark #wfTeacherPanel .teacher-personal-contact-card .teacher-own-profile-fields .tp-field strong{color:#e5edf8!important}
+.dark #wfTeacherPanel .teacher-personal-contact-card .teacher-contact-edit-button{background:#2563eb!important;border-color:#60a5fa!important;color:#fff!important}
+@media(max-width:600px){
+ #wfTeacherPanel .teacher-personal-contact-card .teacher-own-profile-fields{grid-template-columns:1fr!important;gap:9px!important}
+ #wfTeacherPanel .teacher-personal-contact-card .teacher-own-profile-fields .tp-field{padding:12px 13px!important;border-radius:12px!important}
+ #wfTeacherPanel .teacher-personal-contact-card .teacher-contact-card-foot{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:10px!important}
+ #wfTeacherPanel .teacher-personal-contact-card .teacher-contact-edit-button{width:100%!important;min-height:45px!important}
+}
+/* Keep the tenant name readable: allow a natural second line rather than clipping the final words. */
+header.top .top-brand-group{flex:1 1 auto!important;min-width:0!important}
+header.top .top-brand-copy{flex:1 1 auto!important;min-width:0!important}
+header.top .top-school-name{display:block!important;width:100%!important;max-width:100%!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere!important;word-break:normal!important;-webkit-line-clamp:unset!important}
+@media(max-width:760px){
+ header.top .top-school-name{font-size:clamp(.78rem,3.35vw,.94rem)!important;line-height:1.18!important;max-height:none!important}
+ header.top .top-brand-group{min-width:0!important;flex:1 1 58%!important}
+ header.top .top-account-actions{flex:0 1 auto!important;min-width:max-content!important}
+}
+@media(max-width:420px){header.top .top-school-name{font-size:.78rem!important;line-height:1.15!important}}
+</style>
+<script id="welfare-cedi-display-normalizer">
+(function(){
+ if(window.__welfareCediDisplayNormalizer)return;
+ window.__welfareCediDisplayNormalizer=true;
+ const normalize=node=>{
+  if(!node)return;
+  if(node.nodeType===3){
+   const value=node.nodeValue||'';
+   if(/\bGHS\s*(?=[\d])/i.test(value))node.nodeValue=value.replace(/\bGHS\s*(?=[\d])/gi,'GH₵ ');
+   return;
+  }
+  if(node.nodeType!==1&&node.nodeType!==9&&node.nodeType!==11)return;
+  if(node.nodeType===1&&/^(SCRIPT|STYLE|TEXTAREA|INPUT)$/i.test(node.tagName))return;
+  for(const child of node.childNodes)normalize(child);
+ };
+ const start=()=>{normalize(document.body);const observer=new MutationObserver(records=>records.forEach(record=>record.addedNodes.forEach(normalize)));observer.observe(document.body,{childList:true,subtree:true});};
+ if(document.body)start();else document.addEventListener('DOMContentLoaded',start,{once:true});
+ window.formatWelfareCurrency=value=>'GH₵ '+Number(value||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
+})();
+</script>
 </body>
 </html>
