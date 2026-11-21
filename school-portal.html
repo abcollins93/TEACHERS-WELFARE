@@ -1915,7 +1915,21 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
  display:none!important;position:absolute!important;left:-9999px!important;top:-9999px!important;
  width:0!important;height:0!important;overflow:hidden!important;pointer-events:none!important;
 }
-</style></head><body>
+</style><style id="welfare-mobile-render-performance">
+@media(max-width:950px){
+ html,body{width:100%;max-width:100%;overflow-x:hidden;overscroll-behavior-x:none}
+ #dashboard .panel,#dashboard .metric,#dashboard .support,#dashboard .sidebar,
+ #dashboard .overview-top,#dashboard .app-header-group,
+ #dashboard .teacher-dashboard-profile,#dashboard .teacher-dashboard-ledger-card,
+ #dashboard .sidebar-brand,#mobile-nav-overlay{
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+ }
+ #dashboard .panel,#dashboard .metric,#dashboard .support{box-shadow:0 3px 12px rgba(3,10,22,.08)!important}
+ #dashboard .metric,#dashboard .navbtn{transition:background-color .12s ease,border-color .12s ease!important}
+ #dashboard .metric:hover,#dashboard .navbtn:hover{transform:none!important}
+}
+</style>
+</head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading Teachers Welfare Portal" aria-hidden="false">
  <div class="page-loader-card">
@@ -3921,7 +3935,7 @@ if(isDemoMode){
 }
 })();
 </script>
-<script src="school-portal-workflows.js?v=20261120-report-runtime-v5"></script>
+<script src="school-portal-workflows.js?v=20261121-mobile-performance-v1"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
@@ -3998,6 +4012,11 @@ if(isDemoMode){
     // once it exists, so a first click during initialization cannot strand the UI.
     const findTarget = () => document.getElementById(requestedId);
     let target = findTarget();
+    if (target && window.__welfareActivePortalView === requestedId &&
+        !target.classList.contains('hidden') && !target.closest('.hidden')) {
+      closeSidebar();
+      return;
+    }
     if (!target) {
       const attempts = Number(button.dataset.mountAttempts || 0);
       const dashboardVisible = dashboardRoot && !dashboardRoot.classList.contains('hidden');
@@ -4429,7 +4448,7 @@ window.applyWelfarePdfTenantWatermark=function(host,tenantSchoolName,schoolConte
  const emblem=logo
   ? '<image href="'+logo+'" x="277" y="350" width="240" height="240" preserveAspectRatio="xMidYMid meet" opacity="0.07"/>'
   : '<g transform="translate(59.55 80) scale(0.85)" fill="none" stroke="#64748b" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.075"><path d="M397 322 L505 365 L492 493 Q470 555 397 592 Q324 555 302 493 L289 365 Z"/><path d="M397 389 C365 365 336 375 336 375 L336 475 C362 469 382 481 397 500 C412 481 432 469 458 475 L458 375 C458 375 429 365 397 389 Z"/><path d="M397 390 L397 500"/><path d="M352 345 L365 315 L397 300 L429 315 L442 345"/><path d="M278 405 Q245 450 280 510 M516 405 Q549 450 514 510"/><path d="M278 405 L300 420 M516 405 L494 420 M280 510 L303 495 M514 510 L491 495"/></g><path d="M397 305 L408 328 L434 332 L415 350 L420 376 L397 364 L374 376 L379 350 L360 332 L386 328 Z" fill="#64748b" opacity="0.075"/>';
- const svg='<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="794" height="1123" viewBox="0 0 794 1123"><g>'+emblem+'</g><g fill="#64748b" fill-opacity="0.10" font-family="Arial,Helvetica,sans-serif" font-size="23" font-weight="800" letter-spacing="2.6" text-anchor="middle"><text x="397" y="500">WELFARE CONTRIBUTION</text><text x="397" y="542">PAYSLIP</text></g></svg>';
+ const svg='<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="794" height="1123" viewBox="0 0 794 1123"><g>'+emblem+'</g><g fill="#64748b" fill-opacity="0.10" font-family="Arial,Helvetica,sans-serif" font-size="23" font-weight="800" letter-spacing="2.6" text-anchor="middle"><text x="397" y="500">WELFARE CONTRIBUTION</text><text x="397" y="542">STATEMENT</text></g></svg>';
  host.style.setProperty('--welfare-pdf-watermark-image','url("data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg)+'")');
  host.classList.add('welfare-pdf-watermarked');
  if(!document.getElementById('welfare-pdf-watermark-layer-style')){
