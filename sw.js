@@ -1,7 +1,8 @@
 'use strict';
-const CACHE_VERSION='twf-pwa-shell-v33-password-toggle-final';
+const CACHE_VERSION='twf-pwa-shell-v34-offline-resilience';
 const STATEMENT_CACHE='twf-cached-statements-v1';
-const NETWORK_TIMEOUT_MS=12000;
+const NETWORK_TIMEOUT_MS=8000;
+const STATIC_TIMEOUT_MS=6500;
 async function reportNetworkState(state,detail){
  const clients=await self.clients.matchAll({type:'window',includeUncontrolled:true});
  clients.forEach(client=>client.postMessage({type:'WELFARE_NETWORK_STATUS',state,detail:detail||''}));
@@ -45,9 +46,16 @@ const CDN_ASSETS=[
 self.addEventListener('install',event=>{
  event.waitUntil((async()=>{
    const cache=await caches.open(CACHE_VERSION);
-   await cache.addAll(SHELL_ASSETS.map(path=>new Request(new URL(path,self.registration.scope),{cache:'reload'})));
-   // Cache third-party assets on demand in the fetch handler. Do not make
-   // service-worker installation wait for external CDN hosts or font servers.
+   // Cache each same-origin shell asset independently. A single missing file
+   // must not make the entire install fail on a weak mobile connection.
+   await Promise.allSettled(SHELL_ASSETS.map(async path=>{
+     const request=new Request(new URL(path,self.registration.scope),{cache:'reload'});
+     try{
+       const response=await timedFetch(request,STATIC_TIMEOUT_MS);
+       if(response&&response.ok)await cache.put(request,response.clone());
+     }catch(error){console.warn('[Welfare PWA] Shell asset deferred:',path,error?.message||error);}
+   }));
+   // CDN assets are cached on demand and never block service-worker install.
    await self.skipWaiting();
  })());
 });
@@ -80,7 +88,7 @@ self.addEventListener('fetch',event=>{
      const cached=await cache.match(request);
      if(cached)return cached;
      try{
-       const response=await timedFetch(request);
+       const response=await timedFetch(request,STATIC_TIMEOUT_MS);
        if(response&&(response.ok||response.type==='opaque'))cache.put(request,response.clone()).catch(()=>{});
        return response;
      }catch(_){return cached||Response.error();}
@@ -115,11 +123,11 @@ self.addEventListener('fetch',event=>{
    event.respondWith((async()=>{
      const cache=await caches.open(CACHE_VERSION);
      try{
-       const response=await fetch(request,{cache:'no-store'});
+       const response=await timedFetch(new Request(request,{cache:'no-store'}),STATIC_TIMEOUT_MS);
        if(response&&response.ok)cache.put(request,response.clone()).catch(()=>{});
        return response;
      }catch(_){
-       return (await cache.match(request))||Response.error();
+       return (await cache.match(request))||(await cache.match(new URL(url.pathname,self.location.origin).href))||Response.error();
      }
    })());
    return;
@@ -143,7 +151,7 @@ self.addEventListener('fetch',event=>{
      const cached=await cache.match(request);
      if(cached)return cached;
      try{
-       const response=await fetch(request);
+       const response=await timedFetch(request,STATIC_TIMEOUT_MS);
        if(response&&response.ok)cache.put(request,response.clone()).catch(()=>{});
        return response;
      }catch(_){return cached||Response.error();}
