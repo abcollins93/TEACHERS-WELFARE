@@ -3901,22 +3901,22 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
     if(window.QRCode&&qrNode)new window.QRCode(qrNode,{text:'https://abcollins93.github.io/TEACHERS-WELFARE/verify.html?c='+encodeURIComponent(code)+'&d='+encodeURIComponent(documentId),width:300,height:300,colorDark:'#030a16',colorLight:'#ffffff',correctLevel:window.QRCode.CorrectLevel.M});
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(resolve,80))));
     if(document.fonts?.ready)await document.fonts.ready.catch(()=>{});
-    // Mobile WebViews may return empty innerText for off-screen staging nodes.
-    // Validate the hydrated records and actual table structure instead.
-    let registerRows=table.querySelectorAll('tbody tr').length;
-    if(!registerRows&&teacherRows.length){
-     let body=table.querySelector('tbody');
-     if(!body){body=document.createElement('tbody');table.appendChild(body);}
-     body.replaceChildren();
+    // Mobile WebViews can expose an incomplete staging DOM. Validate and, if
+    // necessary, rebuild the actual table attached to the report from hydrated rows.
+    const reportHeading=report.querySelector('.sws-head h1');
+    const reportRegisterTable=report.querySelector('.sws-section + table');
+    let reportRegisterBody=reportRegisterTable?.querySelector('tbody');
+    let registerRows=reportRegisterBody?.querySelectorAll('tr').length||0;
+    if(!registerRows&&teacherRows.length&&reportRegisterTable){
+     if(!reportRegisterBody){reportRegisterBody=document.createElement('tbody');reportRegisterTable.appendChild(reportRegisterBody);}
+     reportRegisterBody.replaceChildren();
      teacherRows.forEach(teacher=>{
       const row=document.createElement('tr');
       [teacher.id||teacher.teacher_id,teacher.name,teacher.phone,teacher.rank,teacher.class_name,teacher.membership_type,teacher.employer,teacher.is_active===false?'Inactive':'Active'].forEach(value=>{const cell=document.createElement('td');cell.textContent=String(value??'—');row.appendChild(cell);});
-      body.appendChild(row);
+      reportRegisterBody.appendChild(row);
      });
-     registerRows=body.querySelectorAll('tr').length;
+     registerRows=reportRegisterBody.querySelectorAll('tr').length;
     }
-    const reportHeading=report.querySelector('.sws-head h1');
-    const reportRegisterTable=report.querySelector('.sws-section + table');
     if(!reportHeading||!String(reportHeading.textContent||'').trim()||!teacherRows.length||!registerRows||!reportRegisterTable){
      throw new Error(registerLoadError?.message||'The active school teacher register could not be hydrated. Refresh the portal and retry the executive summary.');
     }
