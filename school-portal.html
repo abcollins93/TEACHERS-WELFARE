@@ -3750,11 +3750,11 @@ async function showDashboardInternal(){
  // dashboard query failures or workflow startup must never prevent the Settings view mounting.
  void startAccountSettingsInitialization(client,school,'admin');
  window.__welfareWorkflowLastError=null;
- const workflowMount=new Promise(resolve=>{
+ const workflowMount=new Promise((resolve,reject)=>{
     const schedule=()=>waitForSchoolWorkflows().then(ready=>{
       if(!ready)throw new Error('Workflow bundle unavailable after waiting for script initialization.');
       return window.initSchoolWorkflows(client,school,showDashboard);
-    }).then(resolve);
+    }).then(resolve,reject);
     if('requestIdleCallback' in window)window.requestIdleCallback(schedule,{timeout:1200});
     else window.setTimeout(schedule,180);
   }).then(result=>{
