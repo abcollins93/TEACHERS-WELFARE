@@ -1775,7 +1775,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      Promise.resolve(pending).then(()=>msg(statusId,'PDF shared successfully.')).catch(error=>{
        if(error?.name==='AbortError'){msg(statusId,'PDF sharing was cancelled.');return;}
        console.warn('[School Welfare PDF] Native report file sharing failed:',error);
-       downloadWorkflowBlob(prepared.generated.blob,prepared.fileName,statusId,'The PDF could not be shared. Your PDF has been downloaded instead.','Tap here to view downloaded PDF');
+       downloadWorkflowBlob(prepared.generated.blob,prepared.fileName,statusId,'The PDF could not be shared. Your PDF has been downloaded instead.','Tap here to view downloaded PDF',button);
      });
      return;
    }
@@ -1787,13 +1787,13 @@ window.initSchoolWorkflows=async function(client,school,refresh){
        const whatsapp='https://wa.me/?text='+encodeURIComponent(linkText+(url?' '+url:''));
        let opened=null;try{opened=window.open(whatsapp,'_blank');}catch(_){}
        if(opened)msg(statusId,'Verification link opened in WhatsApp. No PDF file was attached.');
-       else downloadWorkflowBlob(prepared.generated.blob,prepared.fileName,statusId,'File sharing is not supported here. Your PDF has been downloaded instead.','Tap here to view downloaded PDF');
+       else downloadWorkflowBlob(prepared.generated.blob,prepared.fileName,statusId,'File sharing is not supported here. Your PDF has been downloaded instead.','Tap here to view downloaded PDF',button);
      });
    }else{
      const whatsapp='https://wa.me/?text='+encodeURIComponent(linkText+(url?' '+url:''));
      let opened=null;try{opened=window.open(whatsapp,'_blank');}catch(_){}
      if(opened)msg(statusId,'Verification link opened in WhatsApp. No PDF file was attached.');
-     else downloadWorkflowBlob(prepared.generated.blob,prepared.fileName,statusId,'File sharing is not supported here. Your PDF has been downloaded instead.','Tap here to view downloaded PDF');
+     else downloadWorkflowBlob(prepared.generated.blob,prepared.fileName,statusId,'File sharing is not supported here. Your PDF has been downloaded instead.','Tap here to view downloaded PDF',button);
    }
  };
  const runWelfarePdf=async(button,statusId,successText,buildOptions,sharePdf=false)=>{
