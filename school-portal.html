@@ -1929,7 +1929,69 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
  #dashboard .metric:hover,#dashboard .navbtn:hover{transform:none!important}
 }
 </style>
-</head><body>
+<style id="teachers-members-mobile-polish-v1">
+#dashboard #schoolTeachers>div:first-child{align-items:center!important;gap:12px!important;padding:0 0 13px!important;border-bottom:1px solid var(--line);position:relative}
+#dashboard #schoolTeachers>div:first-child:before{content:"";position:absolute;left:0;bottom:-1px;width:54px;height:2px;border-radius:2px;background:var(--gold)}
+#dashboard #schoolTeachers .wf-members-title,#dashboard #wfTeacherRegisterPanel .wf-register-title,#dashboard #wfBulkTeacherCard .wf-bulk-title{display:flex;align-items:center;gap:10px;min-width:0;color:var(--navy);font-weight:900;letter-spacing:-.035em}
+.dark #dashboard #schoolTeachers .wf-members-title,.dark #dashboard #wfTeacherRegisterPanel .wf-register-title,.dark #dashboard #wfBulkTeacherCard .wf-bulk-title{color:#edf3fb}
+#dashboard .wf-ui-icon{width:22px;height:22px;flex:0 0 22px;display:block;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;color:#b98a1f}
+#dashboard #schoolTeachers>p{margin:12px 0 0;line-height:1.6}
+#dashboard #wfTeacherRegisterPanel{position:relative;overflow:hidden;border:1px solid #dfe6f0!important;border-radius:19px!important;padding:clamp(16px,2.2vw,23px)!important;box-shadow:0 9px 26px rgba(11,29,58,.045)!important}
+#dashboard #wfTeacherRegisterPanel:before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:linear-gradient(180deg,#d6a637,#e8c66f 62%,transparent)}
+.dark #dashboard #wfTeacherRegisterPanel{border-color:#263b57!important}
+#dashboard .wf-teacher-register-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:17px}
+#dashboard .wf-teacher-register-heading h3{font-size:1.2rem;line-height:1.25;margin:0}
+#dashboard .wf-teacher-register-heading p{font-size:.83rem;line-height:1.6;margin:7px 0 0;max-width:760px}
+#dashboard .wf-teacher-register-badge{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border:1px solid rgba(22,133,91,.18);border-radius:999px;background:#effaf5;color:#14734f;font-size:.7rem;font-weight:850;white-space:nowrap;letter-spacing:.025em}
+#dashboard #wfBulkTeacherCard{position:relative;overflow:hidden;background:linear-gradient(145deg,#fbfcff,#f6f8fc);border:1px solid #e2e8f1!important;border-radius:15px!important;padding:17px!important;box-shadow:0 5px 16px rgba(11,29,58,.035)}
+#dashboard #wfBulkTeacherCard:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#d6a637}
+.dark #dashboard #wfBulkTeacherCard{background:linear-gradient(145deg,#102441,#0b1d3a);border-color:#2b405b!important}
+#dashboard #wfBulkTeacherCard .wf-bulk-title{font-size:1rem;line-height:1.35;margin:0 0 12px}
+#dashboard #wfBulkTeacherCard .wf-ui-icon{width:20px;height:20px;flex-basis:20px}
+#dashboard .wf-bulk-steps{list-style:none;margin:0 0 15px;padding:0;display:grid;gap:10px}
+#dashboard .wf-bulk-steps li{display:grid;grid-template-columns:25px minmax(0,1fr);align-items:start;gap:9px;color:var(--muted);font-size:.8rem;line-height:1.55}
+#dashboard .wf-step-number{width:24px;height:24px;display:grid;place-items:center;border-radius:8px;background:#fff4d8;border:1px solid #f0dfb5;color:#79550b;font-size:.72rem;font-weight:900;line-height:1}
+.dark #dashboard .wf-step-number{background:#3b3019;border-color:#655126;color:#f2d88e}
+#dashboard .wf-bulk-steps strong{color:var(--ink);font-weight:850}
+#dashboard #wfBulkTeacherCard>div[style*="display:flex"]{gap:9px!important}
+#dashboard #wfBulkTeacherDownload,#dashboard #wfBulkTeacherChoose{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:44px;padding:10px 15px!important;border-radius:11px;font-size:.79rem;font-weight:850;line-height:1.25}
+#dashboard #wfBulkTeacherDownload{background:var(--navy);color:#fff;border:1px solid var(--navy)}
+#dashboard #wfBulkTeacherChoose{background:#fff;color:var(--navy);border:1px solid #d8e0eb;box-shadow:none}
+.dark #dashboard #wfBulkTeacherChoose{background:#142d52;color:#edf3fb;border-color:#3a506d}
+#dashboard #wfBulkTeacherDownload i,#dashboard #wfBulkTeacherChoose i,#dashboard #downloadSchoolPdf i{font-size:.92rem;line-height:1;flex:0 0 auto}
+#dashboard #wfTeacherRegisterPanel label{display:block;margin:13px 0 6px;font-size:.76rem;font-weight:850;letter-spacing:.01em;color:var(--ink)}
+#dashboard #wfTeacherSearch,#dashboard #wfTeacher input:not([type="file"]),#dashboard #wfTeacher select{min-height:45px;padding:10px 12px;border:1px solid #d7e0eb;border-radius:11px;background:#fff;color:#182235;font-size:.86rem;box-shadow:none;transition:border-color .16s,box-shadow .16s,background .16s}
+#dashboard #wfTeacherSearch{margin-bottom:8px}
+#dashboard #wfTeacherSearch:focus,#dashboard #wfTeacher input:focus,#dashboard #wfTeacher select:focus{outline:0;border-color:#bd922f;box-shadow:0 0 0 3px rgba(214,166,55,.2)}
+.dark #dashboard #wfTeacherSearch,.dark #dashboard #wfTeacher input:not([type="file"]),.dark #dashboard #wfTeacher select{background:#071328;color:#e6edf7;border-color:#354862}
+#dashboard #wfTeacher{gap:12px!important;margin-top:8px}
+#dashboard #wfTeacher>div{min-width:0}
+#dashboard #wfTeacher button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:43px}
+#dashboard #downloadSchoolPdf{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:43px;padding:10px 14px;border-radius:11px;font-size:.78rem}
+#dashboard #schoolName,#dashboard .top h1,#dashboard .school-chip strong{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere;word-break:normal;min-width:0}
+@media(max-width:700px){
+#dashboard #schoolTeachers>div:first-child{align-items:stretch!important}
+#dashboard #schoolTeachers>div:first-child h3{font-size:1.08rem;line-height:1.3}
+#dashboard #downloadSchoolPdf{width:100%;min-height:44px}
+#dashboard #wfTeacherRegisterPanel{padding:15px!important;border-radius:16px!important}
+#dashboard .wf-teacher-register-heading{gap:9px;margin-bottom:14px}
+#dashboard .wf-teacher-register-heading>div{flex:1 1 100%;min-width:0}
+#dashboard .wf-teacher-register-heading h3{font-size:1.08rem}
+#dashboard .wf-teacher-register-badge{font-size:.67rem;padding:6px 10px}
+#dashboard #wfBulkTeacherCard{padding:14px!important;margin-bottom:15px!important}
+#dashboard #wfBulkTeacherCard .wf-bulk-title{font-size:.94rem;align-items:flex-start}
+#dashboard .wf-bulk-steps{gap:9px}
+#dashboard .wf-bulk-steps li{font-size:.77rem;grid-template-columns:24px minmax(0,1fr);gap:8px}
+#dashboard #wfBulkTeacherCard>div[style*="display:flex"]{display:grid!important;grid-template-columns:1fr;gap:8px!important}
+#dashboard #wfBulkTeacherDownload,#dashboard #wfBulkTeacherChoose{width:100%;min-height:46px}
+#dashboard #wfTeacherSearch{margin-bottom:4px}
+#dashboard #wfTeacher{grid-template-columns:minmax(0,1fr)!important;gap:9px!important}
+#dashboard #wfTeacher>div[style*="align-self:end"]{display:grid!important;grid-template-columns:1fr 1fr;gap:8px!important}
+#dashboard #wfTeacher>div[style*="align-self:end"] button{width:100%;padding:10px 8px!important}
+#dashboard #wfTeacherRegisterPanel .wf-teacher-register-table{margin-top:12px}
+#dashboard #schoolName,#dashboard .top h1,#dashboard .school-chip strong{max-width:100%}
+}
+</style></head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading Teachers Welfare Portal" aria-hidden="false">
  <div class="page-loader-card">
@@ -2033,7 +2095,7 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
  </article>
 </section>
 </div><section id="wfAccountSettingsPanel" class="panel hidden" aria-label="Account settings" style="margin:0 0 18px"></section></div>
-<div class="panel hidden" id="schoolTeachers" style="margin-top:18px"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><h3><i class="fa-solid fa-address-book" style="color:var(--gold)"></i> Teachers &amp; Members</h3><button id="downloadSchoolPdf" type="button"><i class="fa-solid fa-file-pdf"></i> Download PDF summary</button></div><p class="muted">Verified teacher register, membership details and profile management for this school.</p></div></div></div>
+<div class="panel hidden" id="schoolTeachers" style="margin-top:18px"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><h3 class="wf-members-title"><svg class="wf-ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M16 20v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 4 18.5V20"/><circle cx="10" cy="7.5" r="3.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 6.8M17 15h.5a3.5 3.5 0 0 1 3.5 3.5V20"/></svg> Teachers &amp; Members</h3><button id="downloadSchoolPdf" type="button"><i class="fa-solid fa-file-pdf"></i> Download PDF summary</button></div><p class="muted">Verified teacher register, membership details and profile management for this school.</p></div></div></div>
 </section>
 </main>
 <footer id="tenantPortalFooter" class="tenant-portal-footer">
