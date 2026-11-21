@@ -759,9 +759,24 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  // and mutation below is therefore scoped to this local sandbox, never Supabase.
  const isLocalDemo=!!client?.__welfareDemo&&String(school?.school_code||'').toUpperCase()==='DEMO';
  const workflowSchoolKey=String(school?.id||'');
- // A repeated auth/session callback for the same active tenant must not tear down
- // and rebuild the already-mounted roster, dues matrix, and audit workspace.
- if(workflowSchoolKey&&window.__welfareWorkflowReadySchoolId===workflowSchoolKey)return true;
+ const workflowSchoolCode=String(school?.school_code||school?.schoolCode||'').trim().toUpperCase();
+ let workflowUserId='demo-local-admin';
+ if(!isLocalDemo){
+  if(!workflowSchoolKey||!workflowSchoolCode)throw new Error('The verified school ID or school code is missing. Refresh the school gateway and retry.');
+  const requestedCode=String(new URLSearchParams(location.search).get('c')||'').trim().toUpperCase();
+  if(requestedCode&&requestedCode!==workflowSchoolCode)throw new Error('The signed-in school does not match this gateway link. Sign in through the correct school URL.');
+  const sessionResult=await withWorkflowTimeout(client.auth.getSession(),15000,'Administrator session restoration timed out.');
+  if(sessionResult?.error)throw new Error('Administrator session restoration failed: '+(sessionResult.error.message||'Please sign in again.'));
+  let session=sessionResult?.data?.session||null;
+  if(session?.access_token&&Number(session.expires_at||0)>0&&Number(session.expires_at)*1000<Date.now()+60000){const refreshed=await withWorkflowTimeout(client.auth.refreshSession(),15000,'Administrator session refresh timed out.');if(refreshed?.error||!refreshed?.data?.session?.access_token)throw new Error('Administrator session expired and could not be refreshed. Sign in again.');session=refreshed.data.session;}
+  if(!session?.access_token)throw new Error('No active administrator session is available to load school records. Sign in again.');
+  const identity=await withWorkflowTimeout(client.auth.getUser(),15000,'Administrator identity verification timed out.');
+  if(identity?.error||!identity?.data?.user||String(identity.data.user.id)!==String(session.user?.id||''))throw new Error('The administrator session identity could not be verified. Sign in again.');
+  workflowUserId=String(identity.data.user.id);
+  if(window.__welfareAdminSessionUserId&&String(window.__welfareAdminSessionUserId)!==workflowUserId)throw new Error('The active administrator account changed. Refresh the portal before continuing.');
+ }
+ if(workflowSchoolKey&&window.__welfareWorkflowReadySchoolId===workflowSchoolKey&&window.__welfareWorkflowReadyUserId===workflowUserId)return true;
+ if(window.__welfareWorkflowReadySchoolId&&window.__welfareWorkflowReadySchoolId!==workflowSchoolKey){window.__welfareWorkflowReadySchoolId=null;window.__welfareWorkflowReadyUserId=null;}
  window.__welfareCurrentRole='admin';
  window.__welfareCurrentSchool=school;
  try{
@@ -1200,7 +1215,14 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const profileMoney=n=>'GH₵ '+Number(n||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
  const profileDate=v=>{if(!v)return '—';const d=new Date(v);return Number.isNaN(d.getTime())?String(v):d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});};
  const renderSelectedTeacherProfile=()=>{
-  const sourceTeacher=teachers.find(x=>String(x.id)===selectedProfileTeacherId);if(!sourceTeacher)return;
+  const sourceTeacher=teachers.find(x=>String(x.id)===selectedProfileTeacherId);
+  if(!sourceTeacher){
+   const nameNode=$('tpName');if(nameNode)nameNode.textContent=tr.error?'Teacher profile could not be loaded':'No teacher profiles are registered for this school.';
+   const personalNode=$('tpPersonalRows');if(personalNode)personalNode.innerHTML='<div class="tp-field"><small>PROFILE STATUS</small><strong>'+(tr.error?'The school teacher register could not be reached.':'No teacher records were returned.')+'</strong></div><button type="button" class="wf-table-action" data-wf-retry-profile>Retry loading profile</button>';
+   const professionalNode=$('tpProfessionalRows');if(professionalNode)professionalNode.innerHTML='';
+   const financeNode=$('tpFinanceRows');if(financeNode)financeNode.innerHTML='<div class="tp-finance"><span>Financial history</span><strong class="finance-empty">Unavailable</strong></div>';
+   return;
+  }
   const t=typeof window.normalizeTeacherProfileRecord==='function'?window.normalizeTeacherProfileRecord(sourceTeacher):sourceTeacher;
   const tc=activeCons.filter(x=>String(x.teacher_id)===String(t.id)),tp=activePays.filter(x=>String(x.teacher_id)===String(t.id));
   const dues=tc.reduce((n,x)=>n+Number(x.amount||0),0),paid=tp.reduce((n,x)=>n+Number(x.amount||0),0);
@@ -1232,6 +1254,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   ].join('');
  };
  if(profileSelect){profileSelect.innerHTML=teachers.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name||t.id)+' ('+esc(t.id)+')</option>').join('');profileSelect.value=selectedProfileTeacherId;profileSelect.addEventListener('change',()=>{selectedProfileTeacherId=profileSelect.value;renderSelectedTeacherProfile();});}
+ $('teacherProfileViewer')?.addEventListener('click',async event=>{const retry=event.target.closest('[data-wf-retry-profile]');if(!retry)return;retry.disabled=true;retry.textContent='Retrying…';try{await window.__welfareEnsureTeacherRegisterLoaded(ctx.school_code);msg('wfTeacherMsg','Teacher profile refreshed successfully.');}catch(error){retry.disabled=false;retry.textContent='Retry loading profile';const statusNode=$('tpPersonalRows')?.querySelector('strong');if(statusNode)statusNode.textContent=error?.message||'The profile could not be loaded. Please retry.';}});
  $('teacherProfilePrint')?.addEventListener('click',()=>window.print());
  $('tpEditContact')?.addEventListener('click',()=>wfNotice('To update official contact details, contact the Executive Administrator.'));
  renderSelectedTeacherProfile();
@@ -1372,16 +1395,9 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   if(teacherRegisterReloadPromise)return teacherRegisterReloadPromise;
   teacherRegisterReloadPromise=(async()=>{
    const expectedCode=String(ctx.school_code||ctx.schoolCode||'').trim().toUpperCase();
-   const cachedState=window.__welfareTeacherRegisterState;
-   const cachedRows=Array.isArray(cachedState?.rows)?cachedState.rows:null;
-   const cacheMatches=String(cachedState?.schoolId||'')===String(ctx.id||'')
-    &&String(cachedState?.schoolCode||'').trim().toUpperCase()===expectedCode
-    &&!!expectedCode&&cachedRows!==null;
-   if(cacheMatches){
-    // Data was loaded under this authenticated school context moments ago.
-    // Clone it for PDF assembly; do not add a network dependency to export.
-    return cachedRows.map(row=>({...row}));
-   }
+   if(!expectedCode||String(window.__welfareCurrentSchool?.id||'')!==String(ctx.id||''))throw new Error('The active school context changed. Refresh the portal and retry.');
+   // Section entry and retry actions always re-query: a matching cache may itself
+   // be an empty result captured while authentication was still hydrating.
    let next;
    if(isLocalDemo&&typeof window.WelfareDemo?.loadTeacherRegister==='function'){
     const rows=await window.WelfareDemo.loadTeacherRegister(ctx.school_code);
@@ -1397,6 +1413,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    const accountResult=await loadSource('teacher login accounts refresh',()=>client.from('teacher_accounts').select('auth_user_id,teacher_id,school_id,must_change_password,active').eq('school_id',ctx.id).eq('active',true));
    loginAccounts=new Map((accountResult.data||[]).map(account=>[String(account.teacher_id),account]));
    teachers=normalizedRows.map(row=>{const account=loginAccounts.get(String(row.id));return {...row,auth_user_id:account?.auth_user_id||null,login_activated:!!account?.auth_user_id,must_change_password:account?.must_change_password??null};});
+   tr={data:teachers,error:null};
    window.__welfareTeacherRegisterState={schoolId:String(ctx.id||''),schoolCode:String(ctx.school_code||ctx.schoolCode||'').toUpperCase(),rows:teachers};
    tr={data:teachers,error:null};
    teacherById.clear();teachers.forEach(row=>teacherById.set(String(row.id),row));
@@ -2562,12 +2579,13 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  if(retry){retry.disabled=true;const ok=await refreshWorkflow();if(!ok)wfNotice('The contribution or payout ledger is still unavailable. Check your connection and retry.');return;}
  const b=e.target.closest('[data-wf-reverse]');if(!b)return;const type=b.dataset.wfReverse,id=b.dataset.wfId;const rows=type==='contribution'?cons:pays;const tx=rows.find(x=>String(x.id)===String(id));if(!tx||reversed.has(type+':'+id))return;const reason=await requestReversalReason(type);if(!reason||!reason.trim())return;if(!await wfConfirm('Confirm reversal of GH₵ '+money(tx.amount)+'? The original transaction will remain visible and be excluded from active totals.'))return;const {data:{user}}=await client.auth.getUser();const {error}=await client.from('transaction_reversals').insert({school_id:ctx.id,transaction_type:type,transaction_id:id,teacher_id:tx.teacher_id,amount:tx.amount,transaction_date:tx.date,reason:reason.trim(),reversed_by:user?.email||'School administrator'});if(error){wfNotice(error.code==='23505'?'This transaction has already been reversed.':'Reversal was not saved. Check school permissions and reversal-table policies.');return;}const ok=await audit(client,ctx,'Reverse '+type,'Original transaction '+id+'; GH₵ '+Number(tx.amount).toFixed(2)+'; reason: '+reason.trim(),tx.teacher_id);await refreshWorkflow();if(!ok)wfNotice('Reversal saved, but the audit entry failed.');});
  $('wfPayout').onsubmit=async e=>{e.preventDefault();const teacher_id=$('wfPayTeacher').value,amount=Number($('wfPayAmount').value);if(!teacher_id||!Number.isFinite(amount)||amount<=0)return msg('wfPayMsg','Choose a teacher and enter a positive amount.',true);const activeContributions=cons.filter(x=>!reversed.has('contribution:'+String(x.id))).reduce((sum,x)=>sum+Number(x.amount||0),0);const activePayouts=pays.filter(x=>!reversed.has('payout:'+String(x.id))).reduce((sum,x)=>sum+Number(x.amount||0),0);const available=Math.round((activeContributions-activePayouts)*100)/100;if(amount>available+0.001)return msg('wfPayMsg','Payout exceeds the available school fund balance of GH₵ '+money(Math.max(0,available))+'. Reverse or reconcile records before proceeding.',true);const confirmation=await wfConfirm('Confirm welfare payout of GH₵ '+amount.toFixed(2)+'? Available balance after payout: GH₵ '+money(available-amount)+'.',{responseMode:'optional',placeholder:'Optional note for the audit trail…'});if(!confirmation||confirmation.confirmed===false)return;const adminNote=confirmation.response||'No additional note supplied; action confirmed by school administrator.';const row={teacher_id,amount,date:$('wfPayDate').value,reason:$('wfPayReason').value.trim(),reference:$('wfPayRef').value.trim()||null,school_id:ctx.id};msg('wfPayMsg','Saving…');const {error}=await client.rpc('record_school_welfare_payout',{p_school_id:ctx.id,p_teacher_id:teacher_id,p_amount:amount,p_date:row.date,p_reason:row.reason,p_reference:row.reference});if(error){console.warn('Secure payout RPC failed',error.code,error.message);return msg('wfPayMsg',error.code==='23514'?'Payout was not saved: the available school fund balance may be insufficient, or the amount/reason/date is invalid. Refresh the ledger and check the details.':'Payout was not saved. The secure database check failed; no payout was recorded. Check administrator access and try again.',true);}const auditOk=await audit(client,ctx,'Record payout','GH₵ '+amount.toFixed(2)+' — '+row.reason+'; admin note: '+adminNote,teacher_id);$('wfPayout').reset();$('wfPayDate').value=today();await refreshWorkflow();msg('wfPayMsg',auditOk?'Payout recorded.':'Payout saved, but the audit entry failed. Notify the platform administrator.',!auditOk);};
-   if(workflowSchoolKey)window.__welfareWorkflowReadySchoolId=workflowSchoolKey;
+   if(workflowSchoolKey){window.__welfareWorkflowReadySchoolId=workflowSchoolKey;window.__welfareWorkflowReadyUserId=workflowUserId;}
    return true;
  }catch(error){
    // Report initialization failure so the caller cannot mistake an unmounted
    // Admin Panel for a successful workflow setup.
    console.error('[School Welfare] Workflow initialization failed:',error?.message||error);
+   if(window.__welfareWorkflowReadySchoolId===workflowSchoolKey){window.__welfareWorkflowReadySchoolId=null;window.__welfareWorkflowReadyUserId=null;}
    return false;
  }
 };
