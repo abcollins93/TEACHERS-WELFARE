@@ -755,6 +755,8 @@ async function audit(client,ctx,action,details,teacherId){
  return true;
 }
 window.initSchoolWorkflows=async function(client,school,refresh){
+ let workflowStage='administrator session verification';
+ window.__welfareWorkflowLastError=null;
  const awaitWorkflowAuth=(value,ms,label)=>{let timer;return Promise.race([Promise.resolve(value),new Promise((_,reject)=>{timer=window.setTimeout(()=>reject(new Error(label||'The request timed out.')),ms);})]).finally(()=>{if(timer)window.clearTimeout(timer);});};
  // DEMO receives a dedicated in-memory client from demo-sandbox.js. Every query
  // and mutation below is therefore scoped to this local sandbox, never Supabase.
@@ -777,11 +779,12 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   workflowUserId=String(identity.data.user.id);
   if(window.__welfareAdminSessionUserId&&String(window.__welfareAdminSessionUserId)!==workflowUserId)throw new Error('The active administrator account changed. Refresh the portal before continuing.');
  }
- if(workflowSchoolKey&&window.__welfareWorkflowReadySchoolId===workflowSchoolKey&&window.__welfareWorkflowReadyUserId===workflowUserId)return true;
+ if(workflowSchoolKey&&window.__welfareWorkflowReadySchoolId===workflowSchoolKey&&window.__welfareWorkflowReadyUserId===workflowUserId&&$('workflows')&&$('wfAdminPanel')&&$('teacherProfileViewer')&&$('schoolTeachers')&&$('wfContributionPanel')&&$('wfPayoutPanel'))return true;
  if(window.__welfareWorkflowReadySchoolId&&window.__welfareWorkflowReadySchoolId!==workflowSchoolKey){window.__welfareWorkflowReadySchoolId=null;window.__welfareWorkflowReadyUserId=null;}
  window.__welfareCurrentRole='admin';
  window.__welfareCurrentSchool=school;
  try{
+ workflowStage='administrator workspace mounting';
  // Yield the main thread before mounting large admin tables, audit panels and matrix UI.
  await new Promise(resolve=>{
   // DEMO becomes touch-ready immediately after first paint; live tenants keep
@@ -793,6 +796,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  if(isLocalDemo&&window.__welfareDemoRole!=='admin')return false;
  // Rebuild workflow markup on refresh so handlers always use the latest school-scoped data.
  const existingWorkflows=$('workflows');const retainedRoster=$('schoolTeachers');const overview=$('schoolOverview');if(existingWorkflows&&retainedRoster&&existingWorkflows.contains(retainedRoster)&&overview?.parentElement)overview.parentElement.insertBefore(retainedRoster,overview.nextElementSibling);retainedRoster?.querySelector('#wfTeacherRegisterPanel')?.remove();if(existingWorkflows)existingWorkflows.remove();
+ workflowStage='administrator section construction';
  addUI();
  const workflowMountNode=$('workflows');
  const adminPanelNode=$('wfAdminPanel');
@@ -864,6 +868,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    };
   }
  }
+ workflowStage='school settings hydration';
  let standardMonthlyDues=0;
  // This workflow-only preference read must not stall account Settings or the
  // rest of the administrator workspace. Use the saved value when it responds;
@@ -904,6 +909,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    },true);
  }
 
+ workflowStage='teacher register mounting';
  if(!roster||!teacherRegisterPanel)throw new Error('Teachers & Members workspace could not be mounted.');
  roster.appendChild(teacherRegisterPanel);
  // School-scoped administrator activity ticker. The existing audit-log RLS policy
@@ -956,6 +962,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    adminTickerControl.title=paused?'Resume scrolling':'Pause scrolling';
    adminTickerControl.innerHTML='<i class="fa-solid '+(paused?'fa-play':'fa-pause')+'" aria-hidden="true"></i>';
  });
+ workflowStage='administrator activity feed setup';
  const refreshAdminActivityTicker=async()=>{
    const {data:rows,error}=await client.from('audit_logs')
      .select('created_at,time_string,actor_name,action,details,status')
@@ -985,6 +992,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  // Load sources independently: a missing optional column/table must not prevent the
  // dashboard's other sections from rendering. Errors are logged without exposing SQL.
  // Fetch every page so totals and ledgers are not silently capped by the API row limit.
+  workflowStage='tenant data hydration';
   const withWorkflowTimeout=(value,ms,label)=>{
     let timer;
     return Promise.race([
@@ -1118,6 +1126,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  @media(max-width:600px){#wfDuesMatrixCard .wf-dues-matrix-controls{grid-template-columns:1fr}#wfDuesMatrixCard .wf-dues-matrix-table{min-width:850px}}
  `;
  document.head.appendChild(contribStyle);
+ workflowStage='profile and ledger rendering';
  const teacherById=new Map(teachers.map(t=>[String(t.id),t]));
  let selectedProfileTeacherId=teachers[0]?String(teachers[0].id):'';
  const profileHost=$('schoolOverview')?.parentElement;
@@ -2588,7 +2597,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  }catch(error){
    // Report initialization failure so the caller cannot mistake an unmounted
    // Admin Panel for a successful workflow setup.
-   console.error('[School Welfare] Workflow initialization failed:',error?.message||error);
+   window.__welfareWorkflowLastError={message:String(error?.message||error||'Unknown workflow initialization error'),stage:workflowStage,schoolCode:workflowSchoolCode,userId:workflowUserId,at:new Date().toISOString()};
+   console.error('[School Welfare] Workflow initialization failed:',window.__welfareWorkflowLastError,error?.stack||'');
    if(window.__welfareWorkflowReadySchoolId===workflowSchoolKey){window.__welfareWorkflowReadySchoolId=null;window.__welfareWorkflowReadyUserId=null;}
    return false;
  }
