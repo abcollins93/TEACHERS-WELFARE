@@ -1531,7 +1531,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      const reportHeight=Math.ceil(report.getBoundingClientRect().height||report.scrollHeight);
      const tableBody=report.querySelector('.wf-dm-table tbody');
      const tableRows=tableBody?.querySelectorAll('tr')?.length||0;
-     const reportText=String(report.textContent||'').replace(/\\s+/g,' ').trim();
+     const reportText=String(report.textContent||'').trim();
      if(reportWidth<700||reportHeight<100||tableRows<2||reportText.length<100||!report.querySelector('.wf-dm-header h1')||!report.querySelector('.wf-dm-meta'))throw new Error('The dues matrix report did not finish rendering with its school header, reporting year and member rows. Please try again.');
      const pdfOptions={margin:0,filename,image:{type:'png'},html2canvas:{scale:3,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,scrollX:0,scrollY:0,windowWidth:Math.max(reportWidth,document.documentElement.clientWidth),windowHeight:Math.max(reportHeight,document.documentElement.clientHeight),width:reportWidth,height:reportHeight},jsPDF:{unit:'mm',format:'a4',orientation:'landscape',compress:true},pagebreak:{mode:['css'],avoid:['tr','.wf-dm-bottom']}};
      if(typeof window.html2canvas!=='function')throw new Error('The PDF image renderer is unavailable. Refresh the portal and try again.');
@@ -1539,9 +1539,6 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      // directly, then hand the verified canvas to html2pdf for A4 pagination.
      // html2pdf.from(report).toCanvas() can clone an off-screen, zero-viewport
      // staging node into an entirely white canvas on mobile browsers.
-     report.style.setProperty('display','block','important');
-     report.style.setProperty('visibility','visible','important');
-     report.style.setProperty('opacity','1','important');
      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
      const renderedCanvas=await window.html2canvas(report,pdfOptions.html2canvas);
      if(!renderedCanvas||renderedCanvas.width<100||renderedCanvas.height<100)throw new Error('The dues matrix canvas dimensions are invalid. No blank PDF was downloaded.');
