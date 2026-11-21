@@ -54,7 +54,7 @@
 (function(){
  const query=new URLSearchParams(window.location.search);
  if(query.has('c')&&String(query.get('c')||'').trim().toUpperCase()==='DEMO'){
-  document.write('<script src="./demo-sandbox.js?v=20261121-visual-polish-v7"><\/script>');
+  document.write('<script src="./demo-sandbox.js?v=20261121-tenant-render-routing-v8"><\/script>');
  }
 })();
 </script><script>
@@ -4332,7 +4332,7 @@ if(isDemoMode){
 }
 })();
 </script>
-<script src="school-portal-workflows.js?v=20261121-visual-polish-v7"></script>
+<script src="school-portal-workflows.js?v=20261121-tenant-render-routing-v8"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
@@ -4385,7 +4385,13 @@ if(isDemoMode){
     });
     const dashboardRoot = document.getElementById('dashboard');
     if(dashboardRoot){dashboardRoot.classList.remove('hidden');dashboardRoot.removeAttribute('hidden');dashboardRoot.style.setProperty('display','block','important');dashboardRoot.style.setProperty('visibility','visible','important');dashboardRoot.removeAttribute('aria-hidden');}
-    const requestedId = button.dataset.target;
+    const rawRequestedId = button.dataset.target;
+    // The member workspace owns the legacy panel IDs in the static document.
+    // Administrator panels are mounted later under #workflows and use unique IDs.
+    const adminViewTargets = {wfContributionPanel:'wfAdminContributionPanel',wfPayoutPanel:'wfAdminPayoutPanel'};
+    const requestedId = window.__welfareCurrentRole === 'admin'
+      ? (adminViewTargets[rawRequestedId] || rawRequestedId)
+      : rawRequestedId;
     // Clear legacy workspace CSS states when navigating to ordinary sections.
     // Those states otherwise force-hide the roster after strict navigation reveals it.
     if(dashboardRoot && requestedId !== 'wfAdminPanel' && requestedId !== 'wfAuditPanel'){
@@ -4456,6 +4462,8 @@ if(isDemoMode){
       schoolTeachers: 'Teachers & Members',
       wfContributionPanel: 'Contributions',
       wfPayoutPanel: 'Welfare & Payouts',
+      wfAdminContributionPanel: 'Contributions',
+      wfAdminPayoutPanel: 'Welfare & Payouts',
       wfStatementPanel: 'Statements & Reports',
       wfReportsPanel: 'Statements & Reports',
       wfAdminPanel: 'Administration Panel',
@@ -4466,7 +4474,7 @@ if(isDemoMode){
 
     const viewIds = [
       'schoolOverview','teacherProfileViewer','schoolTeachers','wfTeacherPanel','wfTeacherRegisterPanel',
-      'wfContributionPanel','wfPayoutPanel','wfStatementPanel','wfReportsPanel','wfAccountSettingsPanel',
+      'wfContributionPanel','wfPayoutPanel','wfAdminContributionPanel','wfAdminPayoutPanel','wfStatementPanel','wfReportsPanel','wfAccountSettingsPanel',
       'wfAdminPanel','wfAuditView','teacherWorkspace','workflows'
     ];
     viewIds.forEach(function(id){
@@ -6027,7 +6035,9 @@ body.sidebar-open{overflow:hidden}
   #dashboard #wfAuditPanel,
   #dashboard #wfReportsPanel,
   #dashboard #wfContributionPanel,
-  #dashboard #wfPayoutPanel{
+  #dashboard #wfPayoutPanel,
+  #dashboard #wfAdminContributionPanel,
+  #dashboard #wfAdminPayoutPanel{
     width:100%!important;
     max-width:100%!important;
     min-width:0!important;
@@ -6086,6 +6096,8 @@ body.sidebar-open{overflow:hidden}
   body:not(:has(#login:not(.hidden))) #dashboard #wfReportsPanel,
   body:not(:has(#login:not(.hidden))) #dashboard #wfContributionPanel,
   body:not(:has(#login:not(.hidden))) #dashboard #wfPayoutPanel,
+  body:not(:has(#login:not(.hidden))) #dashboard #wfAdminContributionPanel,
+  body:not(:has(#login:not(.hidden))) #dashboard #wfAdminPayoutPanel,
   body:not(:has(#login:not(.hidden))) #dashboard .wf-admin-section,
   body:not(:has(#login:not(.hidden))) #dashboard .wf-section{
     box-sizing:border-box!important;
