@@ -3782,7 +3782,7 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
   if(schoolPdfButton.disabled)return;
   const originalButtonHtml=schoolPdfButton.innerHTML;
   let progress=document.getElementById('schoolPdfProgress');
-  if(!progress){progress=document.createElement('p');progress.id='schoolPdfProgress';progress.className='muted';progress.setAttribute('role','status');progress.setAttribute('aria-live','polite');schoolPdfButton.insertAdjacentElement('afterend',progress);}
+  if(!progress){progress=document.createElement('p');progress.id='schoolPdfProgress';progress.className='muted';progress.setAttribute('role','status');progress.setAttribute('aria-live','polite');schoolPdfButton.parentElement.insertAdjacentElement('afterend',progress);}
   schoolPdfButton.disabled=true;schoolPdfButton.setAttribute('aria-busy','true');schoolPdfButton.innerHTML='<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Preparing PDF…';progress.textContent='Loading the school teacher register…';progress.className='muted';
   try{
    const mountPromise=window.__welfareWorkflowMountPromise;
