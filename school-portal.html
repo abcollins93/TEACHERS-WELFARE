@@ -2505,6 +2505,16 @@ async function renderTeacherDashboard(profile,school){
   if(!error&&data){teacherRecord=data;teacherName=data.name||teacherName;teacherAvatar=data.passport||null;}
   else if(error)console.warn('[Teacher profile] Master teacher record lookup failed:',error.message||error);
  }catch(profileLookupError){console.warn('[Teacher profile] Master teacher record lookup failed:',profileLookupError?.message||profileLookupError);}
+ // The isolated DEMO adapter can supply its selected in-memory teacher record
+ // immediately if the profile RPC is still resolving or returns no row.
+ if(!teacherRecord&&window.__welfareDemoRole==='teacher'){
+  const demoRecord=window.WelfareDemo?.getCurrentTeacherProfile?.();
+  if(demoRecord){
+   teacherRecord=typeof window.normalizeTeacherProfileRecord==='function'?window.normalizeTeacherProfileRecord(demoRecord,profile):{...profile,...demoRecord};
+   teacherName=teacherRecord.name||teacherName;
+   teacherAvatar=teacherRecord.passport||null;
+  }
+ }
  // Migrate a legacy teacher photo saved by the old browser-only uploader.
  // The RPC validates the authenticated teacher_accounts mapping and updates only
  // that teacher's passport field; no other profile or school data is changed.
