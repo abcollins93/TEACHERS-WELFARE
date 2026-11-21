@@ -151,9 +151,9 @@ function showPwaInstallNotice(tenantLabel){
    window.addEventListener('load',function(){
      var swUrl=new URL('./sw.js',pageUrl);
      var appScope=new URL('./',pageUrl);
-     navigator.serviceWorker.register(swUrl.href,{scope:appScope.href,updateViaCache:'none'}).then(function(registration){
-       return registration.update().catch(function(error){console.warn('[Welfare Portal PWA] Service worker update check deferred:',error);});
-     }).catch(function(error){
+     // Registration already schedules the browser-managed update check. Avoid
+     // issuing a second explicit update request on every page load.
+     navigator.serviceWorker.register(swUrl.href,{scope:appScope.href,updateViaCache:'none'}).catch(function(error){
        console.warn('[Welfare Portal PWA] Service worker registration failed:',error);
      });
    });
