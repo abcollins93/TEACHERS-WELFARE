@@ -276,4 +276,11 @@
  }
 
  window.WelfareDemo={school,teachers,contributions,payouts,announcements,client,months,activeCon,activePay,summary,openSchoolSetupModal,async loadTeacherRegister(schoolCode){if(String(schoolCode||'').trim().toUpperCase()!=='DEMO'||String(new URLSearchParams(window.location.search).get('c')||'').trim().toUpperCase()!=='DEMO')throw new Error('The DEMO teacher register is available only inside the isolated DEMO tenant.');const rows=clone(teachers).filter(row=>String(row.school_id||'')===String(school.id));window.__welfareTeacherRegisterState={schoolId:String(school.id),schoolCode:'DEMO',rows};return rows;},getCurrentTeacherProfile(){return window.__welfareDemoRole==='teacher'&&teachers[activeTeacherIndex]?clone(teachers[activeTeacherIndex]):null;},getCurrentUser(){return currentAuthUser();},setTeacher(index){activeTeacherIndex=Math.max(0,Math.min(teachers.length-1,Number(index)||0));}};
+ // Keep DEMO profile navigation synchronous and role-scoped. The shared
+ // workflow renderers own the actual cards; this bridge only invokes the
+ // already-authenticated profile renderer without starting a network request.
+ window.__welfareDemoRenderProfileViewer=()=>{
+  if(window.__welfareDemoRole==='teacher')return window.__welfareRefreshMemberProfileViewer?.()??false;
+  return window.__welfareRenderAdminProfileViewer?.()??false;
+ };
 })();
