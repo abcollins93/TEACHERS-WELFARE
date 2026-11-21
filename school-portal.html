@@ -4476,33 +4476,11 @@ window.generateTenantWelfarePdf=async function(o){
  const qr='twfqr'+id;
  const sign='<div class="twf-final-signoff"><div class="twf-signatures"><div class="twf-qr"><div id="'+qr+'"></div></div></div></div>';
  const host=document.createElement('div');host.className='twf-pdf '+orientation+(statistics?' twf-payment-statistics':'');host.setAttribute('data-welfare-pdf-staging','');host.setAttribute('data-twf-statement-capture',id);host.style.cssText='display:none!important;position:absolute!important;left:-9999px!important;top:-9999px!important;width:0!important;height:0!important;overflow:hidden!important;pointer-events:none!important;background:#fff';window.applyWelfarePdfTenantWatermark(host,school.name,school);host.setAttribute('data-theme','light');host.style.colorScheme='light';host.innerHTML='<style>'+style+'</style><style>.twf-pdf{font:12px/1.4 Arial,sans-serif!important;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.twf-head h2{font-size:19px!important;line-height:1.12!important}.twf-head h1{font-size:25px!important;line-height:1.1!important}.twf-brand{font-size:12px!important}.twf-sub{font-size:12.5px!important;line-height:1.3!important}.twf-meta{font-size:11px!important;line-height:1.5!important}.twf-box h3,.twf-section{font-size:13px!important;line-height:1.25!important}.twf-details th,.twf-details td{font-size:10px!important;padding:8px 11px!important;line-height:1.35!important}.twf-table{font-size:10.2px!important;line-height:1.45!important}.twf-table th{font-size:10px!important;padding:7px 9px!important}.twf-table td{padding:7px 9px!important}.twf-metric small{font-size:9.5px!important}.twf-metric strong{font-size:15px!important;font-weight:800!important;line-height:1.2!important}.twf-disclaimer{font-size:8pt!important;font-weight:700!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;text-rendering:geometricPrecision!important}.twf-head-logo,.twf-photo,.twf-qr img,.twf-qr canvas{image-rendering:auto;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}</style><style>.twf-signatures{display:flex!important;justify-content:flex-end!important;align-items:flex-end!important;width:100%!important;max-width:100%!important;min-width:0!important}.twf-signatures .twf-qr{margin-left:auto!important;justify-self:auto!important;text-align:right!important}.twf-qr img,.twf-qr canvas{margin:0 0 2mm auto!important}.twf-pdf .twf-details{display:table!important;width:100%!important;max-width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;border:1px solid #000000!important;border-radius:6px!important;overflow:hidden!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf .twf-details th,.twf-pdf .twf-details td{border:1px solid #000000!important;padding:7px 10px!important;vertical-align:middle!important;overflow-wrap:anywhere!important;word-break:break-word!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf .twf-details th{text-align:left!important;background:#f8fafc!important;font-weight:700!important;white-space:nowrap!important}.twf-pdf .twf-details th:nth-child(1){width:17%!important}.twf-pdf .twf-details td:nth-child(2){width:33%!important;white-space:normal!important}.twf-pdf .twf-details th:nth-child(3){width:17%!important}.twf-pdf .twf-details td:nth-child(4){width:33%!important;white-space:normal!important}</style>'+head+body+sign+disclaimer;const pdfLightPaletteStyle=document.createElement('style');pdfLightPaletteStyle.textContent='.twf-pdf[data-theme="light"]{background:#ffffff!important;color:#17243a!important;color-scheme:light!important}.twf-pdf[data-theme="light"] .twf-metric{color:#17243a!important;border-color:#dbe3ee!important;box-shadow:none!important;filter:none!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf[data-theme="light"] .twf-metric.green{background:#ecfdf5!important;border-color:#a7f3d0!important}.twf-pdf[data-theme="light"] .twf-metric.red{background:#fff1f2!important;border-color:#fecdd3!important}.twf-pdf[data-theme="light"] .twf-metric.blue{background:#eff6ff!important;border-color:#bfdbfe!important}.twf-pdf[data-theme="light"] .twf-metric.gold{background:#fffbeb!important;border-color:#fde68a!important}.twf-pdf[data-theme="light"] .twf-metric small{color:#475569!important}.twf-pdf[data-theme="light"] .twf-metric strong{color:#102b4f!important}.twf-pdf[data-theme="light"] .twf-metric:before{filter:none!important}';host.appendChild(pdfLightPaletteStyle);document.body.appendChild(host);
- // The portal keeps PDF templates hidden globally. Override that guard only
- // for this attached, off-screen A4 capture surface.
- host.style.setProperty('display','block','important');
- host.style.setProperty('visibility','visible','important');
- host.style.setProperty('opacity','1','important');
- host.style.setProperty('position','fixed','important');
- host.style.setProperty('left','-10000px','important');
- host.style.setProperty('top','0','important');
- host.style.setProperty('right','auto','important');
- host.style.setProperty('bottom','auto','important');
- host.style.setProperty('z-index','0','important');
- host.style.setProperty('width','210mm','important');
- host.style.setProperty('max-width','210mm','important');
- host.style.setProperty('height','auto','important');
- host.style.setProperty('min-height','0','important');
- host.style.setProperty('overflow','visible','important');
- host.style.setProperty('pointer-events','none','important');
- // Enable a measurable off-screen surface only for this capture. The host is
- // removed in the generator's finally block as soon as PDF rendering completes.
- host.style.setProperty('display','block','important');
- host.style.setProperty('position','absolute','important');
- host.style.setProperty('left','-100000px','important');
- host.style.setProperty('top','0','important');
- host.style.setProperty('width','210mm','important');
- host.style.setProperty('height','auto','important');
- host.style.setProperty('overflow','visible','important');
- host.style.setProperty('pointer-events','none','important');
+ // Keep the statement template strictly hidden while it is populated.
+ // It is revealed only inside the active capture routine and hidden in finally.
+ host.style.setProperty('display','none','important');
+ host.style.setProperty('visibility','hidden','important');
+ host.style.setProperty('opacity','0','important');
  let pdfBlob,filename;
  try{
   const qrNode=host.querySelector('#'+qr);
