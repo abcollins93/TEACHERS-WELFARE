@@ -810,27 +810,44 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  let standardMonthlyDues=0;
  const updateDashboardStandardDues=amount=>{
   const metric=$('standardDuesMetric');
-  if(!metric||$('teacherStandardMonthlyDuesAmount'))return;
+  if(!metric||window.__welfareCurrentRole==='teacher'||$('teacherStandardMonthlyDuesAmount'))return;
   const value=Number(amount);
   if(Number.isFinite(value)&&value>=0)metric.textContent='GHS '+value.toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
  };
- // Read the school-scoped configured rate. The dashboard shell is already
- // visible by the time this lazy workflow mounts, so hydrate its metric here
- // rather than relying on a settings input that is created later.
- const initialDuesResult=await Promise.race([
-  client.from('system_settings').select('value').eq('school_id',ctx.id).eq('key','standard_dues').maybeSingle(),
-  new Promise(resolve=>setTimeout(()=>resolve({data:null,error:{message:'Timed out while loading standard monthly dues.'}}),8000))
- ]);
- const {data:initialDuesSetting,error:initialDuesError}=initialDuesResult||{};
- const configuredDuesValue=initialDuesSetting?.value;
- const configuredDues= configuredDuesValue!==null&&configuredDuesValue!==undefined&&String(configuredDuesValue).trim()!==''?Number(configuredDuesValue):NaN;
+ // Set a visible school/default rate immediately. Do not await Supabase here:
+ // this workflow mounts the rest of the dashboard and must remain responsive
+ // even when the settings request is slow or temporarily unavailable.
  const fallbackCandidates=[ctx.monthly_dues,ctx.standard_monthly_dues,ctx.standardMonthlyDues,window.schoolSettings?.monthly_dues,20];
  const fallbackDues=fallbackCandidates.map(value=>value===null||value===undefined||String(value).trim()===''?NaN:Number(value)).find(value=>Number.isFinite(value)&&value>=0);
- standardMonthlyDues=!initialDuesError&&Number.isFinite(configuredDues)&&configuredDues>=0?configuredDues:(fallbackDues??20);
+ standardMonthlyDues=fallbackDues??20;
+ const initialFallbackDues=standardMonthlyDues;
  const duesInput=$('wfMonthlyDues');
  if(duesInput)duesInput.value=String(standardMonthlyDues);
  updateDashboardStandardDues(standardMonthlyDues);
- if(initialDuesError)console.warn('[School settings] Could not load saved standard monthly dues; using the available school/default rate:',initialDuesError.message);
+ // Hydrate the authoritative school-scoped rate in the background. This
+ // must never delay roster, navigation, dashboard or admin-workspace setup.
+ (async()=>{
+  let timeoutId=null;
+  try{
+   if(!ctx.id)throw new Error('The active school ID is unavailable.');
+   const result=await Promise.race([
+    client.from('system_settings').select('value').eq('school_id',ctx.id).eq('key','standard_dues').maybeSingle(),
+    new Promise(resolve=>{timeoutId=setTimeout(()=>resolve({data:null,error:{message:'Timed out while loading standard monthly dues.'}}),5000);})
+   ]);
+   if(timeoutId!==null)clearTimeout(timeoutId);
+   if(result?.error)throw result.error;
+   const rawValue=result?.data?.value;
+   const configuredDues=rawValue!==null&&rawValue!==undefined&&String(rawValue).trim()!==''?Number(rawValue):NaN;
+   if(Number.isFinite(configuredDues)&&configuredDues>=0){
+    standardMonthlyDues=configuredDues;
+    updateDashboardStandardDues(configuredDues);
+    const currentInput=$('wfMonthlyDues');
+    if(currentInput&&document.activeElement!==currentInput&&String(currentInput.value)===String(initialFallbackDues))currentInput.value=String(configuredDues);
+   }
+  }catch(error){
+   console.warn('[School settings] Could not load saved standard monthly dues; keeping the immediate school/default rate:',error?.message||error);
+  }finally{if(timeoutId!==null)clearTimeout(timeoutId);}
+ })();
  // Capture the monthly dues form submit before any browser-level form navigation can occur.
  const duesForm=$('wfDuesForm');
  if(duesForm){
