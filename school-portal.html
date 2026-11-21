@@ -3844,7 +3844,7 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
    const widths=['11%','18%','11%','13%','10%','13%','13%','11%'];
    table.querySelectorAll('tr').forEach(row=>Array.from(row.children).forEach((cell,index)=>{if(widths[index])cell.style.width=widths[index];}));
    const totalTeachers=String(teacherRows.filter(teacher=>teacher.is_active!==false).length);
-   const formatExecutiveMoney=id=>{const raw=String($(id)?.textContent||'0').trim();const numeric=Number(raw.replace(/[^0-9.\-]/g,''));return 'GH₵ '+(Number.isFinite(numeric)?numeric.toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2}):raw.replace(/^GH₵\s*/,''));};
+   const formatExecutiveMoney=id=>{const raw=String($(id)?.textContent||'0').trim();if(/^(unavailable|loading|—)$/i.test(raw))return raw;const numeric=Number(raw.replace(/[^0-9.\-]/g,''));return Number.isFinite(numeric)?'GH₵ '+numeric.toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2}):raw.replace(/^GH₵\s*/,'');};
    const contributions=formatExecutiveMoney('contributionTotal');
    const payouts=formatExecutiveMoney('payoutTotal');
    const balance=formatExecutiveMoney('netTotal');
