@@ -145,8 +145,8 @@ const rankOptionsMarkup=()=>'<option value="">Select Rank / Grade</option>'+RANK
 const csvCell=v=>{let s=String(v??'');if(/^[\s]*[=+@\-\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';};
 const downloadWorkflowBlob=(blob,fileName,statusId,successText,viewLabel,sourceButton=null)=>{
  if(!(blob instanceof Blob))throw new Error('The generated file is unavailable.');
- const isPdf=/\\.pdf$/i.test(String(fileName||''))||/pdf/i.test(String(viewLabel||''))||/PDF/i.test(String(successText||''));
- const filename=isPdf?(String(fileName||'Welfare_Statement_Report').replace(/\\.pdf$/i,'')||'Welfare_Statement_Report')+'.pdf':String(fileName||'download');
+ const isPdf=/\.pdf$/i.test(String(fileName||''))||/pdf/i.test(String(viewLabel||''))||/PDF/i.test(String(successText||''));
+ const filename=isPdf?(String(fileName||'Welfare_Statement_Report').replace(/\.pdf$/i,'')||'Welfare_Statement_Report')+'.pdf':String(fileName||'download');
  const downloadBlob=isPdf&&blob.type!=='application/pdf'?new Blob([blob],{type:'application/pdf'}):blob;
  const url=window.URL.createObjectURL(downloadBlob),link=document.createElement('a');
  link.href=url;
@@ -1950,7 +1950,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      msg('wfStatementMsg','Your statement is still being prepared. Please tap Share PDF again when preparation is complete.');
      return;
    }
-   const shareTitle=String(prepared.fileName).replace(/\\.pdf$/i,'').replace(/[-_]+/g,' ');
+   const shareTitle=String(prepared.fileName).replace(/\.pdf$/i,'').replace(/[-_]+/g,' ');
    const shareText='Please find attached this school welfare PDF report.';
    const shareData={files:[prepared.pdfFile],title:shareTitle,text:shareText};
    let supportsFileShare=false;
