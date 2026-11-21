@@ -1,8 +1,13 @@
 'use strict';
-const CACHE_VERSION='twf-pwa-shell-v47-mobile-tap-scroll';
+const CACHE_VERSION='twf-pwa-shell-v48-workflow-recovery';
 const STATEMENT_CACHE='twf-cached-statements-v1';
 const NETWORK_TIMEOUT_MS=8000;
 const STATIC_TIMEOUT_MS=6500;
+function isJavaScriptAssetResponse(response){
+ if(!response||!response.ok)return false;
+ const type=String(response.headers.get('content-type')||'').toLowerCase();
+ return type.includes('javascript')||type.includes('ecmascript');
+}
 async function reportNetworkState(state,detail){
  const clients=await self.clients.matchAll({type:'window',includeUncontrolled:true});
  clients.forEach(client=>client.postMessage({type:'WELFARE_NETWORK_STATUS',state,detail:detail||''}));
@@ -23,13 +28,13 @@ const SHELL_ASSETS=[
  './',
  './index.html',
  './school-portal.html',
- './demo-sandbox.js?v=20261121-mobile-interaction-v19',
+ './demo-sandbox.js?v=20261121-workflow-recovery-v20',
  './set-password.html',
  './g.html',
  './offline.html',
  './manifest.json',
  './pwa.js',
- './school-portal-workflows.js?v=20261121-mobile-interaction-v19',
+ './school-portal-workflows.js?v=20261121-workflow-recovery-v20',
  './icons/welfare-portal.svg'
 ];
 const CDN_ASSETS=[
@@ -52,7 +57,7 @@ self.addEventListener('install',event=>{
      const request=new Request(new URL(path,self.registration.scope),{cache:'reload'});
      try{
        const response=await timedFetch(request,STATIC_TIMEOUT_MS);
-       if(response&&response.ok)await cache.put(request,response.clone());
+       if(response&&response.ok){const scriptAsset=/\.js(?:\?|$)/i.test(path);if(!scriptAsset||isJavaScriptAssetResponse(response))await cache.put(request,response.clone());}
      }catch(error){console.warn('[Welfare PWA] Shell asset deferred:',path,error?.message||error);}
    }));
    // CDN assets are cached on demand and never block service-worker install.
@@ -107,8 +112,8 @@ self.addEventListener('fetch',event=>{
      const cache=await caches.open(CACHE_VERSION);
      try{
        const response=await timedFetch(new Request(request,{cache:'no-store'}),STATIC_TIMEOUT_MS);
-       if(response&&response.ok)cache.put(request,response.clone()).catch(()=>{});
-       return response;
+       if(isJavaScriptAssetResponse(response)){cache.put(request,response.clone()).catch(()=>{});return response;}
+       return (await cache.match(request))||Response.error();
      }catch(_){
        return (await cache.match(request))||Response.error();
      }
