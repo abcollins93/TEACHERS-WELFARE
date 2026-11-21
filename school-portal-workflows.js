@@ -755,6 +755,7 @@ async function audit(client,ctx,action,details,teacherId){
  return true;
 }
 window.initSchoolWorkflows=async function(client,school,refresh){
+ const awaitWorkflowAuth=(value,ms,label)=>{let timer;return Promise.race([Promise.resolve(value),new Promise((_,reject)=>{timer=window.setTimeout(()=>reject(new Error(label||'The request timed out.')),ms);})]).finally(()=>{if(timer)window.clearTimeout(timer);});};
  // DEMO receives a dedicated in-memory client from demo-sandbox.js. Every query
  // and mutation below is therefore scoped to this local sandbox, never Supabase.
  const isLocalDemo=!!client?.__welfareDemo&&String(school?.school_code||'').toUpperCase()==='DEMO';
@@ -765,12 +766,12 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   if(!workflowSchoolKey||!workflowSchoolCode)throw new Error('The verified school ID or school code is missing. Refresh the school gateway and retry.');
   const requestedCode=String(new URLSearchParams(location.search).get('c')||'').trim().toUpperCase();
   if(requestedCode&&requestedCode!==workflowSchoolCode)throw new Error('The signed-in school does not match this gateway link. Sign in through the correct school URL.');
-  const sessionResult=await withWorkflowTimeout(client.auth.getSession(),15000,'Administrator session restoration timed out.');
+  const sessionResult=await awaitWorkflowAuth(client.auth.getSession(),15000,'Administrator session restoration timed out.');
   if(sessionResult?.error)throw new Error('Administrator session restoration failed: '+(sessionResult.error.message||'Please sign in again.'));
   let session=sessionResult?.data?.session||null;
-  if(session?.access_token&&Number(session.expires_at||0)>0&&Number(session.expires_at)*1000<Date.now()+60000){const refreshed=await withWorkflowTimeout(client.auth.refreshSession(),15000,'Administrator session refresh timed out.');if(refreshed?.error||!refreshed?.data?.session?.access_token)throw new Error('Administrator session expired and could not be refreshed. Sign in again.');session=refreshed.data.session;}
+  if(session?.access_token&&Number(session.expires_at||0)>0&&Number(session.expires_at)*1000<Date.now()+60000){const refreshed=await awaitWorkflowAuth(client.auth.refreshSession(),15000,'Administrator session refresh timed out.');if(refreshed?.error||!refreshed?.data?.session?.access_token)throw new Error('Administrator session expired and could not be refreshed. Sign in again.');session=refreshed.data.session;}
   if(!session?.access_token)throw new Error('No active administrator session is available to load school records. Sign in again.');
-  const identity=await withWorkflowTimeout(client.auth.getUser(),15000,'Administrator identity verification timed out.');
+  const identity=await awaitWorkflowAuth(client.auth.getUser(),15000,'Administrator identity verification timed out.');
   if(identity?.error||!identity?.data?.user||String(identity.data.user.id)!==String(session.user?.id||''))throw new Error('The administrator session identity could not be verified. Sign in again.');
   workflowUserId=String(identity.data.user.id);
   if(window.__welfareAdminSessionUserId&&String(window.__welfareAdminSessionUserId)!==workflowUserId)throw new Error('The active administrator account changed. Refresh the portal before continuing.');
