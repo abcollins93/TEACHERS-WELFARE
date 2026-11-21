@@ -994,6 +994,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  }
  let loginAccounts=new Map((ar.data||[]).map(account=>[String(account.teacher_id),account]));
  let teachers=(tr.data||[]).map(t=>{const normalized=typeof window.normalizeTeacherProfileRecord==='function'?window.normalizeTeacherProfileRecord(t):t;const account=loginAccounts.get(String(normalized.id));return {...normalized,auth_user_id:account?.auth_user_id||null,login_activated:!!account?.auth_user_id,must_change_password:account?.must_change_password??null};});let cons=cr.data||[], pays=pr.data||[], reversals=rr.data||[];
+  window.__welfareTeacherRegisterState={schoolId:String(school.id||''),schoolCode:String(school.school_code||school.schoolCode||'').toUpperCase(),rows:teachers};
  const sourceWarnings=[];
  if(tr.error)sourceWarnings.push('Teacher register unavailable');
  if(ar.error)sourceWarnings.push('Teacher login status unavailable');
@@ -1352,6 +1353,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    const accountResult=await loadSource('teacher login accounts refresh',()=>client.from('teacher_accounts').select('auth_user_id,teacher_id,school_id,must_change_password,active').eq('school_id',ctx.id).eq('active',true));
    loginAccounts=new Map((accountResult.data||[]).map(account=>[String(account.teacher_id),account]));
    teachers=normalizedRows.map(row=>{const account=loginAccounts.get(String(row.id));return {...row,auth_user_id:account?.auth_user_id||null,login_activated:!!account?.auth_user_id,must_change_password:account?.must_change_password??null};});
+   window.__welfareTeacherRegisterState={schoolId:String(ctx.id||''),schoolCode:String(ctx.school_code||ctx.schoolCode||'').toUpperCase(),rows:teachers};
    tr={data:teachers,error:null};
    teacherById.clear();teachers.forEach(row=>teacherById.set(String(row.id),row));
    if(!selectedProfileTeacherId||!teachers.some(row=>String(row.id)===String(selectedProfileTeacherId)))selectedProfileTeacherId=teachers[0]?String(teachers[0].id):'';
