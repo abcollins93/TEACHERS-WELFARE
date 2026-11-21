@@ -2204,10 +2204,10 @@ function openMobileNav(){syncMobileNavState(true);}
    document-level bubbling handlers or secondary UI work can run. */
 const mobileNavToggle=document.getElementById('mobileNavToggle');
 mobileNavToggle?.addEventListener('click',event=>{
- event.preventDefault();
- event.stopPropagation();
  if(!sidebar)return;
  const isOpen=sidebar.classList.toggle('is-mobile-open');
+ event.preventDefault();
+ event.stopPropagation();
  syncMobileNavState(isOpen,true);
 });
 document.addEventListener('click',event=>{
@@ -5289,9 +5289,9 @@ body:has(#login:not(.hidden)) main{
 
 <style id="tenant-sidebar-global-interaction">
 @media(max-width:950px){
- #mobile-nav-overlay{z-index:10001!important;pointer-events:none}
+ #mobile-nav-overlay{z-index:10001!important;pointer-events:none;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
  #mobile-nav-overlay.is-open{pointer-events:auto}
- #dashboard .sidebar,#dashboard .sidebar.is-mobile-open{z-index:10004!important}
+ #dashboard .sidebar,#dashboard .sidebar.is-mobile-open{z-index:10004!important;will-change:transform;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
  header.top{z-index:10003!important;pointer-events:auto}
  #mobileNavToggle{position:relative!important;z-index:10005!important;pointer-events:auto!important;touch-action:manipulation}
  header.top .top-brand-group{position:relative;z-index:10003;pointer-events:auto}
