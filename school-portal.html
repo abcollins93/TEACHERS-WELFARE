@@ -3313,6 +3313,24 @@ async function waitForSchoolWorkflows(timeoutMs=10000){
 }
 // Account Settings must initialize independently of dashboard data and workflow startup.
 // Keep one initialization promise per authenticated tenant/role to avoid duplicate setup.
+function resolveSchoolMonthlyDues(school,settingsRows,contributionRows){
+ const candidates=[];
+ const add=value=>{if(value===null||value===undefined||String(value).trim()==='')return;const n=Number(String(value).replace(/[₵,\\s]/g,''));if(Number.isFinite(n)&&n>0)candidates.push(n);};
+ const keys=['standard_dues','standard_monthly_dues','monthly_dues','monthly_dues_amount','monthly_contribution','monthly_contribution_amount','welfare_dues','welfare_monthly_dues','contribution_rate','monthly_rate'];
+ const scan=source=>{if(!source||typeof source!=='object')return;for(const key of keys){add(source[key]);add(source[key.toUpperCase()]);}if(source.settings&&typeof source.settings==='object')scan(source.settings);if(source.welfare_settings&&typeof source.welfare_settings==='object')scan(source.welfare_settings);};
+ scan(school);scan(window.schoolSettings);scan(window.__welfareCurrentSchool);
+ const rows=Array.isArray(settingsRows)?settingsRows:(settingsRows&&typeof settingsRows==='object'?[settingsRows]:[]);
+ rows.forEach(row=>{const key=String(row?.key||row?.setting_key||row?.name||'').toLowerCase();if(keys.includes(key))add(row.value??row.setting_value??row.amount);});
+ if(candidates.length)return candidates[0];
+ const amounts=(Array.isArray(contributionRows)?contributionRows:[]).filter(row=>{const status=String(row?.status||row?.transaction_status||'active').toLowerCase();return Number(row?.amount)>0&&!['reversed','inactive','deleted','cancelled','canceled','void','archived'].includes(status)&&!row?.is_reversed&&!row?.reversed_at;}).map(row=>Math.round(Number(row.amount)*100)/100);
+ if(amounts.length){const counts=new Map();amounts.forEach(amount=>counts.set(amount,(counts.get(amount)||0)+1));return [...counts.entries()].sort((a,b)=>b[1]-a[1]||b[0]-a[0])[0][0];}
+ return null;
+}
+window.resolveSchoolMonthlyDues=resolveSchoolMonthlyDues;
+window.updateSchoolMonthlyDuesMetric=function(value){
+ const node=document.getElementById('standardDuesMetric');const amount=Number(value);
+ if(node&&Number.isFinite(amount)&&amount>0)node.textContent='GH₵ '+amount.toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
+};
 function startAccountSettingsInitialization(client,school,role){
  const key=String(school?.id||'')+'::'+String(role||'');
  if(!client||!school?.id||!role)return Promise.resolve(false);
@@ -3552,7 +3570,7 @@ async function showDashboardInternal(){
  const adminGreeting=$('dashboardGreeting');if(adminGreeting)adminGreeting.textContent='HI, ADMIN!';
  const accountTitle=document.querySelector('.sidebar-account-copy strong');if(accountTitle)accountTitle.textContent='School Administrator';
  // RLS must return only the school assigned to this authenticated administrator.
- const {data:school,error}=await withPortalTimeout(client.from('schools').select('id,name,school_code,school_type,region,district,status').eq('school_code',code).maybeSingle(),8000,'School profile lookup timed out.');
+ const {data:school,error}=await withPortalTimeout(client.from('schools').select('id,name,school_code,school_type,region,district,status,monthly_dues,monthlyDues,standard_dues,standard_monthly_dues').eq('school_code',code).maybeSingle(),8000,'School profile lookup timed out.');
  if(error||!school||school.status!=='active'){
    // Keep the authenticated session intact so a school-mapping/RLS problem is not mistaken for a failed password or page refresh.
    $('loginError').textContent=error
@@ -3572,11 +3590,12 @@ async function showDashboardInternal(){
  // Start Settings as soon as the authenticated tenant context is known. Do not await it:
  // dashboard query failures or workflow startup must never prevent the Settings view mounting.
  void startAccountSettingsInitialization(client,school,'admin');
- const [teachersRes,contribRes,payoutsRes,reversalsRes,latestActivity]=await withPortalTimeout(Promise.all([
+ const [teachersRes,contribRes,payoutsRes,reversalsRes,duesSettingsRes,latestActivity]=await withPortalTimeout(Promise.all([
   client.from('teachers').select('id,name,phone,rank,class_name').eq('school_id',school.id).order('name'),
   client.from('contributions').select('id,amount,date').eq('school_id',school.id),
   client.from('payouts').select('id,amount').eq('school_id',school.id),
   client.from('transaction_reversals').select('transaction_type,transaction_id').eq('school_id',school.id),
+  client.from('system_settings').select('key,value').eq('school_id',school.id),
   Promise.all([
    client.from('contributions').select('date').eq('school_id',school.id).order('date',{ascending:false}).limit(1),
    client.from('payouts').select('date').eq('school_id',school.id).order('date',{ascending:false}).limit(1)
@@ -3585,6 +3604,8 @@ async function showDashboardInternal(){
  const err=[teachersRes.error,contribRes.error,payoutsRes.error,reversalsRes.error].find(Boolean);
  if(err){window.finishTenantSkeletons?.();console.warn('School records could not be loaded:',err);return;}
  const teachers=teachersRes.data||[], contributions=contribRes.data||[], payouts=payoutsRes.data||[], reversals=reversalsRes.data||[];
+ const resolvedMonthlyDues=window.resolveSchoolMonthlyDues?.(school,duesSettingsRes?.data,contributions);
+ if(resolvedMonthlyDues)window.updateSchoolMonthlyDuesMetric?.(resolvedMonthlyDues);
  const reversedContributions=new Set(reversals.filter(r=>r.transaction_type==='contribution').map(r=>String(r.transaction_id)));
  const reversedPayouts=new Set(reversals.filter(r=>r.transaction_type==='payout').map(r=>String(r.transaction_id)));
  const c=contributions.filter(r=>!reversedContributions.has(String(r.id))).reduce((sum,r)=>sum+Number(r.amount||0),0);
@@ -3611,7 +3632,7 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
   });
   window.__welfareWorkflowMountPromise=workflowMount;
   window.finishTenantSkeletons?.();
-  const duesMetric=$('standardDuesMetric'),duesInput=$('wfMonthlyDues');if(duesMetric&&duesInput){const updateDues=()=>{duesMetric.textContent='GH₵ '+money(duesInput.value||0);};updateDues();duesInput.addEventListener('input',updateDues);}
+  const duesMetric=$('standardDuesMetric'),duesInput=$('wfMonthlyDues');if(duesMetric&&duesInput){const updateDues=()=>{const amount=Number(duesInput.value);if(Number.isFinite(amount)&&amount>0)window.updateSchoolMonthlyDuesMetric?.(amount);};if(duesInput.value)updateDues();duesInput.addEventListener('input',updateDues);}
  window.showWelfareDialog=window.showWelfareDialog||function(kind,message,title){
   return new Promise(resolve=>{
    let root=document.getElementById('schoolWelfareDialog');
