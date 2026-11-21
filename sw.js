@@ -23,13 +23,13 @@ const SHELL_ASSETS=[
  './',
  './index.html',
  './school-portal.html',
- './demo-sandbox.js?v=20261121-mobile-interaction-v18',
+ './demo-sandbox.js?v=20261121-mobile-interaction-v19',
  './set-password.html',
  './g.html',
  './offline.html',
  './manifest.json',
  './pwa.js',
- './school-portal-workflows.js?v=20261121-mobile-interaction-v18',
+ './school-portal-workflows.js?v=20261121-mobile-interaction-v19',
  './icons/welfare-portal.svg'
 ];
 const CDN_ASSETS=[
