@@ -680,38 +680,41 @@ function addUI(){
    }
   },true);
  }
- // Populate the monthly report selectors immediately after mounting the report
- // view. This keeps Month and Year available even if later optional setup is slow.
- const reportMonthSelect=$('wfReportMonth'),reportYearSelect=$('wfReportYear'),annualYearSelect=$('wfAnnualYear'),paymentStatsYearSelect=$('wfPaymentStatsYear');
- const duesMatrixYearSelect=$('wfDuesMatrixYear');
- {
-   const reportMonthNow=new Date();
-   const monthNames=Array.from({length:12},(_,index)=>new Date(2000,index,1).toLocaleDateString('en-GH',{month:'long'}));
-   const reportYears=Array.from({length:11},(_,index)=>reportMonthNow.getFullYear()-index),paymentStatsYears=Array.from({length:13},(_,index)=>reportMonthNow.getFullYear()-10+index);
-   if(reportMonthSelect&&reportYearSelect){
-     reportMonthSelect.replaceChildren(...monthNames.map((name,index)=>new Option(name,String(index+1).padStart(2,'0'))));
-     reportYearSelect.replaceChildren(...reportYears.map(year=>new Option(String(year),String(year))));
-     reportMonthSelect.disabled=false;reportYearSelect.disabled=false;
-     reportMonthSelect.value=String(reportMonthNow.getMonth()+1).padStart(2,'0');
-     reportYearSelect.value=String(reportMonthNow.getFullYear());
+ // Keep every reporting year selector rolling forward with the calendar and
+ // with the newest year present in this school's already-loaded records.
+ const populateReportYearSelectors=(records=[])=>{
+   const now=new Date(),currentYear=now.getFullYear(),yearSet=new Set([currentYear]);
+   const readYear=value=>{
+     if(value===null||value===undefined||value==='')return;
+     const text=String(value).trim();
+     const match=text.match(/^(\\d{4})/)||text.match(/(?:^|\\D)(\\d{4})(?:\\D|$)/);
+     const year=Number(match?.[1]);
+     if(Number.isInteger(year)&&year>=2016&&year<=9999)yearSet.add(year);
+   };
+   (Array.isArray(records)?records:[]).forEach(row=>{
+     if(!row||typeof row!=='object')return;
+     ['date','contribution_date','payment_date','payout_date','created_at','updated_at','month','period','year','transaction_date'].forEach(key=>readYear(row[key]));
+   });
+   const newestYear=Math.max(...yearSet,currentYear);
+   const years=Array.from({length:newestYear-2016+1},(_,index)=>newestYear-index);
+   const monthSelect=$('wfReportMonth'),monthlySelect=$('wfReportYear'),annualSelect=$('wfAnnualYear'),statsSelect=$('wfPaymentStatsYear'),matrixSelect=$('wfDuesMatrixYear');
+   const replaceYears=(select)=>{
+     if(!select)return;
+     const previous=String(select.value||'');
+     select.replaceChildren(...years.map(year=>new Option(String(year),String(year))));
+     select.disabled=false;
+     select.value=years.includes(Number(previous))?previous:String(currentYear);
+   };
+   if(monthSelect){
+     const previousMonth=String(monthSelect.value||'');
+     const monthNames=Array.from({length:12},(_,index)=>new Date(2000,index,1).toLocaleDateString('en-GH',{month:'long'}));
+     monthSelect.replaceChildren(...monthNames.map((name,index)=>new Option(name,String(index+1).padStart(2,'0'))));
+     monthSelect.disabled=false;
+     monthSelect.value=/^(0[1-9]|1[0-2])$/.test(previousMonth)?previousMonth:String(now.getMonth()+1).padStart(2,'0');
    }
-   if(annualYearSelect){
-     annualYearSelect.replaceChildren(...reportYears.map(year=>new Option(String(year),String(year))));
-     annualYearSelect.disabled=false;
-     annualYearSelect.value=String(reportMonthNow.getFullYear());
-   }
-   if(paymentStatsYearSelect){
-     paymentStatsYearSelect.replaceChildren(...paymentStatsYears.map(year=>new Option(String(year),String(year))));
-     paymentStatsYearSelect.disabled=false;
-     paymentStatsYearSelect.value=String(reportMonthNow.getFullYear());
-   }
-   if(duesMatrixYearSelect){
-     const matrixYears=Array.from({length:16},(_,index)=>reportMonthNow.getFullYear()-10+index);
-     duesMatrixYearSelect.replaceChildren(...matrixYears.map(year=>new Option(String(year),String(year))));
-     duesMatrixYearSelect.value=String(reportMonthNow.getFullYear());
-     duesMatrixYearSelect.disabled=false;
-   }
- }
+   [monthlySelect,annualSelect,statsSelect,matrixSelect].forEach(replaceYears);
+ };
+ populateReportYearSelectors();
  // Keep audit history in its own view, outside the restricted management workspace.
  const auditPanel=$('wfAuditPanel');
  if(dash&&auditPanel){
@@ -1023,6 +1026,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   return !reversed.has('payout:'+item.id)&&!['reversed','inactive','deleted','cancelled','canceled','void','archived'].includes(status)&&!reversedFlag&&!item.reversed_at&&!item.reversedAt;
  };
  let activeCons=cons.filter(isActiveContributionRecord), activePays=pays.filter(isActivePayoutRecord);
+ // Expand year options using only the active tenant's loaded ledgers.
+ populateReportYearSelectors([...activeCons,...activePays]);
  const demoLatestMonthKey=isLocalDemo?cons.reduce((latest,row)=>String(row.date||'')>latest?String(row.date||''):latest,'').slice(0,7):'';
  const getDashboardMonthKey=isLocalDemo?()=>demoLatestMonthKey||'2026-03':()=>{const now=new Date();return now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');};
 
