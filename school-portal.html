@@ -2170,10 +2170,23 @@ window.registerTenantStatementVerification=async function(details){
   const documentId=String(payload.document_id||'DEMO-STATEMENT');
   return {success:true,school_code:'DEMO',document_id:documentId,verification_url:new URL('verify.html?c=DEMO&d='+encodeURIComponent(documentId),location.href).href};
  }
- const {data:{session},error:sessionError}=await client.auth.getSession();
- if(sessionError||!session?.access_token)throw new Error('Your administrator session has expired. Sign in again before issuing this PDF.');
+ let {data:{session},error:sessionError}=await client.auth.getSession();
+ const tokenExpiresSoon=Number(session?.expires_at||0)>0&&Number(session.expires_at)*1000<Date.now()+30000;
+ if(sessionError||!session?.access_token||tokenExpiresSoon){
+  const refreshed=await client.auth.refreshSession();
+  session=refreshed?.data?.session||session;
+  if(refreshed?.error||!session?.access_token)throw new Error('Your administrator session could not be refreshed. Sign in again before issuing this PDF.');
+ }
  const {data,error}=await client.functions.invoke('issue-statement-verification',{body:payload});
- if(error)throw new Error(data?.error||error.message||'The official verification record could not be created.');
+ if(error){
+  let detail='';
+  try{
+   const response=error.context;
+   const body=response&&typeof response.clone==='function'?await response.clone().json():null;
+   detail=body?.error||body?.message||'';
+  }catch(_){}
+  throw new Error(detail||data?.error||error.message||'The official verification record could not be created.');
+ }
  if(!data?.success)throw new Error(data?.error||'The official verification record could not be created.');
  return data;
 };
