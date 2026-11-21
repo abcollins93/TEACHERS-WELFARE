@@ -54,7 +54,7 @@
 (function(){
  const query=new URLSearchParams(window.location.search);
  if(query.has('c')&&String(query.get('c')||'').trim().toUpperCase()==='DEMO'){
-  document.write('<script src="./demo-sandbox.js?v=20261121-executive-summary-hydration-v4"><\/script>');
+  document.write('<script src="./demo-sandbox.js?v=20261121-executive-summary-hydration-v5"><\/script>');
  }
 })();
 </script><script>
@@ -3789,11 +3789,28 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
    if(mountPromise)await mountPromise;
    const activeCode=String(school.school_code||school.schoolCode||new URLSearchParams(location.search).get('c')||'').trim().toUpperCase();
    if(!activeCode)throw new Error('The active school code could not be verified. Refresh the portal and retry.');
-   let teacherRows=[];
-   if(typeof window.__welfareEnsureTeacherRegisterLoaded==='function')teacherRows=await window.__welfareEnsureTeacherRegisterLoaded(activeCode);
-   else if(activeCode==='DEMO'&&typeof window.WelfareDemo?.loadTeacherRegister==='function')teacherRows=await window.WelfareDemo.loadTeacherRegister(activeCode);
-   else throw new Error('The school teacher register service is not ready. Refresh the portal and retry.');
-   teacherRows=Array.isArray(teacherRows)?teacherRows:[];
+   let teacherRows=[],registerLoadError=null;
+   try{
+    if(typeof window.__welfareEnsureTeacherRegisterLoaded==='function')teacherRows=await window.__welfareEnsureTeacherRegisterLoaded(activeCode);
+    else if(activeCode==='DEMO'&&typeof window.WelfareDemo?.loadTeacherRegister==='function')teacherRows=await window.WelfareDemo.loadTeacherRegister(activeCode);
+   }catch(loadError){registerLoadError=loadError;console.warn('[School Welfare] Direct teacher register hydration failed; checking tenant-scoped register state and rendered register:',loadError);}
+   const registerState=window.__welfareTeacherRegisterState;
+   const stateMatchesTenant=!!registerState&&String(registerState.schoolCode||'').toUpperCase()===activeCode&&String(registerState.schoolId||'')===String(school.id||'');
+   const candidateSources=[teacherRows,stateMatchesTenant?registerState.rows:[],activeCode==='DEMO'&&typeof window.WelfareDemo?.loadTeacherRegister==='function'?await window.WelfareDemo.loadTeacherRegister(activeCode).catch(()=>[]):[]];
+   const normalizedCandidates=candidateSources.find(rows=>Array.isArray(rows)&&rows.some(row=>row&&typeof row==='object'&&(row.id||row.teacher_id||row.name)));
+   if(Array.isArray(normalizedCandidates))teacherRows=normalizedCandidates;
+   if(!teacherRows.length){
+    const registerBody=document.querySelector('#wfManageTeacherRows');
+    if(registerBody){
+     teacherRows=Array.from(registerBody.querySelectorAll('tr')).filter(row=>row.cells?.length>1&&!/no matching teachers/i.test(row.textContent||'')).map(row=>({
+      id:String(row.cells[0]?.textContent||'').trim(),name:String(row.cells[1]?.textContent||'').trim(),
+      phone:String(row.cells[2]?.textContent||'').trim(),rank:String(row.cells[3]?.textContent||'').trim(),
+      class_name:String(row.cells[4]?.textContent||'').trim(),membership_type:String(row.cells[5]?.textContent||'').trim(),
+      employer:String(row.cells[6]?.textContent||'').trim(),is_active:!/inactive/i.test(row.cells[7]?.textContent||'')
+     })).filter(row=>row.id||row.name);
+    }
+   }
+   teacherRows=Array.isArray(teacherRows)?teacherRows.filter(row=>row&&typeof row==='object'&&(row.id||row.teacher_id||row.name)):[];
    const pdfLibraryDeadline=Date.now()+8000;
    while(!(window.jspdf?.jsPDF||window.jsPDF||window.jspdf?.default)&&Date.now()<pdfLibraryDeadline)await new Promise(resolve=>setTimeout(resolve,100));
    if(!(window.jspdf?.jsPDF||window.jsPDF||window.jspdf?.default))throw new Error('The PDF drawing library could not finish loading. Please refresh the portal and retry.');
@@ -3884,10 +3901,24 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
     if(window.QRCode&&qrNode)new window.QRCode(qrNode,{text:'https://abcollins93.github.io/TEACHERS-WELFARE/verify.html?c='+encodeURIComponent(code)+'&d='+encodeURIComponent(documentId),width:300,height:300,colorDark:'#030a16',colorLight:'#ffffff',correctLevel:window.QRCode.CorrectLevel.M});
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(resolve,80))));
     if(document.fonts?.ready)await document.fonts.ready.catch(()=>{});
-    const registerRows=Array.from(report.querySelectorAll('table tbody tr')).filter(row=>row.children.length>1&&!/no matching teachers/i.test(String(row.innerText||row.textContent||''))).length;
-    const reportText=String(report.innerText||report.textContent||'').replace(/\s+/g,' ').trim();
-    if(!report.querySelector('.sws-head h1')||!reportText.includes('Teacher register')||!registerRows){
-     throw new Error('The executive summary has no complete school register content to export. Please wait for the teacher register to finish loading.');
+    // Mobile WebViews may return empty innerText for off-screen staging nodes.
+    // Validate the hydrated records and actual table structure instead.
+    let registerRows=table.querySelectorAll('tbody tr').length;
+    if(!registerRows&&teacherRows.length){
+     let body=table.querySelector('tbody');
+     if(!body){body=document.createElement('tbody');table.appendChild(body);}
+     body.replaceChildren();
+     teacherRows.forEach(teacher=>{
+      const row=document.createElement('tr');
+      [teacher.id||teacher.teacher_id,teacher.name,teacher.phone,teacher.rank,teacher.class_name,teacher.membership_type,teacher.employer,teacher.is_active===false?'Inactive':'Active'].forEach(value=>{const cell=document.createElement('td');cell.textContent=String(value??'—');row.appendChild(cell);});
+      body.appendChild(row);
+     });
+     registerRows=body.querySelectorAll('tr').length;
+    }
+    const reportHeading=report.querySelector('.sws-head h1');
+    const reportRegisterTable=report.querySelector('.sws-section + table');
+    if(!reportHeading||!String(reportHeading.textContent||'').trim()||!teacherRows.length||!registerRows||!reportRegisterTable){
+     throw new Error(registerLoadError?.message||'The active school teacher register could not be hydrated. Refresh the portal and retry the executive summary.');
     }
     const canvasOptions={scale:2,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,scrollX:0,scrollY:0,windowWidth:Math.max(document.documentElement.clientWidth,Math.ceil(report.getBoundingClientRect().width)),windowHeight:Math.max(document.documentElement.clientHeight,Math.ceil(report.getBoundingClientRect().height)),onclone:function(clonedDocument){
      const clonedReport=clonedDocument.querySelector('[data-welfare-pdf-staging]');
@@ -4264,7 +4295,7 @@ if(isDemoMode){
 }
 })();
 </script>
-<script src="school-portal-workflows.js?v=20261121-executive-summary-hydration-v4"></script>
+<script src="school-portal-workflows.js?v=20261121-executive-summary-hydration-v5"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
