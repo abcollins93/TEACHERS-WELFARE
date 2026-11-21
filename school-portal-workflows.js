@@ -16,6 +16,8 @@ const $=id=>document.getElementById(id);
  document.head.appendChild(style);
 })();
 
+
+(function(){if(document.getElementById('welfare-workflow-mobile-interaction-performance'))return;const style=document.createElement('style');style.id='welfare-workflow-mobile-interaction-performance';style.textContent="\n/* Mobile interaction and paint budget: keep taps immediate and scrolling composited. */\n:where(button,a,[role=\"button\"],[role=\"tab\"],.navbtn,.tab,.toggle,.password-toggle,[data-action],.teacher-dashboard-statement){touch-action:manipulation;-webkit-tap-highlight-color:transparent}\n:where(button,a,[role=\"button\"],[role=\"tab\"],.navbtn,.tab,.toggle,.password-toggle,[data-action]){cursor:pointer}\n:where(button,a,[role=\"button\"],[role=\"tab\"],.navbtn,.tab,.toggle,.password-toggle,[data-action]):active{filter:brightness(.96)}\n@media(hover:none) and (pointer:coarse){\n html{scroll-behavior:auto!important}\n #dashboard,.sidebar,.wf-admin-quick-pills,.wf-dues-matrix-scroll,[data-scroll-container]{-webkit-overflow-scrolling:touch}\n #dashboard .panel,#dashboard .metric,#dashboard .support,#workflows .panel,#wfAdminPanel .panel,.teacher-dashboard-ledger-card,.teacher-dashboard-profile,.wf-payout-view,#wfReportsPanel.wf-reports-view{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:0 3px 12px rgba(11,29,58,.055)!important}\n #dashboard .overview-top,header.top,#mobile-nav-overlay{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}\n .sidebar{box-shadow:8px 0 22px rgba(3,10,22,.18)!important}\n button:hover:not(:disabled),.navbtn:hover,.panel:hover,.metric:hover{transform:none!important;filter:none}\n :where(button,a,[role=\"button\"],[role=\"tab\"],.navbtn,.tab,.toggle,.password-toggle,[data-action]){transition:background-color .1s ease,border-color .1s ease,color .1s ease!important}\n}\n@media(prefers-reduced-motion:reduce){:where(button,a,[role=\"button\"],[role=\"tab\"],.navbtn,.tab,.toggle,.password-toggle,[data-action]){transition:none!important}}\n";document.head.appendChild(style);})();
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const displayWelfareReason=reason=>{const value=String(reason??'').trim();return value?value.replace(/^Bereavement Assistance$/i,'Condolence Support'):'—';};
 window.displayWelfareReason=displayWelfareReason;
@@ -28,7 +30,7 @@ const frameRender=(function(){
  return function(key,render){
   if(!key||pending.has(key))return;
   pending.add(key);
-  requestAnimationFrame(()=>{pending.delete(key);render();});
+  requestAnimationFrame(()=>{setTimeout(()=>{pending.delete(key);render();},0);});
  };
 })();
 
