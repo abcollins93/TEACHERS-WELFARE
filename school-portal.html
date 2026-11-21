@@ -54,7 +54,7 @@
 (function(){
  const query=new URLSearchParams(window.location.search);
  if(query.has('c')&&String(query.get('c')||'').trim().toUpperCase()==='DEMO'){
-  document.write('<script src="./demo-sandbox.js?v=20261121-executive-summary-jspdf-v3"><\/script>');
+  document.write('<script src="./demo-sandbox.js?v=20261121-executive-summary-hydration-v4"><\/script>');
  }
 })();
 </script><script>
@@ -3794,6 +3794,9 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
    else if(activeCode==='DEMO'&&typeof window.WelfareDemo?.loadTeacherRegister==='function')teacherRows=await window.WelfareDemo.loadTeacherRegister(activeCode);
    else throw new Error('The school teacher register service is not ready. Refresh the portal and retry.');
    teacherRows=Array.isArray(teacherRows)?teacherRows:[];
+   const pdfLibraryDeadline=Date.now()+8000;
+   while(!(window.jspdf?.jsPDF||window.jsPDF||window.jspdf?.default)&&Date.now()<pdfLibraryDeadline)await new Promise(resolve=>setTimeout(resolve,100));
+   if(!(window.jspdf?.jsPDF||window.jsPDF||window.jspdf?.default))throw new Error('The PDF drawing library could not finish loading. Please refresh the portal and retry.');
    if(!teacherRows.length)throw new Error('This school has no registered members. Add members to the teacher register before exporting the executive summary.');
    const sourceTable=document.createElement('table'),tableHead=document.createElement('thead'),headRow=document.createElement('tr'),tableBody=document.createElement('tbody');
    ['Staff ID','Name','Phone','Rank','Class','Membership Type','Employer','Status','Profile actions'].forEach(label=>{const cell=document.createElement('th');cell.textContent=label;headRow.appendChild(cell);});
@@ -3841,7 +3844,7 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
    const widths=['11%','18%','11%','13%','10%','13%','13%','11%'];
    table.querySelectorAll('tr').forEach(row=>Array.from(row.children).forEach((cell,index)=>{if(widths[index])cell.style.width=widths[index];}));
    const totalTeachers=String(teacherRows.filter(teacher=>teacher.is_active!==false).length);
-   const formatExecutiveMoney=id=>{const raw=String($(id)?.textContent||'0').trim();const numeric=Number(raw.replace(/[^0-9.\\-]/g,''));return 'GH₵ '+(Number.isFinite(numeric)?numeric.toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2}):raw.replace(/^GH₵\\s*/,''));};
+   const formatExecutiveMoney=id=>{const raw=String($(id)?.textContent||'0').trim();const numeric=Number(raw.replace(/[^0-9.\-]/g,''));return 'GH₵ '+(Number.isFinite(numeric)?numeric.toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2}):raw.replace(/^GH₵\s*/,''));};
    const contributions=formatExecutiveMoney('contributionTotal');
    const payouts=formatExecutiveMoney('payoutTotal');
    const balance=formatExecutiveMoney('netTotal');
@@ -4261,7 +4264,7 @@ if(isDemoMode){
 }
 })();
 </script>
-<script src="school-portal-workflows.js?v=20261121-executive-summary-jspdf-v3"></script>
+<script src="school-portal-workflows.js?v=20261121-executive-summary-hydration-v4"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
