@@ -4009,6 +4009,9 @@ if(isDemoMode){
   });
   // The primary navigation handler above owns open/close state. Avoid a
   // second click listener that could reopen the backdrop after it is closed.
+  // Coalesce rapid tab taps: the selected tab updates immediately, while only
+  // the latest requested view performs the larger DOM reconciliation.
+  let pendingNavigationFrame=0;
   document.addEventListener('click', function(event){
     const button = event.target.closest('.navbtn[data-target]');
     if (!button) return;
@@ -4022,7 +4025,9 @@ if(isDemoMode){
     });
     // Commit the drawer and selected tab immediately; defer the larger view-tree
     // reconciliation until the next frame so it cannot delay the tap response.
-    window.requestAnimationFrame(function(){
+    if(pendingNavigationFrame)window.cancelAnimationFrame(pendingNavigationFrame);
+    pendingNavigationFrame=window.requestAnimationFrame(function(){
+    pendingNavigationFrame=0;
     if(!button.isConnected)return;
     const dashboardRoot = document.getElementById('dashboard');
     if(dashboardRoot){dashboardRoot.classList.remove('hidden');dashboardRoot.removeAttribute('hidden');dashboardRoot.style.setProperty('display','block','important');dashboardRoot.style.setProperty('visibility','visible','important');dashboardRoot.removeAttribute('aria-hidden');}
