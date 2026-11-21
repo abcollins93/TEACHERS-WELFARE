@@ -940,7 +940,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    }).join('');
    if(primary&&clone){primary.innerHTML=items;clone.innerHTML=items;}
  };
- await refreshAdminActivityTicker();
+ void refreshAdminActivityTicker().catch(error=>console.warn('[Administrator activity ticker] Initial feed deferred:',error?.message||error));
  if(!isLocalDemo)window.__adminActivityTickerTimer=setInterval(()=>{
    if(document.visibilityState!=='visible'||navigator.onLine===false)return;
    refreshAdminActivityTicker().catch(error=>console.warn('[Administrator activity ticker] Refresh deferred:',error?.message||error));
@@ -966,7 +966,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
       const all=[];let from=0;const pageSize=1000;let pages=0;
       while(true){
         if(++pages>50)throw new Error('The '+label+' exceeded the safe pagination limit.');
-        const result=await withWorkflowTimeout(makeQuery().range(from,from+pageSize-1),7000,label+' timed out.');
+        const result=await withWorkflowTimeout(makeQuery().range(from,from+pageSize-1),20000,label+' timed out.');
         if(result?.error){console.warn('[School Welfare] '+label+' unavailable:',result.error.code||'',result.error.message||'');return {data:[],error:result.error};}
         const batch=Array.isArray(result?.data)?result.data:[];
         all.push(...batch);
@@ -1221,6 +1221,12 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  $('teacherProfilePrint')?.addEventListener('click',()=>window.print());
  $('tpEditContact')?.addEventListener('click',()=>wfNotice('To update official contact details, contact the Executive Administrator.'));
  renderSelectedTeacherProfile();
+ window.__welfareRefreshAdminProfileViewer=()=>{
+  if(!teachers.length)return false;
+  if(!selectedProfileTeacherId||!teachers.some(item=>String(item.id)===String(selectedProfileTeacherId)))selectedProfileTeacherId=String(teachers[0].id);
+  if(profileSelect)profileSelect.value=selectedProfileTeacherId;
+  renderSelectedTeacherProfile();return !!$('tpName')?.textContent;
+ };
 
  const teacherLabel=id=>{const t=teacherById.get(String(id));return t?esc(t.name)+' ('+esc(t.id)+')':esc(id||'—')};
  const ensureTeacherTableAccentStyles=()=>{
@@ -1749,7 +1755,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     renderDuesMatrix();
     renderPayoutLedger();
     renderSelectedTeacherProfile();
-    await refreshAdminActivityTicker();
+    void refreshAdminActivityTicker().catch(error=>console.warn('[Administrator activity ticker] Refresh deferred:',error?.message||error));
     return !cr.error&&!pr.error;
   };
   $('teacherCount').textContent=tr.error?'Unavailable':String(teachers.filter(t=>t.is_active!==false).length);
