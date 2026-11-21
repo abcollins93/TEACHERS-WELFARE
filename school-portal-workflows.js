@@ -696,7 +696,7 @@ function addUI(){
  }
  // Keep every reporting year selector rolling forward with the calendar and
  // with the newest year present in this school's already-loaded records.
- const populateReportYearSelectors=(records=[])=>{
+ window.populateReportYearSelectors=(records=[])=>{
    const now=new Date(),currentYear=now.getFullYear(),yearSet=new Set([currentYear]);
    const readYear=value=>{
      if(value===null||value===undefined||value==='')return;
@@ -728,7 +728,7 @@ function addUI(){
    }
    [monthlySelect,annualSelect,statsSelect,matrixSelect].forEach(replaceYears);
  };
- populateReportYearSelectors();
+ window.populateReportYearSelectors();
  // Keep audit history in its own view, outside the restricted management workspace.
  const auditPanel=$('wfAuditPanel');
  if(dash&&auditPanel){
@@ -1066,7 +1066,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  };
  let activeCons=cons.filter(isActiveContributionRecord), activePays=pays.filter(isActivePayoutRecord);
  // Expand year options using only the active tenant's loaded ledgers.
- populateReportYearSelectors([...activeCons,...activePays]);
+ window.populateReportYearSelectors([...activeCons,...activePays]);
  const demoLatestMonthKey=isLocalDemo?cons.reduce((latest,row)=>String(row.date||'')>latest?String(row.date||''):latest,'').slice(0,7):'';
  const getDashboardMonthKey=isLocalDemo?()=>demoLatestMonthKey||'2026-03':()=>{const now=new Date();return now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');};
 
