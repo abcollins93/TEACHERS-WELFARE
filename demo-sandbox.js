@@ -96,6 +96,7 @@
  };
  window.formatWelfareCurrency=value=>'GH₵ '+Number(value||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
  const demoStorage={};
+ const currentAuthUser=()=>window.__welfareDemoRole==='teacher'?{...user,id:'demo-teacher-auth',email:teachers[activeTeacherIndex]?.email||'teacher@demo.welfare.local',user_metadata:{full_name:teachers[activeTeacherIndex]?.name||'Demo Teacher',account_type:'teacher'}}:user;
  const client={
   __welfareDemo:true,
   storage:{from(bucket){return {
@@ -104,11 +105,11 @@
    async remove(paths){(paths||[]).forEach(path=>delete demoStorage[bucket+'/'+path]);return {data:[],error:null};}
   };}},
   auth:{
-   async getUser(){const selected=teachers[activeTeacherIndex];return {data:{user:window.__welfareDemoRole==='teacher'?{...user,id:'demo-teacher-auth',email:selected.email,user_metadata:{full_name:selected.name,account_type:'teacher'}}:user},error:null};},
-   async getSession(){return {data:{session:{access_token:'demo-local-session',user}},error:null};},
+   async getUser(){return {data:{user:currentAuthUser()},error:null};},
+   async getSession(){return {data:{session:{access_token:'demo-local-session',user:currentAuthUser()}},error:null};},
    onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}};},
    async signOut(){return {error:null};},
-   async signInWithPassword(){return {data:{user},error:null};}
+   async signInWithPassword(){return {data:{user:currentAuthUser()},error:null};}
   },
   from:query,
   async rpc(name,args={}){
