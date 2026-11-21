@@ -687,7 +687,7 @@ function addUI(){
    const readYear=value=>{
      if(value===null||value===undefined||value==='')return;
      const text=String(value).trim();
-     const match=text.match(/^(\\d{4})/)||text.match(/(?:^|\\D)(\\d{4})(?:\\D|$)/);
+     const match=text.match(/^(\d{4})/)||text.match(/(?:^|\D)(\d{4})(?:\D|$)/);
      const year=Number(match?.[1]);
      if(Number.isInteger(year)&&year>=2016&&year<=9999)yearSet.add(year);
    };
@@ -1820,7 +1820,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   window.getCurrentAcademicYear=function(){
    const school=window.__welfareCurrentSchool||ctx||{},now=new Date();
    const saved=[school.academic_year,school.academicYear,school.current_academic_year,school.currentAcademicYear,school.school_year,school.schoolYear]
-    .map(value=>String(value??'').trim()).find(value=>/^\\d{4}\\s*[/–-]\\s*\\d{4}$/.test(value));
+    .map(value=>String(value??'').trim()).find(value=>/^\d{4}\\s*[/–-]\\s*\d{4}$/.test(value));
    if(saved)return saved.replace(/\\s+/g,'').replace(/[–-]/,'/');
    const configuredMonth=Number(school.academic_year_start_month??school.academicYearStartMonth);
    const startMonth=Number.isInteger(configuredMonth)&&configuredMonth>=1&&configuredMonth<=12?configuredMonth-1:8;
