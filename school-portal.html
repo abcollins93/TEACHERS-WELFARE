@@ -4786,18 +4786,20 @@ window.generateTenantWelfarePdf=async function(o){
      pixelInspectionAvailable=true;
      let opaquePixels=0,nonWhitePixels=0,transparentPixels=0,minChannel=255,maxChannel=0;
      const totalPixels=Math.floor(pixels.length/4);
-     // Sample a regular grid over the full page as well as scanning for dark
-     // foreground. This reports alpha and color range even when RGB is white.
-     const sampleStride=Math.max(1,Math.floor(totalPixels/4096));
-     for(let pixelIndex=0;pixelIndex<totalPixels;pixelIndex++){
+     // Inspect a bounded grid (at most about 4,096 pixels). A full 16M-pixel
+     // scan after html2canvas can freeze touch and navigation on mid-range phones.
+     const sampleStride=Math.max(1,Math.ceil(totalPixels/4096));
+     let sampledPixels=0;
+     for(let pixelIndex=0;pixelIndex<totalPixels;pixelIndex+=sampleStride){
       const offset=pixelIndex*4,red=pixels[offset],green=pixels[offset+1],blue=pixels[offset+2],alpha=pixels[offset+3];
+      sampledPixels++;
       if(alpha>0)opaquePixels++;else transparentPixels++;
       if(red<minChannel)minChannel=red;if(green<minChannel)minChannel=green;if(blue<minChannel)minChannel=blue;
       if(red>maxChannel)maxChannel=red;if(green>maxChannel)maxChannel=green;if(blue>maxChannel)maxChannel=blue;
-      if(pixelIndex%sampleStride===0&&alpha>0&&(red<250||green<250||blue<250))nonWhitePixels++;
-      if(red<245||green<245||blue<245){pixelSamples++;if(pixelSamples>=64)break;}
+      if(alpha>0&&(red<250||green<250||blue<250))nonWhitePixels++;
+      if(red<245||green<245||blue<245)pixelSamples++;
      }
-     pixelSummary='opaque '+opaquePixels+', transparent '+transparentPixels+', sampled non-white '+nonWhitePixels+', channel range '+minChannel+'-'+maxChannel;
+     pixelSummary='sampled '+sampledPixels+' pixels, opaque '+opaquePixels+', transparent '+transparentPixels+', non-white '+nonWhitePixels+', channel range '+minChannel+'-'+maxChannel;
     }
    }catch(canvasReadError){
     // Pixel inspection is optional: cross-origin/tainted canvas reads must
