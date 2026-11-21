@@ -282,7 +282,7 @@
  window.__welfareDemoRenderProfileViewer=()=>{
   if(window.__welfareDemoRole==='teacher'){
    const rendered=window.__welfareRefreshMemberProfileViewer?.();
-   if(rendered!==undefined&&rendered!==null)return rendered;
+   if(rendered===true)return true;
    // DEMO member fallback: hydrate the static profile card from the active
    // in-memory teacher row when the shared workflow renderer is not ready.
    const teacher=teachers[activeTeacherIndex];if(!teacher)return false;
@@ -296,7 +296,7 @@
    const recent=[...mine].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')))[0];
    set('teacherOwnName',teacher.name||'Unnamed Teacher');set('teacherOwnRank',teacher.rank||'Not specified');set('teacherOwnStaffId','Staff ID: '+(teacher.id||'—'));
    set('teacherOwnRegistration',teacher.registration_date||teacher.created_at||'Not recorded');set('teacherOwnMembership',teacher.membership_type||teacher.membership||'Not specified');set('teacherOwnStatus',teacher.is_active===false?'Inactive':'Active');
-   const avatar=document.getElementById('teacherOwnAvatar');if(avatar)avatar.textContent=String(teacher.name||'').trim().split(/\\s+/).slice(0,2).map(part=>part[0]||'').join('').toUpperCase()||'—';
+   const avatar=document.getElementById('teacherOwnAvatar');if(avatar)avatar.textContent=String(teacher.name||'').trim().split(/\s+/).slice(0,2).map(part=>part[0]||'').join('').toUpperCase()||'—';
    const personal=document.getElementById('teacherOwnPersonalRows');if(personal)personal.innerHTML=rows([['FULL NAME',teacher.name],['PHONE NUMBER',teacher.phone||teacher.phone_number],['SCHOOL / INSTITUTION',school.name],['DISTRICT & REGION',[school.district,school.region].filter(Boolean).join(' · ')]]);
    const professional=document.getElementById('teacherOwnProfessionalRows');if(professional)professional.innerHTML=rows([['Staff ID',teacher.id],['Professional Rank',teacher.rank],['CLASS / SUBJECT',teacher.class_name],['Employer',teacher.employer||school.name]]);
    const finance=document.getElementById('teacherOwnFinanceRows');if(finance)finance.innerHTML='<div class="tp-finance"><span>Total Dues Contributed</span><strong class="finance-positive">'+safe(cash(total))+'</strong></div><div class="tp-finance"><span>Total Welfare Payouts Received</span><strong class="finance-payout">'+safe(cash(paid))+'</strong></div><div class="tp-finance"><span>Total Payments Recorded</span><strong>'+mine.length+'</strong></div><div class="tp-finance"><span>Most Recent Contribution</span><strong>'+(recent?safe(recent.date):'—')+'</strong></div>';
