@@ -232,5 +232,5 @@
   modal.querySelector('input[name="school"]').focus({preventScroll:true});
  }
 
- window.WelfareDemo={school,teachers,contributions,payouts,announcements,client,months,activeCon,activePay,summary,openSchoolSetupModal,async loadTeacherRegister(schoolCode){if(String(schoolCode||'').trim().toUpperCase()!=='DEMO'||String(new URLSearchParams(window.location.search).get('c')||'').trim().toUpperCase()!=='DEMO')throw new Error('The DEMO teacher register is available only inside the isolated DEMO tenant.');return clone(teachers);},setTeacher(index){activeTeacherIndex=Math.max(0,Math.min(teachers.length-1,Number(index)||0));}};
+ window.WelfareDemo={school,teachers,contributions,payouts,announcements,client,months,activeCon,activePay,summary,openSchoolSetupModal,async loadTeacherRegister(schoolCode){if(String(schoolCode||'').trim().toUpperCase()!=='DEMO'||String(new URLSearchParams(window.location.search).get('c')||'').trim().toUpperCase()!=='DEMO')throw new Error('The DEMO teacher register is available only inside the isolated DEMO tenant.');const rows=clone(teachers).filter(row=>String(row.school_id||'')===String(school.id));window.__welfareTeacherRegisterState={schoolId:String(school.id),schoolCode:'DEMO',rows};return rows;},setTeacher(index){activeTeacherIndex=Math.max(0,Math.min(teachers.length-1,Number(index)||0));}};
 })();
