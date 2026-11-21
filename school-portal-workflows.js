@@ -168,11 +168,13 @@ const downloadWorkflowBlob=(blob,fileName,statusId,successText,viewLabel,sourceB
  }
  if(status){
    status.textContent=successText;
-   status.className=(status.className||'muted').replace(/\\b(error|muted)\\b/g,'').trim()+' wf-download-feedback';
+   status.className=(status.className||'muted').replace(/\b(error|muted)\b/g,'').trim()+' wf-download-feedback';
+   status.querySelectorAll('a[data-wf-download-link]').forEach(existing=>existing.remove());
    const fallback=document.createElement('a');
    fallback.href=url;
    fallback.target='_blank';
    fallback.rel='noopener';
+   fallback.setAttribute('data-wf-download-link','');
    fallback.textContent=viewLabel||'Tap here to view downloaded PDF';
    fallback.style.cssText='display:inline-block;margin:7px 0;padding:8px 12px;border-radius:8px;background:#eaf2ff;color:#12376b;font-weight:800;text-decoration:underline;overflow-wrap:anywhere';
    status.querySelectorAll('a[data-wf-download-link]').forEach(link=>link.remove());
