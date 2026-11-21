@@ -4406,6 +4406,8 @@ if(isDemoMode){
     // Close the mobile drawer immediately. If a workflow view is still mounting,
     // its loading delay must not leave the dark overlay covering the page.
     closeSidebar();
+    // A newer tap supersedes any temporary loading panel from an earlier choice.
+    document.getElementById('sidebarNavigationPlaceholder')?.remove();
     document.querySelectorAll('.navbtn').forEach(function(item){
       item.classList.toggle('active', item === button);
       item.setAttribute('aria-current', item === button ? 'location' : 'false');
