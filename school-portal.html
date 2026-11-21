@@ -54,7 +54,7 @@
 (function(){
  const query=new URLSearchParams(window.location.search);
  if(query.has('c')&&String(query.get('c')||'').trim().toUpperCase()==='DEMO'){
-  document.write('<script src="./demo-sandbox.js"><\/script>');
+  document.write('<script src="./demo-sandbox.js?v=20261121-statement-interaction-v2"><\/script>');
  }
 })();
 </script><script>
@@ -1578,7 +1578,7 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
 <meta name="apple-mobile-web-app-title" content="Welfare">
 <link rel="icon" type="image/svg+xml" href="./icons/welfare-portal.svg">
 <link rel="apple-touch-icon" href="./icons/welfare-portal.svg">
-<script src="./pwa.js?v=demo-sandbox-20261117" defer></script>
+<script src="./pwa.js?v=20261121-statement-interaction-v2" defer></script>
 
 
 
@@ -3969,7 +3969,7 @@ if(isDemoMode){
 }
 })();
 </script>
-<script src="school-portal-workflows.js?v=20261121-ui-responsive-v1"></script>
+<script src="school-portal-workflows.js?v=20261121-statement-interaction-v2"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
@@ -4020,6 +4020,10 @@ if(isDemoMode){
       item.classList.toggle('active', item === button);
       item.setAttribute('aria-current', item === button ? 'location' : 'false');
     });
+    // Commit the drawer and selected tab immediately; defer the larger view-tree
+    // reconciliation until the next frame so it cannot delay the tap response.
+    window.requestAnimationFrame(function(){
+    if(!button.isConnected)return;
     const dashboardRoot = document.getElementById('dashboard');
     if(dashboardRoot){dashboardRoot.classList.remove('hidden');dashboardRoot.removeAttribute('hidden');dashboardRoot.style.setProperty('display','block','important');dashboardRoot.style.setProperty('visibility','visible','important');dashboardRoot.removeAttribute('aria-hidden');}
     const requestedId = button.dataset.target;
@@ -4176,15 +4180,7 @@ if(isDemoMode){
       target.removeAttribute('aria-hidden');
     }
 
-    // Keep the selected navigation item as the sole active item and update the
-    // accessible current-page state.
-    document.querySelectorAll('.sidebar .navbtn[data-target]').forEach(function(item){
-      const active = item === button;
-      item.classList.toggle('active', active);
-      if (active) item.setAttribute('aria-current','page');
-      else item.removeAttribute('aria-current');
-    });
-    closeSidebar();
+    // The active navigation state and drawer close were committed synchronously above.
     // Let the browser commit visibility changes before scrolling; avoid a
      // synchronous layout read that blocks the first tap on mobile.
      window.requestAnimationFrame(()=>target.scrollIntoView({behavior:'smooth',block:'start'}));
@@ -4194,6 +4190,7 @@ if(isDemoMode){
     }
     button.dataset.mountAttempts = '0';
     closeSidebar();
+    });
   });
 })();
 </script>
