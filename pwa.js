@@ -152,7 +152,13 @@ function showPwaInstallNotice(tenantLabel){
      var swUrl=new URL('./sw.js',pageUrl);
      var appScope=new URL('./',pageUrl);
      navigator.serviceWorker.register(swUrl.href,{scope:appScope.href,updateViaCache:'none'}).then(function(registration){
-       return registration.update().catch(function(error){console.warn('[Welfare Portal PWA] Service worker update check deferred:',error);});
+       // Register immediately, but move the optional update network check out
+       // of the first interactive paint on slower mobile devices.
+       var checkForUpdates=function(){
+         registration.update().catch(function(error){console.warn('[Welfare Portal PWA] Service worker update check deferred:',error);});
+       };
+       if('requestIdleCallback' in window)window.requestIdleCallback(checkForUpdates,{timeout:2500});
+       else window.setTimeout(checkForUpdates,1500);
      }).catch(function(error){
        console.warn('[Welfare Portal PWA] Service worker registration failed:',error);
      });
