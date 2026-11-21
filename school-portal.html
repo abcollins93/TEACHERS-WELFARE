@@ -280,8 +280,9 @@ body:has(#login:not(.hidden)) main{max-width:760px;margin:0 auto;padding:clamp(1
 @media(max-width:950px){#mobileNavToggle{display:inline-flex;position:fixed;top:12px;left:12px;z-index:9989;box-shadow:0 5px 18px rgba(0,0,0,.2);border:1px solid var(--line);border-radius:12px}}
 @media(max-width:950px){
  #dashboard .dash-layout{display:block}
- #dashboard .sidebar{position:fixed;z-index:2001;left:0;top:0;bottom:0;width:min(290px,84vw);height:100dvh;overflow-y:auto;display:block;border-radius:0 20px 20px 0;padding:16px;transform:translateX(-105%);transition:transform .25s ease;box-shadow:18px 0 55px #0005}
- #dashboard .sidebar.is-mobile-open{transform:translateX(0)}
+ #dashboard .sidebar{position:fixed;z-index:2001;left:0;top:0;bottom:0;width:min(290px,84vw);height:100dvh;overflow-y:auto;display:block;border-radius:0 20px 20px 0;padding:16px;transform:translate3d(-105%,0,0);transition:transform .16s cubic-bezier(.2,.75,.25,1);will-change:transform;backface-visibility:hidden;box-shadow:18px 0 55px #0005}
+ #dashboard .sidebar.is-mobile-open{transform:translate3d(0,0,0)}
+ #mobile-nav-overlay{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;transition:opacity .16s ease,visibility .16s ease}
  #dashboard .sidebar .school-chip{min-width:0;margin-bottom:12px}
  #dashboard .sidebar .navbtn{width:100%;display:flex;flex-direction:row;justify-content:flex-start;min-height:46px;text-align:left;gap:10px;padding:12px;margin:4px 0}
  #dashboard .sidebar .navbtn span{display:inline;font-size:.82rem}
@@ -2182,12 +2183,13 @@ try{applyTheme(localStorage.getItem('welfare-theme')==='dark');}catch(_){}
 $('themeToggle').addEventListener('click',()=>{const dark=!document.documentElement.classList.contains('dark');applyTheme(dark);try{localStorage.setItem('welfare-theme',dark?'dark':'light');}catch(_){} });
 const sidebar=$('sidebarCollapse')?.closest('.sidebar');
 const mobileNavOverlay=$('mobile-nav-overlay');
-function syncMobileNavState(isOpen){
+function syncMobileNavState(isOpen,sidebarAlreadyToggled=false){
  if(!sidebar)return;
- sidebar.classList.toggle('is-mobile-open',isOpen);
+ // The drawer's transform-driving class is changed first; all remaining
+ // accessibility and overlay bookkeeping follows without rebuilding the DOM.
+ if(!sidebarAlreadyToggled)sidebar.classList.toggle('is-mobile-open',isOpen);
  mobileNavOverlay?.classList.toggle('is-open',isOpen);
  mobileNavOverlay?.setAttribute('aria-hidden',String(!isOpen));
- mobileNavOverlay?.style.removeProperty('pointer-events');
  const toggle=document.getElementById('mobileNavToggle');
  toggle?.setAttribute('aria-expanded',String(isOpen));
  toggle?.setAttribute('aria-label',isOpen?'Close navigation menu':'Open navigation menu');
@@ -2198,16 +2200,17 @@ function syncMobileNavState(isOpen){
 }
 function closeMobileNav(){syncMobileNavState(false);}
 function openMobileNav(){syncMobileNavState(true);}
-/* Document-level delegation survives dashboard/view content replacement. */
+/* Bind directly to the button so the drawer class changes before any
+   document-level bubbling handlers or secondary UI work can run. */
+const mobileNavToggle=document.getElementById('mobileNavToggle');
+mobileNavToggle?.addEventListener('click',event=>{
+ event.preventDefault();
+ event.stopPropagation();
+ if(!sidebar)return;
+ const isOpen=sidebar.classList.toggle('is-mobile-open');
+ syncMobileNavState(isOpen,true);
+});
 document.addEventListener('click',event=>{
- const toggle=event.target.closest('#mobileNavToggle');
- if(toggle){
-  event.preventDefault();
-  event.stopPropagation();
-  if(!sidebar)return;
-  syncMobileNavState(!sidebar.classList.contains('is-mobile-open'));
-  return;
- }
  if(event.target.closest('#mobile-nav-overlay'))closeMobileNav();
 });
 $('sidebarCollapse')?.addEventListener('click',()=>{
