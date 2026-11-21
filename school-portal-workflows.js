@@ -1261,7 +1261,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  renderSelectedTeacherProfile();
  window.__welfareRefreshAdminProfileViewer=async()=>{
   try{await reloadTeacherRegisterForExport();}
-  catch(error){console.warn('[School Welfare] Profile viewer roster refresh failed:',error?.message||error);tr={data:[],error};renderSelectedTeacherProfile();return false;}
+  catch(error){console.warn('[School Welfare] Profile viewer roster refresh failed:',error?.message||error);tr={data:[],error};teachers=[];selectedProfileTeacherId='';renderTeacherTables();renderSelectedTeacherProfile();return false;}
   if(typeof refreshWorkflow==='function'){
    const financialReady=await refreshWorkflow();
    if(!financialReady)console.warn('[School Welfare] Profile viewer financial history is incomplete; retry the contribution/payout sections.');
