@@ -4,6 +4,35 @@
  const demoQuery=new URLSearchParams(window.location.search);
  if(!demoQuery.has('c')||String(demoQuery.get('c')||'').trim().toUpperCase()!=='DEMO')return;
 
+ // DEMO-safe fallback for reporting year controls. The live workflow module
+ // replaces this with its tenant-ledger-aware implementation when initialized.
+ if(typeof window.populateReportYearSelectors!=='function'){
+  window.populateReportYearSelectors=function(records=[]){
+   const now=new Date(),currentYear=now.getFullYear(),yearsSet=new Set([currentYear]);
+   (Array.isArray(records)?records:[]).forEach(row=>{
+    if(!row||typeof row!=='object')return;
+    ['date','contribution_date','payment_date','payout_date','created_at','updated_at','month','period','year','transaction_date'].forEach(key=>{
+     const value=row[key];if(value===null||value===undefined||value==='')return;
+     const match=String(value).trim().match(/^(\\d{4})/)||String(value).trim().match(/(?:^|\\D)(\\d{4})(?:\\D|$)/);
+     const year=Number(match?.[1]);if(Number.isInteger(year)&&year>=2016&&year<=9999)yearsSet.add(year);
+    });
+   });
+   const newest=Math.max(...yearsSet),years=Array.from({length:newest-2016+1},(_,i)=>newest-i);
+   ['wfReportYear','wfAnnualYear','wfPaymentStatsYear','wfDuesMatrixYear'].forEach(id=>{
+    const select=document.getElementById(id);if(!select)return;
+    const previous=select.value;
+    select.replaceChildren(...years.map(year=>{const option=document.createElement('option');option.value=String(year);option.textContent=String(year);return option;}));
+    select.disabled=false;select.value=years.includes(Number(previous))?previous:String(currentYear);
+   });
+   const month=document.getElementById('wfReportMonth');
+   if(month){
+    const previous=month.value;
+    month.replaceChildren(...Array.from({length:12},(_,i)=>{const option=document.createElement('option');option.value=String(i+1).padStart(2,'0');option.textContent=new Date(2000,i,1).toLocaleDateString('en-GH',{month:'long'});return option;}));
+    month.disabled=false;month.value=/^(0[1-9]|1[0-2])$/.test(previous)?previous:String(now.getMonth()+1).padStart(2,'0');
+   }
+  };
+ }
+
  /* Keep DEMO figures and role/status labels visually consistent with live tenants. */
  document.documentElement.classList.add('welfare-demo-mode');
  if(!document.getElementById('welfare-demo-visual-polish')){
