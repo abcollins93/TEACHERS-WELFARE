@@ -3781,7 +3781,7 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
  const schoolPdfButton=$('downloadSchoolPdf'); if(schoolPdfButton)schoolPdfButton.onclick=async()=>{
   if(schoolPdfButton.disabled)return;
   if(!window.html2pdf){window.showWelfareDialog('alert','PDF library is unavailable. Please check your internet connection.');return;}
-  const sourceTable=document.querySelector('#schoolTeachers table');
+  const sourceTable=document.querySelector('#wfManageTeacherRows')?.closest('table')||document.querySelector('#wfTeacherRegisterPanel table')||document.querySelector('#schoolTeachers table');
   if(!sourceTable){window.showWelfareDialog('alert','The teacher register is still loading. Please try again in a moment.');return;}
   const originalButtonHtml=schoolPdfButton.innerHTML;
   let progress=document.getElementById('schoolPdfProgress');
