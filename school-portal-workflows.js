@@ -1415,19 +1415,23 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      ].some(value=>String(value??'').toLowerCase().includes(searchTerm)));
      if(!roster.length)throw new Error(searchTerm?'No active members match the current search.':'No active members are registered for this school.');
      const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-     const monthTotals=Array(12).fill(0),matrixRows=roster.map(teacher=>{
-      const amounts=Array(12).fill(0);
-      activeCons.forEach(item=>{
-       if(String(item.teacher_id)!==String(teacher.id))return;
-       const date=String(item.date||'').slice(0,10),match=date.match(/^(\d{4})-(\d{2})-/);
-       if(!match||match[1]!==selectedYear)return;
-       const month=Number(match[2]);if(month<1||month>12)return;
-       amounts[month-1]+=Number(item.amount||0);
-      });
+     // Aggregate the ledger once instead of rescanning every contribution for
+     // every teacher (O(records + members), rather than O(records × members)).
+     const monthTotals=Array(12).fill(0),amountsByTeacher=new Map();
+     activeCons.forEach(item=>{
+      const date=String(item.date||'').slice(0,10),match=date.match(/^(\d{4})-(\d{2})-/);
+      if(!match||match[1]!==selectedYear)return;
+      const month=Number(match[2]);if(month<1||month>12)return;
+      const teacherId=String(item.teacher_id),amounts=amountsByTeacher.get(teacherId)||Array(12).fill(0);
+      amounts[month-1]+=Number(item.amount||0);amountsByTeacher.set(teacherId,amounts);
+     });
+     const matrixRows=roster.map(teacher=>{
+      const amounts=amountsByTeacher.get(String(teacher.id))||Array(12).fill(0);
       amounts.forEach((amount,index)=>monthTotals[index]+=amount);
       return {teacher,amounts,total:amounts.reduce((sum,value)=>sum+value,0)};
      });
      const grandTotal=monthTotals.reduce((sum,value)=>sum+value,0);
+     await yieldToBrowser();
      const schoolName=String(ctx.name||ctx.school_name||'School Welfare').trim();
      const schoolCode=String(ctx.school_code||ctx.schoolCode||'').trim().toUpperCase();
      if(!ctx.id||!schoolCode)throw new Error('The active school identity could not be verified. The PDF was not issued.');
@@ -1490,10 +1494,12 @@ window.initSchoolWorkflows=async function(client,school,refresh){
       '<div class="sws-disclaimer">*** The School welfare is not liable for any financial loss resulting from disclosing your member/account details including password to Third Parties ***</div>';
      if(typeof window.applyWelfarePdfTenantWatermark==='function')window.applyWelfarePdfTenantWatermark(report,schoolName,ctx);
      document.body.appendChild(report);
-     // Temporarily make the export node measurable, but keep it fully off-screen.
-     // The finally block removes it immediately after capture/download preparation.
-     report.style.setProperty('display','block','important');
-     report.style.setProperty('position','absolute','important');
+     // Keep the report staging template display:none during ordinary browsing
+     // and QR preparation. It is revealed only for the active canvas capture.
+     report.style.setProperty('display','none','important');
+     report.style.setProperty('visibility','hidden','important');
+     report.style.setProperty('opacity','0','important');
+     report.style.setProperty('position','fixed','important');
      report.style.setProperty('left','-100000px','important');
      report.style.setProperty('top','0','important');
      report.style.setProperty('width','281mm','important');
@@ -1526,12 +1532,22 @@ window.initSchoolWorkflows=async function(client,school,refresh){
       if(typeof image.decode==='function'){try{await image.decode();return;}catch(_){}}
       await new Promise(resolve=>{image.addEventListener('load',resolve,{once:true});image.addEventListener('error',resolve,{once:true});});
      }));
+     // Reveal only now, after data/markup/QR/images are ready and capture is
+     // about to begin. The finally block restores display:none on every exit.
+     report.style.setProperty('display','block','important');
+     report.style.setProperty('visibility','visible','important');
+     report.style.setProperty('opacity','1','important');
      const reportWidth=Math.ceil(report.getBoundingClientRect().width||report.scrollWidth);
      const reportHeight=Math.ceil(report.getBoundingClientRect().height||report.scrollHeight);
      if(!reportWidth||!reportHeight||!report.querySelector('.wf-dm-table tbody tr'))throw new Error('The dues matrix report did not finish rendering. Please try again.');
      const pdfOptions={margin:0,filename,image:{type:'png'},html2canvas:{scale:3,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,scrollX:0,scrollY:0,windowWidth:Math.max(reportWidth,document.documentElement.clientWidth),windowHeight:Math.max(reportHeight,document.documentElement.clientHeight),width:reportWidth,height:reportHeight},jsPDF:{unit:'mm',format:'a4',orientation:'landscape',compress:true},pagebreak:{mode:['css'],avoid:['tr','.wf-dm-bottom']}};
      const pdfWorker=window.html2pdf().set(pdfOptions).from(report);
      await pdfWorker.toCanvas();
+     // Canvas capture is complete; immediately hide the staging DOM before
+     // PDF encoding, caching, or download work continues.
+     report.style.setProperty('display','none','important');
+     report.style.setProperty('visibility','hidden','important');
+     report.style.setProperty('opacity','0','important');
      const renderedCanvas=await pdfWorker.get('canvas');
      if(!renderedCanvas||renderedCanvas.width<1||renderedCanvas.height<1)throw new Error('The dues matrix page could not be rendered. No blank PDF was downloaded.');
      const renderedPixels=renderedCanvas.getContext('2d',{willReadFrequently:true})?.getImageData(0,0,Math.min(renderedCanvas.width,32),Math.min(renderedCanvas.height,32)).data;
@@ -1552,7 +1568,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      console.error('[School Welfare] Dues matrix PDF failed:',error);
      if(status){status.textContent=error?.message||'The dues matrix PDF could not be generated.';status.className='error';}
     }finally{
-     report?.remove();button.disabled=false;button.removeAttribute('aria-busy');button.innerHTML=original;
+     if(report){report.style.setProperty('display','none','important');report.style.setProperty('visibility','hidden','important');report.style.setProperty('opacity','0','important');report.remove();}
+     button.disabled=false;button.removeAttribute('aria-busy');button.innerHTML=original;
     }
    });
   }
