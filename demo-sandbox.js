@@ -92,7 +92,7 @@
   const activeContributions=activeCon(),activePayouts=activePay();
   const contributionTotal=activeContributions.reduce((sum,row)=>sum+Number(row.amount||0),0);
   const payoutTotal=activePayouts.reduce((sum,row)=>sum+Number(row.amount||0),0);
-  return {teacherCount:teachers.filter(row=>row.is_active!==false).length,contributionCount:activeContributions.length,contributionTotal,payoutCount:activePayouts.length,payoutTotal,netFundBalance:contributionTotal-payoutTotal,monthlyDues:Number(school.monthly_dues||0),latestMonth:months[months.length-1]||''};
+  return {teacherCount:teachers.filter(row=>row.is_active!==false).length,contributionCount:activeContributions.length,contributionTotal,payoutCount:activePayouts.length,payoutTotal,netFundBalance:contributionTotal-payoutTotal,monthlyDues:Number(school.monthly_dues||settings.find(row=>['standard_dues','standard_monthly_dues','monthly_dues'].includes(String(row.key||'').toLowerCase()))?.value||0),latestMonth:months[months.length-1]||''};
  };
  const demoStorage={};
  const client={
@@ -120,7 +120,7 @@
     case 'get_my_school_welfare_payout_feed':return {data:clone(payouts),error:null};
     case 'get_my_school_fund_summary':return {data:[{total_fund_balance:activeCon().reduce((s,x)=>s+Number(x.amount||0),0)-activePay().reduce((s,x)=>s+Number(x.amount||0),0)}],error:null};
     case 'get_my_school_registered_member_count':return {data:teachers.filter(x=>x.is_active!==false).length,error:null};
-    case 'get_my_teacher_school_standard_dues':return {data:20,error:null};
+    case 'get_my_teacher_school_standard_dues':return {data:Number(settings.find(row=>['standard_dues','standard_monthly_dues','monthly_dues'].includes(String(row.key||'').toLowerCase()))?.value||school.monthly_dues||20),error:null};
     case 'get_my_teacher_ticker_feed':return {data:announcements.map(x=>({feed_type:'announcement',message:x.message,published_at:x.published_at})),error:null};
     case 'get_my_school_pdf_signatories':return {data:{headteacher_name:'Mrs. Akosua Mensah',financial_secretary_name:'Mr. Kwame Asare'},error:null};
     case 'save_my_teacher_passport':return {data:true,error:null};
