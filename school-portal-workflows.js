@@ -992,8 +992,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  }else{
    tr.data=tr.data.map(t=>({...t,is_active:typeof t.is_active==='boolean'?t.is_active:true,passport:t.passport??null}));
  }
- const loginAccounts=new Map((ar.data||[]).map(account=>[String(account.teacher_id),account]));
- const teachers=(tr.data||[]).map(t=>{const normalized=typeof window.normalizeTeacherProfileRecord==='function'?window.normalizeTeacherProfileRecord(t):t;const account=loginAccounts.get(String(normalized.id));return {...normalized,auth_user_id:account?.auth_user_id||null,login_activated:!!account?.auth_user_id,must_change_password:account?.must_change_password??null};});let cons=cr.data||[], pays=pr.data||[], reversals=rr.data||[];
+ let loginAccounts=new Map((ar.data||[]).map(account=>[String(account.teacher_id),account]));
+ let teachers=(tr.data||[]).map(t=>{const normalized=typeof window.normalizeTeacherProfileRecord==='function'?window.normalizeTeacherProfileRecord(t):t;const account=loginAccounts.get(String(normalized.id));return {...normalized,auth_user_id:account?.auth_user_id||null,login_activated:!!account?.auth_user_id,must_change_password:account?.must_change_password??null};});let cons=cr.data||[], pays=pr.data||[], reversals=rr.data||[];
  const sourceWarnings=[];
  if(tr.error)sourceWarnings.push('Teacher register unavailable');
  if(ar.error)sourceWarnings.push('Teacher login status unavailable');
@@ -1331,6 +1331,47 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const renderTeacherTables=()=>{const q=String($('wfTeacherSearch')?.value||'').trim().toLowerCase();const visible=teachers.filter(t=>[t.id,t.name,t.phone,t.rank,t.class_name,t.membership_type,t.employer].some(v=>String(v||'').toLowerCase().includes(q)));
  $('wfManageTeacherRows').innerHTML=visible.length?visible.map(t=>{const login=teacherLoginState(t);return '<tr><td class="wf-staff-id-cell"><span class="wf-staff-id-badge">'+esc(t.id)+'</span></td><td class="teacher-name-cell">'+esc(t.name)+'</td><td class="wf-phone-cell">'+esc(t.phone||'—')+'</td><td class="wf-accent-cell wf-rank-cell"><span class="wf-rank-badge">'+esc(t.rank||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-class-accent">'+esc(t.class_name||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-membership-badge">'+esc(t.membership_type||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-employer-badge">'+esc(t.employer||'—')+'</span></td><td><span class="wf-teacher-status '+(t.is_active===false?'inactive':'active')+'">'+(t.is_active===false?'Inactive':'Active')+'</span><br><span class="wf-login-status '+(login.activated?'active':'pending')+'">'+esc(login.label)+'</span></td><td><button type="button" class="wf-table-action wf-action-view" data-view-profile="'+esc(t.id)+'">View profile</button> <button type="button" class="wf-table-action wf-action-edit" data-wf-edit="'+esc(t.id)+'">Edit</button> <button type="button" class="wf-table-action '+(login.activated?'wf-action-reset':'wf-action-primary')+'" data-wf-activate="'+esc(t.id)+'">'+(login.activated?'✓ Reset login':'Activate login')+'</button> '+(t.is_active===false?'<button type="button" class="wf-table-action wf-action-primary" data-wf-restore="'+esc(t.id)+'">Restore</button>':'<button type="button" class="wf-table-action wf-action-danger" data-wf-remove="'+esc(t.id)+'">Deactivate</button>')+'</td></tr>';}).join(''):'<tr><td colspan="9">No matching teachers.</td></tr>';};
  renderTeacherTables();
+ // Expose an awaited, tenant-bound register hydration path for executive PDF exports.
+ // It reloads source records instead of trusting a possibly stale or empty DOM table.
+ let teacherRegisterReloadPromise=null;
+ const reloadTeacherRegisterForExport=async()=>{
+  if(teacherRegisterReloadPromise)return teacherRegisterReloadPromise;
+  teacherRegisterReloadPromise=(async()=>{
+   let next;
+   if(isLocalDemo&&typeof window.WelfareDemo?.loadTeacherRegister==='function'){
+    const rows=await window.WelfareDemo.loadTeacherRegister(ctx.school_code);
+    next={data:Array.isArray(rows)?rows:[],error:null};
+   }else next=await teacherQuery('*');
+   const fallbacks=['id,name,phone,rank,class_name,is_active,passport,created_at','id,name,phone,rank,class_name,is_active,passport','id,name,phone,rank,class_name,passport','id,name,phone,rank,class_name,is_active','id,name,phone,rank,class_name'];
+   for(const fields of fallbacks){if(!next?.error)break;next=await teacherQuery(fields);}
+   if(next?.error)throw new Error('The school teacher register could not be loaded. Check the connection and school access, then retry the PDF.');
+   const normalizedRows=(next.data||[]).map(row=>{
+    const normalized=typeof window.normalizeTeacherProfileRecord==='function'?window.normalizeTeacherProfileRecord(row):row;
+    return {...normalized,is_active:typeof normalized.is_active==='boolean'?normalized.is_active:true,passport:normalized.passport??null};
+   });
+   const accountResult=await loadSource('teacher login accounts refresh',()=>client.from('teacher_accounts').select('auth_user_id,teacher_id,school_id,must_change_password,active').eq('school_id',ctx.id).eq('active',true));
+   loginAccounts=new Map((accountResult.data||[]).map(account=>[String(account.teacher_id),account]));
+   teachers=normalizedRows.map(row=>{const account=loginAccounts.get(String(row.id));return {...row,auth_user_id:account?.auth_user_id||null,login_activated:!!account?.auth_user_id,must_change_password:account?.must_change_password??null};});
+   tr={data:teachers,error:null};
+   teacherById.clear();teachers.forEach(row=>teacherById.set(String(row.id),row));
+   if(!selectedProfileTeacherId||!teachers.some(row=>String(row.id)===String(selectedProfileTeacherId)))selectedProfileTeacherId=teachers[0]?String(teachers[0].id):'';
+   renderTeacherTables();
+   if(profileSelect){profileSelect.innerHTML=teachers.map(row=>'<option value="'+esc(row.id)+'">'+esc(row.name||row.id)+' ('+esc(row.id)+')</option>').join('');profileSelect.value=selectedProfileTeacherId;}
+   const teacherOptions='<option value="">Choose teacher</option>'+teachers.filter(row=>row.is_active!==false).map(row=>'<option value="'+esc(row.id)+'">'+esc(row.name)+' ('+esc(row.id)+')</option>').join('');
+   ['wfConTeacher','wfPayTeacher','wfStatementTeacher'].forEach(id=>{const select=$(id);if(select){const previous=select.value;select.innerHTML=teacherOptions;if(Array.from(select.options).some(option=>option.value===previous))select.value=previous;}});
+   const count=$('teacherCount');if(count)count.textContent=String(teachers.filter(row=>row.is_active!==false).length);
+   renderSelectedTeacherProfile();
+   return teachers.map(row=>({...row}));
+  })().finally(()=>{teacherRegisterReloadPromise=null;});
+  return teacherRegisterReloadPromise;
+ };
+ window.__welfareEnsureTeacherRegisterLoaded=async expectedSchoolCode=>{
+  const expected=String(expectedSchoolCode||ctx.school_code||'').trim().toUpperCase();
+  const actual=String(ctx.school_code||ctx.schoolCode||'').trim().toUpperCase();
+  if(!actual||expected!==actual)throw new Error('The active school context changed. Refresh the portal before exporting this register.');
+  if(String(window.__welfareCurrentSchool?.id||'')!==String(ctx.id||''))throw new Error('The active school tenant is no longer available. Refresh and retry.');
+  return reloadTeacherRegisterForExport();
+ };
  $('wfTeacherSearch').addEventListener('input',()=>frameRender($('wfManageTeacherRows'),renderTeacherTables));
  $('wfManageTeacherRows').addEventListener('click',async e=>{
    const viewButton=e.target.closest('[data-view-profile]');
