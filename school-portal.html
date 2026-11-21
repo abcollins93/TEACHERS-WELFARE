@@ -3773,7 +3773,7 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
   const originalButtonHtml=schoolPdfButton.innerHTML;
   let progress=document.getElementById('schoolPdfProgress');
   if(!progress){progress=document.createElement('p');progress.id='schoolPdfProgress';progress.className='muted';progress.setAttribute('role','status');progress.setAttribute('aria-live','polite');schoolPdfButton.insertAdjacentElement('afterend',progress);}
-  schoolPdfButton.disabled=true;schoolPdfButton.setAttribute('aria-busy','true');progress.textContent='Generating executive school PDF summary…';
+  schoolPdfButton.disabled=true;schoolPdfButton.setAttribute('aria-busy','true');schoolPdfButton.innerHTML='<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Preparing PDF…';progress.textContent='Preparing your school summary PDF…';progress.className='muted';await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
   try{
    const report=document.createElement('div');
    const issued=new Date(),documentId='TWF-SUM-'+issued.toISOString().replace(/\\D/g,'').slice(0,14)+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
@@ -3844,14 +3844,24 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
     const filename=(code.replace(/[^a-z0-9_-]/gi,'_')||'school')+'-welfare-summary.pdf';
     const blob=await window.html2pdf().set({margin:0,filename,image:{type:'png'},html2canvas:{scale:4,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0},jsPDF:{unit:'mm',format:'a4',orientation:'landscape',compress:true},pagebreak:{mode:['css'],avoid:['tr','.sws-kpi','.sws-signatures']}}).from(report).outputPdf('blob');
-    await window.registerTenantStatementVerification({
-     school_code:code,document_id:documentId,document_type:'executive-summary',
+    const verificationPayload={
+     school_code:code,school_id:school.id||null,document_id:documentId,document_type:'executive-summary',
      period:'School-wide summary',academic_year:window.getCurrentAcademicYear()
-    });
-    if(typeof window.cacheWelfareStatementPdf==='function')await window.cacheWelfareStatementPdf(blob,filename,{
-     school_code:code,document_id:documentId,document_type:'executive-summary',
-     period:'School-wide summary',academic_year:window.getCurrentAcademicYear()
-    });
+    };
+    // The PDF is a valid client-generated A4 export. Verification and offline caching
+    // are supplementary services and must never block the administrator's download.
+    try{
+     if(typeof window.registerTenantStatementVerification==='function'){
+      await window.registerTenantStatementVerification(verificationPayload);
+     }else throw new Error('Statement verification endpoint is unavailable.');
+    }catch(verificationError){
+     console.warn('[School Welfare] Executive summary verification unavailable; continuing with the client-side PDF:',verificationError?.message||verificationError);
+     progress.textContent='PDF prepared. Online verification is temporarily unavailable; the local PDF is still ready.';
+    }
+    if(typeof window.cacheWelfareStatementPdf==='function'){
+     try{await window.cacheWelfareStatementPdf(blob,filename,verificationPayload);}
+     catch(cacheError){console.warn('[School Welfare] Summary PDF local cache deferred:',cacheError?.message||cacheError);}
+    }
     window.downloadWelfareBlob(blob,filename,progress,'Executive school PDF summary is ready.');
    }finally{report.remove();}
   }catch(error){console.error('[School Welfare] School summary PDF failed:',error);progress.textContent=error?.message||'The school PDF could not be generated. Please try again.';progress.className='error';}
