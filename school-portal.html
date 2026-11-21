@@ -54,7 +54,7 @@
 (function(){
  const query=new URLSearchParams(window.location.search);
  if(query.has('c')&&String(query.get('c')||'').trim().toUpperCase()==='DEMO'){
-  document.write('<script src="./demo-sandbox.js"><\/script>');
+  document.write('<script src="./demo-sandbox.js?v=20261121-statement-interaction-v3"><\/script>');
  }
 })();
 </script><script>
@@ -274,14 +274,14 @@ body:has(#login:not(.hidden)) main{max-width:760px;margin:0 auto;padding:clamp(1
 
 
 /* Shared responsive tenant navigation drawer */
-#mobile-nav-overlay{position:fixed;inset:0;background:rgba(1,8,20,.62);backdrop-filter:blur(3px);z-index:2000;opacity:0;visibility:hidden;transition:opacity .22s ease,visibility .22s ease}
-#mobile-nav-overlay.is-open{opacity:1;visibility:visible}
+#mobile-nav-overlay{position:fixed;inset:0;background:rgba(1,8,20,.62);z-index:2000;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .14s ease,visibility 0s linear .14s}
+#mobile-nav-overlay.is-open{opacity:1;visibility:visible;pointer-events:auto}
 #mobileNavToggle{display:none;align-items:center;gap:8px;white-space:nowrap}
 @media(max-width:950px){#mobileNavToggle{display:inline-flex;position:fixed;top:12px;left:12px;z-index:9989;box-shadow:0 5px 18px rgba(0,0,0,.2);border:1px solid var(--line);border-radius:12px}}
 @media(max-width:950px){
  #dashboard .dash-layout{display:block}
- #dashboard .sidebar{position:fixed;z-index:2001;left:0;top:0;bottom:0;width:min(290px,84vw);height:100dvh;overflow-y:auto;display:block;border-radius:0 20px 20px 0;padding:16px;transform:translateX(-105%);transition:transform .25s ease;box-shadow:18px 0 55px #0005}
- #dashboard .sidebar.is-mobile-open{transform:translateX(0)}
+ #dashboard .sidebar{position:fixed;z-index:2001;left:0;top:0;bottom:0;width:min(290px,84vw);height:100dvh;overflow-y:auto;display:block;border-radius:0 20px 20px 0;padding:16px;transform:translateX(-105%);opacity:0;visibility:hidden;pointer-events:none;will-change:transform,opacity;transition:transform .16s cubic-bezier(.2,.8,.2,1),opacity .12s ease,visibility 0s linear .16s;box-shadow:10px 0 28px #0004}
+ #dashboard .sidebar.is-mobile-open{transform:translateX(0);opacity:1;visibility:visible;pointer-events:auto}
  #dashboard .sidebar .school-chip{min-width:0;margin-bottom:12px}
  #dashboard .sidebar .navbtn{width:100%;display:flex;flex-direction:row;justify-content:flex-start;min-height:46px;text-align:left;gap:10px;padding:12px;margin:4px 0}
  #dashboard .sidebar .navbtn span{display:inline;font-size:.82rem}
@@ -1578,7 +1578,7 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
 <meta name="apple-mobile-web-app-title" content="Welfare">
 <link rel="icon" type="image/svg+xml" href="./icons/welfare-portal.svg">
 <link rel="apple-touch-icon" href="./icons/welfare-portal.svg">
-<script src="./pwa.js?v=demo-sandbox-20261117" defer></script>
+<script src="./pwa.js?v=20261121-statement-interaction-v3" defer></script>
 
 
 
@@ -1916,6 +1916,44 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
 }
 </style></head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
+<script id="mobile-drawer-first-tap">
+(function(){
+ function setMobileDrawerOpen(isOpen){
+  const sidebar=document.getElementById('schoolSidebar');
+  const overlay=document.getElementById('mobile-nav-overlay');
+  const toggle=document.getElementById('mobileNavToggle');
+  if(!sidebar)return;
+  sidebar.classList.toggle('is-mobile-open',!!isOpen);
+  if(overlay){overlay.classList.toggle('is-open',!!isOpen);overlay.setAttribute('aria-hidden',String(!isOpen));}
+  if(toggle){
+   toggle.setAttribute('aria-expanded',String(!!isOpen));
+   toggle.setAttribute('aria-label',isOpen?'Close navigation menu':'Open navigation menu');
+   toggle.setAttribute('title',isOpen?'Close navigation menu':'Open navigation menu');
+   const icon=toggle.querySelector('i');
+   if(icon)icon.className=isOpen?'fa-solid fa-xmark':'fa-solid fa-bars';
+  }
+  document.body.classList.toggle('sidebar-open',!!isOpen);
+ }
+ window.__welfareSetMobileNavOpen=setMobileDrawerOpen;
+ // Register before the large portal application script so the very first tap
+ // never waits for tenant hydration, workflow mounting, or report rendering.
+ document.addEventListener('click',event=>{
+  const target=event.target?.closest?.('#mobileNavToggle');
+  if(target){
+   event.preventDefault();
+   const sidebar=document.getElementById('schoolSidebar');
+   if(!sidebar)return;
+   setMobileDrawerOpen(!sidebar.classList.contains('is-mobile-open'));
+   event.__welfareMobileNavHandled=true;
+   return;
+  }
+  if(event.target?.closest?.('#mobile-nav-overlay')){
+   setMobileDrawerOpen(false);
+   event.__welfareMobileNavHandled=true;
+  }
+ },true);
+})();
+</script>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading Teachers Welfare Portal" aria-hidden="false">
  <div class="page-loader-card">
   <img class="page-loader-logo" src="./icons/welfare-portal.svg" alt="Teachers Welfare Portal shield logo" width="112" height="112" fetchpriority="high">
@@ -2004,7 +2042,7 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
  <div class="teacher-progress-footer"><span id="teacherProgressPaidMonths">Your contributions this year</span><span id="teacherProgressTarget">Monthly dues target</span></div>
  <div id="teacherProgressReminder" class="teacher-progress-reminder" role="status" aria-live="polite"></div>
 </section>
-<div class="grid dashboard-metrics"><div class="metric metric-compact"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-users text-2xl"></i></div><div class="metric-content"><span class="metric-label">Registered Members</span><strong id="teacherCount">—</strong></div></div><div class="metric metric-compact"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-arrow-trend-up"></i></div><div class="metric-content"><span class="metric-label">My Contributions</span><strong id="contributionTotal" style="white-space:nowrap">—</strong></div></div><div class="metric metric-compact"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-hand-holding-heart text-2xl"></i></div><div class="metric-content"><span class="metric-label">My Payouts</span><strong id="payoutTotal" style="white-space:nowrap">—</strong></div></div><div class="metric metric-compact"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-calendar-days text-2xl"></i></div><div class="metric-content"><span class="metric-label">Contributions This Month</span><strong id="monthlyContributionTotal" style="white-space:nowrap">—</strong></div></div><div class="metric metric-featured metric-contribution-records" id="adminContributionRecordsMetric" hidden><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-file-circle-check"></i></div><div class="metric-content"><span class="metric-label">CONTRIBUTION RECORDS</span><strong id="adminContributionRecordsCount">—</strong><span class="metric-note">Total contribution records entered</span></div></div><div class="metric metric-featured metric-balance"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-vault"></i></div><div class="metric-content"><span class="metric-label">TOTAL FUND BALANCE</span><strong id="netTotal" style="white-space:nowrap">—</strong><span class="metric-note metric-note-positive"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> After all active payouts</span></div></div><div class="metric metric-featured metric-standard"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-list-check"></i></div><div class="metric-content"><span class="metric-label">STANDARD MONTHLY DUES</span><strong id="standardDuesMetric">—</strong><span class="metric-note">Current school rate</span></div></div><div class="metric metric-featured metric-activity"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-clock-rotate-left"></i></div><div class="metric-content"><span class="metric-label">LAST ACTIVITY</span><strong id="lastActivity" style="font-size:1rem">—</strong><span class="metric-note">Latest recorded activity</span></div></div>
+<div class="grid dashboard-metrics"><div class="metric metric-compact"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-users text-2xl"></i></div><div class="metric-content"><span class="metric-label">Registered Members</span><strong id="teacherCount">—</strong></div></div><div class="metric metric-compact"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-arrow-trend-up"></i></div><div class="metric-content"><span class="metric-label">My Contributions</span><strong id="contributionTotal" style="white-space:nowrap">—</strong></div></div><div class="metric metric-compact"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-hand-holding-heart text-2xl"></i></div><div class="metric-content"><span class="metric-label">My Payouts</span><strong id="payoutTotal" style="white-space:nowrap">—</strong></div></div><div class="metric metric-compact"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-calendar-days text-2xl"></i></div><div class="metric-content"><span class="metric-label">Contributions This Month</span><strong id="monthlyContributionTotal" style="white-space:nowrap">—</strong></div></div><div class="metric metric-featured metric-contribution-records" id="adminContributionRecordsMetric" hidden><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-file-circle-check"></i></div><div class="metric-content"><span class="metric-label">CONTRIBUTION RECORDS</span><strong id="adminContributionRecordsCount">—</strong><span class="metric-note">Total contribution records entered</span></div></div><div class="metric metric-featured metric-balance"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-vault"></i></div><div class="metric-content"><span class="metric-label">TOTAL FUND BALANCE</span><strong id="netTotal" style="white-space:nowrap">—</strong><span class="metric-note metric-note-positive"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> After all active payouts</span></div></div><div class="metric metric-featured metric-standard"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-list-check"></i></div><div class="metric-content"><span class="metric-label">STANDARD MONTHLY DUES</span><strong id="standardDuesMetric">GHS 20.00</strong><span class="metric-note">Current school rate</span></div></div><div class="metric metric-featured metric-activity"><div class="metric-icon" aria-hidden="true"><i class="fa-solid fa-clock-rotate-left"></i></div><div class="metric-content"><span class="metric-label">LAST ACTIVITY</span><strong id="lastActivity" style="font-size:1rem">—</strong><span class="metric-note">Latest recorded activity</span></div></div>
 </div>
 
 <section id="teacherDashboardLedgers" class="teacher-dashboard-ledgers" hidden>
@@ -2183,6 +2221,7 @@ $('themeToggle').addEventListener('click',()=>{const dark=!document.documentElem
 const sidebar=$('sidebarCollapse')?.closest('.sidebar');
 const mobileNavOverlay=$('mobile-nav-overlay');
 function syncMobileNavState(isOpen){
+ if(typeof window.__welfareSetMobileNavOpen==='function'){window.__welfareSetMobileNavOpen(isOpen);return;}
  if(!sidebar)return;
  sidebar.classList.toggle('is-mobile-open',isOpen);
  mobileNavOverlay?.classList.toggle('is-open',isOpen);
@@ -2200,6 +2239,7 @@ function closeMobileNav(){syncMobileNavState(false);}
 function openMobileNav(){syncMobileNavState(true);}
 /* Document-level delegation survives dashboard/view content replacement. */
 document.addEventListener('click',event=>{
+ if(event.__welfareMobileNavHandled)return;
  const toggle=event.target.closest('#mobileNavToggle');
  if(toggle){
   event.preventDefault();
@@ -3668,9 +3708,11 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
      '<div class="sws-disclaimer">*** The School welfare is not liable for any financial loss resulting from disclosing your member/account details including password to Third Parties ***</div>';
    window.applyWelfarePdfTenantWatermark(report,school.name,school);
    document.body.appendChild(report);
-   // Activate this A4 surface only for the off-screen canvas/PDF capture.
-   report.style.setProperty('display','block','important');
-   report.style.setProperty('position','absolute','important');
+   // Keep this A4 report strictly hidden until the PDF capture starts.
+   report.style.setProperty('display','none','important');
+   report.style.setProperty('visibility','hidden','important');
+   report.style.setProperty('opacity','0','important');
+   report.style.setProperty('position','fixed','important');
    report.style.setProperty('left','-100000px','important');
    report.style.setProperty('top','0','important');
    report.style.setProperty('width','297mm','important');
@@ -3684,7 +3726,16 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
     if(window.QRCode&&qrNode)new window.QRCode(qrNode,{text:'https://abcollins93.github.io/TEACHERS-WELFARE/verify.html?c='+encodeURIComponent(code)+'&d='+encodeURIComponent(documentId),width:300,height:300,colorDark:'#030a16',colorLight:'#ffffff',correctLevel:window.QRCode.CorrectLevel.M});
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
     const filename=(code.replace(/[^a-z0-9_-]/gi,'_')||'school')+'-welfare-summary.pdf';
-    const blob=await window.html2pdf().set({margin:0,filename,image:{type:'png'},html2canvas:{scale:4,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0},jsPDF:{unit:'mm',format:'a4',orientation:'landscape',compress:true},pagebreak:{mode:['css'],avoid:['tr','.sws-kpi','.sws-signatures']}}).from(report).outputPdf('blob');
+    // Defer the short visible-to-renderer window until all summary markup and
+    // QR work is complete; keep it off-screen and restore display:none at once.
+    report.style.setProperty('display','block','important');
+    report.style.setProperty('visibility','visible','important');
+    report.style.setProperty('opacity','1','important');
+    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    const blob=await window.html2pdf().set({margin:0,filename,image:{type:'png'},html2canvas:{scale:Math.min(1.5,window.devicePixelRatio||1.5),useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0},jsPDF:{unit:'mm',format:'a4',orientation:'landscape',compress:true},pagebreak:{mode:['css'],avoid:['tr','.sws-kpi','.sws-signatures']}}).from(report).outputPdf('blob');
+    report.style.setProperty('display','none','important');
+    report.style.setProperty('visibility','hidden','important');
+    report.style.setProperty('opacity','0','important');
     await window.registerTenantStatementVerification({
      school_code:code,document_id:documentId,document_type:'executive-summary',
      period:'School-wide summary',academic_year:window.getCurrentAcademicYear()
@@ -3694,7 +3745,7 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
      period:'School-wide summary',academic_year:window.getCurrentAcademicYear()
     });
     window.downloadWelfareBlob(blob,filename,progress,'Executive school PDF summary is ready.');
-   }finally{report.remove();}
+   }finally{report.style.setProperty('display','none','important');report.style.setProperty('visibility','hidden','important');report.style.setProperty('opacity','0','important');report.remove();}
   }catch(error){console.error('[School Welfare] School summary PDF failed:',error);progress.textContent=error?.message||'The school PDF could not be generated. Please try again.';progress.className='error';}
   finally{schoolPdfButton.disabled=false;schoolPdfButton.removeAttribute('aria-busy');schoolPdfButton.innerHTML=originalButtonHtml;}
  };
@@ -3918,7 +3969,7 @@ if(isDemoMode){
 }
 })();
 </script>
-<script src="school-portal-workflows.js?v=20261120-report-runtime-v5"></script>
+<script src="school-portal-workflows.js?v=20261121-statement-interaction-v3"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
@@ -3958,6 +4009,9 @@ if(isDemoMode){
   });
   // The primary navigation handler above owns open/close state. Avoid a
   // second click listener that could reopen the backdrop after it is closed.
+  // Coalesce rapid tab taps: the selected tab updates immediately, while only
+  // the latest requested view performs the larger DOM reconciliation.
+  let pendingNavigationFrame=0;
   document.addEventListener('click', function(event){
     const button = event.target.closest('.navbtn[data-target]');
     if (!button) return;
@@ -3969,6 +4023,12 @@ if(isDemoMode){
       item.classList.toggle('active', item === button);
       item.setAttribute('aria-current', item === button ? 'location' : 'false');
     });
+    // Commit the drawer and selected tab immediately; defer the larger view-tree
+    // reconciliation until the next frame so it cannot delay the tap response.
+    if(pendingNavigationFrame)window.cancelAnimationFrame(pendingNavigationFrame);
+    pendingNavigationFrame=window.requestAnimationFrame(function(){
+    pendingNavigationFrame=0;
+    if(!button.isConnected)return;
     const dashboardRoot = document.getElementById('dashboard');
     if(dashboardRoot){dashboardRoot.classList.remove('hidden');dashboardRoot.removeAttribute('hidden');dashboardRoot.style.setProperty('display','block','important');dashboardRoot.style.setProperty('visibility','visible','important');dashboardRoot.removeAttribute('aria-hidden');}
     const requestedId = button.dataset.target;
@@ -4125,15 +4185,7 @@ if(isDemoMode){
       target.removeAttribute('aria-hidden');
     }
 
-    // Keep the selected navigation item as the sole active item and update the
-    // accessible current-page state.
-    document.querySelectorAll('.sidebar .navbtn[data-target]').forEach(function(item){
-      const active = item === button;
-      item.classList.toggle('active', active);
-      if (active) item.setAttribute('aria-current','page');
-      else item.removeAttribute('aria-current');
-    });
-    closeSidebar();
+    // The active navigation state and drawer close were committed synchronously above.
     // Let the browser commit visibility changes before scrolling; avoid a
      // synchronous layout read that blocks the first tap on mobile.
      window.requestAnimationFrame(()=>target.scrollIntoView({behavior:'smooth',block:'start'}));
@@ -4143,6 +4195,7 @@ if(isDemoMode){
     }
     button.dataset.mountAttempts = '0';
     closeSidebar();
+    });
   });
 })();
 </script>
@@ -4426,7 +4479,8 @@ window.applyWelfarePdfTenantWatermark=function(host,tenantSchoolName,schoolConte
  const emblem=logo
   ? '<image href="'+logo+'" x="277" y="350" width="240" height="240" preserveAspectRatio="xMidYMid meet" opacity="0.07"/>'
   : '<g transform="translate(59.55 80) scale(0.85)" fill="none" stroke="#64748b" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.075"><path d="M397 322 L505 365 L492 493 Q470 555 397 592 Q324 555 302 493 L289 365 Z"/><path d="M397 389 C365 365 336 375 336 375 L336 475 C362 469 382 481 397 500 C412 481 432 469 458 475 L458 375 C458 375 429 365 397 389 Z"/><path d="M397 390 L397 500"/><path d="M352 345 L365 315 L397 300 L429 315 L442 345"/><path d="M278 405 Q245 450 280 510 M516 405 Q549 450 514 510"/><path d="M278 405 L300 420 M516 405 L494 420 M280 510 L303 495 M514 510 L491 495"/></g><path d="M397 305 L408 328 L434 332 L415 350 L420 376 L397 364 L374 376 L379 350 L360 332 L386 328 Z" fill="#64748b" opacity="0.075"/>';
- const svg='<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="794" height="1123" viewBox="0 0 794 1123"><g>'+emblem+'</g><g fill="#64748b" fill-opacity="0.10" font-family="Arial,Helvetica,sans-serif" font-size="23" font-weight="800" letter-spacing="2.6" text-anchor="middle"><text x="397" y="500">WELFARE CONTRIBUTION</text><text x="397" y="542">PAYSLIP</text></g></svg>';
+ const watermarkLabel='STATEMENT';
+ const svg='<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="794" height="1123" viewBox="0 0 794 1123"><g>'+emblem+'</g><g fill="#64748b" fill-opacity="0.10" font-family="Arial,Helvetica,sans-serif" font-size="23" font-weight="800" letter-spacing="2.6" text-anchor="middle"><text x="397" y="500">WELFARE CONTRIBUTION</text><text x="397" y="542">'+watermarkLabel+'</text></g></svg>';
  host.style.setProperty('--welfare-pdf-watermark-image','url("data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg)+'")');
  host.classList.add('welfare-pdf-watermarked');
  if(!document.getElementById('welfare-pdf-watermark-layer-style')){
@@ -4476,33 +4530,11 @@ window.generateTenantWelfarePdf=async function(o){
  const qr='twfqr'+id;
  const sign='<div class="twf-final-signoff"><div class="twf-signatures"><div class="twf-qr"><div id="'+qr+'"></div></div></div></div>';
  const host=document.createElement('div');host.className='twf-pdf '+orientation+(statistics?' twf-payment-statistics':'');host.setAttribute('data-welfare-pdf-staging','');host.setAttribute('data-twf-statement-capture',id);host.style.cssText='display:none!important;position:absolute!important;left:-9999px!important;top:-9999px!important;width:0!important;height:0!important;overflow:hidden!important;pointer-events:none!important;background:#fff';window.applyWelfarePdfTenantWatermark(host,school.name,school);host.setAttribute('data-theme','light');host.style.colorScheme='light';host.innerHTML='<style>'+style+'</style><style>.twf-pdf{font:12px/1.4 Arial,sans-serif!important;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.twf-head h2{font-size:19px!important;line-height:1.12!important}.twf-head h1{font-size:25px!important;line-height:1.1!important}.twf-brand{font-size:12px!important}.twf-sub{font-size:12.5px!important;line-height:1.3!important}.twf-meta{font-size:11px!important;line-height:1.5!important}.twf-box h3,.twf-section{font-size:13px!important;line-height:1.25!important}.twf-details th,.twf-details td{font-size:10px!important;padding:8px 11px!important;line-height:1.35!important}.twf-table{font-size:10.2px!important;line-height:1.45!important}.twf-table th{font-size:10px!important;padding:7px 9px!important}.twf-table td{padding:7px 9px!important}.twf-metric small{font-size:9.5px!important}.twf-metric strong{font-size:15px!important;font-weight:800!important;line-height:1.2!important}.twf-disclaimer{font-size:8pt!important;font-weight:700!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;text-rendering:geometricPrecision!important}.twf-head-logo,.twf-photo,.twf-qr img,.twf-qr canvas{image-rendering:auto;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}</style><style>.twf-signatures{display:flex!important;justify-content:flex-end!important;align-items:flex-end!important;width:100%!important;max-width:100%!important;min-width:0!important}.twf-signatures .twf-qr{margin-left:auto!important;justify-self:auto!important;text-align:right!important}.twf-qr img,.twf-qr canvas{margin:0 0 2mm auto!important}.twf-pdf .twf-details{display:table!important;width:100%!important;max-width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;border:1px solid #000000!important;border-radius:6px!important;overflow:hidden!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf .twf-details th,.twf-pdf .twf-details td{border:1px solid #000000!important;padding:7px 10px!important;vertical-align:middle!important;overflow-wrap:anywhere!important;word-break:break-word!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf .twf-details th{text-align:left!important;background:#f8fafc!important;font-weight:700!important;white-space:nowrap!important}.twf-pdf .twf-details th:nth-child(1){width:17%!important}.twf-pdf .twf-details td:nth-child(2){width:33%!important;white-space:normal!important}.twf-pdf .twf-details th:nth-child(3){width:17%!important}.twf-pdf .twf-details td:nth-child(4){width:33%!important;white-space:normal!important}</style>'+head+body+sign+disclaimer;const pdfLightPaletteStyle=document.createElement('style');pdfLightPaletteStyle.textContent='.twf-pdf[data-theme="light"]{background:#ffffff!important;color:#17243a!important;color-scheme:light!important}.twf-pdf[data-theme="light"] .twf-metric{color:#17243a!important;border-color:#dbe3ee!important;box-shadow:none!important;filter:none!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf[data-theme="light"] .twf-metric.green{background:#ecfdf5!important;border-color:#a7f3d0!important}.twf-pdf[data-theme="light"] .twf-metric.red{background:#fff1f2!important;border-color:#fecdd3!important}.twf-pdf[data-theme="light"] .twf-metric.blue{background:#eff6ff!important;border-color:#bfdbfe!important}.twf-pdf[data-theme="light"] .twf-metric.gold{background:#fffbeb!important;border-color:#fde68a!important}.twf-pdf[data-theme="light"] .twf-metric small{color:#475569!important}.twf-pdf[data-theme="light"] .twf-metric strong{color:#102b4f!important}.twf-pdf[data-theme="light"] .twf-metric:before{filter:none!important}';host.appendChild(pdfLightPaletteStyle);document.body.appendChild(host);
- // The portal keeps PDF templates hidden globally. Override that guard only
- // for this attached, off-screen A4 capture surface.
- host.style.setProperty('display','block','important');
- host.style.setProperty('visibility','visible','important');
- host.style.setProperty('opacity','1','important');
- host.style.setProperty('position','fixed','important');
- host.style.setProperty('left','-10000px','important');
- host.style.setProperty('top','0','important');
- host.style.setProperty('right','auto','important');
- host.style.setProperty('bottom','auto','important');
- host.style.setProperty('z-index','0','important');
- host.style.setProperty('width','210mm','important');
- host.style.setProperty('max-width','210mm','important');
- host.style.setProperty('height','auto','important');
- host.style.setProperty('min-height','0','important');
- host.style.setProperty('overflow','visible','important');
- host.style.setProperty('pointer-events','none','important');
- // Enable a measurable off-screen surface only for this capture. The host is
- // removed in the generator's finally block as soon as PDF rendering completes.
- host.style.setProperty('display','block','important');
- host.style.setProperty('position','absolute','important');
- host.style.setProperty('left','-100000px','important');
- host.style.setProperty('top','0','important');
- host.style.setProperty('width','210mm','important');
- host.style.setProperty('height','auto','important');
- host.style.setProperty('overflow','visible','important');
- host.style.setProperty('pointer-events','none','important');
+ // Keep the statement template strictly hidden while it is populated.
+ // It is revealed only inside the active capture routine and hidden in finally.
+ host.style.setProperty('display','none','important');
+ host.style.setProperty('visibility','hidden','important');
+ host.style.setProperty('opacity','0','important');
  let pdfBlob,filename;
  try{
   const qrNode=host.querySelector('#'+qr);
@@ -4615,26 +4647,11 @@ window.generateTenantWelfarePdf=async function(o){
  const qr='twfqr'+id;
  const sign='<div class="twf-final-signoff'+(individual?' twf-member-final-signoff':'')+'"><div class="twf-signatures"><div class="twf-qr"><div id="'+qr+'"></div></div></div></div>';
   const disclaimer='<div class="twf-disclaimer">*** The School welfare is not liable for any financial loss resulting from disclosing your member/account details including password to Third Parties ***</div>';
- const host=document.createElement('div');host.className='twf-pdf '+orientation+(statistics?' twf-payment-statistics':'');host.setAttribute('data-welfare-pdf-staging','');host.setAttribute('data-twf-statement-capture',id);host.style.cssText='display:block!important;visibility:visible!important;opacity:1!important;position:fixed!important;left:-10000px!important;top:0!important;right:auto!important;bottom:auto!important;z-index:0!important;width:794px!important;min-width:794px!important;max-width:794px!important;height:auto!important;min-height:1px!important;max-height:none!important;overflow:visible!important;pointer-events:none!important;margin:0!important;background:#fff!important';window.applyWelfarePdfTenantWatermark(host,school.name,school);host.setAttribute('data-theme','light');host.style.colorScheme='light';host.innerHTML='<style>'+style+'</style><style>.twf-pdf{font:12px/1.4 Arial,sans-serif!important;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.twf-head h2{font-size:19px!important;line-height:1.12!important}.twf-head h1{font-size:25px!important;line-height:1.1!important}.twf-brand{font-size:12px!important}.twf-sub{font-size:12.5px!important;line-height:1.3!important}.twf-meta{font-size:11px!important;line-height:1.5!important}.twf-box h3,.twf-section{font-size:13px!important;line-height:1.25!important}.twf-details th,.twf-details td{font-size:10px!important;padding:8px 11px!important;line-height:1.35!important}.twf-table{font-size:10.2px!important;line-height:1.45!important}.twf-table th{font-size:10px!important;padding:7px 9px!important}.twf-table td{padding:7px 9px!important}.twf-metric small{font-size:9.5px!important}.twf-metric strong{font-size:15px!important;font-weight:800!important;line-height:1.2!important}.twf-disclaimer{font-size:8pt!important;font-weight:700!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;text-rendering:geometricPrecision!important}.twf-head-logo,.twf-photo,.twf-qr img,.twf-qr canvas{image-rendering:auto;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}</style><style>.twf-signatures{display:flex!important;justify-content:flex-end!important;align-items:flex-end!important;width:100%!important;max-width:100%!important;min-width:0!important}.twf-signatures .twf-qr{margin-left:auto!important;justify-self:auto!important;text-align:right!important}.twf-qr img,.twf-qr canvas{margin:0 0 2mm auto!important}.twf-pdf .twf-details{display:table!important;width:100%!important;max-width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;border:1px solid #94a3b8!important;border-radius:6px!important;overflow:hidden!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf .twf-details th,.twf-pdf .twf-details td{border:1px solid #94a3b8!important;padding:7px 10px!important;vertical-align:middle!important;overflow-wrap:anywhere!important;word-break:break-word!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf .twf-details th{text-align:left!important;background:#f8fafc!important;font-weight:700!important;white-space:nowrap!important}.twf-pdf .twf-details th:nth-child(1){width:17%!important}.twf-pdf .twf-details td:nth-child(2){width:33%!important;white-space:normal!important}.twf-pdf .twf-details th:nth-child(3){width:17%!important}.twf-pdf .twf-details td:nth-child(4){width:33%!important;white-space:normal!important}</style>'+head+body+sign+disclaimer;const pdfLightPaletteStyle=document.createElement('style');pdfLightPaletteStyle.textContent='.twf-pdf[data-theme="light"]{background:#ffffff!important;color:#17243a!important;color-scheme:light!important}.twf-pdf[data-theme="light"] .twf-metric{color:#17243a!important;border-color:#dbe3ee!important;box-shadow:none!important;filter:none!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf[data-theme="light"] .twf-metric.green{background:#ecfdf5!important;border-color:#a7f3d0!important}.twf-pdf[data-theme="light"] .twf-metric.red{background:#fff1f2!important;border-color:#fecdd3!important}.twf-pdf[data-theme="light"] .twf-metric.blue{background:#eff6ff!important;border-color:#bfdbfe!important}.twf-pdf[data-theme="light"] .twf-metric.gold{background:#fffbeb!important;border-color:#fde68a!important}.twf-pdf[data-theme="light"] .twf-metric small{color:#475569!important}.twf-pdf[data-theme="light"] .twf-metric strong{color:#102b4f!important}.twf-pdf[data-theme="light"] .twf-metric:before{filter:none!important}';host.appendChild(pdfLightPaletteStyle);document.body.appendChild(host);
- // Explicitly override every hidden-template dimension only for this attached
- // off-screen staging node. Its 794px width is the CSS-pixel equivalent of A4.
- host.style.setProperty('display','block','important');
- host.style.setProperty('visibility','visible','important');
- host.style.setProperty('opacity','1','important');
- host.style.setProperty('position','fixed','important');
- host.style.setProperty('left','-10000px','important');
- host.style.setProperty('top','0','important');
- host.style.setProperty('right','auto','important');
- host.style.setProperty('bottom','auto','important');
- host.style.setProperty('z-index','0','important');
- host.style.setProperty('width','794px','important');
- host.style.setProperty('min-width','794px','important');
- host.style.setProperty('max-width','794px','important');
- host.style.setProperty('height','auto','important');
- host.style.setProperty('min-height','1px','important');
- host.style.setProperty('max-height','none','important');
- host.style.setProperty('overflow','visible','important');
- host.style.setProperty('pointer-events','none','important');
+ // Yield before building the large A4 statement DOM so the tap/status update can paint first.
+ await new Promise(resolve=>requestAnimationFrame(()=>setTimeout(resolve,0)));
+ const host=document.createElement('div');host.className='twf-pdf '+orientation+(statistics?' twf-payment-statistics':'');host.setAttribute('data-welfare-pdf-staging','');host.setAttribute('data-twf-statement-capture',id);host.style.cssText='display:none!important;visibility:hidden!important;opacity:0!important;position:fixed!important;left:-10000px!important;top:0!important;right:auto!important;bottom:auto!important;z-index:0!important;width:794px!important;min-width:794px!important;max-width:794px!important;height:auto!important;min-height:1px!important;max-height:none!important;overflow:visible!important;pointer-events:none!important;margin:0!important;background:#fff!important';window.applyWelfarePdfTenantWatermark(host,school.name,school);host.setAttribute('data-theme','light');host.style.colorScheme='light';host.innerHTML='<style>'+style+'</style><style>.twf-pdf{font:12px/1.4 Arial,sans-serif!important;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.twf-head h2{font-size:19px!important;line-height:1.12!important}.twf-head h1{font-size:25px!important;line-height:1.1!important}.twf-brand{font-size:12px!important}.twf-sub{font-size:12.5px!important;line-height:1.3!important}.twf-meta{font-size:11px!important;line-height:1.5!important}.twf-box h3,.twf-section{font-size:13px!important;line-height:1.25!important}.twf-details th,.twf-details td{font-size:10px!important;padding:8px 11px!important;line-height:1.35!important}.twf-table{font-size:10.2px!important;line-height:1.45!important}.twf-table th{font-size:10px!important;padding:7px 9px!important}.twf-table td{padding:7px 9px!important}.twf-metric small{font-size:9.5px!important}.twf-metric strong{font-size:15px!important;font-weight:800!important;line-height:1.2!important}.twf-disclaimer{font-size:8pt!important;font-weight:700!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;text-rendering:geometricPrecision!important}.twf-head-logo,.twf-photo,.twf-qr img,.twf-qr canvas{image-rendering:auto;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}</style><style>.twf-signatures{display:flex!important;justify-content:flex-end!important;align-items:flex-end!important;width:100%!important;max-width:100%!important;min-width:0!important}.twf-signatures .twf-qr{margin-left:auto!important;justify-self:auto!important;text-align:right!important}.twf-qr img,.twf-qr canvas{margin:0 0 2mm auto!important}.twf-pdf .twf-details{display:table!important;width:100%!important;max-width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;border:1px solid #94a3b8!important;border-radius:6px!important;overflow:hidden!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf .twf-details th,.twf-pdf .twf-details td{border:1px solid #94a3b8!important;padding:7px 10px!important;vertical-align:middle!important;overflow-wrap:anywhere!important;word-break:break-word!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf .twf-details th{text-align:left!important;background:#f8fafc!important;font-weight:700!important;white-space:nowrap!important}.twf-pdf .twf-details th:nth-child(1){width:17%!important}.twf-pdf .twf-details td:nth-child(2){width:33%!important;white-space:normal!important}.twf-pdf .twf-details th:nth-child(3){width:17%!important}.twf-pdf .twf-details td:nth-child(4){width:33%!important;white-space:normal!important}</style>'+head+body+sign+disclaimer;const pdfLightPaletteStyle=document.createElement('style');pdfLightPaletteStyle.textContent='.twf-pdf[data-theme="light"]{background:#ffffff!important;color:#17243a!important;color-scheme:light!important}.twf-pdf[data-theme="light"] .twf-metric{color:#17243a!important;border-color:#dbe3ee!important;box-shadow:none!important;filter:none!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf[data-theme="light"] .twf-metric.green{background:#ecfdf5!important;border-color:#a7f3d0!important}.twf-pdf[data-theme="light"] .twf-metric.red{background:#fff1f2!important;border-color:#fecdd3!important}.twf-pdf[data-theme="light"] .twf-metric.blue{background:#eff6ff!important;border-color:#bfdbfe!important}.twf-pdf[data-theme="light"] .twf-metric.gold{background:#fffbeb!important;border-color:#fde68a!important}.twf-pdf[data-theme="light"] .twf-metric small{color:#475569!important}.twf-pdf[data-theme="light"] .twf-metric strong{color:#102b4f!important}.twf-pdf[data-theme="light"] .twf-metric:before{filter:none!important}';host.appendChild(pdfLightPaletteStyle);document.body.appendChild(host);
+ // Keep the staging template display:none!important while images and fonts load.
+ // It is enabled only for the short measurement and capture windows below.
   const passportImage=host.querySelector('[data-twf-passport]');
   if(passportImage){
    // Wait for image load and decode before html2canvas captures the document.
@@ -4681,11 +4698,12 @@ window.generateTenantWelfarePdf=async function(o){
   if(document.fonts?.ready){try{await document.fonts.ready;}catch(fontError){console.warn('[Welfare PDF] Font readiness warning:',fontError?.message||fontError);}}
   await waitForPdfFrame();
   await waitForPdfFrame();
+  // Keep the live A4 staging node display:none!important until the actual
+  // capture begins. Text and required-section checks do not require layout.
   const reportText=String(host.textContent||'').replace(/\\s+/g,' ').trim();
-  const reportWidth=Math.max(794,Math.ceil(host.scrollWidth||host.getBoundingClientRect().width||0));
-  const reportHeight=Math.ceil(host.scrollHeight||host.getBoundingClientRect().height||0);
-  if(host.scrollWidth<=0||host.scrollHeight<=0||!reportWidth||!reportHeight||reportText.length<200||!host.querySelector('.twf-head')){
-   throw new Error('The statement content did not finish laying out. No blank PDF was created.');
+  let reportWidth=794,reportHeight=1123;
+  if(reportText.length<200||!host.querySelector('.twf-head')){
+   throw new Error('The statement content did not finish building. No blank PDF was created.');
   }
   if(individual&&!host.querySelector('.member-info-section table tbody tr')){
    throw new Error('The member information table is missing. No blank PDF was created.');
@@ -4698,7 +4716,7 @@ window.generateTenantWelfarePdf=async function(o){
   host.style.setProperty('display','none','important');
   host.style.setProperty('visibility','hidden','important');
   host.style.setProperty('opacity','0','important');
-  const pdfOptions={margin:[0,0,0,0],filename,image:{type:'png'},html2canvas:{scale:4,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0,windowWidth:Math.max(794,reportWidth,document.documentElement.clientWidth),windowHeight:Math.max(reportHeight,document.documentElement.clientHeight),width:reportWidth,height:reportHeight},jsPDF:{unit:'mm',format:'a4',orientation:'portrait',compress:true},pagebreak:{mode:statistics?['css']:['css','legacy'],avoid:['tr','.twf-metric','.twf-payment-row','.twf-signatures','.twf-final-signoff']}};let statementCloneDiagnostics={found:false,childElementCount:0,innerTextLength:0,headerDisplay:'missing',headerVisibility:'missing',headerColor:'missing',headerBackground:'missing'};
+  const pdfOptions={margin:[0,0,0,0],filename,image:{type:'png'},html2canvas:{scale:Math.min(1.5,window.devicePixelRatio||1.5),useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0,windowWidth:Math.max(794,reportWidth,document.documentElement.clientWidth),windowHeight:Math.max(reportHeight,document.documentElement.clientHeight),width:reportWidth,height:reportHeight},jsPDF:{unit:'mm',format:'a4',orientation:'portrait',compress:true},pagebreak:{mode:statistics?['css']:['css','legacy'],avoid:['tr','.twf-metric','.twf-payment-row','.twf-signatures','.twf-final-signoff']}};let statementCloneDiagnostics={found:false,childElementCount:0,innerTextLength:0,headerDisplay:'missing',headerVisibility:'missing',headerColor:'missing',headerBackground:'missing'};
   pdfOptions.html2canvas.onclone=(clonedDocument)=>{
    const clonedHost=clonedDocument.querySelector('[data-twf-statement-capture="'+id+'"]');
    if(!clonedHost)throw new Error('The statement node was not present in the html2canvas capture clone.');
@@ -4755,15 +4773,10 @@ window.generateTenantWelfarePdf=async function(o){
   // never prevent the member details, transaction tables, QR block or footer
   // from being exported.
   const statementContentReady=()=>{
-   const previousDisplay=host.style.getPropertyValue('display');
-   const previousPriority=host.style.getPropertyPriority('display');
-   if(previousDisplay==='none')host.style.setProperty('display','block','important');
    const text=String(host.textContent||'').replace(/\\s+/g,' ').trim();
    const memberTable=host.querySelector('.member-info-section table tbody');
    const hasStatementSections=!individual||Boolean(memberTable&&host.querySelector('.twf-member-contributions tbody tr')&&host.querySelector('.twf-member-payouts tbody tr'));
-   const ready=host.isConnected&&host.getBoundingClientRect().width>=700&&host.scrollHeight>0&&text.length>=200&&Boolean(host.querySelector('.twf-head'))&&hasStatementSections;
-   if(previousDisplay==='none')host.style.setProperty('display','none',previousPriority||'important');
-   return ready;
+   return host.isConnected&&host.getBoundingClientRect().width>=700&&host.scrollHeight>0&&text.length>=200&&Boolean(host.querySelector('.twf-head'))&&hasStatementSections;
   };
   const captureStatement=async()=>{
    // Keep the live staging node outside the viewport. html2canvas moves only
@@ -4793,6 +4806,15 @@ window.generateTenantWelfarePdf=async function(o){
    host.style.setProperty('color-scheme','light','important');
    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
    try{
+    // Measure only while the renderer is actively capturing. The staging node
+    // is restored to display:none!important in this function's finally block.
+    reportWidth=Math.max(794,Math.ceil(host.scrollWidth||host.getBoundingClientRect().width||794));
+    reportHeight=Math.max(1123,Math.ceil(host.scrollHeight||host.getBoundingClientRect().height||1123));
+    pdfOptions.html2canvas.width=reportWidth;
+    pdfOptions.html2canvas.height=reportHeight;
+    pdfOptions.html2canvas.windowWidth=Math.max(794,reportWidth,document.documentElement.clientWidth);
+    pdfOptions.html2canvas.windowHeight=Math.max(reportHeight,document.documentElement.clientHeight);
+    if(!statementContentReady())throw new Error('The populated statement content is not ready for capture.');
     if(typeof window.html2canvas!=='function')throw new Error('The statement rendering engine is unavailable. Refresh the portal and try again.');
     // Bypass html2pdf's internal DOM-clone/container pipeline. The v4 clone
     // diagnostics proved that its cloned statement was populated and visible,
@@ -4810,23 +4832,26 @@ window.generateTenantWelfarePdf=async function(o){
    let pixelSummary='unavailable';
    try{
     const context=canvas.getContext('2d',{willReadFrequently:true});
-    const pixels=context?.getImageData(0,0,canvas.width,canvas.height).data;
-    if(pixels){
+    if(context&&canvas.width>0&&canvas.height>0){
      pixelInspectionAvailable=true;
-     let opaquePixels=0,nonWhitePixels=0,transparentPixels=0,minChannel=255,maxChannel=0;
-     const totalPixels=Math.floor(pixels.length/4);
-     // Sample a regular grid over the full page as well as scanning for dark
-     // foreground. This reports alpha and color range even when RGB is white.
-     const sampleStride=Math.max(1,Math.floor(totalPixels/4096));
-     for(let pixelIndex=0;pixelIndex<totalPixels;pixelIndex++){
-      const offset=pixelIndex*4,red=pixels[offset],green=pixels[offset+1],blue=pixels[offset+2],alpha=pixels[offset+3];
-      if(alpha>0)opaquePixels++;else transparentPixels++;
-      if(red<minChannel)minChannel=red;if(green<minChannel)minChannel=green;if(blue<minChannel)minChannel=blue;
-      if(red>maxChannel)maxChannel=red;if(green>maxChannel)maxChannel=green;if(blue>maxChannel)maxChannel=blue;
-      if(pixelIndex%sampleStride===0&&alpha>0&&(red<250||green<250||blue<250))nonWhitePixels++;
-      if(red<245||green<245||blue<245){pixelSamples++;if(pixelSamples>=64)break;}
+     let opaquePixels=0,nonWhitePixels=0,transparentPixels=0,minChannel=255,maxChannel=0,sampledPixels=0;
+     // Read sixteen small tiles across the page instead of allocating a
+     // full-canvas ImageData buffer (which can exceed 60 MB on mobile).
+     const tileSize=16,columns=4,rows=4;
+     for(let row=0;row<rows;row++)for(let column=0;column<columns;column++){
+      const x=Math.min(Math.max(0,canvas.width-tileSize),Math.floor((canvas.width-tileSize)*column/(columns-1)));
+      const y=Math.min(Math.max(0,canvas.height-tileSize),Math.floor((canvas.height-tileSize)*row/(rows-1)));
+      const pixels=context.getImageData(x,y,Math.min(tileSize,canvas.width),Math.min(tileSize,canvas.height)).data;
+      for(let offset=0;offset<pixels.length;offset+=4){
+       const red=pixels[offset],green=pixels[offset+1],blue=pixels[offset+2],alpha=pixels[offset+3];sampledPixels++;
+       if(alpha>0)opaquePixels++;else transparentPixels++;
+       if(red<minChannel)minChannel=red;if(green<minChannel)minChannel=green;if(blue<minChannel)minChannel=blue;
+       if(red>maxChannel)maxChannel=red;if(green>maxChannel)maxChannel=green;if(blue>maxChannel)maxChannel=blue;
+       if(alpha>0&&(red<250||green<250||blue<250))nonWhitePixels++;
+       if(red<245||green<245||blue<245)pixelSamples++;
+      }
      }
-     pixelSummary='opaque '+opaquePixels+', transparent '+transparentPixels+', sampled non-white '+nonWhitePixels+', channel range '+minChannel+'-'+maxChannel;
+     pixelSummary='sampled '+sampledPixels+' pixels, opaque '+opaquePixels+', transparent '+transparentPixels+', non-white '+nonWhitePixels+', channel range '+minChannel+'-'+maxChannel;
     }
    }catch(canvasReadError){
     // Pixel inspection is optional: cross-origin/tainted canvas reads must
@@ -4834,8 +4859,8 @@ window.generateTenantWelfarePdf=async function(o){
     pixelInspectionAvailable=false;
     console.warn('[Welfare PDF] Canvas pixel inspection unavailable; checking rendered output and DOM instead:',canvasReadError?.message||canvasReadError);
    }
-   const png=canvas.toDataURL('image/png');
-   if(png.length<3000)throw new Error('The statement canvas contains no usable rendered content.');
+   const pngBlob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+   if(!pngBlob||pngBlob.size<3000)throw new Error('The statement canvas contains no usable rendered content.');
    // Reject only a genuinely empty canvas after broad pixel inspection.
    // Dimensions, populated DOM and encoded PNG are independently verified.
    if(pixelInspectionAvailable&&pixelSamples<64){
@@ -4883,7 +4908,8 @@ window.generateTenantWelfarePdf=async function(o){
     }else image.remove();
    });
    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
-   if(!statementContentReady())throw new Error('The populated statement could not be recovered after an image loading error. No blank PDF was created.');
+   // captureStatement performs readiness and dimensions checks after it
+   // temporarily reveals the off-screen node for the active capture only.
    captured=await captureStatement();
   }
   const pdfWorker=captured.worker;

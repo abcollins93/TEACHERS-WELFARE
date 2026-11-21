@@ -15,6 +15,9 @@ const frameRender=(function(){
   requestAnimationFrame(()=>{pending.delete(key);render();});
  };
 })();
+const yieldToBrowser=()=>window.WelfareDemo?.yieldToBrowser
+ ?window.WelfareDemo.yieldToBrowser()
+ :new Promise(resolve=>requestAnimationFrame(()=>setTimeout(resolve,0)));
 
 function wfDialog({kind='confirm',title='Please confirm',message='',confirmText='Confirm',cancelText='Cancel',placeholder='Enter your response…',responseMode='none'}={}){
  return new Promise(resolve=>{
@@ -805,16 +808,46 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   }
  }
  let standardMonthlyDues=0;
- // This workflow-only preference read must not stall account Settings or the
- // rest of the administrator workspace. Use the saved value when it responds;
- // otherwise keep the safe zero/default and allow the workflow to finish mounting.
- const initialDuesResult=await Promise.race([
-  client.from('system_settings').select('value').eq('school_id',ctx.id).eq('key','standard_dues').maybeSingle(),
-  new Promise(resolve=>setTimeout(()=>resolve({data:null,error:{message:'Timed out while loading standard monthly dues.'}}),8000))
- ]);
- const {data:initialDuesSetting,error:initialDuesError}=initialDuesResult||{};
- if(!initialDuesError&&initialDuesSetting){standardMonthlyDues=Number(initialDuesSetting.value||0);$('wfMonthlyDues').value=standardMonthlyDues;}
- else if(initialDuesError)console.warn('[School settings] Could not load saved standard monthly dues:',initialDuesError.message);
+ const updateDashboardStandardDues=amount=>{
+  const metric=$('standardDuesMetric');
+  if(!metric||window.__welfareCurrentRole==='teacher'||$('teacherStandardMonthlyDuesAmount'))return;
+  const value=Number(amount);
+  if(Number.isFinite(value)&&value>=0)metric.textContent='GHS '+value.toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
+ };
+ // Set a visible school/default rate immediately. Do not await Supabase here:
+ // this workflow mounts the rest of the dashboard and must remain responsive
+ // even when the settings request is slow or temporarily unavailable.
+ const fallbackCandidates=[ctx.monthly_dues,ctx.standard_monthly_dues,ctx.standardMonthlyDues,window.schoolSettings?.monthly_dues,20];
+ const fallbackDues=fallbackCandidates.map(value=>value===null||value===undefined||String(value).trim()===''?NaN:Number(value)).find(value=>Number.isFinite(value)&&value>=0);
+ standardMonthlyDues=fallbackDues??20;
+ const initialFallbackDues=standardMonthlyDues;
+ const duesInput=$('wfMonthlyDues');
+ if(duesInput)duesInput.value=String(standardMonthlyDues);
+ updateDashboardStandardDues(standardMonthlyDues);
+ // Hydrate the authoritative school-scoped rate in the background. This
+ // must never delay roster, navigation, dashboard or admin-workspace setup.
+ (async()=>{
+  let timeoutId=null;
+  try{
+   if(!ctx.id)throw new Error('The active school ID is unavailable.');
+   const result=await Promise.race([
+    client.from('system_settings').select('value').eq('school_id',ctx.id).eq('key','standard_dues').maybeSingle(),
+    new Promise(resolve=>{timeoutId=setTimeout(()=>resolve({data:null,error:{message:'Timed out while loading standard monthly dues.'}}),5000);})
+   ]);
+   if(timeoutId!==null)clearTimeout(timeoutId);
+   if(result?.error)throw result.error;
+   const rawValue=result?.data?.value;
+   const configuredDues=rawValue!==null&&rawValue!==undefined&&String(rawValue).trim()!==''?Number(rawValue):NaN;
+   if(Number.isFinite(configuredDues)&&configuredDues>=0){
+    standardMonthlyDues=configuredDues;
+    updateDashboardStandardDues(configuredDues);
+    const currentInput=$('wfMonthlyDues');
+    if(currentInput&&document.activeElement!==currentInput&&String(currentInput.value)===String(initialFallbackDues))currentInput.value=String(configuredDues);
+   }
+  }catch(error){
+   console.warn('[School settings] Could not load saved standard monthly dues; keeping the immediate school/default rate:',error?.message||error);
+  }finally{if(timeoutId!==null)clearTimeout(timeoutId);}
+ })();
  // Capture the monthly dues form submit before any browser-level form navigation can occur.
  const duesForm=$('wfDuesForm');
  if(duesForm){
@@ -832,6 +865,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
        );
        if(error)throw error;
        standardMonthlyDues=value;
+       updateDashboardStandardDues(standardMonthlyDues);
        const auditOk=await audit(client,ctx,'Update monthly dues','GHS '+value.toFixed(2));
        msg('wfDuesMsg',auditOk?'Standard monthly dues updated successfully.':'Monthly dues were saved, but the audit entry could not be recorded.',!auditOk);
      }catch(error){
@@ -1319,10 +1353,13 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  window.applyDashboardMetricLayout?.();
  const adminContributionRecordsCount=$('adminContributionRecordsCount');if(adminContributionRecordsCount)adminContributionRecordsCount.textContent=(cr.error||rr.error)?'Unavailable':String(activeCons.length);
  const options='<option value="">Choose teacher</option>'+teachers.filter(t=>t.is_active!==false).map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name)+' ('+esc(t.id)+')</option>').join('');
- $('wfConTeacher').innerHTML=options;$('wfPayTeacher').innerHTML=options;$('wfStatementTeacher').innerHTML=options;
+ ['wfConTeacher','wfPayTeacher','wfStatementTeacher'].forEach(id=>{const select=$(id);if(select&&select.innerHTML!==options)select.innerHTML=options;});
  const reversalCell=(type,x)=>reversed.has(type+':'+x.id)?'<strong class="wf-reversed-label">REVERSED</strong> <span class="muted">· '+esc(reversals.find(r=>r.transaction_type===type&&String(r.transaction_id)===String(x.id))?.reason||'Reason recorded')+'</span>':'<button type="button" class="wf-reverse-action" data-wf-reverse="'+type+'" data-wf-id="'+esc(x.id)+'"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Reverse</button>';
+ let lastContributionLedgerRender=null;
  const renderContributionLedger=()=>{
     const q=String($('wfLedgerSearch')?.value||'').trim().toLowerCase(),month=$('wfLedgerMonth')?.value||'';
+    if(lastContributionLedgerRender&&lastContributionLedgerRender.q===q&&lastContributionLedgerRender.month===month&&lastContributionLedgerRender.cons===cons&&lastContributionLedgerRender.activeCons===activeCons&&lastContributionLedgerRender.activePays===activePays&&lastContributionLedgerRender.teachers===teachers&&lastContributionLedgerRender.reversed===reversed&&lastContributionLedgerRender.reversedSize===reversed.size&&lastContributionLedgerRender.consLength===cons.length&&lastContributionLedgerRender.contributionError===!!cr.error&&lastContributionLedgerRender.payoutError===!!pr.error)return;
+    lastContributionLedgerRender={q,month,cons,activeCons,activePays,teachers,reversed,reversedSize:reversed.size,consLength:cons.length,contributionError:!!cr.error,payoutError:!!pr.error};
     const rows=cons.filter(x=>(!month||String(x.date||'').startsWith(month))&&[x.teacher_id,x.reference,teacherById.get(String(x.teacher_id))?.name].some(v=>String(v||'').toLowerCase().includes(q))).sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||String(a.id||'').localeCompare(String(b.id||'')));
     const totalCon=activeCons.reduce((n,x)=>n+Number(x.amount||0),0),totalPay=activePays.reduce((n,x)=>n+Number(x.amount||0),0);
     $('wfConTotal').textContent=cr.error?'Unavailable':'GHS '+'GHS '+money(totalCon);
@@ -1337,22 +1374,25 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      return '<tr><td>'+teacherLabel(x.teacher_id)+'</td><td>'+esc(monthYear)+'</td><td>'+esc(x.reference||'—')+'</td><td>GHS '+money(x.amount)+'</td><td class="wf-payout-amount">GHS '+money(runningTotal)+'</td><td>'+esc(d||'—')+'</td><td>'+action+'</td></tr>';
     }).join(''):'<tr><td colspan="7">No matching contributions.</td></tr>';
   };
-  renderContributionLedger();$('wfLedgerSearch').addEventListener('input',()=>frameRender($('wfConRows'),renderContributionLedger));$('wfLedgerMonth').addEventListener('change',()=>frameRender($('wfConRows'),renderContributionLedger));
+  frameRender($('wfConRows'),renderContributionLedger);$('wfLedgerSearch').addEventListener('input',()=>frameRender($('wfConRows'),renderContributionLedger));$('wfLedgerMonth').addEventListener('change',()=>frameRender($('wfConRows'),renderContributionLedger));
+  let lastDuesMatrixRender=null;
   const renderDuesMatrix=()=>{
     const rowsHost=$('wfDuesMatrixRows'),status=$('wfDuesMatrixStatus');
     if(!rowsHost)return;
+    const year=String($('wfDuesMatrixYear')?.value||'');
+    const query=String($('wfDuesMatrixSearch')?.value||'').trim().toLowerCase();
+    if(lastDuesMatrixRender&&lastDuesMatrixRender.year===year&&lastDuesMatrixRender.query===query&&lastDuesMatrixRender.teachers===teachers&&lastDuesMatrixRender.contributions===activeCons&&lastDuesMatrixRender.teacherError===!!tr.error&&lastDuesMatrixRender.contributionError===!!cr.error&&lastDuesMatrixRender.reversalError===!!rr.error)return;
+    lastDuesMatrixRender={year,query,teachers,contributions:activeCons,teacherError:!!tr.error,contributionError:!!cr.error,reversalError:!!rr.error};
     if(tr.error||cr.error||rr.error){
       rowsHost.innerHTML='<tr><td colspan="13">The teacher register, contribution ledger, or reversal status could not be verified. The matrix is unavailable to avoid showing incorrect paid status.</td></tr>';
       if(status)status.textContent='Unavailable — check school data access and refresh.';
       return;
     }
-    const year=String($('wfDuesMatrixYear')?.value||'');
     if(!/^\d{4}$/.test(year)){
       rowsHost.innerHTML='<tr><td colspan="13">Choose a valid reporting year.</td></tr>';
       if(status)status.textContent='';
       return;
     }
-    const query=String($('wfDuesMatrixSearch')?.value||'').trim().toLowerCase();
     const roster=teachers.filter(teacher=>teacher.is_active!==false&&[
       teacher.name,teacher.id,teacher.staff_id,teacher.staffId
     ].some(value=>String(value??'').toLowerCase().includes(query)));
@@ -1380,7 +1420,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     const yearRecords=activeCons.filter(item=>String(item.date||'').slice(0,4)===year).length;
     if(status)status.textContent=roster.length+' active member'+(roster.length===1?'':'s')+' shown · '+year+' · '+yearRecords+' active contribution record'+(yearRecords===1?'':'s');
   };
-  renderDuesMatrix();
+  frameRender($('wfDuesMatrixRows'),renderDuesMatrix);
   $('wfDuesMatrixYear')?.addEventListener('change',()=>frameRender($('wfDuesMatrixRows'),renderDuesMatrix));
    $('wfDuesMatrixSearch')?.addEventListener('input',()=>frameRender($('wfDuesMatrixRows'),renderDuesMatrix));
   const duesMatrixPdfButton=$('wfDuesMatrixPdf');
@@ -1393,6 +1433,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     const reportHostId='wfDuesMatrixPdfHost';
     let report=null;
     try{
+     await yieldToBrowser();
      if(tr.error||cr.error||rr.error)throw new Error('The school roster, contribution ledger, and reversal status must all be available before this official report can be issued.');
      if(typeof window.html2pdf!=='function')throw new Error('The PDF library is unavailable. Check your connection and try again.');
      // Verification is best-effort for this report: a slow or unavailable
@@ -1405,19 +1446,23 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      ].some(value=>String(value??'').toLowerCase().includes(searchTerm)));
      if(!roster.length)throw new Error(searchTerm?'No active members match the current search.':'No active members are registered for this school.');
      const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-     const monthTotals=Array(12).fill(0),matrixRows=roster.map(teacher=>{
-      const amounts=Array(12).fill(0);
-      activeCons.forEach(item=>{
-       if(String(item.teacher_id)!==String(teacher.id))return;
-       const date=String(item.date||'').slice(0,10),match=date.match(/^(\d{4})-(\d{2})-/);
-       if(!match||match[1]!==selectedYear)return;
-       const month=Number(match[2]);if(month<1||month>12)return;
-       amounts[month-1]+=Number(item.amount||0);
-      });
+     // Aggregate the ledger once instead of rescanning every contribution for
+     // every teacher (O(records + members), rather than O(records × members)).
+     const monthTotals=Array(12).fill(0),amountsByTeacher=new Map();
+     activeCons.forEach(item=>{
+      const date=String(item.date||'').slice(0,10),match=date.match(/^(\d{4})-(\d{2})-/);
+      if(!match||match[1]!==selectedYear)return;
+      const month=Number(match[2]);if(month<1||month>12)return;
+      const teacherId=String(item.teacher_id),amounts=amountsByTeacher.get(teacherId)||Array(12).fill(0);
+      amounts[month-1]+=Number(item.amount||0);amountsByTeacher.set(teacherId,amounts);
+     });
+     const matrixRows=roster.map(teacher=>{
+      const amounts=amountsByTeacher.get(String(teacher.id))||Array(12).fill(0);
       amounts.forEach((amount,index)=>monthTotals[index]+=amount);
       return {teacher,amounts,total:amounts.reduce((sum,value)=>sum+value,0)};
      });
      const grandTotal=monthTotals.reduce((sum,value)=>sum+value,0);
+     await yieldToBrowser();
      const schoolName=String(ctx.name||ctx.school_name||'School Welfare').trim();
      const schoolCode=String(ctx.school_code||ctx.schoolCode||'').trim().toUpperCase();
      if(!ctx.id||!schoolCode)throw new Error('The active school identity could not be verified. The PDF was not issued.');
@@ -1480,10 +1525,12 @@ window.initSchoolWorkflows=async function(client,school,refresh){
       '<div class="sws-disclaimer">*** The School welfare is not liable for any financial loss resulting from disclosing your member/account details including password to Third Parties ***</div>';
      if(typeof window.applyWelfarePdfTenantWatermark==='function')window.applyWelfarePdfTenantWatermark(report,schoolName,ctx);
      document.body.appendChild(report);
-     // Temporarily make the export node measurable, but keep it fully off-screen.
-     // The finally block removes it immediately after capture/download preparation.
-     report.style.setProperty('display','block','important');
-     report.style.setProperty('position','absolute','important');
+     // Keep the report staging template display:none during ordinary browsing
+     // and QR preparation. It is revealed only for the active canvas capture.
+     report.style.setProperty('display','none','important');
+     report.style.setProperty('visibility','hidden','important');
+     report.style.setProperty('opacity','0','important');
+     report.style.setProperty('position','fixed','important');
      report.style.setProperty('left','-100000px','important');
      report.style.setProperty('top','0','important');
      report.style.setProperty('width','281mm','important');
@@ -1516,16 +1563,28 @@ window.initSchoolWorkflows=async function(client,school,refresh){
       if(typeof image.decode==='function'){try{await image.decode();return;}catch(_){}}
       await new Promise(resolve=>{image.addEventListener('load',resolve,{once:true});image.addEventListener('error',resolve,{once:true});});
      }));
+     // Reveal only now, after data/markup/QR/images are ready and capture is
+     // about to begin. The finally block restores display:none on every exit.
+     report.style.setProperty('display','block','important');
+     report.style.setProperty('visibility','visible','important');
+     report.style.setProperty('opacity','1','important');
      const reportWidth=Math.ceil(report.getBoundingClientRect().width||report.scrollWidth);
      const reportHeight=Math.ceil(report.getBoundingClientRect().height||report.scrollHeight);
      if(!reportWidth||!reportHeight||!report.querySelector('.wf-dm-table tbody tr'))throw new Error('The dues matrix report did not finish rendering. Please try again.');
-     const pdfOptions={margin:0,filename,image:{type:'png'},html2canvas:{scale:3,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,scrollX:0,scrollY:0,windowWidth:Math.max(reportWidth,document.documentElement.clientWidth),windowHeight:Math.max(reportHeight,document.documentElement.clientHeight),width:reportWidth,height:reportHeight},jsPDF:{unit:'mm',format:'a4',orientation:'landscape',compress:true},pagebreak:{mode:['css'],avoid:['tr','.wf-dm-bottom']}};
+     const pdfOptions={margin:0,filename,image:{type:'png'},html2canvas:{scale:Math.min(1.5,window.devicePixelRatio||1.5),useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,scrollX:0,scrollY:0,windowWidth:Math.max(reportWidth,document.documentElement.clientWidth),windowHeight:Math.max(reportHeight,document.documentElement.clientHeight),width:reportWidth,height:reportHeight},jsPDF:{unit:'mm',format:'a4',orientation:'landscape',compress:true},pagebreak:{mode:['css'],avoid:['tr','.wf-dm-bottom']}};
      const pdfWorker=window.html2pdf().set(pdfOptions).from(report);
      await pdfWorker.toCanvas();
+     // Canvas capture is complete; immediately hide the staging DOM before
+     // PDF encoding, caching, or download work continues.
+     report.style.setProperty('display','none','important');
+     report.style.setProperty('visibility','hidden','important');
+     report.style.setProperty('opacity','0','important');
      const renderedCanvas=await pdfWorker.get('canvas');
      if(!renderedCanvas||renderedCanvas.width<1||renderedCanvas.height<1)throw new Error('The dues matrix page could not be rendered. No blank PDF was downloaded.');
      const renderedPixels=renderedCanvas.getContext('2d',{willReadFrequently:true})?.getImageData(0,0,Math.min(renderedCanvas.width,32),Math.min(renderedCanvas.height,32)).data;
-     if(!renderedPixels||renderedCanvas.toDataURL('image/png').length<1000)throw new Error('The dues matrix page rendered empty. Please try again.');
+     const renderedPng=await new Promise(resolve=>renderedCanvas.toBlob(resolve,'image/png'));
+     if(!renderedPixels||!renderedPng||renderedPng.size<1000)throw new Error('The dues matrix page rendered empty. Please try again.');
+     await yieldToBrowser();
      const blob=await pdfWorker.toPdf().output('blob');
      report.remove();report=null; // Release the off-screen staging node before cache/download work.
      if(!(blob instanceof Blob)||blob.size<1000)throw new Error('The generated dues matrix PDF is empty. Please try again.');
@@ -1542,12 +1601,16 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      console.error('[School Welfare] Dues matrix PDF failed:',error);
      if(status){status.textContent=error?.message||'The dues matrix PDF could not be generated.';status.className='error';}
     }finally{
-     report?.remove();button.disabled=false;button.removeAttribute('aria-busy');button.innerHTML=original;
+     if(report){report.style.setProperty('display','none','important');report.style.setProperty('visibility','hidden','important');report.style.setProperty('opacity','0','important');report.remove();}
+     button.disabled=false;button.removeAttribute('aria-busy');button.innerHTML=original;
     }
    });
   }
-  const renderPayoutLedger=()=>{
+  let lastPayoutLedgerRender=null;
+ const renderPayoutLedger=()=>{
     const q=String($('wfPayoutSearch')?.value||'').trim().toLowerCase();
+    if(lastPayoutLedgerRender&&lastPayoutLedgerRender.q===q&&lastPayoutLedgerRender.pays===pays&&lastPayoutLedgerRender.activePays===activePays&&lastPayoutLedgerRender.activeCons===activeCons&&lastPayoutLedgerRender.teachers===teachers&&lastPayoutLedgerRender.reversed===reversed&&lastPayoutLedgerRender.reversedSize===reversed.size&&lastPayoutLedgerRender.paysLength===pays.length&&lastPayoutLedgerRender.payoutError===!!pr.error&&lastPayoutLedgerRender.contributionError===!!cr.error)return;
+    lastPayoutLedgerRender={q,pays,activePays,activeCons,teachers,reversed,reversedSize:reversed.size,paysLength:pays.length,payoutError:!!pr.error,contributionError:!!cr.error};
     const rows=pays.filter(x=>[x.teacher_id,window.displayWelfareReason(x.reason),x.reference,teacherById.get(String(x.teacher_id))?.name].some(v=>String(v||'').toLowerCase().includes(q)));
     const totalPayout=activePays.reduce((n,x)=>n+Number(x.amount||0),0),currentFund=activeCons.reduce((n,x)=>n+Number(x.amount||0),0)-totalPayout,activeMembers=teachers.filter(t=>t.is_active!==false).length;
     $('wfPayoutTotal').textContent=pr.error?'Unavailable':'GHS '+money(totalPayout);
@@ -1555,7 +1618,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     $('wfPayoutActiveMembers').textContent=tr.error?'Unavailable':String(activeMembers);
     $('wfPayRows').innerHTML=pr.error?'<tr><td colspan="6">Payout records could not be loaded. Check the school account permissions and try again.</td></tr>':rows.length?rows.map(x=>{const rawDate=String(x.date||'');const displayDate=rawDate&&/^\d{4}-\d{2}-\d{2}/.test(rawDate)?new Date(rawDate.slice(0,10)+'T00:00:00').toLocaleDateString('en-GB'):(rawDate||'—');return '<tr><td class="wf-payout-reference">'+esc(x.reference||'—')+'</td><td class="wf-payout-beneficiary">'+teacherLabel(x.teacher_id)+'</td><td>'+esc(window.displayWelfareReason(x.reason||'Welfare support'))+'</td><td class="wf-payout-amount">GHS '+money(x.amount)+'</td><td>'+esc(displayDate)+'</td><td>'+reversalCell('payout',x)+'</td></tr>'}).join(''):'<tr><td colspan="6">No matching payouts.</td></tr>';
   };
-  renderPayoutLedger();$('wfPayoutSearch').addEventListener('input',renderPayoutLedger);
+  frameRender($('wfPayRows'),renderPayoutLedger);$('wfPayoutSearch').addEventListener('input',()=>frameRender($('wfPayRows'),renderPayoutLedger));
   // Reload transaction data in place; keep the authenticated dashboard and
   // currently selected section mounted after a contribution or payout is saved.
   const refreshWorkflow=async()=>{
@@ -1580,7 +1643,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     const monthKey=getDashboardMonthKey();
     if($('monthlyContributionTotal'))$('monthlyContributionTotal').textContent=cr.error?'Unavailable':'GHS '+money(activeCons.filter(item=>String(item.date||'').slice(0,7)===monthKey).reduce((sum,item)=>sum+Number(item.amount||0),0));
     renderContributionLedger();
-    renderDuesMatrix();
+    frameRender($('wfDuesMatrixRows'),renderDuesMatrix);
     renderPayoutLedger();
     renderSelectedTeacherProfile();
     await refreshAdminActivityTicker();
@@ -1691,6 +1754,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    if(current?.key===key)return;
    const task=(async()=>{
      try{
+       await yieldToBrowser();
        const generated=await assertShareableWelfarePdf(await window.generateTenantWelfarePdf(options));
        const fileName=String(generated.filename||'Welfare_Report.pdf');
        const pdfFile=new File([generated.blob],fileName,{type:'application/pdf'});
@@ -1744,8 +1808,15 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const runWelfarePdf=async(button,statusId,successText,buildOptions,sharePdf=false)=>{
    if(sharePdf){sharePreparedAdminReport(button,statusId,buildOptions);return;}
    if(button.disabled)return;
-   button.disabled=true;msg(statusId,'Preparing PDF…');
+   const originalButtonMarkup=button.innerHTML;
+   button.disabled=true;
+   button.setAttribute('aria-busy','true');
+   button.innerHTML='<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Preparing PDF…';
+   msg(statusId,'Preparing PDF…');
    try{
+     // Let the browser paint the immediate pressed/busy state before A4 staging,
+     // image decoding, canvas capture, and PDF encoding begin.
+     await yieldToBrowser();
      if(typeof window.generateTenantWelfarePdf!=='function')throw new Error('The PDF generator is unavailable. Reload the portal and try again.');
      const pdfOptions=buildOptions();
      const generated=await window.generateTenantWelfarePdf(pdfOptions);
@@ -1753,7 +1824,11 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      if(typeof window.cacheWelfareStatementPdf==='function')Promise.resolve(window.cacheWelfareStatementPdf(generated.blob,generated.filename,cacheDetails)).catch(error=>console.warn('[School Welfare PDF] Local PDF cache deferred:',error?.message||error));
      downloadWorkflowBlob(generated.blob,generated.filename,statusId,successText,'Tap here to view downloaded PDF');
    }catch(error){reportPdfFailure('[School Welfare PDF] Report download failed',error,statusId,'The PDF could not be generated. Check your connection and try again.');}
-   finally{button.disabled=false;}
+   finally{
+     button.disabled=false;
+     button.removeAttribute('aria-busy');
+     button.innerHTML=originalButtonMarkup;
+   }
  };
  $('wfMonthlyPdf').addEventListener('click',()=>{
    const selectedMonth=$('wfReportMonth').value,selectedYear=$('wfReportYear').value;
@@ -1811,6 +1886,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    if(typeof window.generateTenantWelfarePdf!=='function'){msg('wfStatementMsg','The PDF generator is unavailable. Reload the portal and try again.',true);return;}
    msg('wfStatementMsg','Preparing statement for one-tap sharing…');
    individualSharePreparation=(async()=>{
+     await yieldToBrowser();
      const options=buildIndividualStatementOptions(tid,teacher);
      options.shareIntent=true;
      const generated=await assertShareableWelfarePdf(await window.generateTenantWelfarePdf(options));
@@ -1894,8 +1970,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    if(opened)msg('wfStatementMsg','Verification link opened in WhatsApp. No PDF file was attached.');
    else downloadWorkflowBlob(prepared.generated.blob,prepared.fileName,'wfStatementMsg','File sharing is not supported here. Your PDF has been downloaded instead.','Tap here to view downloaded PDF');
  });
- // Prepare the currently selected member as soon as the report controls are ready.
- prepareIndividualStatementShare();
+ // Do not generate a full A4 PDF during workflow startup. A member selection
+ // starts share preparation; downloads remain fully on-demand.
 
  const buildMonthlyShareOptions=()=>{
    const selectedMonth=$('wfReportMonth').value,selectedYear=$('wfReportYear').value;
@@ -1903,19 +1979,16 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    return {type:'monthly',month:selectedYear+'-'+selectedMonth,school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},contributions:activeCons,payouts:activePays,teachers,academicYear:window.getCurrentAcademicYear(),standardMonthlyDues};
  };
  $('wfMonthlyShare').addEventListener('click',()=>{try{return runWelfarePdf($('wfMonthlyShare'),'wfReportMsg','Monthly summary PDF shared successfully.',buildMonthlyShareOptions,true);}catch(error){msg('wfReportMsg',error.message,true);}});
- prepareAdminReportShare($('wfMonthlyShare'),'wfReportMsg',buildMonthlyShareOptions);
  $('wfReportMonth').addEventListener('change',()=>prepareAdminReportShare($('wfMonthlyShare'),'wfReportMsg',buildMonthlyShareOptions));
  $('wfReportYear').addEventListener('change',()=>prepareAdminReportShare($('wfMonthlyShare'),'wfReportMsg',buildMonthlyShareOptions));
  const buildCompleteShareOptions=()=>({type:'complete',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},contributions:activeCons,payouts:activePays,teachers,academicYear:window.getCurrentAcademicYear(),standardMonthlyDues});
  $('wfCompleteShare').addEventListener('click',()=>runWelfarePdf($('wfCompleteShare'),'wfReportMsg','Complete fund summary PDF shared successfully.',buildCompleteShareOptions,true));
- prepareAdminReportShare($('wfCompleteShare'),'wfReportMsg',buildCompleteShareOptions);
  const buildAnnualShareOptions=()=>{
    const selectedYear=$('wfAnnualYear').value;
    if(!/^\d{4}$/.test(selectedYear||''))throw new Error('Choose a valid reporting year.');
    return {type:'annual',year:selectedYear,school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},contributions:activeCons,payouts:activePays,teachers,academicYear:window.getCurrentAcademicYear(),standardMonthlyDues};
  };
  $('wfAnnualShare').addEventListener('click',()=>{try{return runWelfarePdf($('wfAnnualShare'),'wfReportMsg','Yearly summary PDF shared successfully.',buildAnnualShareOptions,true);}catch(error){msg('wfReportMsg',error.message,true);}});
- prepareAdminReportShare($('wfAnnualShare'),'wfReportMsg',buildAnnualShareOptions);
  $('wfAnnualYear').addEventListener('change',()=>prepareAdminReportShare($('wfAnnualShare'),'wfReportMsg',buildAnnualShareOptions));
  $('wfStatementShare').addEventListener('click',()=>{
    const tid=$('wfStatementTeacher').value,teacher=teachers.find(t=>String(t.id)===String(tid));
@@ -1976,15 +2049,18 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  async function loadAudit(){
    const {data,error}=await client.from('audit_logs').select('time_string,actor_name,action,details,status,category').eq('school_id',ctx.id).order('created_at',{ascending:false}).limit(300);
    if(error){msg('wfAuditMsg','Audit history is unavailable under the current school permissions.',true);$('wfAuditRows').innerHTML='<tr><td colspan="5">No audit records could be loaded.</td></tr>';return;}
-   auditRows=data||[];renderAudit();
+   auditRows=data||[];frameRender($('wfAuditRows'),renderAudit);
  }
+ let lastAuditRender=null;
  function renderAudit(){
    const q=($('wfAuditSearch').value||'').toLowerCase(),cat=$('wfAuditCategory').value;
+   if(lastAuditRender&&lastAuditRender.rows===auditRows&&lastAuditRender.q===q&&lastAuditRender.category===cat)return;
+   lastAuditRender={rows:auditRows,q,category:cat};
    const rows=auditRows.filter(x=>(!cat||x.category===cat)&&[x.time_string,x.actor_name,x.action,x.details,x.status,x.category].some(v=>String(v||'').toLowerCase().includes(q)));
    $('wfAuditRows').innerHTML=rows.length?rows.map(x=>'<tr><td>'+esc(x.time_string||'—')+'</td><td>'+esc(x.actor_name||'—')+'</td><td>'+esc(x.action||'—')+'</td><td>'+esc(x.details||'—')+'</td><td>'+esc(x.status||'—')+'</td></tr>').join(''):'<tr><td colspan="5">No matching audit entries.</td></tr>';
    msg('wfAuditMsg',rows.length+' audit entr'+(rows.length===1?'y':'ies')+' shown.');
  }
- $('wfAuditSearch').addEventListener('input',renderAudit);$('wfAuditCategory').addEventListener('change',renderAudit);
+ $('wfAuditSearch').addEventListener('input',()=>frameRender($('wfAuditRows'),renderAudit));$('wfAuditCategory').addEventListener('change',()=>frameRender($('wfAuditRows'),renderAudit));
  $('wfAuditExport').onclick=()=>{
    const q=($('wfAuditSearch').value||'').toLowerCase(),cat=$('wfAuditCategory').value;
    const filtered=auditRows.filter(x=>(!cat||x.category===cat)&&[x.time_string,x.actor_name,x.action,x.details,x.status,x.category].some(v=>String(v||'').toLowerCase().includes(q)));
