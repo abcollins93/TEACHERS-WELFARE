@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_VERSION='twf-pwa-shell-v45-sidebar-profile-navigation';
+const CACHE_VERSION='twf-pwa-shell-v46-mobile-interaction';
 const STATEMENT_CACHE='twf-cached-statements-v1';
 const NETWORK_TIMEOUT_MS=8000;
 const STATIC_TIMEOUT_MS=6500;
@@ -23,13 +23,13 @@ const SHELL_ASSETS=[
  './',
  './index.html',
  './school-portal.html',
- './demo-sandbox.js?v=20261121-sidebar-profile-v17',
+ './demo-sandbox.js?v=20261121-mobile-interaction-v18',
  './set-password.html',
  './g.html',
  './offline.html',
  './manifest.json',
  './pwa.js',
- './school-portal-workflows.js?v=20261121-sidebar-profile-v17',
+ './school-portal-workflows.js?v=20261121-mobile-interaction-v18',
  './icons/welfare-portal.svg'
 ];
 const CDN_ASSETS=[
