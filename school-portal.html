@@ -3858,7 +3858,7 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
     const filename=(code.replace(/[^a-z0-9_-]/gi,'_')||'school')+'-welfare-summary.pdf';
     const blob=await window.html2pdf().set({margin:0,filename,image:{type:'png'},html2canvas:{scale:4,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0},jsPDF:{unit:'mm',format:'a4',orientation:'landscape',compress:true},pagebreak:{mode:['css'],avoid:['tr','.sws-kpi','.sws-signatures']}}).from(report).outputPdf('blob');
     const verificationPayload={
-     school_code:code,school_id:school.id||null,document_id:documentId,document_type:'executive-summary',
+     school_code:code,document_id:documentId,document_type:'executive-summary',
      period:'School-wide summary',academic_year:window.getCurrentAcademicYear()
     };
     // The PDF is a valid client-generated A4 export. Verification and offline caching
