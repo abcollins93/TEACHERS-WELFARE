@@ -3742,6 +3742,19 @@ async function showDashboardInternal(){
  // Start Settings as soon as the authenticated tenant context is known. Do not await it:
  // dashboard query failures or workflow startup must never prevent the Settings view mounting.
  void startAccountSettingsInitialization(client,school,'admin');
+ const workflowMount=new Promise(resolve=>{
+    const schedule=()=>waitForSchoolWorkflows().then(ready=>{
+      if(!ready)throw new Error('Workflow bundle unavailable after waiting for script initialization.');
+      return window.initSchoolWorkflows(client,school,showDashboard);
+    }).then(resolve);
+    if('requestIdleCallback' in window)window.requestIdleCallback(schedule,{timeout:1200});
+    else window.setTimeout(schedule,180);
+  }).then(result=>{
+    if(result===false)throw new Error('Workflow module reported incomplete initialization.');
+  }).catch(workflowError=>{
+    console.error('[School Welfare] Workflow initialization deferred/failed:',workflowError?.message||workflowError);
+  });
+  window.__welfareWorkflowMountPromise=workflowMount;
  const readDashboardSource=(promise,label)=>withPortalTimeout(promise,20000,label+' timed out.').catch(error=>({data:null,error}));
  const [teachersRes,contribRes,payoutsRes,reversalsRes,duesSettingsRes,latestActivity]=await Promise.all([
   readDashboardSource(client.from('teachers').select('id,name,phone,rank,class_name').eq('school_id',school.id).order('name'),'Teacher register'),
@@ -3770,20 +3783,7 @@ const activityDates=latestActivity.flatMap(x=>x.data||[]).map(x=>x.date).filter(
 $('lastActivity').textContent=latestActivity.some(item=>item.error)?'Unavailable':activityDates[0]?new Date(activityDates[0]+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'No records';
 // Finish the visible dashboard shell without waiting for the Admin workspace.
   // Its tenant-scoped panels hydrate independently after first paint.
-  const workflowMount=new Promise(resolve=>{
-    const schedule=()=>waitForSchoolWorkflows().then(ready=>{
-      if(!ready)throw new Error('Workflow bundle unavailable after waiting for script initialization.');
-      return window.initSchoolWorkflows(client,school,showDashboard);
-    }).then(resolve);
-    if('requestIdleCallback' in window)window.requestIdleCallback(schedule,{timeout:1200});
-    else window.setTimeout(schedule,180);
-  }).then(result=>{
-    if(result===false)throw new Error('Workflow module reported incomplete initialization.');
-  }).catch(workflowError=>{
-    console.error('[School Welfare] Workflow initialization deferred/failed:',workflowError?.message||workflowError);
-  });
-  window.__welfareWorkflowMountPromise=workflowMount;
-  window.finishTenantSkeletons?.();
+   window.finishTenantSkeletons?.();
   const duesMetric=$('standardDuesMetric'),duesInput=$('wfMonthlyDues');if(duesMetric&&duesInput){const updateDues=()=>{const amount=Number(duesInput.value);if(Number.isFinite(amount)&&amount>0)window.updateSchoolMonthlyDuesMetric?.(amount);};if(duesInput.value)updateDues();duesInput.addEventListener('input',updateDues);}
  window.showWelfareDialog=window.showWelfareDialog||function(kind,message,title){
   return new Promise(resolve=>{
