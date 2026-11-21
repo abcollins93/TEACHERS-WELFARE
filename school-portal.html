@@ -54,7 +54,7 @@
 (function(){
  const query=new URLSearchParams(window.location.search);
  if(query.has('c')&&String(query.get('c')||'').trim().toUpperCase()==='DEMO'){
-  document.write('<script src="./demo-sandbox.js?v=20261121-dues-matrix-pdf-v1"><\/script>');
+  document.write('<script src="./demo-sandbox.js?v=20261121-unified-pdf-loading-v1"><\/script>');
  }
 })();
 </script><script>
@@ -3029,10 +3029,9 @@ async function renderTeacherDashboard(profile,school){
    statementButton.setAttribute('aria-busy','true');
    statementButton.innerHTML='<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Preparing PDF…';
    statementStatus('Preparing your statement PDF…');
-   // Paint the loading indicator before authentication, data retrieval or PDF rendering.
-   await new Promise(resolve=>requestAnimationFrame(resolve));
   }else statementStatus('Preparing your PDF for sharing…');
   try{
+   if(isDownload)await new Promise(resolve=>requestAnimationFrame(resolve));
    const {data:{user:verifiedUser},error:authError}=await client.auth.getUser();
    if(authError||!verifiedUser?.id)throw new Error('Your authenticated session could not be verified. Please sign in again.');
    if(profile.auth_user_id&&String(profile.auth_user_id)!==String(verifiedUser.id))throw new Error('The signed-in account does not match this teacher profile. Please sign in again.');
@@ -3946,7 +3945,7 @@ if(isDemoMode){
 }
 })();
 </script>
-<script src="school-portal-workflows.js?v=20261121-dues-matrix-pdf-v1"></script>
+<script src="school-portal-workflows.js?v=20261121-unified-pdf-loading-v1"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
