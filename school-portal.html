@@ -3862,7 +3862,7 @@ $('lastActivity').textContent=activityDates[0]?new Date(activityDates[0]+'T00:00
     if(window.QRCode&&qrNode)new window.QRCode(qrNode,{text:'https://abcollins93.github.io/TEACHERS-WELFARE/verify.html?c='+encodeURIComponent(code)+'&d='+encodeURIComponent(documentId),width:300,height:300,colorDark:'#030a16',colorLight:'#ffffff',correctLevel:window.QRCode.CorrectLevel.M});
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
     if(document.fonts?.ready)await document.fonts.ready.catch(()=>{});
-    const registerRows=report.querySelectorAll('table tbody tr').length;
+    const registerRows=Array.from(report.querySelectorAll('table tbody tr')).filter(row=>row.children.length>1&&!/no matching teachers/i.test(String(row.innerText||row.textContent||''))).length;
     const reportText=String(report.innerText||report.textContent||'').replace(/\\s+/g,' ').trim();
     if(!report.querySelector('.sws-head h1')||!reportText.includes('Teacher register')||!registerRows){
      throw new Error('The executive summary has no complete school register content to export. Please wait for the teacher register to finish loading.');
