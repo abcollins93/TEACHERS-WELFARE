@@ -4359,7 +4359,7 @@ if(isDemoMode){
 }
 })();
 </script>
-<script src="school-portal-workflows.js?v=20261121-mobile-interaction-v18"></script>
+<script src="school-portal-workflows.js?v=20261121-mobile-interaction-v19"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
@@ -4397,6 +4397,22 @@ if(isDemoMode){
     if (!control || control.matches('.navbtn[data-target]')) return;
     if (control.matches('a, [role="link"], #sidebarLogout, .sidebar-account-out')) closeSidebar();
   });
+  // Touch navigation closes the drawer and marks the destination on pointer-down.
+  // The delegated click below remains the single authority for switching panels.
+  document.addEventListener('pointerdown',function(event){
+    const button=event.target.closest('.navbtn[data-target]');
+    if(!button)return;
+    closeSidebar();
+    document.querySelectorAll('.sidebar .navbtn[data-target]').forEach(item=>{
+      const active=item===button;item.classList.toggle('active',active);
+      if(active)item.setAttribute('aria-current','page');else item.removeAttribute('aria-current');
+    });
+    button.classList.add('is-pressed');
+  },{capture:true,passive:true});
+  const clearPressed=event=>{const button=event.target.closest?.('.navbtn.is-pressed');if(button)button.classList.remove('is-pressed');};
+  document.addEventListener('pointerup',clearPressed,{passive:true});
+  document.addEventListener('pointercancel',clearPressed,{passive:true});
+  document.addEventListener('click',clearPressed,{passive:true});
   // The primary navigation handler above owns open/close state. Avoid a
   // second click listener that could reopen the backdrop after it is closed.
   document.addEventListener('click', function(event){
@@ -4581,10 +4597,16 @@ if(isDemoMode){
       ancestor = ancestor.parentElement;
     }
     if(requestedId==='teacherProfileViewer'&&window.__welfareCurrentRole==='admin'){
-      (window.__welfareRenderActiveProfileViewer||window.__welfareDemoRenderProfileViewer||window.__welfareRenderAdminProfileViewer)?.();
-      target=document.getElementById('teacherProfileViewer')||target;
+      // Reveal synchronously; hydrate cached profile fields on the next paint.
+      window.requestAnimationFrame(()=>{
+        if(window.__welfareActivePortalView!==requestedId)return;
+        (window.__welfareRenderActiveProfileViewer||window.__welfareDemoRenderProfileViewer||window.__welfareRenderAdminProfileViewer)?.();
+      });
     }else if(requestedId==='wfTeacherPanel'&&window.__welfareCurrentRole==='teacher'){
-      (window.__welfareRenderActiveProfileViewer||window.__welfareDemoRenderProfileViewer||window.__welfareRefreshMemberProfileViewer)?.();
+      window.requestAnimationFrame(()=>{
+        if(window.__welfareActivePortalView!==requestedId)return;
+        (window.__welfareRenderActiveProfileViewer||window.__welfareDemoRenderProfileViewer||window.__welfareRefreshMemberProfileViewer)?.();
+      });
     }
     if (requestedId === 'schoolTeachers') {
       // The register is mounted dynamically inside this section. A previous
@@ -7231,11 +7253,15 @@ input[type="tel"], input[inputmode="numeric"], input[inputmode="decimal"] { font
 /* Mobile interaction and paint budget: keep taps immediate and scrolling composited. */
 :where(button,a,[role="button"],[role="tab"],.navbtn,.tab,.toggle,.password-toggle,[data-action],.teacher-dashboard-statement){touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 :where(button,a,[role="button"],[role="tab"],.navbtn,.tab,.toggle,.password-toggle,[data-action]){cursor:pointer}
-:where(button,a,[role="button"],[role="tab"],.navbtn,.tab,.toggle,.password-toggle,[data-action]):active{filter:brightness(.96)}
+:where(button,a,[role="button"],[role="tab"],.navbtn,.tab,.toggle,.password-toggle,[data-action]):active{filter:none;opacity:.9}
+.navbtn.is-pressed{opacity:.86}
 @media(hover:none) and (pointer:coarse){
  html{scroll-behavior:auto!important}
  #dashboard,.sidebar,.wf-admin-quick-pills,.wf-dues-matrix-scroll,[data-scroll-container]{-webkit-overflow-scrolling:touch}
- #dashboard .panel,#dashboard .metric,#dashboard .support,#workflows .panel,#wfAdminPanel .panel,.teacher-dashboard-ledger-card,.teacher-dashboard-profile,.wf-payout-view,#wfReportsPanel.wf-reports-view{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:0 3px 12px rgba(11,29,58,.055)!important}
+ #dashboard .panel,#dashboard .metric,#dashboard .support,#workflows .panel,#wfAdminPanel .panel,.teacher-dashboard-ledger-card,.teacher-dashboard-profile,.teacher-profile-accent,#teacherProfileViewer,#wfTeacherPanel,.wf-payout-view,#wfReportsPanel.wf-reports-view{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:0 1px 5px rgba(11,29,58,.045)!important}
+ html,body{scroll-behavior:auto!important;overscroll-behavior-x:none}
+ #dashboard,.sidebar,.dash-layout,.wf-dues-matrix-scroll,[data-scroll-container]{-webkit-overflow-scrolling:touch}
+ #dashboard .panel,#dashboard .metric,#dashboard .support,#workflows .panel{transform:none!important}
  #dashboard .overview-top,header.top,#mobile-nav-overlay{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
  .sidebar{box-shadow:8px 0 22px rgba(3,10,22,.18)!important}
  button:hover:not(:disabled),.navbtn:hover,.panel:hover,.metric:hover{transform:none!important;filter:none}
