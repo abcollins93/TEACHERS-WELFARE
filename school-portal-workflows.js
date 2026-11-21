@@ -2056,21 +2056,21 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    if(!selectedMonth||!selectedYear)throw new Error('Choose both a reporting month and year.');
    return {type:'monthly',month:selectedYear+'-'+selectedMonth,school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},contributions:activeCons,payouts:activePays,teachers,academicYear:window.getCurrentAcademicYear(),standardMonthlyDues};
  };
- $('wfMonthlyShare').addEventListener('click',()=>{try{return runWelfarePdf($('wfMonthlyShare'),'wfReportMsg','Monthly summary PDF shared successfully.',buildMonthlyShareOptions,true);}catch(error){msg('wfReportMsg',error.message,true);}});
+ $('wfMonthlyShare').addEventListener('click',()=>{try{return runWelfarePdf($('wfMonthlyShare'),'wfMonthlyReportMsg','Monthly summary PDF shared successfully.',buildMonthlyShareOptions,true);}catch(error){msg('wfMonthlyReportMsg',error.message,true);}});
  prepareAdminReportShare($('wfMonthlyShare'),'wfMonthlyReportMsg',buildMonthlyShareOptions);
- $('wfReportMonth').addEventListener('change',()=>prepareAdminReportShare($('wfMonthlyShare'),'wfReportMsg',buildMonthlyShareOptions));
- $('wfReportYear').addEventListener('change',()=>prepareAdminReportShare($('wfMonthlyShare'),'wfReportMsg',buildMonthlyShareOptions));
+ $('wfReportMonth').addEventListener('change',()=>prepareAdminReportShare($('wfMonthlyShare'),'wfMonthlyReportMsg',buildMonthlyShareOptions));
+ $('wfReportYear').addEventListener('change',()=>prepareAdminReportShare($('wfMonthlyShare'),'wfMonthlyReportMsg',buildMonthlyShareOptions));
  const buildCompleteShareOptions=()=>({type:'complete',school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},contributions:activeCons,payouts:activePays,teachers,academicYear:window.getCurrentAcademicYear(),standardMonthlyDues});
- $('wfCompleteShare').addEventListener('click',()=>runWelfarePdf($('wfCompleteShare'),'wfReportMsg','Complete fund summary PDF shared successfully.',buildCompleteShareOptions,true));
+ $('wfCompleteShare').addEventListener('click',()=>runWelfarePdf($('wfCompleteShare'),'wfCompleteReportMsg','Complete fund summary PDF shared successfully.',buildCompleteShareOptions,true));
  prepareAdminReportShare($('wfCompleteShare'),'wfCompleteReportMsg',buildCompleteShareOptions);
  const buildAnnualShareOptions=()=>{
    const selectedYear=$('wfAnnualYear').value;
    if(!/^\d{4}$/.test(selectedYear||''))throw new Error('Choose a valid reporting year.');
    return {type:'annual',year:selectedYear,school:{name:ctx.name,school_code:ctx.school_code,district:ctx.district,region:ctx.region},contributions:activeCons,payouts:activePays,teachers,academicYear:window.getCurrentAcademicYear(),standardMonthlyDues};
  };
- $('wfAnnualShare').addEventListener('click',()=>{try{return runWelfarePdf($('wfAnnualShare'),'wfReportMsg','Yearly summary PDF shared successfully.',buildAnnualShareOptions,true);}catch(error){msg('wfReportMsg',error.message,true);}});
+ $('wfAnnualShare').addEventListener('click',()=>{try{return runWelfarePdf($('wfAnnualShare'),'wfAnnualReportMsg','Yearly summary PDF shared successfully.',buildAnnualShareOptions,true);}catch(error){msg('wfAnnualReportMsg',error.message,true);}});
  prepareAdminReportShare($('wfAnnualShare'),'wfAnnualReportMsg',buildAnnualShareOptions);
- $('wfAnnualYear').addEventListener('change',()=>prepareAdminReportShare($('wfAnnualShare'),'wfReportMsg',buildAnnualShareOptions));
+ $('wfAnnualYear').addEventListener('change',()=>prepareAdminReportShare($('wfAnnualShare'),'wfAnnualReportMsg',buildAnnualShareOptions));
  $('wfStatementShare').addEventListener('click',()=>{
    const tid=$('wfStatementTeacher').value,teacher=teachers.find(t=>String(t.id)===String(tid));
    if(!teacher)return msg('wfStatementMsg','Choose a teacher first.',true);
