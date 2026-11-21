@@ -54,7 +54,7 @@
 (function(){
  const query=new URLSearchParams(window.location.search);
  if(query.has('c')&&String(query.get('c')||'').trim().toUpperCase()==='DEMO'){
-  document.write('<script src="./demo-sandbox.js?v=20261121-mobile-interaction-v18"><\/script>');
+  document.write('<script src="./demo-sandbox.js?v=20261121-mobile-interaction-v19"><\/script>');
  }
 })();
 </script><script>
@@ -4505,8 +4505,6 @@ if(isDemoMode){
             await window.__welfareRefreshAdminWorkspace();
           }else if(window.__welfareCurrentRole==='admin'&&requestedId==='schoolTeachers'&&typeof window.__welfareEnsureTeacherRegisterLoaded==='function'){
             await window.__welfareEnsureTeacherRegisterLoaded(window.__welfareCurrentSchool?.school_code);
-          }else if(requestedId==='wfTeacherPanel'&&window.__welfareCurrentRole==='teacher'){
-            if(typeof window.__welfareRefreshMemberProfileViewer==='function')window.__welfareRefreshMemberProfileViewer();
           }
         }).catch(error=>console.warn('[School Welfare] Background section refresh deferred:',error?.message||error));
       });
