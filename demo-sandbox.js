@@ -94,6 +94,7 @@
   const payoutTotal=activePayouts.reduce((sum,row)=>sum+Number(row.amount||0),0);
   return {teacherCount:teachers.filter(row=>row.is_active!==false).length,contributionCount:activeContributions.length,contributionTotal,payoutCount:activePayouts.length,payoutTotal,netFundBalance:contributionTotal-payoutTotal,monthlyDues:Number(school.monthly_dues||settings.find(row=>['standard_dues','standard_monthly_dues','monthly_dues'].includes(String(row.key||'').toLowerCase()))?.value||0),latestMonth:months[months.length-1]||''};
  };
+ window.formatWelfareCurrency=value=>'GH₵ '+Number(value||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
  const demoStorage={};
  const client={
   __welfareDemo:true,
