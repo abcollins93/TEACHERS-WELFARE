@@ -6,6 +6,8 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const displayWelfareReason=reason=>{const value=String(reason??'').trim();return value?value.replace(/^Bereavement Assistance$/i,'Condolence Support'):'—';};
 window.displayWelfareReason=displayWelfareReason;
 const money=n=>Number(n||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
+const welfareCash=value=>'GH₵ '+money(value);
+window.formatWelfareCurrency=welfareCash;
 const today=()=>new Date().toISOString().slice(0,10);
 const frameRender=(function(){
  const pending=new WeakSet();
@@ -1091,7 +1093,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
       <div><small class="muted">REGISTRATION DATE</small><strong id="tpRegistration">—</strong></div><div><small class="muted">MEMBERSHIP TYPE</small><strong id="tpMembership">—</strong></div>
      </div>
     </article>
-    <article class="panel teacher-profile-accent teacher-profile-accent-blue" style="margin:0;padding:22px"><h3><i class="fa-solid fa-address-card"></i> Personal &amp; Contact Information</h3><div id="tpPersonalRows" class="tp-fields"></div><p class="muted">To update your official personal or contact information, contact the Executive Administrator.</p><button type="button" class="secondary" id="tpEditContact">Edit Contact Info</button></article>
+    <article class="panel teacher-profile-accent teacher-profile-accent-blue teacher-personal-contact-card" style="margin:0;padding:22px"><div class="teacher-contact-card-head"><h3><i class="fa-solid fa-address-card" aria-hidden="true"></i> Personal &amp; Contact Information</h3><span class="teacher-contact-secure"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> VERIFIED PROFILE</span></div><div id="tpPersonalRows" class="tp-fields"></div><div class="teacher-contact-card-foot"><p class="muted">To update official details, contact the Executive Administrator.</p><button type="button" class="teacher-contact-edit-button" id="tpEditContact"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> Edit Contact Info</button></div></article>
     <article class="panel teacher-profile-accent teacher-profile-accent-gold teacher-professional-details-card" style="margin:0;padding:22px"><div class="teacher-professional-card-head"><h3><i class="fa-solid fa-briefcase" aria-hidden="true"></i> Professional &amp; Employment Details</h3><span class="teacher-professional-secure"><i class="fa-solid fa-clipboard-check" aria-hidden="true"></i> EMPLOYMENT RECORD</span></div><div id="tpProfessionalRows" class="tp-fields"></div></article>
     <article class="panel teacher-profile-accent teacher-profile-accent-purple" style="margin:0;padding:22px"><h3><i class="fa-solid fa-wallet" aria-hidden="true"></i> Welfare Membership &amp; Financial Summary</h3><div id="tpFinanceRows"></div></article>
    </div>
@@ -1109,6 +1111,26 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     #teacherProfileViewer .teacher-profile-accent-gold{border-top-color:#d6a637!important}
     #teacherProfileViewer .teacher-profile-accent-purple{border-top-color:#8b5cf6!important}
     #teacherProfileViewer .tp-fields{display:grid;gap:10px}
+    #teacherProfileViewer .teacher-personal-contact-card .tp-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    #teacherProfileViewer .teacher-personal-contact-card .tp-field{min-width:0;border:1px solid rgba(15,23,42,.08);background:#f8fafc;border-radius:13px;padding:13px 14px;box-shadow:none}
+    #teacherProfileViewer .teacher-personal-contact-card .tp-field small{display:block;color:#64748b;font-size:.68rem;font-weight:850;letter-spacing:.075em;line-height:1.3;margin:0 0 7px;text-transform:uppercase}
+    #teacherProfileViewer .teacher-personal-contact-card .tp-field strong{display:block;color:#172b49;font-size:.91rem;font-weight:800;line-height:1.45;overflow-wrap:anywhere}
+    #teacherProfileViewer .teacher-contact-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 15px}
+    #teacherProfileViewer .teacher-contact-card-head h3{display:flex;align-items:center;gap:9px;margin:0;color:#172b49;font-size:1.02rem;font-weight:850}
+    #teacherProfileViewer .teacher-contact-card-head h3>i{color:#2563eb}
+    #teacherProfileViewer .teacher-contact-secure{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border:1px solid #dbeafe;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-size:.62rem;font-weight:850;letter-spacing:.055em}
+    #teacherProfileViewer .teacher-contact-card-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px}
+    #teacherProfileViewer .teacher-contact-card-foot p{margin:0;max-width:36ch;font-size:.78rem;line-height:1.45}
+    #teacherProfileViewer .teacher-contact-edit-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:0 0 auto;min-height:42px;padding:10px 15px;border:1px solid #1d4ed8;border-radius:11px;background:#1d4ed8;color:#fff;font-size:.82rem;font-weight:850;box-shadow:0 3px 9px rgba(29,78,216,.16);cursor:pointer}
+    #teacherProfileViewer .teacher-contact-edit-button:hover{background:#1e40af;border-color:#1e40af}
+    .dark #teacherProfileViewer .teacher-personal-contact-card{background:var(--panel)!important}
+    .dark #teacherProfileViewer .teacher-contact-card-head h3,.dark #teacherProfileViewer .teacher-personal-contact-card .tp-field strong{color:#e5edf8}
+    .dark #teacherProfileViewer .teacher-contact-secure{background:#172b49;border-color:#2d4a72;color:#bfdbfe}
+    .dark #teacherProfileViewer .teacher-personal-contact-card .tp-field{background:#101f35;border-color:rgba(148,163,184,.2)}
+    .dark #teacherProfileViewer .teacher-personal-contact-card .tp-field small{color:#a9b8cc}
+    .dark #teacherProfileViewer .teacher-contact-edit-button{background:#2563eb;border-color:#60a5fa;color:#fff}
+    @media(max-width:600px){#teacherProfileViewer .teacher-personal-contact-card .tp-fields{grid-template-columns:1fr;gap:9px}#teacherProfileViewer .teacher-personal-contact-card .tp-field{padding:12px 13px;border-radius:12px}#teacherProfileViewer .teacher-contact-card-foot{align-items:stretch;flex-direction:column;gap:10px}#teacherProfileViewer .teacher-contact-edit-button{width:100%;min-height:45px}}
+
     #teacherProfileViewer .tp-field{border:1px solid var(--line);background:rgba(120,130,150,.06);border-radius:12px;padding:11px 13px}
     #teacherProfileViewer .tp-field small{display:block;color:var(--muted);font-size:.68rem;font-weight:850;letter-spacing:.06em;margin-bottom:5px}
     #teacherProfileViewer .tp-field strong{display:block;overflow-wrap:anywhere;font-size:.92rem}
