@@ -825,7 +825,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const configuredDuesValue=initialDuesSetting?.value;
  const configuredDues= configuredDuesValue!==null&&configuredDuesValue!==undefined&&String(configuredDuesValue).trim()!==''?Number(configuredDuesValue):NaN;
  const fallbackCandidates=[ctx.monthly_dues,ctx.standard_monthly_dues,ctx.standardMonthlyDues,window.schoolSettings?.monthly_dues,20];
- const fallbackDues=fallbackCandidates.map(Number).find(value=>Number.isFinite(value)&&value>=0);
+ const fallbackDues=fallbackCandidates.map(value=>value===null||value===undefined||String(value).trim()===''?NaN:Number(value)).find(value=>Number.isFinite(value)&&value>=0);
  standardMonthlyDues=!initialDuesError&&Number.isFinite(configuredDues)&&configuredDues>=0?configuredDues:(fallbackDues??20);
  const duesInput=$('wfMonthlyDues');
  if(duesInput)duesInput.value=String(standardMonthlyDues);
