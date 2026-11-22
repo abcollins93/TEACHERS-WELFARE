@@ -371,7 +371,7 @@
  const scheduleDemoSidebarSync=()=>window.__welfareScheduleNonCritical?window.__welfareScheduleNonCritical(syncDemoSidebar,document.getElementById('schoolSidebar')||syncDemoSidebar):syncDemoSidebar();
  window.addEventListener('welfare-workflows-ready',scheduleDemoSidebarSync);
  window.addEventListener('welfare-workspace-mounted',scheduleDemoSidebarSync);
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',syncDemoSidebar,{once:true});
- else window.requestAnimationFrame(syncDemoSidebar);
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',scheduleDemoSidebarSync,{once:true});
+ else scheduleDemoSidebarSync();
 
 })();
