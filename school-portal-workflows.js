@@ -814,7 +814,7 @@ async function performSchoolWorkflows(client,school,refresh){
   // DEMO becomes touch-ready immediately after first paint; live tenants keep
   // the longer idle window for their network-backed workflow initialization.
   if(isLocalDemo)window.setTimeout(resolve,32);
-  else if('requestIdleCallback' in window)window.requestIdleCallback(()=>resolve(),{timeout:900});
+  else if('requestIdleCallback' in window)window.requestIdleCallback(()=>resolve(),{timeout:250});
   else window.setTimeout(resolve,80);
  });
  if(isLocalDemo&&window.__welfareDemoRole!=='admin')return false;
