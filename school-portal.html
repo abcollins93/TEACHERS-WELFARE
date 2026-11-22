@@ -4621,10 +4621,10 @@ if(isDemoMode){
   // Profile data is rendered synchronously from the cached, authenticated
   // profile state so the page is populated on the first visible frame.
   if(targetId==='teacherProfileViewer'&&role==='admin'){
-   (window.__welfareRenderAdminProfileViewer||window.__welfareRenderActiveProfileViewer)?.();
+   (window.__welfareRenderAdminProfileViewer||window.__welfareRenderActiveProfileViewer||window.__welfareDemoRenderProfileViewer)?.();
    window.requestAnimationFrame(()=>window.__welfareRefreshAdminProfileViewer?.());
   }else if(targetId==='wfTeacherPanel'&&role==='teacher'){
-   (window.__welfareRenderActiveProfileViewer||window.__welfareRefreshMemberProfileViewer)?.();
+   (window.__welfareRenderActiveProfileViewer||window.__welfareRefreshMemberProfileViewer||window.__welfareDemoRenderProfileViewer)?.();
   }else if(targetId==='schoolTeachers'&&role==='admin'){
    window.requestAnimationFrame(()=>window.__welfareEnsureTeacherRegisterLoaded?.(window.__welfareCurrentSchool?.school_code));
   }else if(role==='admin'&&['wfAdminContributionPanel','wfAdminPayoutPanel'].includes(targetId)){
