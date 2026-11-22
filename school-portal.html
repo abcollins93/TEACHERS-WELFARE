@@ -7380,23 +7380,31 @@ input[type="tel"], input[inputmode="numeric"], input[inputmode="decimal"] { font
 
 
 <style id="opaque-sticky-portal-header">
-/* Keep the complete fixed header stack opaque while content scrolls beneath it. */
-.app-header-group{
-  background:#10233F!important;
-  opacity:1!important;
-  isolation:isolate!important;
-  z-index:5000!important;
-}
-.app-header-group>header.top{
-  background:#10233F!important;
+/* Solid, fully opaque fixed header stack; content must scroll behind this layer. */
+.app-header-group,
+.app-header-group::before,
+.app-header-group::after{
+  background-color:#10233F!important;
   background-image:none!important;
   opacity:1!important;
-  position:relative!important;
-  z-index:1!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
 }
-.app-header-group>.overview-top{
+.app-header-group{
+  position:fixed!important;
+  z-index:10000!important;
+  isolation:isolate!important;
+}
+.app-header-group>header.top,
+.app-header-group>.overview-top,
+.app-header-group>*{
+  background-color:#10233F!important;
+  background-image:none!important;
+  opacity:1!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
   position:relative!important;
-  z-index:1!important;
+  z-index:2!important;
 }
 </style>
 
