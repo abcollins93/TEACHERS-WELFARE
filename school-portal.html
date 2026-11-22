@@ -4484,12 +4484,12 @@ if(isDemoMode){
   const raw=String(button?.dataset?.target||'').trim();
   const role=window.__welfareCurrentRole==='admin'?'admin':'teacher';
   if(!raw)return '';
-  if(typeof window.__welfareResolvePortalViewTarget==='function'){
-   const resolved=window.__welfareResolvePortalViewTarget(raw,role);
-   if(resolved)return String(resolved);
-  }
-  const memberAliases={wfReportsPanel:'wfStatementPanel'};
-  return role==='admin'?(adminAliases[raw]||raw):(memberAliases[raw]||raw);
+  // Resolve stable destination IDs locally. This router must work even when
+  // the optional workflow bundle is still mounting or its helper is replaced.
+  const routes=role==='admin'
+   ?{wfContributionPanel:'wfAdminContributionPanel',wfPayoutPanel:'wfAdminPayoutPanel'}
+   :{wfReportsPanel:'wfStatementPanel',teacherProfileViewer:'wfTeacherPanel'};
+  return routes[raw]||raw;
  }
  function isRestricted(targetId){
   return window.__welfareCurrentRole==='teacher'&&
@@ -4569,7 +4569,8 @@ if(isDemoMode){
   // placeholder insertion can never throw a NotFoundError on first-load taps.
   host.appendChild(placeholder);
   pendingPlaceholder=placeholder;
-  viewIds.forEach(id=>{const view=document.getElementById(id);if(view&&!view.contains(placeholder))hideView(view);});
+  // Keep the current page visible until the real destination exists. Hiding
+  // every section here made a delayed mount look like a dead sidebar tap.
   revealView(placeholder,true);
   if(pendingObserver)pendingObserver.disconnect();
   if(pendingMountedListener){window.removeEventListener('welfare-workspace-mounted',pendingMountedListener);pendingMountedListener=null;}
@@ -4629,6 +4630,8 @@ if(isDemoMode){
    window.requestAnimationFrame(()=>window.__welfareEnsureTeacherRegisterLoaded?.(window.__welfareCurrentSchool?.school_code));
   }else if(role==='admin'&&['wfAdminContributionPanel','wfAdminPayoutPanel'].includes(targetId)){
    window.requestAnimationFrame(()=>window.__welfareRefreshAdminWorkspace?.());
+  }else if(role==='admin'&&targetId==='wfAdminPanel'){
+   window.__welfareRefreshAdminWorkspace?.();
   }else if(role==='teacher'&&['wfContributionPanel','wfPayoutPanel','wfStatementPanel'].includes(targetId)){
    // Member records are loaded from the authenticated session at sign-in;
    // invoke an optional lightweight renderer whenever a financial page opens.
@@ -4700,6 +4703,7 @@ if(isDemoMode){
   const button=elementFromEvent(event);
   if(!button)return;
   event.preventDefault();
+  event.stopPropagation();
   navigate(button);
  },true);
  document.addEventListener('pointerdown',event=>{
