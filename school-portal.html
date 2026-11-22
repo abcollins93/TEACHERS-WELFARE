@@ -3693,6 +3693,8 @@ function showDemoDashboard(){
    if($('teacherDashboardProfile'))$('teacherDashboardProfile').hidden=false;
    if($('teacherDashboardLedgers'))$('teacherDashboardLedgers').hidden=false;
    document.getElementById('teacherWorkspace')?.classList.remove('hidden');
+   window.__welfareFinancialChartPending=window.WelfareDemo.financialChartData('teacher');
+   window.__welfareRenderFinancialCharts?.(window.__welfareFinancialChartPending);
    return;
   }
   const teacher=window.WelfareDemo.teachers[0];
@@ -3701,7 +3703,11 @@ function showDemoDashboard(){
   const render=()=>{
    if(generation!==window.__welfareDemoViewGeneration||demoRole!=='teacher')return;
    Promise.resolve(renderTeacherDashboard(profile,school)).then(()=>{
-    if(generation===window.__welfareDemoViewGeneration&&demoRole==='teacher')updateDemoBanner();
+    if(generation===window.__welfareDemoViewGeneration&&demoRole==='teacher'){
+     window.__welfareFinancialChartPending=window.WelfareDemo.financialChartData('teacher',profile.id);
+     window.__welfareRenderFinancialCharts?.(window.__welfareFinancialChartPending);
+     updateDemoBanner();
+    }
    }).catch(error=>console.warn('[DEMO] Teacher view rendered with a recoverable issue:',error?.message||error));
   };
   if('requestIdleCallback' in window)window.requestIdleCallback(render,{timeout:700});
@@ -3725,6 +3731,8 @@ function showDemoDashboard(){
  const profileViewerNav=document.querySelector('.sidebar .navbtn[data-target="teacherProfileViewer"]');if(profileViewerNav)profileViewerNav.style.removeProperty('display');
  const activeCon=window.WelfareDemo.activeCon(),activePay=window.WelfareDemo.activePay();
  const summary=window.WelfareDemo.summary();
+ window.__welfareFinancialChartPending=window.WelfareDemo.financialChartData('admin');
+ window.__welfareRenderFinancialCharts?.(window.__welfareFinancialChartPending);
  const latestMonth=summary.latestMonth||'2026-03';
  const latestMonthLabel=new Date(latestMonth+'-01T00:00:00').toLocaleDateString('en-GH',{month:'short',year:'numeric'});
  $('teacherCount').textContent=String(summary.teacherCount);
