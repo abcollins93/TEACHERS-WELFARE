@@ -4316,7 +4316,8 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
  const staffId=String($('teacherStaffId').value??'').trim();
  const password=$('teacherPreviewPassword').value; // Do not trim custom passwords.
  const message=$('teacherLoginMessage'),button=$('teacherLoginButton');
- message.className='muted';message.textContent='Signing in & loading school records...';button.disabled=true;
+ const originalTeacherButtonText=button.textContent;
+ message.className='muted';message.textContent='Signing in & loading school records...';button.disabled=true;button.textContent='Signing in & loading records…';
  let authSessionCreated=false;
  console.groupCollapsed('[School Welfare] Teacher sign-in diagnostics');
  console.log('Entered Staff ID:',staffId);
@@ -4421,7 +4422,7 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
   message.className='error';
   message.textContent=err?.message||'Teacher sign-in was not accepted. Confirm your Staff ID and temporary password with your school administrator.';
  }finally{
-  button.disabled=false;hidePageLoader();console.groupEnd();
+  button.disabled=false;button.textContent=originalTeacherButtonText||'Secure Teacher Sign In';hidePageLoader();console.groupEnd();
  }
 });
 $('teacherForgotPreview').addEventListener('click',()=>{ $('teacherLoginMessage').className='muted';$('teacherLoginMessage').textContent='For secure recovery, contact your school administrator to verify your identity and reset your account.';});
