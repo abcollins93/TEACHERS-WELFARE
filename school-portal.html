@@ -4463,7 +4463,14 @@ if(isDemoMode){
  }
  function resolveTargetId(button){
   const raw=String(button?.dataset?.target||'').trim();
-  return window.__welfareCurrentRole==='admin'?(adminAliases[raw]||raw):raw;
+  const role=window.__welfareCurrentRole==='admin'?'admin':'teacher';
+  if(!raw)return '';
+  if(typeof window.__welfareResolvePortalViewTarget==='function'){
+   const resolved=window.__welfareResolvePortalViewTarget(raw,role);
+   if(resolved)return String(resolved);
+  }
+  const memberAliases={wfReportsPanel:'wfStatementPanel'};
+  return role==='admin'?(adminAliases[raw]||raw):(memberAliases[raw]||raw);
  }
  function isRestricted(targetId){
   return window.__welfareCurrentRole==='teacher'&&
@@ -4584,10 +4591,12 @@ if(isDemoMode){
    window.requestAnimationFrame(()=>window.__welfareEnsureTeacherRegisterLoaded?.(window.__welfareCurrentSchool?.school_code));
   }else if(role==='admin'&&['wfAdminContributionPanel','wfAdminPayoutPanel'].includes(targetId)){
    window.requestAnimationFrame(()=>window.__welfareRefreshAdminWorkspace?.());
-  }else if(targetId==='wfAuditPanel'){
-   // The workflow module's button-level listener performs the lazy audit load.
-   window.dispatchEvent(new CustomEvent('welfare-sidebar-section-open',{detail:{targetId}}));
+  }else if(role==='teacher'&&['wfContributionPanel','wfPayoutPanel','wfStatementPanel'].includes(targetId)){
+   // Member records are loaded from the authenticated session at sign-in;
+   // invoke an optional lightweight renderer whenever a financial page opens.
+   window.__welfareRefreshMemberFinancialWorkspace?.(targetId);
   }
+  window.dispatchEvent(new CustomEvent('welfare-sidebar-section-open',{detail:{targetId,role}}));
  }
  function activateDestination(button,targetId,target,sequence){
   if(sequence!==navigationSequence)return;
