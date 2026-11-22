@@ -3101,61 +3101,64 @@ async function renderTeacherDashboard(profile,school){
  const profileRegistration=firstProfileValue(teacherRecord?.registration_date,profile.registration_date);
  const profileMembership=firstProfileValue(teacherRecord?.membership_type,profile.membership_type);
  const profileFieldRows=rows=>rows.map(([label,value,fallback='Not specified'])=>'<div class="tp-field"><small>'+escapeHtml(label)+'</small><strong>'+escapeHtml(firstProfileValue(value)||fallback)+'</strong></div>').join('');
+ const setTeacherHTMLIfChanged=(node,html)=>{if(node&&node.innerHTML!==html)node.innerHTML=html;};
  const profileDate=v=>{if(!v)return 'Not recorded';const d=new Date(v);return Number.isNaN(d.getTime())?String(v):d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});};
  const ownParts=String(teacherName||teacherId).trim().split(/\\s+/).filter(Boolean);
  $('teacherOwnStatus').textContent=teacherRecord?.is_active===false?'Inactive':'Active';
- $('teacherOwnStatus').style.cssText+=';background:'+(teacherRecord?.is_active===false?'#fee2e2':'#dcfce7')+';color:'+(teacherRecord?.is_active===false?'#b91c1c':'#166534');
+ $('teacherOwnStatus').style.background=teacherRecord?.is_active===false?'#fee2e2':'#dcfce7';$('teacherOwnStatus').style.color=teacherRecord?.is_active===false?'#b91c1c':'#166534';
  const teacherOwnAvatar=$('teacherOwnAvatar');
  const teacherOwnInitials=ownParts.slice(0,2).map(x=>x[0]).join('').toUpperCase()||'—';
- teacherOwnAvatar.textContent=teacherOwnInitials;
  teacherOwnAvatar.style.overflow='hidden';
+ const existingOwnPhoto=teacherOwnAvatar.querySelector('img');
  if(teacherAvatar){
-  const teacherOwnPhoto=document.createElement('img');
-  teacherOwnPhoto.src=teacherAvatar;
-  teacherOwnPhoto.alt='Passport photograph of '+String(teacherName||'teacher');
-  teacherOwnPhoto.loading='eager';
-  teacherOwnPhoto.decoding='async';
-  teacherOwnPhoto.style.cssText='display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit';
-  teacherOwnPhoto.onerror=()=>{teacherOwnPhoto.remove();teacherOwnAvatar.textContent=teacherOwnInitials;};
-  teacherOwnAvatar.replaceChildren(teacherOwnPhoto);
- }
+  if(!existingOwnPhoto||existingOwnPhoto.getAttribute('src')!==String(teacherAvatar)){
+   const teacherOwnPhoto=document.createElement('img');
+   teacherOwnPhoto.src=teacherAvatar;
+   teacherOwnPhoto.alt='Passport photograph of '+String(teacherName||'teacher');
+   teacherOwnPhoto.loading='eager';
+   teacherOwnPhoto.decoding='async';
+   teacherOwnPhoto.style.cssText='display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit';
+   teacherOwnPhoto.onerror=()=>{teacherOwnPhoto.remove();teacherOwnAvatar.textContent=teacherOwnInitials;};
+   teacherOwnAvatar.replaceChildren(teacherOwnPhoto);
+  }
+ }else if(existingOwnPhoto||teacherOwnAvatar.textContent!==teacherOwnInitials)teacherOwnAvatar.textContent=teacherOwnInitials;
  $('teacherOwnName').textContent=teacherName||'Unnamed Teacher';$('teacherOwnRank').textContent=profileRank||'Not specified';$('teacherOwnStaffId').textContent='Staff ID: '+teacherId;
  $('teacherOwnRegistration').textContent=profileDate(profileRegistration);
  $('teacherOwnMembership').textContent=profileMembership||'Not specified';
- $('teacherOwnPersonalRows').innerHTML=profileFieldRows([['FULL NAME',teacherName,'Unnamed Teacher'],['PHONE NUMBER',profilePhone,'Not provided'],['SCHOOL / INSTITUTION',school.name],['DISTRICT & REGION',[school.district,school.region].filter(Boolean).join(' · ')]]);
+ setTeacherHTMLIfChanged($('teacherOwnPersonalRows'),profileFieldRows([['FULL NAME',teacherName,'Unnamed Teacher'],['PHONE NUMBER',profilePhone,'Not provided'],['SCHOOL / INSTITUTION',school.name],['DISTRICT & REGION',[school.district,school.region].filter(Boolean).join(' · ')]]));
  const editContactButton=$('teacherOwnEditContact');
- editContactButton?.addEventListener('click',()=>{
+ if(editContactButton)editContactButton.onclick=()=>{
   const notice=$('teacherOwnContactNotice');
   if(!notice)return;
   notice.hidden=false;
   notice.textContent='For security, official contact details are updated by your school administrator. Please contact them to request a change.';
- });
- $('teacherOwnProfessionalRows').innerHTML=profileFieldRows([['Staff ID',teacherId],['Professional Rank',profileRank],['CLASS / SUBJECT',profileClass,'Not assigned'],['Employer',firstProfileValue(teacherRecord?.employer,teacherRecord?.employer_name,profile.employer,profile.employer_name,school.name)]]);
+ };
+ setTeacherHTMLIfChanged($('teacherOwnProfessionalRows'),profileFieldRows([['Staff ID',teacherId],['Professional Rank',profileRank],['CLASS / SUBJECT',profileClass,'Not assigned'],['Employer',firstProfileValue(teacherRecord?.employer,teacherRecord?.employer_name,profile.employer,profile.employer_name,school.name)]]));
  const ownRecentContribution=activeTeacherContributionRows.length?[...activeTeacherContributionRows].sort((a,b)=>String(b.contribution_date||b.date||'').localeCompare(String(a.contribution_date||a.date||'')))[0]:null;
  const ownRecentContributionDate=ownRecentContribution?profileDate(ownRecentContribution.contribution_date||ownRecentContribution.date):'—';
  const ownPaymentCount=activeTeacherContributionCount();
- $('teacherOwnFinanceRows').innerHTML=[
+ setTeacherHTMLIfChanged($('teacherOwnFinanceRows'),[
   '<div class="tp-finance"><span>Total Dues Contributed</span><strong class="finance-positive">'+escapeHtml(cash(totalC))+'</strong></div>',
   '<div class="tp-finance"><span>Total Welfare Payouts Received</span><strong class="finance-payout">'+escapeHtml(cash(totalP))+'</strong></div>',
   '<div class="tp-finance"><span>Total Payments Recorded</span><strong>'+(ownPaymentCount?String(ownPaymentCount):'0 Payments')+'</strong></div>',
   '<div class="tp-finance"><span>Most Recent Contribution</span><strong'+(ownRecentContribution?'':' class="finance-empty"')+'>'+escapeHtml(ownRecentContributionDate)+'</strong></div>'
- ].join('');
+ ].join(''));
  window.__welfareRefreshMemberProfileViewer=()=>{
   $('teacherOwnName').textContent=teacherName||'Unnamed Teacher';$('teacherOwnRank').textContent=profileRank||'Not specified';$('teacherOwnStaffId').textContent='Staff ID: '+teacherId;
   $('teacherOwnRegistration').textContent=profileDate(profileRegistration);$('teacherOwnMembership').textContent=profileMembership||'Not specified';
-  $('teacherOwnPersonalRows').innerHTML=profileFieldRows([['FULL NAME',teacherName,'Unnamed Teacher'],['PHONE NUMBER',profilePhone,'Not provided'],['SCHOOL / INSTITUTION',school.name],['DISTRICT & REGION',[school.district,school.region].filter(Boolean).join(' · ')]]);
-  $('teacherOwnProfessionalRows').innerHTML=profileFieldRows([['Staff ID',teacherId],['Professional Rank',profileRank],['CLASS / SUBJECT',profileClass,'Not assigned'],['Employer',firstProfileValue(teacherRecord?.employer,teacherRecord?.employer_name,profile.employer,profile.employer_name,school.name)]]);
+  setTeacherHTMLIfChanged($('teacherOwnPersonalRows'),profileFieldRows([['FULL NAME',teacherName,'Unnamed Teacher'],['PHONE NUMBER',profilePhone,'Not provided'],['SCHOOL / INSTITUTION',school.name],['DISTRICT & REGION',[school.district,school.region].filter(Boolean).join(' · ']]]));
+  setTeacherHTMLIfChanged($('teacherOwnProfessionalRows'),profileFieldRows([['Staff ID',teacherId],['Professional Rank',profileRank],['CLASS / SUBJECT',profileClass,'Not assigned'],['Employer',firstProfileValue(teacherRecord?.employer,teacherRecord?.employer_name,profile.employer,profile.employer_name,school.name)]]));
   const refreshedTotal=activeTeacherContributionRows.reduce((sum,row)=>sum+Number(row.amount||0),0),refreshedPayout=payouts.reduce((sum,row)=>sum+Number(row.amount||0),0);
   const recent=[...activeTeacherContributionRows].sort((a,b)=>String(b.contribution_date||b.date||'').localeCompare(String(a.contribution_date||a.date||'')))[0];
-  $('teacherOwnFinanceRows').innerHTML=[
+  setTeacherHTMLIfChanged($('teacherOwnFinanceRows'),[
    '<div class="tp-finance"><span>Total Dues Contributed</span><strong class="finance-positive">'+escapeHtml(cash(refreshedTotal))+'</strong></div>',
    '<div class="tp-finance"><span>Total Welfare Payouts Received</span><strong class="finance-payout">'+escapeHtml(cash(refreshedPayout))+'</strong></div>',
    '<div class="tp-finance"><span>Total Payments Recorded</span><strong>'+(activeTeacherContributionRows.length?String(activeTeacherContributionRows.length):'0 Payments')+'</strong></div>',
    '<div class="tp-finance"><span>Most Recent Contribution</span><strong'+(recent?'':' class="finance-empty"')+'>'+escapeHtml(recent?profileDate(recent.contribution_date||recent.date):'—')+'</strong></div>'
-  ].join('');return true;
+  ].join(''));return true;
  };
  window.__welfareResolveMemberProfileReady?.(true);window.__welfareResolveMemberProfileReady=null;
- $('teacherOwnProfilePrint')?.addEventListener('click',()=>window.print());
+ const teacherOwnProfilePrint=$('teacherOwnProfilePrint');if(teacherOwnProfilePrint)teacherOwnProfilePrint.onclick=()=>window.print();
 
  $('teacherContributionsState').textContent=contributionLoadError?'Could not load your contribution records securely.':activeTeacherContributionCount()?activeTeacherContributionCount()+' active personal record(s)':'No active contribution records are available yet.';
  $('teacherConTotal').textContent=contributionLoadError?'Unavailable':cash(totalC);
