@@ -4,6 +4,19 @@
 window.__welfareWorkflowBundleState='loading';
 window.__welfareWorkflowBundleVersion='20261122-sidebar-navigation-v25';
 const $=id=>document.getElementById(id);
+const ensurePrimaryFundBalanceCard=()=>{
+ const value=$('netTotal'),card=value?.closest('.metric');
+ if(!card)return;
+ card.classList.add('metric-featured','metric-balance');
+ const label=card.querySelector('.metric-label');if(label)label.textContent='TOTAL FUND BALANCE';
+ let note=card.querySelector('.metric-note');
+ if(!note){note=document.createElement('span');note.className='metric-note metric-note-positive';card.querySelector('.metric-content')?.appendChild(note);}
+ if(note&&!note.textContent.trim())note.textContent='After all active payouts';
+};
+ensurePrimaryFundBalanceCard();
+document.addEventListener('DOMContentLoaded',ensurePrimaryFundBalanceCard,{once:true});
+window.addEventListener('welfare-workflows-ready',ensurePrimaryFundBalanceCard);
+
 // Stable route IDs are independent of sidebar labels and presentation text.
 window.__welfareResolvePortalViewTarget=(rawTarget,role)=>{
  const target=String(rawTarget||'').trim();
