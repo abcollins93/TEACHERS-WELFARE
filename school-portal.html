@@ -3582,7 +3582,7 @@ function scheduleDemoAdminWorkflows(school){
  if(demoWorkflowMountPromise)return demoWorkflowMountPromise;
  const mount=async()=>{
   if(demoRole!=='admin')return false;
-  const ready=await waitForSchoolWorkflows(15000);
+  const ready=await waitForSchoolWorkflows(4000);
   if(!ready||typeof window.initSchoolWorkflows!=='function')throw new Error('Admin tools are not ready yet.');
   if(demoRole!=='admin')return false;
   return window.initSchoolWorkflows(client,school,showDashboard);
@@ -3592,7 +3592,8 @@ function scheduleDemoAdminWorkflows(school){
    console.warn('[DEMO] Admin tools are still available for retry:',error?.message||error);
    demoWorkflowMountPromise=null;resolve(false);
   });
-  window.requestAnimationFrame(()=>window.setTimeout(run,0));
+  if('requestIdleCallback' in window)window.requestIdleCallback(run,{timeout:900});
+  else window.setTimeout(run,60);
  }).then(result=>{
   if(!result)demoWorkflowMountPromise=null;
   window.__welfareWorkflowMountPromise=demoWorkflowMountPromise;
@@ -3786,7 +3787,6 @@ async function showDashboardInternal(){
  // dashboard query failures or workflow startup must never prevent the Settings view mounting.
  void startAccountSettingsInitialization(client,school,'admin');
  window.__welfareWorkflowLastError=null;
- document.getElementById('adminWorkflowMountError')?.remove();
  const mountAdminWorkflows=async(timeout=15000)=>{
   const ready=await waitForSchoolWorkflows(timeout);
   if(!ready)throw new Error('Workflow bundle is not ready yet.');
