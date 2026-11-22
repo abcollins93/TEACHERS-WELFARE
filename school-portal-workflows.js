@@ -2327,13 +2327,19 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  if(auditPanel && adminHub && adminHub.contains(auditPanel) && auditView){
    auditView.appendChild(auditPanel);
  }
- auditNav?.addEventListener('click',()=>{
-   if(auditView){
-     auditView.classList.remove('hidden');
-     auditView.setAttribute('aria-hidden','false');
-   }
-   loadAudit();
- },{passive:true});
+ // The sidebar router emits this event only after the Audit destination is
+ // revealed. Hydrate the audit table from that explicit section activation,
+ // rather than relying on a second click listener attached to the menu button.
+ window.addEventListener('welfare-sidebar-section-open',event=>{
+  if(event.detail?.targetId!=='wfAuditPanel'||window.__welfareCurrentRole!=='admin')return;
+  if(auditView){
+   auditView.classList.remove('hidden');
+   auditView.removeAttribute('hidden');
+   auditView.style.setProperty('display','block','important');
+   auditView.setAttribute('aria-hidden','false');
+  }
+  loadAudit();
+ });
  
  let editingTeacherId=null;
  let selectedPassportData=null;
