@@ -8,7 +8,7 @@
  window.__welfareResolvePortalViewTarget=(rawTarget,role)=>{
   const target=String(rawTarget||'').trim();
   const routes=role==='admin'
-   ?{wfContributionPanel:'wfAdminContributionPanel',wfPayoutPanel:'wfAdminPayoutPanel'}
+   ?{wfContributionPanel:'wfAdminContributionPanel',wfPayoutPanel:'wfAdminPayoutPanel',wfTeacherPanel:'teacherProfileViewer'}
    :{wfReportsPanel:'wfStatementPanel',teacherProfileViewer:'wfTeacherPanel'};
   return routes[target]||target;
  };
