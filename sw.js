@@ -28,13 +28,13 @@ const SHELL_ASSETS=[
  './',
  './index.html',
  './school-portal.html',
- './demo-sandbox.js?v=20261122-mobile-stability-v22',
+ './demo-sandbox.js?v=20261121-workflow-recovery-v21',
  './set-password.html',
  './g.html',
  './offline.html',
  './manifest.json',
  './pwa.js',
- './school-portal-workflows.js?v=20261122-mobile-stability-v22',
+ './school-portal-workflows.js?v=20261121-workflow-recovery-v21',
  './icons/welfare-portal.svg'
 ];
 const CDN_ASSETS=[
@@ -53,7 +53,7 @@ self.addEventListener('install',event=>{
    const cache=await caches.open(CACHE_VERSION);
    // Keep the currently active worker if the matching portal/workflow bundle
    // cannot be fetched. A mixed shell must never become the active version.
-   const critical=['./school-portal.html','./school-portal-workflows.js?v=20261122-mobile-stability-v22','./pwa.js'];
+   const critical=['./school-portal.html','./school-portal-workflows.js?v=20261121-workflow-recovery-v21','./pwa.js'];
    await Promise.all(critical.map(async path=>{
      const request=new Request(new URL(path,self.registration.scope),{cache:'reload'});
      const response=await timedFetch(request,STATIC_TIMEOUT_MS);
