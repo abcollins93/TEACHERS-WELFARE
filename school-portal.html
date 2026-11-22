@@ -7620,5 +7620,22 @@ header.top,
 .app-header-group>.overview-top>*{position:relative;z-index:1}
 </style>
 
+<style id="dark-chart-header-contrast-final">
+/* The theme toggle sets html.dark. Keep chart cards readable and the fixed header opaque. */
+html.dark #welfareFinancialCharts .wf-financial-chart-card{background:#0b1d3a!important;border-color:#334966!important;color:#F8FAFC!important;opacity:1!important}
+html.dark #welfareFinancialCharts .wf-financial-chart-head,
+html.dark #welfareFinancialCharts .wf-financial-chart-head h3,
+html.dark #welfareFinancialCharts .wf-financial-chart-head p{opacity:1!important;text-shadow:none!important}
+html.dark #welfareFinancialCharts .wf-financial-chart-head h3{color:#E7C66B!important}
+html.dark #welfareFinancialCharts .wf-financial-chart-head p{color:#CBD5E1!important}
+html.dark #welfareFinancialCharts .wf-financial-chart-readout{background:#142B4A!important;color:#F8FAFC!important;border:1px solid #334966!important}
+html.dark #welfareFinancialCharts .wf-financial-chart-legend{color:#E2E8F0!important}
+html.dark #welfareFinancialCharts .wf-financial-chart-plot text{fill:#CBD5E1!important}
+#wfFundBalanceHistory .wf-financial-chart-scroll{height:190px!important;min-height:190px!important;max-height:190px!important;overflow-x:auto!important;overflow-y:hidden!important}
+#wfFundBalanceHistory .wf-financial-chart-plot{height:190px!important;min-height:190px!important;max-height:190px!important;aspect-ratio:auto!important}
+.app-header-group,.app-header-group::before,.app-header-group>header.top,.app-header-group>.overview-top{background:#10233F!important;background-color:#10233F!important;background-image:none!important;opacity:1!important;filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.app-header-group{z-index:2147483647!important;isolation:isolate!important}
+.app-header-group>header.top,.app-header-group>.overview-top{position:relative!important;z-index:2147483646!important;isolation:isolate!important}
+</style>
 </body>
 </html>
