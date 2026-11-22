@@ -6,9 +6,11 @@ window.__welfareWorkflowBundleVersion='20261122-sidebar-navigation-v24';
 const $=id=>document.getElementById(id);
 // Stable route IDs are independent of sidebar labels and presentation text.
 window.__welfareResolvePortalViewTarget=(rawTarget,role)=>{
- const target=String(rawTarget||'');
- if(role==='admin')return ({wfContributionPanel:'wfAdminContributionPanel',wfPayoutPanel:'wfAdminPayoutPanel'})[target]||target;
- return ({wfReportsPanel:'wfStatementPanel'})[target]||target;
+ const target=String(rawTarget||'').trim();
+ const routes=role==='admin'
+  ?{wfContributionPanel:'wfAdminContributionPanel',wfPayoutPanel:'wfAdminPayoutPanel'}
+  :{wfReportsPanel:'wfStatementPanel',teacherProfileViewer:'wfTeacherPanel'};
+ return routes[target]||target;
 };
 
 /* Shared badge and numeric treatment for workflow-rendered content. */
