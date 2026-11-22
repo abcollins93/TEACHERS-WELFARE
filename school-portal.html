@@ -3858,6 +3858,7 @@ async function showDashboardInternal(){
     window.requestAnimationFrame(()=>window.requestAnimationFrame(schedule));
   }).then(result=>{
     if(result===false)throw new Error('Workflow module reported incomplete initialization.');
+    return result===true;
   }).catch(workflowError=>{
     console.error('[School Welfare] Workflow initialization deferred/failed:',workflowError?.message||workflowError);
     window.__welfareWorkflowMountPromise=null;
@@ -7386,12 +7387,15 @@ input[type="tel"], input[inputmode="numeric"], input[inputmode="decimal"] { font
 <script>
 /* This runs after the workflow bundle and the delegated sidebar router. */
 (function(){
- const ready=typeof window.initSchoolWorkflows==='function'&&typeof window.__welfareSyncSidebarNavigation==='function';
+ const ready=typeof window.initSchoolWorkflows==='function'&&!!window.__welfareWorkflowShellReady&&typeof window.__welfareSyncSidebarNavigation==='function';
  window.__welfareSidebarNavigationReady=ready;
+ window.__welfarePortalStartupReady=ready;
  if(ready){
   const adminButton=document.getElementById('loginBtn');
   const teacherButton=document.getElementById('teacherLoginButton');
-  if(adminButton)adminButton.disabled=false;
+  const params=new URLSearchParams(window.location.search);
+  const gatewayCode=(params.get('c')||params.get('school_code')||params.get('tenant')||params.get('school')||'').trim().toUpperCase();
+  if(adminButton)adminButton.disabled=!!gatewayCode&&!/^[A-Z0-9-]{3,32}$/.test(gatewayCode);
   if(teacherButton)teacherButton.disabled=false;
  }else{
   const adminError=document.getElementById('loginError');
