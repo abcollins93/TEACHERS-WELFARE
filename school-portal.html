@@ -7340,5 +7340,43 @@ input[type="tel"], input[inputmode="numeric"], input[inputmode="decimal"] { font
 }
 @media(prefers-reduced-motion:reduce){:where(button,a,[role="button"],[role="tab"],.navbtn,.tab,.toggle,.password-toggle,[data-action]){transition:none!important}}
 </style>
+
+<style id="sidebar-school-title-wrap-fix">
+/* Show the complete tenant school name in the shared Admin and Member drawer header. */
+#schoolSidebar .sidebar-brand{
+  display:flex!important;
+  align-items:flex-start!important;
+  min-width:0!important;
+  max-width:100%!important;
+}
+#schoolSidebar .sidebar-brand-copy{
+  flex:1 1 0%!important;
+  min-width:0!important;
+  line-height:1.25!important;
+  overflow-wrap:break-word!important;
+}
+#schoolSidebar .sidebar-brand-copy strong,
+#schoolSidebar #sideSchoolName{
+  display:block!important;
+  max-width:100%!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  overflow-wrap:break-word!important;
+  word-break:normal!important;
+  line-height:1.25!important;
+}
+#schoolSidebar .sidebar-close{
+  flex:0 0 auto!important;
+  align-self:flex-start!important;
+  margin-left:auto!important;
+}
+@media(max-width:480px){
+  #schoolSidebar .sidebar-brand-copy{min-width:0!important;flex:1 1 0%!important}
+  #schoolSidebar .sidebar-brand-copy strong,
+  #schoolSidebar #sideSchoolName{white-space:normal!important;overflow:visible!important;text-overflow:clip!important}
+}
+</style>
+
 </body>
 </html>
