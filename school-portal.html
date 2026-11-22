@@ -4408,351 +4408,281 @@ if(isDemoMode){
 </script>
 <script src="school-portal-workflows.js?v=20261122-startup-responsive-v22" onload="window.__welfareWorkflowScriptLoaded=true" onerror="window.__welfareWorkflowInitialScriptFailed=true;(function(){var s=document.createElement('script');s.src='./school-portal-workflows.js?v=20261122-startup-responsive-v22&retry='+Date.now();s.async=true;s.onload=function(){window.__welfareWorkflowScriptLoaded=true};s.onerror=function(){window.__welfareWorkflowScriptError='Workflow bundle could not be downloaded';window.dispatchEvent(new Event('welfare-workflows-load-error'))};document.head.appendChild(s)})()"></script>
 <script>
-/* Resilient sidebar navigation and automatic mobile-drawer closing. */
+/* Unified, role-aware sidebar navigation for live tenants and DEMO. */
 (function(){
-  'use strict';
-  function waitForPortalTarget(targetId,root,timeoutMs=12000){
-    const existing=document.getElementById(targetId);
-    if(existing)return Promise.resolve(existing);
-    if(!root||typeof MutationObserver!=='function')return Promise.resolve(null);
-    return new Promise(resolve=>{
-      let settled=false;
-      let timer=null;
-      const observer=new MutationObserver(()=>{
-        const target=document.getElementById(targetId);
-        if(target)finish(target);
-      });
-      const finish=target=>{
-        if(settled)return;
-        settled=true;
-        observer.disconnect();
-        if(timer)window.clearTimeout(timer);
-        resolve(target||null);
-      };
-      observer.observe(root,{childList:true,subtree:true});
-      timer=window.setTimeout(()=>finish(document.getElementById(targetId)),timeoutMs);
-      const target=document.getElementById(targetId);
-      if(target)finish(target);
-    });
+ 'use strict';
+ const sidebar=document.getElementById('schoolSidebar');
+ const overlay=document.getElementById('mobile-nav-overlay');
+ const dashboard=document.getElementById('dashboard');
+ const viewIds=[
+  'schoolOverview','teacherProfileViewer','schoolTeachers','wfTeacherPanel',
+  'wfTeacherRegisterPanel','wfContributionPanel','wfPayoutPanel',
+  'wfAdminContributionPanel','wfAdminPayoutPanel','wfStatementPanel',
+  'wfReportsPanel','wfAccountSettingsPanel','wfAdminPanel','wfAuditView',
+  'wfAuditPanel','teacherWorkspace','workflows'
+ ];
+ const adminAliases={
+  wfContributionPanel:'wfAdminContributionPanel',
+  wfPayoutPanel:'wfAdminPayoutPanel'
+ };
+ let navigationSequence=0;
+ let pendingObserver=null;
+ let pendingPlaceholder=null;
+ const elementFromEvent=event=>{
+  const path=typeof event.composedPath==='function'?event.composedPath():[];
+  for(const node of path){
+   if(node&&node.nodeType===1&&node.matches?.('.navbtn[data-target]')&&node.closest('#schoolSidebar'))return node;
   }
-  function closeSidebar(){
-    const sidebar = document.getElementById('schoolSidebar');
-    const overlay = document.getElementById('mobile-nav-overlay');
-    const isMobile = window.matchMedia('(max-width: 950px)').matches;
-    if (sidebar) {
-      sidebar.classList.remove('is-mobile-open', 'mobile-open');
-      sidebar.removeAttribute('aria-hidden');
-      sidebar.style.removeProperty('transform');
-    }
-    if (overlay) {
-      overlay.classList.remove('is-open');
-      overlay.setAttribute('aria-hidden', 'true');
-      overlay.style.removeProperty('opacity');
-      overlay.style.removeProperty('visibility');
-      overlay.style.setProperty('pointer-events', 'none');
-    }
-    document.body.classList.remove('sidebar-open');
-    const toggle = document.getElementById('mobileNavToggle');
-    if (toggle) {
-      toggle.setAttribute('aria-expanded', 'false');
-      toggle.setAttribute('aria-label', 'Open navigation menu');
-      toggle.setAttribute('title', 'Open navigation menu');
-      const icon = toggle.querySelector('i');
-      if (icon) icon.className = 'fa-solid fa-bars';
-    }
+  const target=event.target?.nodeType===1?event.target:event.target?.parentElement;
+  return target?.closest?.('#schoolSidebar .navbtn[data-target]')||null;
+ };
+ function closeSidebar(){
+  if(sidebar)sidebar.classList.remove('is-mobile-open','mobile-open');
+  if(overlay){
+   overlay.classList.remove('is-open');
+   overlay.setAttribute('aria-hidden','true');
+   overlay.style.setProperty('pointer-events','none');
   }
-  // Non-view sidebar actions (for example sign-out) may close immediately.
-  // View navigation closes only after its destination has been activated below.
-  document.addEventListener('click', function(event){
-    const control = event.target.closest('#schoolSidebar a, #schoolSidebar button, #schoolSidebar [role="link"]');
-    if (!control || control.matches('.navbtn[data-target]')) return;
-    if (control.matches('a, [role="link"], #sidebarLogout, .sidebar-account-out')) closeSidebar();
+  document.body.classList.remove('sidebar-open');
+  const toggle=document.getElementById('mobileNavToggle');
+  if(toggle){
+   toggle.setAttribute('aria-expanded','false');
+   toggle.setAttribute('aria-label','Open navigation menu');
+   toggle.setAttribute('title','Open navigation menu');
+   const icon=toggle.querySelector('i');
+   if(icon)icon.className='fa-solid fa-bars';
+  }
+ }
+ function setActiveButton(button){
+  sidebar?.querySelectorAll('.navbtn[data-target]').forEach(item=>{
+   const active=item===button;
+   item.classList.toggle('active',active);
+   if(active)item.setAttribute('aria-current','page');
+   else item.removeAttribute('aria-current');
   });
-  // Pointer-down is visual feedback only. Never close or move the drawer here:
-  // doing so can move the tapped button out from under the finger before the
-  // browser dispatches its click event, cancelling navigation on touch devices.
-  // The delegated click handler below closes the drawer and activates the view
-  // together, after the browser has successfully recognized the tap.
-  document.addEventListener('pointerdown',function(event){
-    const button=event.target.closest?.('.navbtn[data-target]');
-    if(!button)return;
-    button.classList.add('is-pressed');
-  },{capture:true,passive:true});
-  const clearPressed=event=>{const button=event.target.closest?.('.navbtn.is-pressed');if(button)button.classList.remove('is-pressed');};
-  document.addEventListener('pointerup',clearPressed,{passive:true});
-  document.addEventListener('pointercancel',clearPressed,{passive:true});
-  document.addEventListener('click',clearPressed,{passive:true});
-  // The primary navigation handler above owns open/close state. Avoid a
-  // second click listener that could reopen the backdrop after it is closed.
-  // Capture navigation taps before any page-level handler can stop bubbling.
-  // This is particularly important on mobile, where nested controls may have
-  // their own click handlers; navigation must always receive the recognized tap.
-  document.addEventListener('click', function(event){
-    const button = event.target?.closest?.('#schoolSidebar .navbtn[data-target]');
-    if (!button) return;
-    event.preventDefault();
-    // Close the mobile drawer immediately. If a workflow view is still mounting,
-    // its loading delay must not leave the dark overlay covering the page.
-    closeSidebar();
-    // A newer tap supersedes any temporary loading panel from an earlier choice.
-    document.getElementById('sidebarNavigationPlaceholder')?.remove();
-    document.querySelectorAll('.navbtn').forEach(function(item){
-      item.classList.toggle('active', item === button);
-      item.setAttribute('aria-current', item === button ? 'location' : 'false');
-    });
-    const dashboardRoot = document.getElementById('dashboard');
-    if(dashboardRoot){dashboardRoot.classList.remove('hidden');dashboardRoot.removeAttribute('hidden');dashboardRoot.style.setProperty('display','block','important');dashboardRoot.style.setProperty('visibility','visible','important');dashboardRoot.removeAttribute('aria-hidden');}
-    const rawRequestedId = button.dataset.target;
-    // The member workspace owns the legacy panel IDs in the static document.
-    // Administrator panels are mounted later under #workflows and use unique IDs.
-    const role = window.__welfareCurrentRole === 'admin' ? 'admin' : 'teacher';
-    const fallbackTargets = role === 'admin'
-      ? {wfContributionPanel:'wfAdminContributionPanel',wfPayoutPanel:'wfAdminPayoutPanel'}
-      : {wfReportsPanel:'wfStatementPanel'};
-    const requestedId = typeof window.__welfareResolvePortalViewTarget === 'function'
-      ? window.__welfareResolvePortalViewTarget(rawRequestedId,role)
-      : (fallbackTargets[rawRequestedId] || rawRequestedId);
-    // Clear legacy workspace CSS states when navigating to ordinary sections.
-    // Those states otherwise force-hide the roster after strict navigation reveals it.
-    if(dashboardRoot && requestedId !== 'wfAdminPanel' && requestedId !== 'wfAuditPanel'){
-      dashboardRoot.classList.remove('admin-workspace-open','audit-trail-open');
-    }
-    // Administrator reports are a dedicated destination: never leave them visible
-    // on Dashboard, Admin Panel, or any other workspace.
-    const reportsPanel = document.getElementById('wfReportsPanel');
-    if (reportsPanel) reportsPanel.classList.toggle('hidden', requestedId !== 'wfReportsPanel');
-    if(window.__welfareCurrentRole==='teacher' && ['schoolTeachers','wfAdminPanel','wfAuditPanel','wfReportsPanel'].includes(requestedId)){
-      button.classList.remove('active');button.setAttribute('aria-current','false');
-      window.showWelfareDialog('alert','Restricted Access. This section is available to school administrators only.');
-      return;
-    }
-    const auditView = document.getElementById('wfAuditView');
-    const pendingNotice = document.getElementById('sidebarNavigationNotice');
-    if (pendingNotice) pendingNotice.remove();
-
-    // Workflow markup is mounted only after the authenticated school is known.
-    // Resolve the requested node on every attempt and re-apply view state only
-    // once it exists, so a first click during initialization cannot strand the UI.
-    const findTarget = () => document.getElementById(requestedId);
-    const adminWorkflowTargets=['teacherProfileViewer','schoolTeachers','wfAdminContributionPanel','wfAdminPayoutPanel','wfStatementPanel','wfReportsPanel','wfAdminPanel','wfAuditPanel'];
-    let target = findTarget();
-    // Never block a tap while the workflow bundle is mounting. Keep the
-    // current screen responsive and resume this navigation as soon as the
-    // authenticated tenant workspace has mounted.
-    if(!target&&window.__welfareCurrentRole==='admin'&&adminWorkflowTargets.includes(requestedId)){
-      // Show the selected destination immediately instead of leaving the user
-      // on the previous section while the workflow bundle finishes mounting.
-      window.__welfareActivePortalView=requestedId;
-      const placeholderId='sidebarNavigationPlaceholder';
-      let placeholder=document.getElementById(placeholderId);
-      if(!placeholder){placeholder=document.createElement('section');placeholder.id=placeholderId;placeholder.className='panel';placeholder.setAttribute('role','status');placeholder.setAttribute('aria-live','polite');}
-      const title=button.querySelector('span')?.textContent?.trim()||'Selected section';
-      placeholder.innerHTML='<div style="display:flex;align-items:center;gap:10px"><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i><div><strong>'+title+'</strong><div class="muted">Opening your school workspace…</div></div></div>';
-      const host=document.getElementById('schoolOverview')?.parentElement||dashboardRoot?.querySelector('.dash-layout>div');
-      if(host&&!placeholder.isConnected)host.insertBefore(placeholder,document.getElementById('workflows')||null);
-      ['schoolOverview','teacherProfileViewer','schoolTeachers','wfTeacherPanel','wfContributionPanel','wfPayoutPanel','wfAdminContributionPanel','wfAdminPayoutPanel','wfStatementPanel','wfReportsPanel','wfAdminPanel','wfAuditView','teacherWorkspace','workflows'].forEach(id=>{
-        const view=document.getElementById(id);
-        if(view&&view!==placeholder){view.classList.add('hidden');view.style.setProperty('display','none','important');view.setAttribute('aria-hidden','true');}
-      });
-      placeholder.classList.remove('hidden');placeholder.style.setProperty('display','block','important');placeholder.removeAttribute('aria-hidden');
-      const pendingMount=window.__welfareWorkflowMountPromise;
-      Promise.resolve(pendingMount).catch(error=>console.warn('[School Welfare] Workspace mount deferred:',error?.message||error))
-        .then(()=>waitForPortalTarget(requestedId,dashboardRoot))
-        .then(mountedTarget=>{
-          if(window.__welfareActivePortalView!==requestedId){placeholder.remove();return;}
-          if(mountedTarget){placeholder.remove();button.dataset.mountAttempts='0';button.click();return;}
-          placeholder.innerHTML='<strong>'+title+'</strong><p class="muted">This section could not be mounted. Please retry after the workspace finishes loading.</p>';
-        });
-      return;
-    }
-    // Reveal the destination first. Profile fields are rendered once immediately
-    // after visibility is applied; network-backed refreshes remain in the RAF task.
-    window.__welfareActivePortalView=requestedId;
-    const scheduleSectionRefresh=()=>{
-      window.requestAnimationFrame(()=>{
-        if(window.__welfareActivePortalView!==requestedId)return;
-        Promise.resolve().then(async()=>{
-          if(requestedId==='teacherProfileViewer'&&window.__welfareCurrentRole==='admin'&&typeof window.__welfareRefreshAdminProfileViewer==='function'){
-            await window.__welfareRefreshAdminProfileViewer();
-          }else if(window.__welfareCurrentRole==='admin'&&['wfAdminContributionPanel','wfAdminPayoutPanel'].includes(requestedId)&&typeof window.__welfareRefreshAdminWorkspace==='function'){
-            await window.__welfareRefreshAdminWorkspace();
-          }else if(window.__welfareCurrentRole==='admin'&&requestedId==='schoolTeachers'&&typeof window.__welfareEnsureTeacherRegisterLoaded==='function'){
-            await window.__welfareEnsureTeacherRegisterLoaded(window.__welfareCurrentSchool?.school_code);
-          }
-        }).catch(error=>console.warn('[School Welfare] Background section refresh deferred:',error?.message||error));
-      });
-    };
-    // Continue through the same reveal path even when the target is already
-    // visible: this clears stale inline display/aria states and refreshes titles.
-    if (!target) {
-      const activeRequest=requestedId;
-      const pendingMount=window.__welfareWorkflowMountPromise;
-      Promise.resolve(pendingMount).catch(error=>console.warn('[School Welfare] Section mount deferred:',error?.message||error))
-        .then(()=>waitForPortalTarget(activeRequest,dashboardRoot))
-        .then(mountedTarget=>{
-          if(window.__welfareActivePortalView!==activeRequest)return;
-          if(mountedTarget){button.dataset.mountAttempts='0';button.click();return;}
-          button.dataset.mountAttempts='0';
-          const overview=document.getElementById('schoolOverview');
-          if(overview){overview.classList.remove('hidden');overview.style.setProperty('display','block','important');}
-          console.warn('[School Welfare] Sidebar destination was not mounted:',activeRequest);
-        });
-      return;
-    }
-
-    // Strict single-view navigation: hide every other portal destination, then
-    // reveal only the selected destination and the ancestor containers it needs.
-    const sectionTitles = {
-      schoolOverview: 'Dashboard',
-      teacherProfileViewer: 'Teacher Profile',
-      wfTeacherPanel: 'Profile Viewer',
-      schoolTeachers: 'Teachers & Members',
-      wfContributionPanel: 'Contributions',
-      wfPayoutPanel: 'Welfare & Payouts',
-      wfAdminContributionPanel: 'Contributions',
-      wfAdminPayoutPanel: 'Welfare & Payouts',
-      wfStatementPanel: 'Statements & Reports',
-      wfReportsPanel: 'Statements & Reports',
-      wfAdminPanel: 'Administration Panel',
-      wfAuditPanel: 'Audit Trail Dashboard'
-    };
-    const pageTitle = document.getElementById('sectionPageTitle');
-    if (pageTitle) pageTitle.textContent = sectionTitles[requestedId] || 'Dashboard';
-
-    const viewIds = [
-      'schoolOverview','teacherProfileViewer','schoolTeachers','wfTeacherPanel','wfTeacherRegisterPanel',
-      'wfContributionPanel','wfPayoutPanel','wfAdminContributionPanel','wfAdminPayoutPanel','wfStatementPanel','wfReportsPanel','wfAccountSettingsPanel',
-      'wfAdminPanel','wfAuditView','teacherWorkspace','workflows'
-    ];
-    viewIds.forEach(function(id){
-      const view = document.getElementById(id);
-      if (!view || view === target || view.contains(target) || target.contains(view)) return;
-      view.classList.add('hidden');
-      view.style.setProperty('display','none','important');
-      view.setAttribute('aria-hidden','true');
-    });
-
-    // A selected item nested inside Administration Panel (for example,
-    // Contributions or Welfare & Payouts) keeps its required parent containers,
-    // but all unrelated admin cards are hidden.
-    const adminHub = document.getElementById('wfAdminPanel');
-    const selectedInsideAdmin = !!(adminHub && adminHub.contains(target) && target !== adminHub);
-    if (selectedInsideAdmin) {
-      adminHub.querySelectorAll('.panel').forEach(function(panel){
-        if (panel === target || panel.contains(target)) return;
-        panel.classList.add('hidden');
-        panel.style.setProperty('display','none','important');
-        panel.setAttribute('aria-hidden','true');
-      });
-    }
-
-    // Reveal the target and only the ancestors required to place it in the
-    // dashboard layout. This also handles audit and dynamically mounted views.
-    let ancestor = target;
-    while (ancestor) {
-      ancestor.classList.remove('hidden');
-      ancestor.removeAttribute('hidden');
-      ancestor.style.removeProperty('display');
-      ancestor.style.removeProperty('visibility');
-      ancestor.removeAttribute('aria-hidden');
-      if(ancestor===dashboardRoot)break;
-      ancestor = ancestor.parentElement;
-    }
-    if(requestedId==='teacherProfileViewer'&&window.__welfareCurrentRole==='admin'){
-      // Reveal synchronously; hydrate cached profile fields on the next paint.
-      window.requestAnimationFrame(()=>{
-        if(window.__welfareActivePortalView!==requestedId)return;
-        (window.__welfareRenderActiveProfileViewer||window.__welfareDemoRenderProfileViewer||window.__welfareRenderAdminProfileViewer)?.();
-      });
-    }else if(requestedId==='wfTeacherPanel'&&window.__welfareCurrentRole==='teacher'){
-      window.requestAnimationFrame(()=>{
-        if(window.__welfareActivePortalView!==requestedId)return;
-        (window.__welfareRenderActiveProfileViewer||window.__welfareDemoRenderProfileViewer||window.__welfareRefreshMemberProfileViewer)?.();
-      });
-    }
-    if (requestedId === 'schoolTeachers') {
-      // The register is mounted dynamically inside this section. A previous
-      // navigation may have hidden the child panel independently of its parent.
-      const registerPanel = document.getElementById('wfTeacherRegisterPanel');
-      target.classList.remove('hidden');
-      target.removeAttribute('hidden');
-      target.style.setProperty('display','block','important');
-      target.style.setProperty('visibility','visible','important');
-      target.removeAttribute('aria-hidden');
-      if(registerPanel){
-        // The live teacher register is mounted inside #workflows, beside (not
-        // inside) the Admin Panel. Reveal its full ancestor chain as well;
-        // otherwise the register itself is visible in the DOM but trapped
-        // beneath a still-hidden workflow wrapper.
-        let registerAncestor=registerPanel;
-        while(registerAncestor&&registerAncestor!==dashboardRoot){
-          registerAncestor.classList.remove('hidden');
-          registerAncestor.removeAttribute('hidden');
-          registerAncestor.style.removeProperty('display');
-          registerAncestor.style.removeProperty('visibility');
-          registerAncestor.removeAttribute('aria-hidden');
-          registerAncestor=registerAncestor.parentElement;
-        }
-        registerPanel.style.setProperty('display','block','important');
-        registerPanel.style.setProperty('visibility','visible','important');
-      }
-    }
-    if (requestedId === 'wfAdminPanel') {
-      // A previous visit to a nested admin destination (such as Contributions
-      // or Welfare & Payouts) hides the other admin cards. Restore the complete
-      // administration workspace whenever its main navigation item is selected.
-      target.querySelectorAll('.panel').forEach(function(panel){
-        panel.classList.remove('hidden');
-        panel.style.removeProperty('display');
-        panel.style.removeProperty('visibility');
-        panel.removeAttribute('aria-hidden');
-      });
-      target.classList.remove('hidden');
-      target.style.setProperty('display','block','important');
-      target.style.setProperty('visibility','visible','important');
-      target.removeAttribute('aria-hidden');
-    }
-
-    if (requestedId === 'wfAuditPanel') {
-      // Audit history is mounted inside its own wrapper, outside the admin hub.
-      // Restore both wrapper and table panel explicitly so prior navigation
-      // cannot leave either one hidden by a stale class or inline display rule.
-      const auditView = document.getElementById('wfAuditView');
-      if (auditView) {
-        auditView.classList.remove('hidden');
-        auditView.style.setProperty('display','block','important');
-        auditView.style.setProperty('visibility','visible','important');
-        auditView.removeAttribute('aria-hidden');
-      }
-      target.classList.remove('hidden');
-      target.style.setProperty('display','block','important');
-      target.style.setProperty('visibility','visible','important');
-      target.removeAttribute('aria-hidden');
-    }
-
-    // Keep the selected navigation item as the sole active item and update the
-    // accessible current-page state.
-    document.querySelectorAll('.sidebar .navbtn[data-target]').forEach(function(item){
-      const active = item === button;
-      item.classList.toggle('active', active);
-      if (active) item.setAttribute('aria-current','page');
-      else item.removeAttribute('aria-current');
-    });
-    // The drawer was closed at the start of this click. Commit the selected
-    // view now; expensive refresh work is queued after the browser paints it.
-    // Keep the profile render synchronous but run it only once, after reveal.
-    scheduleSectionRefresh();
-    window.requestAnimationFrame(()=>{
-      if(window.__welfareActivePortalView!==requestedId)return;
-      target.scrollIntoView({behavior:'auto',block:'start'});
-    });
-    if (typeof target.focus === 'function') {
-      if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex','-1');
-      target.focus({preventScroll:true});
-    }
-    button.dataset.mountAttempts = '0';
-    window.__welfareActivePortalView = requestedId;
-  }, {capture:true});
+ }
+ function resolveTargetId(button){
+  const raw=String(button?.dataset?.target||'').trim();
+  return window.__welfareCurrentRole==='admin'?(adminAliases[raw]||raw):raw;
+ }
+ function isRestricted(targetId){
+  return window.__welfareCurrentRole==='teacher'&&
+   ['schoolTeachers','wfAdminPanel','wfAuditPanel','wfReportsPanel','wfAdminContributionPanel','wfAdminPayoutPanel'].includes(targetId);
+ }
+ function hideView(view){
+  if(!view)return;
+  view.classList.add('hidden');
+  view.setAttribute('aria-hidden','true');
+  view.setAttribute('hidden','');
+  view.style.setProperty('display','none','important');
+ }
+ function revealView(view,forceBlock=false){
+  if(!view)return;
+  view.classList.remove('hidden');
+  view.removeAttribute('hidden');
+  view.removeAttribute('aria-hidden');
+  view.style.removeProperty('display');
+  view.style.removeProperty('visibility');
+  if(forceBlock)view.style.setProperty('display','block','important');
+ }
+ function revealDestination(target,targetId){
+  // Hide each peer destination, but retain wrappers that contain the selected
+  // destination. This preserves the correct ancestor chain for dynamic panels.
+  viewIds.forEach(id=>{
+   const view=document.getElementById(id);
+   if(!view||view===target||view.contains(target)||target.contains(view))return;
+   hideView(view);
+  });
+  // Clear stale legacy workspace flags before revealing the selected page.
+  if(dashboard&&targetId!=='wfAdminPanel'&&targetId!=='wfAuditPanel'){
+   dashboard.classList.remove('admin-workspace-open','audit-trail-open');
+  }
+  let ancestor=target;
+  while(ancestor){
+   revealView(ancestor,ancestor===target);
+   if(ancestor===dashboard)break;
+   ancestor=ancestor.parentElement;
+  }
+  if(targetId==='wfAdminPanel'){
+   target.querySelectorAll('.panel').forEach(panel=>revealView(panel));
+   revealView(target,true);
+  }
+  if(targetId==='schoolTeachers'){
+   const register=document.getElementById('wfTeacherRegisterPanel');
+   if(register){
+    let node=register;
+    while(node&&node!==dashboard){revealView(node,node===register);node=node.parentElement;}
+    revealView(register,true);
+   }
+  }
+  if(targetId==='wfAuditPanel'){
+   const auditView=document.getElementById('wfAuditView');
+   if(auditView)revealView(auditView,true);
+   revealView(target,true);
+  }
+  // Reports are an independent destination, never a child of another view.
+  const reports=document.getElementById('wfReportsPanel');
+  if(reports&&targetId!=='wfReportsPanel')hideView(reports);
+  revealView(target,true);
+ }
+ function showPendingDestination(button,targetId,sequence){
+  if(pendingPlaceholder)pendingPlaceholder.remove();
+  const host=document.getElementById('schoolOverview')?.parentElement||
+   dashboard?.querySelector('.dash-layout>div')||dashboard;
+  if(!host)return;
+  const placeholder=document.createElement('section');
+  placeholder.id='sidebarNavigationPlaceholder';
+  placeholder.className='panel';
+  placeholder.setAttribute('role','status');
+  placeholder.setAttribute('aria-live','polite');
+  const label=button.querySelector('span')?.textContent?.trim()||'Selected section';
+  placeholder.innerHTML='<div style="display:flex;align-items:center;gap:10px"><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i><div><strong></strong><div class="muted">Opening your school workspace…</div></div></div>';
+  placeholder.querySelector('strong').textContent=label;
+  host.insertBefore(placeholder,document.getElementById('workflows')||null);
+  pendingPlaceholder=placeholder;
+  viewIds.forEach(id=>{const view=document.getElementById(id);if(view&&!view.contains(placeholder))hideView(view);});
+  revealView(placeholder,true);
+  if(pendingObserver)pendingObserver.disconnect();
+  const attempt=()=>{
+   if(sequence!==navigationSequence){pendingObserver?.disconnect();return;}
+   const target=document.getElementById(targetId);
+   if(target){
+    pendingObserver?.disconnect();pendingObserver=null;
+    placeholder.remove();pendingPlaceholder=null;
+    activateDestination(button,targetId,target,sequence);
+   }
+  };
+  if(dashboard&&'MutationObserver' in window){
+   pendingObserver=new MutationObserver(attempt);
+   pendingObserver.observe(dashboard,{childList:true,subtree:true});
+  }
+  const mount=window.__welfareWorkflowMountPromise;
+  if(mount)Promise.resolve(mount).then(()=>{
+   window.requestAnimationFrame(attempt);
+   window.dispatchEvent(new Event('welfare-workspace-mounted'));
+  }).catch(error=>{
+   if(sequence!==navigationSequence)return;
+   pendingObserver?.disconnect();pendingObserver=null;
+   placeholder.innerHTML='';
+   const message=document.createElement('p');
+   message.className='muted';
+   message.textContent='This section could not be mounted. Please use the portal retry option and try again.';
+   placeholder.appendChild(message);
+   console.warn('[School Welfare] Sidebar destination mount failed:',error?.message||error);
+  });
+ }
+ function refreshDestination(targetId){
+  const role=window.__welfareCurrentRole;
+  // Profile data is rendered synchronously from the cached, authenticated
+  // profile state so the page is populated on the first visible frame.
+  if(targetId==='teacherProfileViewer'&&role==='admin'){
+   (window.__welfareRenderAdminProfileViewer||window.__welfareRenderActiveProfileViewer)?.();
+   window.requestAnimationFrame(()=>window.__welfareRefreshAdminProfileViewer?.());
+  }else if(targetId==='wfTeacherPanel'&&role==='teacher'){
+   (window.__welfareRenderActiveProfileViewer||window.__welfareRefreshMemberProfileViewer)?.();
+  }else if(targetId==='schoolTeachers'&&role==='admin'){
+   window.requestAnimationFrame(()=>window.__welfareEnsureTeacherRegisterLoaded?.(window.__welfareCurrentSchool?.school_code));
+  }else if(role==='admin'&&['wfAdminContributionPanel','wfAdminPayoutPanel'].includes(targetId)){
+   window.requestAnimationFrame(()=>window.__welfareRefreshAdminWorkspace?.());
+  }else if(targetId==='wfAuditPanel'){
+   // The workflow module's button-level listener performs the lazy audit load.
+   window.dispatchEvent(new CustomEvent('welfare-sidebar-section-open',{detail:{targetId}}));
+  }
+ }
+ function activateDestination(button,targetId,target,sequence){
+  if(sequence!==navigationSequence)return;
+  if(pendingPlaceholder){pendingPlaceholder.remove();pendingPlaceholder=null;}
+  revealDestination(target,targetId);
+  const titleMap={
+   schoolOverview:'Dashboard',teacherProfileViewer:'Profile viewer',wfTeacherPanel:'Profile viewer',
+   schoolTeachers:'Teachers & Members',wfContributionPanel:'Contributions',
+   wfPayoutPanel:'Welfare & Payouts',wfAdminContributionPanel:'Contributions',
+   wfAdminPayoutPanel:'Welfare & Payouts',wfStatementPanel:'Statements & Reports',
+   wfReportsPanel:'Statements & Reports',wfAdminPanel:'Admin panel',wfAuditPanel:'Audit trail dashboard'
+  };
+  const pageTitle=document.getElementById('sectionPageTitle');
+  if(pageTitle)pageTitle.textContent=titleMap[targetId]||'Dashboard';
+  setActiveButton(button);
+  refreshDestination(targetId);
+  window.__welfareActivePortalView=targetId;
+  window.__welfareActivePortalTarget=target;
+  window.requestAnimationFrame(()=>{
+   if(sequence!==navigationSequence||!target.isConnected)return;
+   target.scrollIntoView({behavior:'auto',block:'start'});
+  });
+  if(typeof target.focus==='function'){
+   if(!target.hasAttribute('tabindex'))target.setAttribute('tabindex','-1');
+   target.focus({preventScroll:true});
+  }
+  button.dataset.mountAttempts='0';
+ }
+ function navigate(button){
+  const sequence=++navigationSequence;
+  if(pendingObserver){pendingObserver.disconnect();pendingObserver=null;}
+  if(pendingPlaceholder){pendingPlaceholder.remove();pendingPlaceholder=null;}
+  closeSidebar();
+  const targetId=resolveTargetId(button);
+  setActiveButton(button);
+  if(isRestricted(targetId)){
+   button.classList.remove('active');
+   button.removeAttribute('aria-current');
+   window.showWelfareDialog?.('alert','Restricted Access. This section is available to school administrators only.');
+   return;
+  }
+  if(dashboard){
+   dashboard.classList.remove('hidden');
+   dashboard.removeAttribute('hidden');
+   dashboard.style.setProperty('display','block','important');
+   dashboard.style.setProperty('visibility','visible','important');
+   dashboard.removeAttribute('aria-hidden');
+  }
+  const target=document.getElementById(targetId);
+  if(target){activateDestination(button,targetId,target,sequence);return;}
+  if(!targetId){
+   console.warn('[School Welfare] Sidebar item has no destination:',button);
+   return;
+  }
+  // Wait for the authenticated workflow mount to insert its real destination.
+  // A MutationObserver replaces repeated timers and synthetic click recursion.
+  showPendingDestination(button,targetId,sequence);
+ }
+ // Capture after the browser has recognized the click, but before unrelated
+ // document-level handlers can change the selected view or drawer state.
+ document.addEventListener('click',event=>{
+  const button=elementFromEvent(event);
+  if(!button)return;
+  event.preventDefault();
+  navigate(button);
+ },true);
+ document.addEventListener('pointerdown',event=>{
+  const button=elementFromEvent(event);
+  if(button)button.classList.add('is-pressed');
+ },{capture:true,passive:true});
+ const clearPressed=event=>{
+  const target=event.target?.nodeType===1?event.target:event.target?.parentElement;
+  target?.closest?.('.navbtn.is-pressed')?.classList.remove('is-pressed');
+ };
+ document.addEventListener('pointerup',clearPressed,{passive:true});
+ document.addEventListener('pointercancel',clearPressed,{passive:true});
+ document.addEventListener('click',clearPressed,{passive:true});
+ // Other sidebar actions (not destinations) still close the drawer.
+ sidebar?.addEventListener('click',event=>{
+  const target=event.target?.nodeType===1?event.target:event.target?.parentElement;
+  const action=target?.closest?.('a,[role="link"],#sidebarLogout,.sidebar-account-out');
+  if(action&&!action.matches('.navbtn[data-target]'))closeSidebar();
+ });
+ window.__welfareNavigateSidebarButton=button=>{if(button?.matches?.('.navbtn[data-target]'))navigate(button);};
+ window.__welfareSyncSidebarNavigation=()=>{
+  const teacher=window.__welfareCurrentRole==='teacher';
+  sidebar?.querySelectorAll('.navbtn[data-target]').forEach(button=>{
+   const target=button.dataset.target;
+   const restricted=teacher&&['schoolTeachers','wfAdminPanel','wfAuditPanel','wfReportsPanel'].includes(target);
+   button.classList.toggle('role-restricted',restricted);
+   if(restricted){button.setAttribute('aria-disabled','true');button.title='Restricted Access — school administrators only';}
+   else{button.removeAttribute('aria-disabled');button.removeAttribute('title');}
+  });
+ };
+ window.__welfareSyncSidebarNavigation();
 })();
 </script>
 <style>
