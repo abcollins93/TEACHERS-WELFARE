@@ -4264,7 +4264,7 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
  const staffId=String($('teacherStaffId').value??'').trim();
  const password=$('teacherPreviewPassword').value; // Do not trim custom passwords.
  const message=$('teacherLoginMessage'),button=$('teacherLoginButton');
- message.className='muted';message.textContent='Verifying teacher account…';button.disabled=true;
+ message.className='muted';message.textContent='Signing in & loading school records...';button.disabled=true;
  let authSessionCreated=false;
  console.groupCollapsed('[School Welfare] Teacher sign-in diagnostics');
  console.log('Entered Staff ID:',staffId);
