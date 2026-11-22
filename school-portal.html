@@ -4411,6 +4411,30 @@ if(isDemoMode){
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
   'use strict';
+  function waitForPortalTarget(targetId,root,timeoutMs=12000){
+    const existing=document.getElementById(targetId);
+    if(existing)return Promise.resolve(existing);
+    if(!root||typeof MutationObserver!=='function')return Promise.resolve(null);
+    return new Promise(resolve=>{
+      let settled=false;
+      let timer=null;
+      const observer=new MutationObserver(()=>{
+        const target=document.getElementById(targetId);
+        if(target)finish(target);
+      });
+      const finish=target=>{
+        if(settled)return;
+        settled=true;
+        observer.disconnect();
+        if(timer)window.clearTimeout(timer);
+        resolve(target||null);
+      };
+      observer.observe(root,{childList:true,subtree:true});
+      timer=window.setTimeout(()=>finish(document.getElementById(targetId)),timeoutMs);
+      const target=document.getElementById(targetId);
+      if(target)finish(target);
+    });
+  }
   function closeSidebar(){
     const sidebar = document.getElementById('schoolSidebar');
     const overlay = document.getElementById('mobile-nav-overlay');
@@ -4481,10 +4505,13 @@ if(isDemoMode){
     const rawRequestedId = button.dataset.target;
     // The member workspace owns the legacy panel IDs in the static document.
     // Administrator panels are mounted later under #workflows and use unique IDs.
-    const adminViewTargets = {wfContributionPanel:'wfAdminContributionPanel',wfPayoutPanel:'wfAdminPayoutPanel'};
-    const requestedId = window.__welfareCurrentRole === 'admin'
-      ? (adminViewTargets[rawRequestedId] || rawRequestedId)
-      : rawRequestedId;
+    const role = window.__welfareCurrentRole === 'admin' ? 'admin' : 'teacher';
+    const fallbackTargets = role === 'admin'
+      ? {wfContributionPanel:'wfAdminContributionPanel',wfPayoutPanel:'wfAdminPayoutPanel'}
+      : {wfReportsPanel:'wfStatementPanel'};
+    const requestedId = typeof window.__welfareResolvePortalViewTarget === 'function'
+      ? window.__welfareResolvePortalViewTarget(rawRequestedId,role)
+      : (fallbackTargets[rawRequestedId] || rawRequestedId);
     // Clear legacy workspace CSS states when navigating to ordinary sections.
     // Those states otherwise force-hide the roster after strict navigation reveals it.
     if(dashboardRoot && requestedId !== 'wfAdminPanel' && requestedId !== 'wfAuditPanel'){
@@ -4528,16 +4555,14 @@ if(isDemoMode){
         if(view&&view!==placeholder){view.classList.add('hidden');view.style.setProperty('display','none','important');view.setAttribute('aria-hidden','true');}
       });
       placeholder.classList.remove('hidden');placeholder.style.setProperty('display','block','important');placeholder.removeAttribute('aria-hidden');
-      let attempts=0;
-      const resumeWhenMounted=()=>{
-        if(window.__welfareActivePortalView!==requestedId){placeholder.remove();return;}
-        if(findTarget()){placeholder.remove();button.dataset.mountAttempts='0';button.click();return;}
-        if(++attempts<40){window.setTimeout(resumeWhenMounted,100);return;}
-        placeholder.innerHTML='<strong>'+title+'</strong><p class="muted">This section is taking longer than expected. Please refresh the portal and try again.</p>';
-      };
       const pendingMount=window.__welfareWorkflowMountPromise;
-      if(pendingMount)Promise.resolve(pendingMount).then(()=>window.requestAnimationFrame(resumeWhenMounted),resumeWhenMounted);
-      else window.requestAnimationFrame(resumeWhenMounted);
+      Promise.resolve(pendingMount).catch(error=>console.warn('[School Welfare] Workspace mount deferred:',error?.message||error))
+        .then(()=>waitForPortalTarget(requestedId,dashboardRoot))
+        .then(mountedTarget=>{
+          if(window.__welfareActivePortalView!==requestedId){placeholder.remove();return;}
+          if(mountedTarget){placeholder.remove();button.dataset.mountAttempts='0';button.click();return;}
+          placeholder.innerHTML='<strong>'+title+'</strong><p class="muted">This section could not be mounted. Please retry after the workspace finishes loading.</p>';
+        });
       return;
     }
     // Reveal the destination first. Profile fields are rendered once immediately
@@ -4560,27 +4585,18 @@ if(isDemoMode){
     // Continue through the same reveal path even when the target is already
     // visible: this clears stale inline display/aria states and refreshes titles.
     if (!target) {
-      const attempts = Number(button.dataset.mountAttempts || 0);
-      const dashboardVisible = dashboardRoot && !dashboardRoot.classList.contains('hidden');
-      if (attempts < 30 && dashboardVisible) {
-        button.dataset.mountAttempts = String(attempts + 1);
-        window.setTimeout(() => {
-          if (findTarget()) {
-            button.dataset.mountAttempts = '0';
-            button.click();
-          } else if (attempts + 1 < 30) {
-            button.click();
-          } else {
-            button.dataset.mountAttempts = '0';
-            const overview = document.getElementById('schoolOverview');
-            if (overview) overview.scrollIntoView({behavior:'smooth',block:'start'});
-          }
-        }, 120);
-      } else {
-        button.dataset.mountAttempts = '0';
-        const overview = document.getElementById('schoolOverview');
-        if (overview) overview.scrollIntoView({behavior:'smooth',block:'start'});
-      }
+      const activeRequest=requestedId;
+      const pendingMount=window.__welfareWorkflowMountPromise;
+      Promise.resolve(pendingMount).catch(error=>console.warn('[School Welfare] Section mount deferred:',error?.message||error))
+        .then(()=>waitForPortalTarget(activeRequest,dashboardRoot))
+        .then(mountedTarget=>{
+          if(window.__welfareActivePortalView!==activeRequest)return;
+          if(mountedTarget){button.dataset.mountAttempts='0';button.click();return;}
+          button.dataset.mountAttempts='0';
+          const overview=document.getElementById('schoolOverview');
+          if(overview){overview.classList.remove('hidden');overview.style.setProperty('display','block','important');}
+          console.warn('[School Welfare] Sidebar destination was not mounted:',activeRequest);
+        });
       return;
     }
 
