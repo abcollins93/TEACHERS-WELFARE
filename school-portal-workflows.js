@@ -1568,7 +1568,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  };
  const renderTeacherTables=()=>{const q=String($('wfTeacherSearch')?.value||'').trim().toLowerCase();const visible=teachers.filter(t=>[t.id,t.name,t.phone,t.rank,t.class_name,t.membership_type,t.employer].some(v=>String(v||'').toLowerCase().includes(q)));
  $('wfManageTeacherRows').innerHTML=tr.error?'<tr><td colspan="9">Teacher register could not be loaded. Check the school connection and permissions, then <button type="button" class="wf-table-action" data-wf-retry-roster>Retry loading</button>.</td></tr>':visible.length?visible.map(t=>{const login=teacherLoginState(t);return '<tr><td class="wf-staff-id-cell"><span class="wf-staff-id-badge">'+esc(t.id)+'</span></td><td class="teacher-name-cell">'+esc(t.name)+'</td><td class="wf-phone-cell">'+esc(t.phone||'—')+'</td><td class="wf-accent-cell wf-rank-cell"><span class="wf-rank-badge">'+esc(t.rank||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-class-accent">'+esc(t.class_name||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-membership-badge">'+esc(t.membership_type||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-employer-badge">'+esc(t.employer||'—')+'</span></td><td><span class="wf-teacher-status '+(t.is_active===false?'inactive':'active')+'">'+(t.is_active===false?'Inactive':'Active')+'</span><br><span class="wf-login-status '+(login.activated?'active':'pending')+'">'+esc(login.label)+'</span></td><td><button type="button" class="wf-table-action wf-action-view" data-view-profile="'+esc(t.id)+'">View profile</button> <button type="button" class="wf-table-action wf-action-edit" data-wf-edit="'+esc(t.id)+'">Edit</button> <button type="button" class="wf-table-action '+(login.activated?'wf-action-reset':'wf-action-primary')+'" data-wf-activate="'+esc(t.id)+'">'+(login.activated?'✓ Reset login':'Activate login')+'</button> '+(t.is_active===false?'<button type="button" class="wf-table-action wf-action-primary" data-wf-restore="'+esc(t.id)+'">Restore</button>':'<button type="button" class="wf-table-action wf-action-danger" data-wf-remove="'+esc(t.id)+'">Deactivate</button>')+'</td></tr>';}).join(''):'<tr><td colspan="9">No matching teachers.</td></tr>';};
- renderTeacherTables();
+ if(window.__welfareScheduleNonCritical)window.__welfareScheduleNonCritical(renderTeacherTables,$('wfManageTeacherRows'));else renderTeacherTables();
  // Expose an awaited, tenant-bound register hydration path for executive PDF exports.
  // It reloads source records instead of trusting a possibly stale or empty DOM table.
  let teacherRegisterReloadPromise=null;
@@ -1693,7 +1693,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      return '<tr><td>'+teacherLabel(x.teacher_id)+'</td><td>'+esc(monthYear)+'</td><td>'+esc(x.reference||'—')+'</td><td>GH₵ '+money(x.amount)+'</td><td class="wf-payout-amount">GH₵ '+money(runningTotal)+'</td><td>'+esc(d||'—')+'</td><td>'+action+'</td></tr>';
     }).join(''):'<tr><td colspan="7">No matching contributions.</td></tr>';
   };
-  renderContributionLedger();$('wfLedgerSearch').addEventListener('input',()=>frameRender($('wfConRows'),renderContributionLedger));$('wfLedgerMonth').addEventListener('change',()=>frameRender($('wfConRows'),renderContributionLedger));
+  if(window.__welfareScheduleNonCritical)window.__welfareScheduleNonCritical(renderContributionLedger,$('wfConRows'));else renderContributionLedger();$('wfLedgerSearch').addEventListener('input',()=>frameRender($('wfConRows'),renderContributionLedger));$('wfLedgerMonth').addEventListener('change',()=>frameRender($('wfConRows'),renderContributionLedger));
   const renderDuesMatrix=()=>{
     const rowsHost=$('wfDuesMatrixRows'),status=$('wfDuesMatrixStatus');
     if(!rowsHost)return;
@@ -1736,7 +1736,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     const yearRecords=activeCons.filter(item=>String(item.date||'').slice(0,4)===year).length;
     if(status)status.textContent=roster.length+' active member'+(roster.length===1?'':'s')+' shown · '+year+' · '+yearRecords+' active contribution record'+(yearRecords===1?'':'s');
   };
-  renderDuesMatrix();
+  if(window.__welfareScheduleNonCritical)window.__welfareScheduleNonCritical(renderDuesMatrix,$('wfDuesMatrixRows'));else renderDuesMatrix();
   $('wfDuesMatrixYear')?.addEventListener('change',()=>frameRender($('wfDuesMatrixRows'),renderDuesMatrix));
    $('wfDuesMatrixSearch')?.addEventListener('input',()=>frameRender($('wfDuesMatrixRows'),renderDuesMatrix));
   const duesMatrixPdfButton=$('wfDuesMatrixPdf');
@@ -1950,7 +1950,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     $('wfPayoutActiveMembers').textContent=tr.error?'Unavailable':String(activeMembers);
     $('wfPayRows').innerHTML=pr.error?'<tr><td colspan="6">Payout records could not be loaded. Check the school account permissions and <button type="button" class="wf-table-action" data-wf-retry-ledgers>Retry loading</button>.</td></tr>':rows.length?rows.map(x=>{const rawDate=String(x.date||'');const displayDate=rawDate&&/^\d{4}-\d{2}-\d{2}/.test(rawDate)?new Date(rawDate.slice(0,10)+'T00:00:00').toLocaleDateString('en-GB'):(rawDate||'—');return '<tr><td class="wf-payout-reference">'+esc(x.reference||'—')+'</td><td class="wf-payout-beneficiary">'+teacherLabel(x.teacher_id)+'</td><td>'+esc(window.displayWelfareReason(x.reason||'Welfare support'))+'</td><td class="wf-payout-amount">GH₵ '+money(x.amount)+'</td><td>'+esc(displayDate)+'</td><td>'+reversalCell('payout',x)+'</td></tr>'}).join(''):'<tr><td colspan="6">No matching payouts.</td></tr>';
   };
-  renderPayoutLedger();$('wfPayoutSearch').addEventListener('input',()=>frameRender($('wfPayRows'),renderPayoutLedger));
+  if(window.__welfareScheduleNonCritical)window.__welfareScheduleNonCritical(renderPayoutLedger,$('wfPayRows'));else renderPayoutLedger();$('wfPayoutSearch').addEventListener('input',()=>frameRender($('wfPayRows'),renderPayoutLedger));
   // Reload transaction data in place; keep the authenticated dashboard and
   // currently selected section mounted after a contribution or payout is saved.
   const refreshWorkflow=async()=>{
