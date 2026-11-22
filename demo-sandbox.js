@@ -331,6 +331,11 @@
    const panel=document.getElementById('wfTeacherPanel');if(panel){panel.classList.remove('hidden');panel.removeAttribute('hidden');panel.style.setProperty('display','block','important');panel.style.setProperty('visibility','visible','important');panel.removeAttribute('aria-hidden');}
    return true;
   }
+  // DEMO administrator profile uses the same tenant-local teacher rows as its
+  // Teachers & Members register. Publish that cache before invoking the renderer
+  // so the first profile tap does not wait for another data request.
+  const demoRows=teachers.filter(row=>String(row.school_id||'')===String(school.id));
+  if(demoRows.length)window.__welfareTeacherRegisterState={schoolId:String(school.id),schoolCode:'DEMO',rows:demoRows};
   return window.__welfareRenderAdminProfileViewer?.()??false;
  };
  // DEMO uses the same explicit sidebar router as live school tenants. Re-sync
