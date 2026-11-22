@@ -3146,7 +3146,7 @@ async function renderTeacherDashboard(profile,school){
  window.__welfareRefreshMemberProfileViewer=()=>{
   $('teacherOwnName').textContent=teacherName||'Unnamed Teacher';$('teacherOwnRank').textContent=profileRank||'Not specified';$('teacherOwnStaffId').textContent='Staff ID: '+teacherId;
   $('teacherOwnRegistration').textContent=profileDate(profileRegistration);$('teacherOwnMembership').textContent=profileMembership||'Not specified';
-  setTeacherHTMLIfChanged($('teacherOwnPersonalRows'),profileFieldRows([['FULL NAME',teacherName,'Unnamed Teacher'],['PHONE NUMBER',profilePhone,'Not provided'],['SCHOOL / INSTITUTION',school.name],['DISTRICT & REGION',[school.district,school.region].filter(Boolean).join(' · ']]]));
+  setTeacherHTMLIfChanged($('teacherOwnPersonalRows'),profileFieldRows([['FULL NAME',teacherName,'Unnamed Teacher'],['PHONE NUMBER',profilePhone,'Not provided'],['SCHOOL / INSTITUTION',school.name],['DISTRICT & REGION',[school.district,school.region].filter(Boolean).join(' · ')]]));
   setTeacherHTMLIfChanged($('teacherOwnProfessionalRows'),profileFieldRows([['Staff ID',teacherId],['Professional Rank',profileRank],['CLASS / SUBJECT',profileClass,'Not assigned'],['Employer',firstProfileValue(teacherRecord?.employer,teacherRecord?.employer_name,profile.employer,profile.employer_name,school.name)]]));
   const refreshedTotal=activeTeacherContributionRows.reduce((sum,row)=>sum+Number(row.amount||0),0),refreshedPayout=payouts.reduce((sum,row)=>sum+Number(row.amount||0),0);
   const recent=[...activeTeacherContributionRows].sort((a,b)=>String(b.contribution_date||b.date||'').localeCompare(String(a.contribution_date||a.date||'')))[0];
