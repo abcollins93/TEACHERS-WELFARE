@@ -2848,7 +2848,7 @@ async function renderTeacherDashboard(profile,school){
   return !rowKeys.length||rowKeys.some(key=>loggedInTeacherKeys.includes(key));
  };
  let activeTeacherContributionRows=teacherContributionRows.filter(row=>isMyTeacherContribution(row)&&isActiveTeacherContribution(row));
- window.__welfareRenderFinancialCharts?.({contributions:activeTeacherContributionRows,payouts,scope:'Your personal ledger'});
+ window.__welfareFinancialChartPending={contributions:activeTeacherContributionRows,payouts,scope:'Your personal ledger'};window.__welfareRenderFinancialCharts?.(window.__welfareFinancialChartPending);
  const activeTeacherContributionCount=()=>activeTeacherContributionRows.length;
  const totalC=activeTeacherContributionRows.reduce((sum,x)=>sum+Number(x.amount||0),0);
  const totalP=payouts.reduce((sum,x)=>sum+Number(x.amount||0),0);
