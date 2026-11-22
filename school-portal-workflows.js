@@ -2,7 +2,7 @@
 (function(){
 'use strict';
 window.__welfareWorkflowBundleState='loading';
-window.__welfareWorkflowBundleVersion='20261121-workflow-recovery-v21';
+window.__welfareWorkflowBundleVersion='20261122-mobile-stability-v22';
 const $=id=>document.getElementById(id);
 let activeWorkflowInitialization=null;
 let activeWorkflowInitializationKey='';
