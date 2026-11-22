@@ -1,12 +1,12 @@
 'use strict';
-const CACHE_VERSION='twf-pwa-shell-v50-mobile-stability';
+const CACHE_VERSION='twf-pwa-shell-v49-workflow-recovery';
 const STATEMENT_CACHE='twf-cached-statements-v1';
-const NETWORK_TIMEOUT_MS=10000;
-const STATIC_TIMEOUT_MS=9000;
+const NETWORK_TIMEOUT_MS=8000;
+const STATIC_TIMEOUT_MS=6500;
 function isJavaScriptAssetResponse(response){
  if(!response||!response.ok)return false;
  const type=String(response.headers.get('content-type')||'').toLowerCase();
- return type.includes('javascript')||type.includes('ecmascript')||type.includes('x-javascript');
+ return type.includes('javascript')||type.includes('ecmascript');
 }
 async function reportNetworkState(state,detail){
  const clients=await self.clients.matchAll({type:'window',includeUncontrolled:true});
@@ -51,24 +51,16 @@ const CDN_ASSETS=[
 self.addEventListener('install',event=>{
  event.waitUntil((async()=>{
    const cache=await caches.open(CACHE_VERSION);
-   // Keep the currently active worker if the matching portal/workflow bundle
-   // cannot be fetched. A mixed shell must never become the active version.
-   const critical=['./school-portal.html','./school-portal-workflows.js?v=20261121-workflow-recovery-v21','./pwa.js'];
-   await Promise.all(critical.map(async path=>{
-     const request=new Request(new URL(path,self.registration.scope),{cache:'reload'});
-     const response=await timedFetch(request,STATIC_TIMEOUT_MS);
-     if(!response||!response.ok)throw new Error('Critical portal asset unavailable: '+path);
-     if(path.includes('.js')&&!isJavaScriptAssetResponse(response))throw new Error('Critical script returned an invalid content type: '+path);
-     await cache.put(request,response.clone());
-   }));
-   const optional=SHELL_ASSETS.filter(path=>!critical.includes(path));
-   await Promise.allSettled(optional.map(async path=>{
+   // Cache each same-origin shell asset independently. A single missing file
+   // must not make the entire install fail on a weak mobile connection.
+   await Promise.allSettled(SHELL_ASSETS.map(async path=>{
      const request=new Request(new URL(path,self.registration.scope),{cache:'reload'});
      try{
        const response=await timedFetch(request,STATIC_TIMEOUT_MS);
-       if(response&&response.ok){const scriptAsset=path.includes('.js');if(!scriptAsset||isJavaScriptAssetResponse(response))await cache.put(request,response.clone());}
-     }catch(error){console.warn('[Welfare PWA] Optional shell asset deferred:',path,error?.message||error);}
+       if(response&&response.ok){const scriptAsset=/\.js(?:\?|$)/i.test(path);if(!scriptAsset||isJavaScriptAssetResponse(response))await cache.put(request,response.clone());}
+     }catch(error){console.warn('[Welfare PWA] Shell asset deferred:',path,error?.message||error);}
    }));
+   // CDN assets are cached on demand and never block service-worker install.
    await self.skipWaiting();
  })());
 });
@@ -118,17 +110,12 @@ self.addEventListener('fetch',event=>{
  if(/\/school-portal-workflows\.js$/i.test(url.pathname)){
    event.respondWith((async()=>{
      const cache=await caches.open(CACHE_VERSION);
-     const canonicalUrl=new URL(request.url);canonicalUrl.searchParams.delete('retry');
-     const cacheRequest=new Request(canonicalUrl.href,{method:'GET'});
      try{
        const response=await timedFetch(new Request(request,{cache:'no-store'}),STATIC_TIMEOUT_MS);
-       if(isJavaScriptAssetResponse(response)){
-         await cache.put(cacheRequest,response.clone());
-         return response;
-       }
-       return (await cache.match(cacheRequest))||Response.error();
+       if(response&&response.ok){const scriptType=String(response.headers.get('content-type')||'').toLowerCase();if(scriptType.includes('javascript')||scriptType.includes('ecmascript')||scriptType.includes('text/plain')){cache.put(request,response.clone()).catch(()=>{});return response;}}return (await cache.match(request))||Response.error();
+       return (await cache.match(request))||Response.error();
      }catch(_){
-       return (await cache.match(cacheRequest))||Response.error();
+       return (await cache.match(request))||Response.error();
      }
    })());
    return;
@@ -137,7 +124,7 @@ self.addEventListener('fetch',event=>{
    event.respondWith((async()=>{
      const cache=await caches.open(CACHE_VERSION);
      try{
-       const response=await timedFetch(new Request(request,{cache:'no-store'}),STATIC_TIMEOUT_MS);
+       const response=await fetch(request,{cache:'no-store'});
        if(response&&response.ok)cache.put(request,response.clone()).catch(()=>{});
        return response;
      }catch(_){
