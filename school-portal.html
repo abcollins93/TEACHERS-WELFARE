@@ -4428,6 +4428,7 @@ if(isDemoMode){
  let navigationSequence=0;
  let pendingObserver=null;
  let pendingPlaceholder=null;
+ let pendingMountedListener=null;
  const elementFromEvent=event=>{
   const path=typeof event.composedPath==='function'?event.composedPath():[];
   for(const node of path){
@@ -4550,6 +4551,7 @@ if(isDemoMode){
   viewIds.forEach(id=>{const view=document.getElementById(id);if(view&&!view.contains(placeholder))hideView(view);});
   revealView(placeholder,true);
   if(pendingObserver)pendingObserver.disconnect();
+  if(pendingMountedListener){window.removeEventListener('welfare-workspace-mounted',pendingMountedListener);pendingMountedListener=null;}
   const attempt=()=>{
    if(sequence!==navigationSequence){pendingObserver?.disconnect();return;}
    const target=document.getElementById(targetId);
@@ -4563,13 +4565,23 @@ if(isDemoMode){
    pendingObserver=new MutationObserver(attempt);
    pendingObserver.observe(dashboard,{childList:true,subtree:true});
   }
+  pendingMountedListener=attempt;
+  window.addEventListener('welfare-workspace-mounted',pendingMountedListener);
   const mount=window.__welfareWorkflowMountPromise;
-  if(mount)Promise.resolve(mount).then(()=>{
-   window.requestAnimationFrame(attempt);
-   window.dispatchEvent(new Event('welfare-workspace-mounted'));
+  if(mount)Promise.resolve(mount).then(result=>{
+   window.requestAnimationFrame(()=>{
+    attempt();
+    if(result===false&&sequence===navigationSequence&&!document.getElementById(targetId)){
+     pendingObserver?.disconnect();pendingObserver=null;
+     if(pendingMountedListener){window.removeEventListener('welfare-workspace-mounted',pendingMountedListener);pendingMountedListener=null;}
+     placeholder.innerHTML='';
+     const message=document.createElement('p');message.className='muted';message.textContent='This section could not be initialized. Please retry the portal workspace.';placeholder.appendChild(message);
+    }
+   });
   }).catch(error=>{
    if(sequence!==navigationSequence)return;
    pendingObserver?.disconnect();pendingObserver=null;
+   if(pendingMountedListener){window.removeEventListener('welfare-workspace-mounted',pendingMountedListener);pendingMountedListener=null;}
    placeholder.innerHTML='';
    const message=document.createElement('p');
    message.className='muted';
@@ -4628,6 +4640,7 @@ if(isDemoMode){
  function navigate(button){
   const sequence=++navigationSequence;
   if(pendingObserver){pendingObserver.disconnect();pendingObserver=null;}
+  if(pendingMountedListener){window.removeEventListener('welfare-workspace-mounted',pendingMountedListener);pendingMountedListener=null;}
   if(pendingPlaceholder){pendingPlaceholder.remove();pendingPlaceholder=null;}
   closeSidebar();
   const targetId=resolveTargetId(button);
