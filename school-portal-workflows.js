@@ -1159,6 +1159,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   return !reversed.has('payout:'+item.id)&&!['reversed','inactive','deleted','cancelled','canceled','void','archived'].includes(status)&&!reversedFlag&&!item.reversed_at&&!item.reversedAt;
  };
  let activeCons=cons.filter(isActiveContributionRecord), activePays=pays.filter(isActivePayoutRecord);
+ window.__welfareRenderFinancialCharts?.({contributions:activeCons,payouts:activePays,scope:'School ledger'});
  // Expand year options using only the active tenant's loaded ledgers.
  window.populateReportYearSelectors([...activeCons,...activePays]);
  const demoLatestMonthKey=isLocalDemo?cons.reduce((latest,row)=>String(row.date||'')>latest?String(row.date||''):latest,'').slice(0,7):'';
