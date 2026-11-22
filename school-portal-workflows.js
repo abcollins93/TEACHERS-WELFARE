@@ -187,9 +187,9 @@ const downloadWorkflowBlob=(blob,fileName,statusId,successText,viewLabel,sourceB
  const filename=isPdf?(String(fileName||'Welfare_Statement_Report').replace(/\.pdf$/i,'')||'Welfare_Statement_Report')+'.pdf':String(fileName||'download');
  const downloadBlob=isPdf&&blob.type!=='application/pdf'?new Blob([blob],{type:'application/pdf'}):blob;
  const pdfOwner=sourceButton?.closest('.wf-report-card')||$(statusId)||sourceButton||document.body;
- const previousPdfUrl=pdfObjectUrlByOwner.get(pdfOwner);
- if(previousPdfUrl){URL.revokeObjectURL(previousPdfUrl);activePdfObjectUrls.delete(previousPdfUrl);}
- const url=window.URL.createObjectURL(downloadBlob);pdfObjectUrlByOwner.set(pdfOwner,url);activePdfObjectUrls.add(url);
+ const previousPdfEntry=pdfObjectUrlByOwner.get(pdfOwner);
+ if(previousPdfEntry){clearTimeout(previousPdfEntry.timer);URL.revokeObjectURL(previousPdfEntry.url);activePdfObjectUrls.delete(previousPdfEntry.url);}
+ const url=window.URL.createObjectURL(downloadBlob),pdfUrlEntry={url,timer:null};pdfObjectUrlByOwner.set(pdfOwner,pdfUrlEntry);activePdfObjectUrls.add(url);
  const link=document.createElement('a');
  link.href=url;
  link.setAttribute('download',filename);
@@ -226,7 +226,7 @@ const downloadWorkflowBlob=(blob,fileName,statusId,successText,viewLabel,sourceB
    status.appendChild(document.createTextNode(' '));
    status.appendChild(fallback);
  }
- setTimeout(()=>{URL.revokeObjectURL(url);activePdfObjectUrls.delete(url);if(pdfObjectUrlByOwner.get(pdfOwner)===url)pdfObjectUrlByOwner.delete(pdfOwner);},10*60*1000);
+ pdfUrlEntry.timer=setTimeout(()=>{URL.revokeObjectURL(url);activePdfObjectUrls.delete(url);if(pdfObjectUrlByOwner.get(pdfOwner)===pdfUrlEntry)pdfObjectUrlByOwner.delete(pdfOwner);},10*60*1000);
 };
 
 // Tenant names and details are supplied by the authenticated school record.
