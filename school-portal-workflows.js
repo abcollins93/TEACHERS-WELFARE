@@ -921,7 +921,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     standardMonthlyDues=Number(initialDuesSetting.value||0);
    }else if(initialDuesError)console.warn('[School settings] Could not load saved standard monthly dues:',initialDuesError.message);
    if(!(standardMonthlyDues>0)){
-    const fallbackRate=Number(window.resolveSchoolMonthlyDues?.(ctx,window.schoolSettings,cons)||ctx.monthly_dues||0);
+    const fallbackRate=Number(ctx.monthly_dues||window.schoolSettings?.standard_dues||window.schoolSettings?.standard_monthly_dues||0);
     if(Number.isFinite(fallbackRate)&&fallbackRate>0)standardMonthlyDues=fallbackRate;
    }
    const duesInput=$('wfMonthlyDues');
@@ -2702,6 +2702,13 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  $('wfPayout').onsubmit=async e=>{e.preventDefault();const teacher_id=$('wfPayTeacher').value,amount=Number($('wfPayAmount').value);if(!teacher_id||!Number.isFinite(amount)||amount<=0)return msg('wfPayMsg','Choose a teacher and enter a positive amount.',true);const activeContributions=cons.filter(x=>!reversed.has('contribution:'+String(x.id))).reduce((sum,x)=>sum+Number(x.amount||0),0);const activePayouts=pays.filter(x=>!reversed.has('payout:'+String(x.id))).reduce((sum,x)=>sum+Number(x.amount||0),0);const available=Math.round((activeContributions-activePayouts)*100)/100;if(amount>available+0.001)return msg('wfPayMsg','Payout exceeds the available school fund balance of GH₵ '+money(Math.max(0,available))+'. Reverse or reconcile records before proceeding.',true);const confirmation=await wfConfirm('Confirm welfare payout of GH₵ '+amount.toFixed(2)+'? Available balance after payout: GH₵ '+money(available-amount)+'.',{responseMode:'optional',placeholder:'Optional note for the audit trail…'});if(!confirmation||confirmation.confirmed===false)return;const adminNote=confirmation.response||'No additional note supplied; action confirmed by school administrator.';const row={teacher_id,amount,date:$('wfPayDate').value,reason:$('wfPayReason').value.trim(),reference:$('wfPayRef').value.trim()||null,school_id:ctx.id};msg('wfPayMsg','Saving…');const {error}=await client.rpc('record_school_welfare_payout',{p_school_id:ctx.id,p_teacher_id:teacher_id,p_amount:amount,p_date:row.date,p_reason:row.reason,p_reference:row.reference});if(error){console.warn('Secure payout RPC failed',error.code,error.message);return msg('wfPayMsg',error.code==='23514'?'Payout was not saved: the available school fund balance may be insufficient, or the amount/reason/date is invalid. Refresh the ledger and check the details.':'Payout was not saved. The secure database check failed; no payout was recorded. Check administrator access and try again.',true);}const auditOk=await audit(client,ctx,'Record payout','GH₵ '+amount.toFixed(2)+' — '+row.reason+'; admin note: '+adminNote,teacher_id);$('wfPayout').reset();$('wfPayDate').value=today();await refreshWorkflow();msg('wfPayMsg',auditOk?'Payout recorded.':'Payout saved, but the audit entry failed. Notify the platform administrator.',!auditOk);};
    workflowStage='final school settings hydration';
    await awaitWorkflowAuth(workflowDuesHydrationPromise,10000,'The active monthly dues rate could not be initialized.');
+   if(!(standardMonthlyDues>0)){
+    const fallbackRate=Number(window.resolveSchoolMonthlyDues?.(ctx,window.schoolSettings,cons)||ctx.monthly_dues||0);
+    if(Number.isFinite(fallbackRate)&&fallbackRate>0)standardMonthlyDues=fallbackRate;
+   }
+   const resolvedDuesInput=$('wfMonthlyDues');
+   if(resolvedDuesInput&&standardMonthlyDues>0)resolvedDuesInput.value=standardMonthlyDues;
+   if(standardMonthlyDues>0)window.updateSchoolMonthlyDuesMetric?.(standardMonthlyDues);
    if(typeof window.__welfareRenderAdminProfileViewer==='function')window.__welfareRenderAdminProfileViewer();
    if(workflowSchoolKey){window.__welfareWorkflowReadySchoolId=workflowSchoolKey;window.__welfareWorkflowReadyUserId=workflowUserId;}
    window.__welfareTenantHydrationState={schoolId:workflowSchoolKey,schoolCode:workflowSchoolCode,userId:workflowUserId,teacherCount:teachers.length,contributionCount:cons.length,payoutCount:pays.length,monthlyDues:Number(standardMonthlyDues||ctx.monthly_dues||0),ready:true,completedAt:new Date().toISOString()};
