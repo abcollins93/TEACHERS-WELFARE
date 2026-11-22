@@ -7400,7 +7400,10 @@ input[type="tel"], input[inputmode="numeric"], input[inputmode="decimal"] { font
 <script>
 /* This runs after the workflow bundle and the delegated sidebar router. */
 (function(){
- const ready=typeof window.initSchoolWorkflows==='function'&&!!window.__welfareWorkflowShellReady&&typeof window.__welfareSyncSidebarNavigation==='function';
+ const params=new URLSearchParams(window.location.search);
+ const explicitDemo=params.has('c')&&String(params.get('c')||'').trim().toUpperCase()==='DEMO';
+ const demoReady=!explicitDemo||!!window.__welfareDemoSandboxReady;
+ const ready=typeof window.initSchoolWorkflows==='function'&&!!window.__welfareWorkflowShellReady&&typeof window.__welfareSyncSidebarNavigation==='function'&&demoReady;
  window.__welfareSidebarNavigationReady=ready;
  window.__welfarePortalStartupReady=ready;
  if(ready){
