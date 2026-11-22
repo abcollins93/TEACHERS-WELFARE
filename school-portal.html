@@ -3175,6 +3175,24 @@ async function renderTeacherDashboard(profile,school){
  $('teacherCurrentFund').textContent=schoolFundSummaryError?'Unavailable':cash(schoolFundBalance);
  $('teacherActiveMembers').textContent=String(ownMemberCount);
  $('teacherPayoutRows').innerHTML=pe?'<tr><td colspan="6">Your payout records could not be loaded securely. Please sign in again or contact your school administrator.</td></tr>':payouts.length?payouts.map(x=>'<tr><td>'+escapeHtml(x.reference||'—')+'</td><td>'+escapeHtml(window.__welfareTeacherName||'My record')+' ('+escapeHtml(teacherId)+')</td><td>'+escapeHtml(window.displayWelfareReason(x.reason||'Welfare support'))+'</td><td>'+escapeHtml(cash(x.amount))+'</td><td>'+escapeHtml(date(x.date))+'</td><td><span class="wf-payout-status">Personal record</span></td></tr>').join(''):'<tr><td colspan="6">No welfare payouts are available yet.</td></tr>';
+ window.__welfareRefreshMemberFinancialWorkspace=(targetId)=>{
+  if(targetId==='wfContributionPanel'){
+   $('teacherContributionsState').textContent=contributionLoadError?'Could not load your contribution records securely.':activeTeacherContributionCount()?activeTeacherContributionCount()+' active personal record(s)':'No active contribution records are available yet.';
+   $('teacherConTotal').textContent=contributionLoadError?'Unavailable':cash(totalC);
+   $('teacherConDisbursement').textContent=pe?'Unavailable':cash(totalP);
+   $('teacherConNet').textContent=schoolFundSummaryError?'Unavailable':cash(schoolFundBalance);
+   $('teacherContribRows').innerHTML=contributionLoadError?'<tr><td colspan="6">Your contribution records could not be loaded securely. Please sign in again or contact your school administrator.</td></tr>':contributions.length?contributions.map(x=>{const d=String(x.date||''),my=d.length>=7?new Date(d+'T00:00:00').toLocaleDateString('en-GB',{month:'short',year:'numeric'}):'—';return '<tr><td>'+escapeHtml(window.__welfareTeacherName||'My record')+' ('+escapeHtml(teacherId)+')</td><td>'+escapeHtml(my)+'</td><td>'+escapeHtml(x.reference||'—')+'</td><td>'+escapeHtml(cash(x.amount))+'</td><td>'+escapeHtml(date(x.date))+'</td><td><span class="wf-admin-pill">Personal record</span></td></tr>';}).join(''):'<tr><td colspan="6">No matching contributions.</td></tr>';
+  }else if(targetId==='wfPayoutPanel'){
+   $('teacherPayoutsState').textContent=pe?'Could not load your payout records securely.':payouts.length?payouts.length+' personal record(s)':'No welfare payouts are available yet.';
+   $('teacherPayoutTotal').textContent=pe?'Unavailable':cash(totalP);
+   $('teacherCurrentFund').textContent=schoolFundSummaryError?'Unavailable':cash(schoolFundBalance);
+   $('teacherActiveMembers').textContent=String(ownMemberCount);
+   $('teacherPayoutRows').innerHTML=pe?'<tr><td colspan="6">Your payout records could not be loaded securely. Please sign in again or contact your school administrator.</td></tr>':payouts.length?payouts.map(x=>'<tr><td>'+escapeHtml(x.reference||'—')+'</td><td>'+escapeHtml(window.__welfareTeacherName||'My record')+' ('+escapeHtml(teacherId)+')</td><td>'+escapeHtml(window.displayWelfareReason(x.reason||'Welfare support'))+'</td><td>'+escapeHtml(cash(x.amount))+'</td><td>'+escapeHtml(date(x.date))+'</td><td><span class="wf-payout-status">Personal record</span></td></tr>').join(''):'<tr><td colspan="6">No welfare payouts are available yet.</td></tr>';
+  }else if(targetId==='wfStatementPanel'){
+   $('teacherStatementSummary').innerHTML='<p>My total contributions: <strong>'+escapeHtml(cash(teacherContributionRows.filter(x=>!x.is_reversed).reduce((sum,row)=>sum+Number(row.amount||0),0)))+'</strong></p><p>My welfare payouts: <strong>'+escapeHtml(cash(totalP))+'</strong></p><p>Total Fund Balance: <strong>'+escapeHtml(schoolFundSummaryError?'Unavailable':cash(schoolFundBalance))+'</strong></p><p>Last activity: <strong>'+escapeHtml(latest?date(latest):'No records')+'</strong></p>';
+  }
+  return true;
+ };
  $('teacherPayouts').innerHTML='';
  $('teacherStatementSummary').innerHTML='<p>My total contributions: <strong>'+escapeHtml(cash(teacherContributionRows.filter(x=>!x.is_reversed).reduce((sum,row)=>sum+Number(row.amount||0),0)))+'</strong></p><p>My welfare payouts: <strong>'+escapeHtml(cash(totalP))+'</strong></p><p>Total Fund Balance: <strong>'+escapeHtml(schoolFundSummaryError?'Unavailable':cash(schoolFundBalance))+'</strong></p><p>Last activity: <strong>'+escapeHtml(latest?date(latest):'No records')+'</strong></p>';
  const statementMessage=$('teacherStatementMessage');
