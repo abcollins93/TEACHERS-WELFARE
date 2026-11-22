@@ -3351,17 +3351,17 @@ async function renderTeacherDashboard(profile,school){
    statementButton.disabled=false;if($('teacherStatementShare'))$('teacherStatementShare').disabled=false;
   }
  }
- statementButton?.addEventListener('click',()=>downloadTeacherStatement(false));
- $('teacherStatementShare')?.addEventListener('click',()=>{
+ if(statementButton)statementButton.onclick=()=>downloadTeacherStatement(false);
+ const teacherStatementShareButton=$('teacherStatementShare');if(teacherStatementShareButton)teacherStatementShareButton.onclick=()=>{
   if(preparedTeacherStatementShare)return downloadTeacherStatement(true,false);
   statementStatus('Your statement is still being prepared. Please tap Share PDF again when it is ready.');
   if(!window.__teacherStatementSharePreparing){window.__teacherStatementSharePreparing=true;downloadTeacherStatement(true,true).finally(()=>{window.__teacherStatementSharePreparing=false;});}
- });
+ };
  // Prepare the authenticated, school-scoped statement before the user taps Share.
  downloadTeacherStatement(true,true);
 
  const form=$('teacherVoluntaryPasswordForm');
- form?.addEventListener('submit',async ev=>{
+ if(form)form.onsubmit=async ev=>{
   ev.preventDefault();const current=$('teacherCurrentPassword').value,next=$('teacherVoluntaryNewPassword').value,confirmNext=$('teacherVoluntaryConfirmPassword').value,status=$('teacherVoluntaryPasswordMessage');
   const say=(m,bad=false)=>{status.textContent=m;status.className=bad?'error':'muted';};
   if(next.length<6)return say('Password must be at least 6 characters long.',true);
@@ -3374,7 +3374,7 @@ async function renderTeacherDashboard(profile,school){
   const {data:changed,error}=await client.functions.invoke('teacher-account-security',{body:{action:'change_password',password:next}});
   if(error||!changed?.ok)return say(changed?.error||'Password update failed. Please try again.',true);
   form.reset();say('Password updated successfully. Use your new password next time you sign in.');
- });
+ };
  // The member Settings panel is initialized independently; do not hold the
  // teacher dashboard or sign-in completion on PDF signatory/settings loading.
  void startAccountSettingsInitialization(client,school,'teacher');
