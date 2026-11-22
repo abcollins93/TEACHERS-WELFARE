@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_VERSION='twf-pwa-shell-v49-workflow-recovery';
+const CACHE_VERSION='twf-pwa-shell-v50-startup-responsive';
 const STATEMENT_CACHE='twf-cached-statements-v1';
 const NETWORK_TIMEOUT_MS=8000;
 const STATIC_TIMEOUT_MS=6500;
@@ -28,13 +28,13 @@ const SHELL_ASSETS=[
  './',
  './index.html',
  './school-portal.html',
- './demo-sandbox.js?v=20261121-workflow-recovery-v21',
+ './demo-sandbox.js?v=20261122-startup-responsive-v22',
  './set-password.html',
  './g.html',
  './offline.html',
  './manifest.json',
  './pwa.js',
- './school-portal-workflows.js?v=20261121-workflow-recovery-v21',
+ './school-portal-workflows.js?v=20261122-startup-responsive-v22',
  './icons/welfare-portal.svg'
 ];
 const CDN_ASSETS=[
