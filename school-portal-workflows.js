@@ -42,6 +42,7 @@ window.addEventListener('welfare-workflows-ready',ensurePrimaryFundBalanceCard);
  const monthRange=keys=>{if(!keys.length)return [];const sorted=keys.slice().sort(),[sy,sm]=sorted[0].split('-').map(Number),[ey,em]=sorted[sorted.length-1].split('-').map(Number),out=[];let y=sy,m=sm;while(y<ey||(y===ey&&m<=em)){out.push(y+'-'+String(m).padStart(2,'0'));m++;if(m===13){m=1;y++;}if(out.length>240)break;}return out;};
  const bindReadout=card=>{const readout=card.querySelector('.wf-financial-chart-readout');card.querySelectorAll('[data-chart-value]').forEach(mark=>{const show=()=>{if(readout)readout.textContent=mark.getAttribute('data-chart-value')||'';};mark.addEventListener('click',show);mark.addEventListener('focus',show);mark.addEventListener('mouseenter',show);});};
  const render=({contributions=[],payouts=[],scope='School ledger'}={})=>{
+  window.__welfareFinancialChartPending={contributions,payouts,scope};
   const host=document.getElementById('welfareFinancialCharts');if(!host)return;ensureStyles();
   const con=(Array.isArray(contributions)?contributions:[]).filter(active).map(row=>({...row,__date:dateOf(row,'contribution')})).filter(row=>row.__date);
   const pay=(Array.isArray(payouts)?payouts:[]).filter(active).map(row=>({...row,__date:dateOf(row,'payout')})).filter(row=>row.__date);
@@ -58,6 +59,8 @@ window.addEventListener('welfare-workflows-ready',ensurePrimaryFundBalanceCard);
   host.innerHTML=card('wfMonthlyContributionTrend','Monthly contribution trend','Recorded contributions by month',trendBody,trendReadout)+card('wfPayoutComparison','Payout comparison','Monthly contributions vs. welfare payouts',compareBody,compareReadout,'<div class="wf-financial-chart-legend"><span><i style="background:#C6A04A"></i>Contributions</span><span><i style="background:#25845B"></i>Payouts</span></div>')+card('wfFundBalanceHistory','Fund-balance history','Running total from dated ledger entries',balanceBody,balanceReadout);host.dataset.scope=scope;host.querySelectorAll('.wf-financial-chart-card').forEach(bindReadout);
  };
  window.__welfareRenderFinancialCharts=render;
+ if(window.__welfareFinancialChartPending)render(window.__welfareFinancialChartPending);
+ document.addEventListener('click',event=>{const nav=event.target.closest('.navbtn[data-target="schoolOverview"]');if(nav&&window.__welfareFinancialChartPending)window.requestAnimationFrame(()=>render(window.__welfareFinancialChartPending));},{passive:true});
 })();
 
 // Stable route IDs are independent of sidebar labels and presentation text.
