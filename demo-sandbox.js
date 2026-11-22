@@ -6,9 +6,11 @@
 
  // DEMO uses the same explicit destination map as live role-scoped navigation.
  window.__welfareResolvePortalViewTarget=(rawTarget,role)=>{
-  const target=String(rawTarget||'');
-  if(role==='admin')return ({wfContributionPanel:'wfAdminContributionPanel',wfPayoutPanel:'wfAdminPayoutPanel'})[target]||target;
-  return ({wfReportsPanel:'wfStatementPanel'})[target]||target;
+  const target=String(rawTarget||'').trim();
+  const routes=role==='admin'
+   ?{wfContributionPanel:'wfAdminContributionPanel',wfPayoutPanel:'wfAdminPayoutPanel'}
+   :{wfReportsPanel:'wfStatementPanel',teacherProfileViewer:'wfTeacherPanel'};
+  return routes[target]||target;
  };
 
  // DEMO-safe fallback for reporting year controls. The live workflow module
