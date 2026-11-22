@@ -778,24 +778,6 @@ body:has(#login:not(.hidden)) .app-header-group{display:none!important}
  body:not(:has(#login:not(.hidden))) main{padding-top:calc(var(--unified-header-height, 140px) + 16px)!important}
 }
 </style>
-<script id="admin-header-height-refresh">
-(function(){
- function refreshHeaderHeight(){
-  const group=document.querySelector('.app-header-group');
-  if(!group)return;
-  const visible=group.offsetParent!==null && getComputedStyle(group).display!=='none';
-  if(visible)document.documentElement.style.setProperty('--unified-header-height',Math.ceil(group.getBoundingClientRect().height)+'px');
- }
- window.addEventListener('load',refreshHeaderHeight,{once:true});
- window.addEventListener('resize',refreshHeaderHeight,{passive:true});
- if('ResizeObserver' in window){
-  const start=()=>{const group=document.querySelector('.app-header-group');if(group)new ResizeObserver(refreshHeaderHeight).observe(group);refreshHeaderHeight();};
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
- }
-})();
-</script>
-
-
 <style id="admin-subheader-flex-overlap-fix">
 /* Keep the fixed admin header readable: menu button left, school identity beside it. */
 .app-header-group>.overview-top,
