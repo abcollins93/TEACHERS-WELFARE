@@ -8,7 +8,7 @@ const $=id=>document.getElementById(id);
 window.__welfareResolvePortalViewTarget=(rawTarget,role)=>{
  const target=String(rawTarget||'').trim();
  const routes=role==='admin'
-  ?{wfContributionPanel:'wfAdminContributionPanel',wfPayoutPanel:'wfAdminPayoutPanel'}
+  ?{wfContributionPanel:'wfAdminContributionPanel',wfPayoutPanel:'wfAdminPayoutPanel',wfTeacherPanel:'teacherProfileViewer'}
   :{wfReportsPanel:'wfStatementPanel',teacherProfileViewer:'wfTeacherPanel'};
  return routes[target]||target;
 };
@@ -792,6 +792,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const workflowSchoolKey=String(school?.id||'');
  const workflowSchoolCode=String(school?.school_code||school?.schoolCode||'').trim().toUpperCase();
  let workflowUserId='demo-local-admin';
+ let workflowAdminIdentity=window.WelfareDemo?.getCurrentUser?.()||null;
  if(!isLocalDemo){
   if(!workflowSchoolKey||!workflowSchoolCode)throw new Error('The verified school ID or school code is missing. Refresh the school gateway and retry.');
   const requestedCodeRaw=String(new URLSearchParams(location.search).get('c')||'').trim().toUpperCase();
@@ -805,6 +806,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   const identity=await awaitWorkflowAuth(client.auth.getUser(),15000,'Administrator identity verification timed out.');
   if(identity?.error||!identity?.data?.user||String(identity.data.user.id)!==String(session.user?.id||''))throw new Error('The administrator session identity could not be verified. Sign in again.');
   workflowUserId=String(identity.data.user.id);
+  workflowAdminIdentity=identity.data.user;
+  window.__welfareWorkflowAdminIdentity=workflowAdminIdentity;
   if(window.__welfareAdminSessionUserId&&String(window.__welfareAdminSessionUserId)!==workflowUserId)throw new Error('The active administrator account changed. Refresh the portal before continuing.');
  }
  if(workflowSchoolKey&&window.__welfareWorkflowReadySchoolId===workflowSchoolKey&&window.__welfareWorkflowReadyUserId===workflowUserId&&$('workflows')&&$('wfAdminPanel')&&$('teacherProfileViewer')&&$('schoolTeachers')&&$('wfAdminContributionPanel')&&$('wfAdminPayoutPanel'))return true;
@@ -1163,7 +1166,23 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  document.head.appendChild(contribStyle);
  workflowStage='profile and ledger rendering';
  const teacherById=new Map(teachers.map(t=>[String(t.id),t]));
- let selectedProfileTeacherId=teachers[0]?String(teachers[0].id):'';
+ const profileIdentity=()=>workflowAdminIdentity||window.__welfareWorkflowAdminIdentity||window.WelfareDemo?.getCurrentUser?.()||{};
+ const chooseInitialProfileTeacher=rows=>{
+  const list=Array.isArray(rows)?rows:[];
+  if(!list.length)return null;
+  const identity=profileIdentity(),userId=String(identity.id||identity.user_id||'').trim();
+  const email=String(identity.email||'').trim().toLowerCase();
+  const metadata=identity.user_metadata||{};
+  const fullName=String(metadata.full_name||metadata.name||identity.full_name||identity.name||'').trim().toLowerCase().replace(/\\s+/g,' ');
+  const matched=list.find(row=>{
+   const ids=[row.auth_user_id,row.user_id,row.authUserId,row.userId,row.id].map(value=>String(value||'').trim()).filter(Boolean);
+   const emails=[row.email,row.email_address,row.contact_email].map(value=>String(value||'').trim().toLowerCase()).filter(Boolean);
+   const names=[row.name,row.full_name,row.fullName].map(value=>String(value||'').trim().toLowerCase().replace(/\\s+/g,' ')).filter(Boolean);
+   return (userId&&ids.includes(userId))||(email&&emails.includes(email))||(fullName&&names.includes(fullName));
+  });
+  return matched||list.find(row=>row.is_active!==false)||list[0]||null;
+ };
+ let selectedProfileTeacherId=String(chooseInitialProfileTeacher(teachers)?.id||'');
  const profileHost=$('schoolOverview')?.parentElement;
  if(profileHost){
   document.getElementById('teacherProfileViewer')?.remove();
