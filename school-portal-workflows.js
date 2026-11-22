@@ -2,7 +2,7 @@
 (function(){
 'use strict';
 window.__welfareWorkflowBundleState='loading';
-window.__welfareWorkflowBundleVersion='20261122-atomic-hydration-v26';
+window.__welfareWorkflowBundleVersion='20261122-sidebar-navigation-v25';
 const $=id=>document.getElementById(id);
 // Stable route IDs are independent of sidebar labels and presentation text.
 window.__welfareResolvePortalViewTarget=(rawTarget,role)=>{
@@ -817,21 +817,10 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  // idle callback that can be postponed indefinitely on busy mobile devices.
  await new Promise(resolve=>window.requestAnimationFrame(()=>window.requestAnimationFrame(resolve)));
  if(isLocalDemo&&window.__welfareDemoRole!=='admin')return false;
- // The complete section shell is pre-mounted before login. Reuse it on the
- // first authenticated session; rebuild only on later account/tenant changes
- // so delegated controls are not bound more than once.
- const existingWorkflows=$('workflows');
- if(existingWorkflows&&window.__welfareWorkflowShellPreloaded&&!window.__welfareWorkflowShellInitializedForAuth){
-  window.__welfareWorkflowShellInitializedForAuth=true;
- }else{
-  const retainedRoster=$('schoolTeachers'),overview=$('schoolOverview');
-  if(existingWorkflows&&retainedRoster&&existingWorkflows.contains(retainedRoster)&&overview?.parentElement)overview.parentElement.insertBefore(retainedRoster,overview.nextElementSibling);
-  retainedRoster?.querySelector('#wfTeacherRegisterPanel')?.remove();
-  if(existingWorkflows)existingWorkflows.remove();
-  workflowStage='administrator section construction';
-  addUI();
-  window.__welfareWorkflowShellInitializedForAuth=true;
- }
+ // Rebuild workflow markup on refresh so handlers always use the latest school-scoped data.
+ const existingWorkflows=$('workflows');const retainedRoster=$('schoolTeachers');const overview=$('schoolOverview');if(existingWorkflows&&retainedRoster&&existingWorkflows.contains(retainedRoster)&&overview?.parentElement)overview.parentElement.insertBefore(retainedRoster,overview.nextElementSibling);retainedRoster?.querySelector('#wfTeacherRegisterPanel')?.remove();if(existingWorkflows)existingWorkflows.remove();
+ workflowStage='administrator section construction';
+ addUI();
  const workflowMountNode=$('workflows');
  const adminPanelNode=$('wfAdminPanel');
  if(!workflowMountNode||!adminPanelNode)throw new Error('Admin Panel markup could not be mounted in the dashboard.');
@@ -909,7 +898,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  // otherwise keep the safe zero/default and allow the workflow to finish mounting.
  // Load the configured rate independently. This optional dashboard
  // metadata must never hold workflow mounting or the first profile render.
- const workflowDuesHydrationPromise=(async()=>{
+ void (async()=>{
   let timer;
   try{
    const initialDuesResult=await Promise.race([
@@ -919,14 +908,10 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    const {data:initialDuesSetting,error:initialDuesError}=initialDuesResult||{};
    if(!initialDuesError&&initialDuesSetting){
     standardMonthlyDues=Number(initialDuesSetting.value||0);
+    const duesInput=$('wfMonthlyDues');
+    if(duesInput)duesInput.value=standardMonthlyDues;
+    if(standardMonthlyDues>0)window.updateSchoolMonthlyDuesMetric?.(standardMonthlyDues);
    }else if(initialDuesError)console.warn('[School settings] Could not load saved standard monthly dues:',initialDuesError.message);
-   if(!(standardMonthlyDues>0)){
-    const fallbackRate=Number(ctx.monthly_dues||window.schoolSettings?.standard_dues||window.schoolSettings?.standard_monthly_dues||0);
-    if(Number.isFinite(fallbackRate)&&fallbackRate>0)standardMonthlyDues=fallbackRate;
-   }
-   const duesInput=$('wfMonthlyDues');
-   if(duesInput&&standardMonthlyDues>0)duesInput.value=standardMonthlyDues;
-   if(standardMonthlyDues>0)window.updateSchoolMonthlyDuesMetric?.(standardMonthlyDues);
   }catch(error){console.warn('[School settings] Monthly dues hydration deferred:',error?.message||error);}
   finally{if(timer)clearTimeout(timer);}
  })();
@@ -1087,17 +1072,6 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    if(!tr.error)tr.data=tr.data.map(t=>({...t,is_active:true,passport:null}));
  }else{
    tr.data=tr.data.map(t=>({...t,is_active:typeof t.is_active==='boolean'?t.is_active:true,passport:t.passport??null}));
- }
- const requiredInitialSources=[['teacher register',tr],['teacher login accounts',ar],['contribution ledger',cr],['payout ledger',pr],['transaction reversals',rr]].filter(([,result])=>result?.error);
- if(requiredInitialSources.length){
-  const failed=requiredInitialSources.map(([label])=>label).join(', ');
-  throw new Error('The active school '+failed+' could not be hydrated. The workspace was not opened. Check the connection and school permissions, then retry sign-in.');
- }
- const requiredTenantSources=[['teacher register',tr],['contribution ledger',cr],['payout ledger',pr],['transaction reversal ledger',rr]];
- const failedTenantSources=requiredTenantSources.filter(([,result])=>result?.error);
- if(failedTenantSources.length){
-  const failedNames=failedTenantSources.map(([name])=>name).join(', ');
-  throw new Error('The active school '+failedNames+' could not be loaded. Check the connection and school access, then retry sign-in.');
  }
  let loginAccounts=new Map((ar.data||[]).map(account=>[String(account.teacher_id),account]));
  let teachers=(tr.data||[]).map(t=>{const normalized=typeof window.normalizeTeacherProfileRecord==='function'?window.normalizeTeacherProfileRecord(t):t;const account=loginAccounts.get(String(normalized.id));return {...normalized,auth_user_id:account?.auth_user_id||null,login_activated:!!account?.auth_user_id,must_change_password:account?.must_change_password??null};});let cons=cr.data||[], pays=pr.data||[], reversals=rr.data||[];
@@ -2310,49 +2284,10 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  $('wfBroadcastClear').onclick=async()=>{if(!await wfConfirm('Clear this school’s current announcement?'))return;$('wfBroadcastText').value='';await saveBroadcast('');};
 
  let auditRows=[];
- let auditLoadPromise=null,auditLoaded=false;
- function setAuditCardState(state,message){
-   const status=$('wfAuditMsg'),rows=$('wfAuditRows'),panel=$('wfAuditPanel');
-   if(!status||!rows||!panel)return;
-   status.textContent=message||'';
-   status.className=state==='error'?'error':'muted';
-   let retry=$('wfAuditRetryButton');
-   if(state==='error'){
-     if(!retry){
-       retry=document.createElement('button');retry.id='wfAuditRetryButton';retry.type='button';
-       retry.className='secondary';retry.style.cssText='display:inline-flex;align-items:center;gap:7px;margin:8px 0 0;min-height:36px';
-       retry.textContent='Retry audit history';
-       retry.addEventListener('click',()=>{retry.disabled=true;retry.textContent='Retrying…';loadAudit(true).finally(()=>{if(document.getElementById('wfAuditRetryButton')){retry.disabled=false;retry.textContent='Retry audit history';}});});
-       status.insertAdjacentElement('afterend',retry);
-     }
-     retry.hidden=false;
-   }else if(retry){retry.hidden=true;retry.disabled=false;retry.textContent='Retry audit history';}
-   if(state==='loading')rows.innerHTML='<tr><td colspan="5"><span role="status" aria-live="polite"><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Loading audit history…</span></td></tr>';
-   else if(state==='error')rows.innerHTML='<tr><td colspan="5">Audit history could not be loaded. Your other school sections remain available.</td></tr>';
- }
- async function loadAudit(forceRetry=false){
-   if(auditLoaded&&!forceRetry)return true;
-   if(auditLoadPromise&&!forceRetry)return auditLoadPromise;
-   setAuditCardState('loading','Loading audit history in the background…');
-   auditLoadPromise=(async()=>{
-     let timer;
-     try{
-       const request=client.from('audit_logs').select('time_string,actor_name,action,details,status,category').eq('school_id',ctx.id).order('created_at',{ascending:false}).limit(300);
-       const result=await Promise.race([request,new Promise((_,reject)=>{timer=window.setTimeout(()=>reject(new Error('Audit history request timed out.')),12000);})]);
-       if(result?.error)throw result.error;
-       auditRows=result?.data||[];lastAuditRenderKey='';renderAudit();auditLoaded=true;
-       setAuditCardState('ready',auditRows.length+' audit records loaded.');
-       return true;
-     }catch(error){
-       console.warn('[School Welfare] Secondary audit hydration deferred:',error?.message||error);
-       setAuditCardState('error','Audit history is taking longer than expected or is unavailable. Retry here; sign-in and other sections are unaffected.');
-       return false;
-     }finally{
-       if(timer)window.clearTimeout(timer);
-       auditLoadPromise=null;
-     }
-   })();
-   return auditLoadPromise;
+ async function loadAudit(){
+   const {data,error}=await client.from('audit_logs').select('time_string,actor_name,action,details,status,category').eq('school_id',ctx.id).order('created_at',{ascending:false}).limit(300);
+   if(error){msg('wfAuditMsg','Audit history is unavailable under the current school permissions.',true);$('wfAuditRows').innerHTML='<tr><td colspan="5">No audit records could be loaded.</td></tr>';return;}
+   auditRows=data||[];lastAuditRenderKey='';renderAudit();
  }
  let lastAuditRenderKey='';
  function renderAudit(){
@@ -2739,21 +2674,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  if(retry){retry.disabled=true;const ok=await refreshWorkflow();if(!ok)wfNotice('The contribution or payout ledger is still unavailable. Check your connection and retry.');return;}
  const b=e.target.closest('[data-wf-reverse]');if(!b)return;const type=b.dataset.wfReverse,id=b.dataset.wfId;const rows=type==='contribution'?cons:pays;const tx=rows.find(x=>String(x.id)===String(id));if(!tx||reversed.has(type+':'+id))return;const reason=await requestReversalReason(type);if(!reason||!reason.trim())return;if(!await wfConfirm('Confirm reversal of GH₵ '+money(tx.amount)+'? The original transaction will remain visible and be excluded from active totals.'))return;const {data:{user}}=await client.auth.getUser();const {error}=await client.from('transaction_reversals').insert({school_id:ctx.id,transaction_type:type,transaction_id:id,teacher_id:tx.teacher_id,amount:tx.amount,transaction_date:tx.date,reason:reason.trim(),reversed_by:user?.email||'School administrator'});if(error){wfNotice(error.code==='23505'?'This transaction has already been reversed.':'Reversal was not saved. Check school permissions and reversal-table policies.');return;}const ok=await audit(client,ctx,'Reverse '+type,'Original transaction '+id+'; GH₵ '+Number(tx.amount).toFixed(2)+'; reason: '+reason.trim(),tx.teacher_id);await refreshWorkflow();if(!ok)wfNotice('Reversal saved, but the audit entry failed.');});
  $('wfPayout').onsubmit=async e=>{e.preventDefault();const teacher_id=$('wfPayTeacher').value,amount=Number($('wfPayAmount').value);if(!teacher_id||!Number.isFinite(amount)||amount<=0)return msg('wfPayMsg','Choose a teacher and enter a positive amount.',true);const activeContributions=cons.filter(x=>!reversed.has('contribution:'+String(x.id))).reduce((sum,x)=>sum+Number(x.amount||0),0);const activePayouts=pays.filter(x=>!reversed.has('payout:'+String(x.id))).reduce((sum,x)=>sum+Number(x.amount||0),0);const available=Math.round((activeContributions-activePayouts)*100)/100;if(amount>available+0.001)return msg('wfPayMsg','Payout exceeds the available school fund balance of GH₵ '+money(Math.max(0,available))+'. Reverse or reconcile records before proceeding.',true);const confirmation=await wfConfirm('Confirm welfare payout of GH₵ '+amount.toFixed(2)+'? Available balance after payout: GH₵ '+money(available-amount)+'.',{responseMode:'optional',placeholder:'Optional note for the audit trail…'});if(!confirmation||confirmation.confirmed===false)return;const adminNote=confirmation.response||'No additional note supplied; action confirmed by school administrator.';const row={teacher_id,amount,date:$('wfPayDate').value,reason:$('wfPayReason').value.trim(),reference:$('wfPayRef').value.trim()||null,school_id:ctx.id};msg('wfPayMsg','Saving…');const {error}=await client.rpc('record_school_welfare_payout',{p_school_id:ctx.id,p_teacher_id:teacher_id,p_amount:amount,p_date:row.date,p_reason:row.reason,p_reference:row.reference});if(error){console.warn('Secure payout RPC failed',error.code,error.message);return msg('wfPayMsg',error.code==='23514'?'Payout was not saved: the available school fund balance may be insufficient, or the amount/reason/date is invalid. Refresh the ledger and check the details.':'Payout was not saved. The secure database check failed; no payout was recorded. Check administrator access and try again.',true);}const auditOk=await audit(client,ctx,'Record payout','GH₵ '+amount.toFixed(2)+' — '+row.reason+'; admin note: '+adminNote,teacher_id);$('wfPayout').reset();$('wfPayDate').value=today();await refreshWorkflow();msg('wfPayMsg',auditOk?'Payout recorded.':'Payout saved, but the audit entry failed. Notify the platform administrator.',!auditOk);};
-   workflowStage='final school settings hydration';
-   await awaitWorkflowAuth(workflowDuesHydrationPromise,10000,'The active monthly dues rate could not be initialized.');
-   if(!(standardMonthlyDues>0)){
-    const fallbackRate=Number(window.resolveSchoolMonthlyDues?.(ctx,window.schoolSettings,cons)||ctx.monthly_dues||0);
-    if(Number.isFinite(fallbackRate)&&fallbackRate>0)standardMonthlyDues=fallbackRate;
-   }
-   if(!Number.isFinite(Number(standardMonthlyDues))||Number(standardMonthlyDues)<=0){
-    throw new Error('The active STANDARD MONTHLY DUES rate could not be verified for this school. No administrator workspace was opened. Ask the school administrator to confirm the configured dues rate, then retry.');
-   }
-   const resolvedDuesInput=$('wfMonthlyDues');
-   if(resolvedDuesInput&&standardMonthlyDues>0)resolvedDuesInput.value=standardMonthlyDues;
-   if(standardMonthlyDues>0)window.updateSchoolMonthlyDuesMetric?.(standardMonthlyDues);
-   if(typeof window.__welfareRenderAdminProfileViewer==='function')window.__welfareRenderAdminProfileViewer();
    if(workflowSchoolKey){window.__welfareWorkflowReadySchoolId=workflowSchoolKey;window.__welfareWorkflowReadyUserId=workflowUserId;}
-   window.__welfareTenantHydrationState={schoolId:workflowSchoolKey,schoolCode:workflowSchoolCode,userId:workflowUserId,teacherCount:teachers.length,contributionCount:cons.length,payoutCount:pays.length,monthlyDues:Number(standardMonthlyDues||ctx.monthly_dues||0),ready:true,completedAt:new Date().toISOString()};
    // Signal that authenticated tenant destinations and renderers are mounted.
    window.__welfareSyncSidebarNavigation?.();
    window.dispatchEvent(new CustomEvent('welfare-workspace-mounted',{detail:{schoolId:workflowSchoolKey,schoolCode:String(ctx.school_code||'')}}));
@@ -2767,20 +2688,6 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    return false;
  }
 };
-// Build all workflow section containers and year selectors before the gateway
-// accepts a sign-in attempt. Tenant records and authenticated handlers are
-// attached later, while the dashboard remains hidden behind the login gate.
-try{
- if(!document.getElementById('workflows')){
-  addUI();
-  window.__welfareWorkflowShellPreloaded=true;
- }
- window.__welfareWorkflowShellReady=!!document.getElementById('workflows');
-}catch(shellError){
- window.__welfareWorkflowShellError=String(shellError?.message||shellError||'Workflow section shell could not be prepared.');
- console.error('[School Welfare] Pre-login workflow shell initialization failed:',shellError);
-}
-window.__welfareWorkflowBundleState=window.__welfareWorkflowShellReady?'ready':'error';
-window.__welfareWorkflowBundleReady=!!window.__welfareWorkflowShellReady;
-window.dispatchEvent(new Event(window.__welfareWorkflowShellReady?'welfare-workflows-ready':'welfare-workflows-load-error'));
+window.__welfareWorkflowBundleState='ready';
+window.dispatchEvent(new Event('welfare-workflows-ready'));
 })();
