@@ -7398,29 +7398,32 @@ input[type="tel"], input[inputmode="numeric"], input[inputmode="decimal"] { font
 @media(prefers-reduced-motion:reduce){:where(button,a,[role="button"],[role="tab"],.navbtn,.tab,.toggle,.password-toggle,[data-action]){transition:none!important}}
 </style>
 <script>
-/* This runs after the workflow bundle and the delegated sidebar router. */
+/* This runs after deferred page scripts, the workflow bundle and the sidebar router. */
 (function(){
- const params=new URLSearchParams(window.location.search);
- const explicitDemo=params.has('c')&&String(params.get('c')||'').trim().toUpperCase()==='DEMO';
- const demoReady=!explicitDemo||!!window.__welfareDemoSandboxReady;
- const ready=typeof window.initSchoolWorkflows==='function'&&!!window.__welfareWorkflowShellReady&&typeof window.__welfareSyncSidebarNavigation==='function'&&demoReady;
- window.__welfareSidebarNavigationReady=ready;
- window.__welfarePortalStartupReady=ready;
- if(ready){
-  const adminButton=document.getElementById('loginBtn');
-  const teacherButton=document.getElementById('teacherLoginButton');
+ const finalizeStartup=()=>{
   const params=new URLSearchParams(window.location.search);
-  const gatewayCode=(params.get('c')||params.get('school_code')||params.get('tenant')||params.get('school')||'').trim().toUpperCase();
-  if(adminButton)adminButton.disabled=!!gatewayCode&&!/^[A-Z0-9-]{3,32}$/.test(gatewayCode);
-  if(teacherButton)teacherButton.disabled=false;
- }else{
-  const adminError=document.getElementById('loginError');
-  const teacherMessage=document.getElementById('teacherLoginMessage');
-  const message='Portal startup is incomplete. Refresh the page before signing in.';
-  if(adminError)adminError.textContent=message;
-  if(teacherMessage)teacherMessage.textContent=message;
- }
- window.dispatchEvent(new Event('welfare-sidebar-navigation-ready'));
+  const explicitDemo=params.has('c')&&String(params.get('c')||'').trim().toUpperCase()==='DEMO';
+  const demoReady=!explicitDemo||!!window.__welfareDemoSandboxReady;
+  const ready=typeof window.initSchoolWorkflows==='function'&&!!window.__welfareWorkflowShellReady&&typeof window.__welfareSyncSidebarNavigation==='function'&&demoReady;
+  window.__welfareSidebarNavigationReady=ready;
+  window.__welfarePortalStartupReady=ready;
+  if(ready){
+   const adminButton=document.getElementById('loginBtn');
+   const teacherButton=document.getElementById('teacherLoginButton');
+   const gatewayCode=(params.get('c')||params.get('school_code')||params.get('tenant')||params.get('school')||'').trim().toUpperCase();
+   if(adminButton)adminButton.disabled=!!gatewayCode&&!/^[A-Z0-9-]{3,32}$/.test(gatewayCode);
+   if(teacherButton)teacherButton.disabled=false;
+  }else{
+   const adminError=document.getElementById('loginError');
+   const teacherMessage=document.getElementById('teacherLoginMessage');
+   const message=window.__welfareWorkflowShellError||'Portal startup is incomplete. Refresh the page before signing in.';
+   if(adminError)adminError.textContent=message;
+   if(teacherMessage)teacherMessage.textContent=message;
+  }
+  window.dispatchEvent(new Event('welfare-sidebar-navigation-ready'));
+ };
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',finalizeStartup,{once:true});
+ else finalizeStartup();
 })();
 </script>
 </body>
