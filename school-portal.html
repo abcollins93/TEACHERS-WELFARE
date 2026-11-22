@@ -7445,11 +7445,16 @@ input[type="tel"], input[inputmode="numeric"], input[inputmode="decimal"] { font
 <script>
 /* This runs after deferred page scripts, the workflow bundle and the sidebar router. */
 (function(){
- const finalizeStartup=()=>{
+ const finalizeStartup=async()=>{
   const params=new URLSearchParams(window.location.search);
   const explicitDemo=params.has('c')&&String(params.get('c')||'').trim().toUpperCase()==='DEMO';
+  let supabaseReady=explicitDemo,supabaseFailure='';
+  if(!explicitDemo){
+   try{await window.__welfareSupabaseReady;supabaseReady=!!window.supabase;}
+   catch(error){supabaseFailure=String(error?.message||error||'Supabase could not be initialized.');}
+  }
   const demoReady=!explicitDemo||!!window.__welfareDemoSandboxReady;
-  const ready=typeof window.initSchoolWorkflows==='function'&&!!window.__welfareWorkflowShellReady&&typeof window.__welfareSyncSidebarNavigation==='function'&&demoReady;
+  const ready=typeof window.initSchoolWorkflows==='function'&&!!window.__welfareWorkflowShellReady&&typeof window.__welfareSyncSidebarNavigation==='function'&&demoReady&&supabaseReady;
   window.__welfareSidebarNavigationReady=ready;
   window.__welfarePortalStartupReady=ready;
   if(ready){
@@ -7461,7 +7466,7 @@ input[type="tel"], input[inputmode="numeric"], input[inputmode="decimal"] { font
   }else{
    const adminError=document.getElementById('loginError');
    const teacherMessage=document.getElementById('teacherLoginMessage');
-   const message=window.__welfareWorkflowShellError||'Portal startup is incomplete. Refresh the page before signing in.';
+   const message=window.__welfareWorkflowShellError||supabaseFailure||'Portal startup is incomplete. Refresh the page before signing in.';
    if(adminError)adminError.textContent=message;
    if(teacherMessage)teacherMessage.textContent=message;
   }
