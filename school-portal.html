@@ -2826,6 +2826,14 @@ async function renderTeacherDashboard(profile,school){
   readTeacherRpc('get_my_teacher_contributions'),readTeacherRpc('get_my_teacher_payouts'),readTeacherRpc('get_my_school_welfare_payout_feed'),readTeacherRpc('get_my_teacher_contribution_feed'),readTeacherRpc('get_my_school_fund_summary'),readTeacherRpc('get_my_school_registered_member_count'),readTeacherRpc('get_my_teacher_school_standard_dues')
  ]);
  // Personal records remain bound to auth.uid(); school-wide payouts expose limited fields only.
+ const memberHydrationFailures=[
+  ['your contributions',ce],['your payouts',pe],['school payout feed',spe],
+  ['your contribution feed',pcfe],['school fund summary',sfse],
+  ['school monthly dues rate',teacherStandardDuesError]
+ ].filter(([,error])=>!!error);
+ if(memberHydrationFailures.length){
+  throw new Error('Your credentials were accepted, but '+memberHydrationFailures.map(([label])=>label).join(', ')+' could not be loaded. Your workspace was not opened. Check your connection or contact your school administrator.');
+ }
  let contributionLoadError=pcfe,schoolPayoutLoadError=spe,schoolFundSummaryError=sfse;
  let schoolFundBalance=sfse?null:Number(schoolFundRows?.[0]?.total_fund_balance||0);
  const contributions=ce?[]:(cs||[]),payouts=pe?[]:(ps||[]);
