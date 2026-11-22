@@ -2767,7 +2767,7 @@ async function renderTeacherDashboard(profile,school){
    #teacherLiveTicker .ticker-control:hover{background:rgba(255,255,255,.16)}
    body.teacher-ticker-active{padding-bottom:64px}
    body.teacher-ticker-active .sidebar{padding-bottom:68px}
-   @keyframes rollAnimation{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+   @keyframes rollAnimation{0%{transform:translate3d(0,0,0)}100%{transform:translate3d(-50%,0,0)}}
    @keyframes teacherTickerPulse{50%{opacity:.55;transform:scale(.82)}}
    @media(max-width:600px){#teacherLiveTicker{min-height:48px;padding:5px 8px calc(5px + env(safe-area-inset-bottom));gap:7px}#teacherLiveTicker .ticker-brand{gap:7px;padding:7px 8px}#teacherLiveTicker .ticker-brand-icon{width:25px;height:25px}#teacherLiveTicker .ticker-brand-copy strong{font-size:.59rem}#teacherLiveTicker .ticker-brand-copy small{display:none}#teacherLiveTicker .ticker-group{gap:25px;padding-right:25px}#teacherLiveTicker .ticker-item{font-size:.72rem}#teacherLiveTicker .ticker-item b{font-size:.55rem;padding:4px 6px}#teacherLiveTicker .ticker-time{font-size:.6rem}#teacherLiveTicker .ticker-control{width:20px;height:20px;min-width:20px;min-height:20px;flex-basis:20px}}
    @media(max-width:360px){#teacherLiveTicker .ticker-brand-copy{display:none}#teacherLiveTicker .ticker-brand{padding:6px}}
