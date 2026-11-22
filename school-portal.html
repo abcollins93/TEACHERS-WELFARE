@@ -2825,6 +2825,19 @@ async function renderTeacherDashboard(profile,school){
  const [{data:cs,error:ce},{data:ps,error:pe},{data:schoolPayoutData,error:spe},{data:personalContributionFeed,error:pcfe},{data:schoolFundRows,error:sfse},{data:registeredMemberCount,error:registeredMemberCountError},{data:teacherStandardDues,error:teacherStandardDuesError}]=await Promise.all([
   readTeacherRpc('get_my_teacher_contributions'),readTeacherRpc('get_my_teacher_payouts'),readTeacherRpc('get_my_school_welfare_payout_feed'),readTeacherRpc('get_my_teacher_contribution_feed'),readTeacherRpc('get_my_school_fund_summary'),readTeacherRpc('get_my_school_registered_member_count'),readTeacherRpc('get_my_teacher_school_standard_dues')
  ]);
+ const requiredMemberSources=[
+  ['personal contribution records',pcfe],
+  ['member contribution totals',ce],
+  ['member payout records',pe],
+  ['school payout history',spe],
+  ['school fund summary',sfse],
+  ['registered member count',registeredMemberCountError?{error:registeredMemberCountError}:null],
+  ['active monthly dues rate',teacherStandardDuesError?{error:teacherStandardDuesError}:null]
+ ].filter(([,result])=>result?.error);
+ if(requiredMemberSources.length){
+  const failed=requiredMemberSources.map(([label])=>label).join(', ');
+  throw new Error('Your credentials were accepted, but '+failed+' could not be loaded. Check your connection or contact your school administrator, then sign in again.');
+ }
  // Personal records remain bound to auth.uid(); school-wide payouts expose limited fields only.
  const memberHydrationFailures=[
   ['your contributions',ce],['your payouts',pe],['school payout feed',spe],
@@ -3570,6 +3583,23 @@ async function waitForPortalStartup(){
  return true;
 }
 window.__welfareWaitForPortalStartup=waitForPortalStartup;
+// Login submission stays unavailable until the prebuilt workflow sections,
+// report-year selectors, script bundle and delegated sidebar router are ready.
+const portalStartupButtons=[$('loginBtn'),$('teacherLoginButton')].filter(Boolean);
+portalStartupButtons.forEach(button=>{button.disabled=true;button.setAttribute('aria-disabled','true');});
+window.__welfarePortalStartupPromise=waitForPortalStartup().then(()=>{
+ if(window.__welfareWorkflowShellError)throw new Error(window.__welfareWorkflowShellError);
+ if(!window.__welfareWorkflowShellReady||!window.__welfareWorkflowBundleReady||
+    typeof window.populateReportYearSelectors!=='function')
+  throw new Error('The portal sections and report selectors are not ready. Refresh the page and try again.');
+ portalStartupButtons.forEach(button=>{button.disabled=false;button.removeAttribute('aria-disabled');});
+ return true;
+}).catch(error=>{
+ const message=error?.message||'Portal startup could not finish. Refresh the page and try again.';
+ if($('loginError')){$('loginError').className='error';$('loginError').textContent=message;}
+ if($('teacherLoginMessage')){$('teacherLoginMessage').className='error';$('teacherLoginMessage').textContent=message;}
+ return false;
+});
 // Account Settings must initialize independently of dashboard data and workflow startup.
 // Keep one initialization promise per authenticated tenant/role to avoid duplicate setup.
 function resolveSchoolMonthlyDues(school,settingsRows,contributionRows){
@@ -3695,6 +3725,7 @@ async function showDemoDashboard(){
  const school=window.WelfareDemo.school;
  if(typeof window.WelfareDemo?.hydrateStartup!=='function')throw new Error('The isolated DEMO startup module is unavailable.');
  const demoHydration=await window.WelfareDemo.hydrateStartup(demoRole);
+ if(!demoHydration?.dataReady||!Array.isArray(demoHydration.teachers)||!Array.isArray(demoHydration.contributions)||!Array.isArray(demoHydration.payouts))throw new Error('The isolated DEMO school records are not ready. Please retry.');
  const generation=(window.__welfareDemoViewGeneration||0)+1;
  window.__welfareDemoViewGeneration=generation;
  window.__welfareDemoRole=demoRole;
@@ -3732,7 +3763,12 @@ async function showDemoDashboard(){
   const profile={...teacher,teacher_id:teacher.id,school_id:school.id};
   if(generation!==window.__welfareDemoViewGeneration||demoRole!=='teacher')return;
   await renderTeacherDashboard(profile,school);
-  if(generation===window.__welfareDemoViewGeneration&&demoRole==='teacher')updateDemoBanner();
+  if(generation===window.__welfareDemoViewGeneration&&demoRole==='teacher'){
+   const memberViewsReady=!!(document.getElementById('wfTeacherPanel')&&document.getElementById('teacherOwnPersonalRows')?.textContent.trim()&&document.getElementById('teacherContribRows')&&document.getElementById('teacherPayoutRows'));
+   if(!memberViewsReady)throw new Error('The DEMO member profile, contribution and payout views could not finish rendering. Please retry.');
+   window.__welfareDemoHydrationState={...demoHydration,viewReady:true,ready:true,completedAt:new Date().toISOString()};
+   updateDemoBanner();
+  }
   return;
  }
  window.__welfareCurrentRole='admin';window.__welfareSyncSidebarNavigation?.();
@@ -3772,6 +3808,8 @@ async function showDemoDashboard(){
  const overview=$('schoolOverview');overview?.classList.remove('hidden');
  const mounted=await scheduleDemoAdminWorkflows(school);
  if(!mounted||!window.__welfareTenantHydrationState?.ready)throw new Error('The DEMO administrator records and sections could not finish loading. Please retry.');
+ if(String(window.__welfareTenantHydrationState.schoolCode||'').toUpperCase()!=='DEMO')throw new Error('The DEMO workspace did not complete tenant isolation checks. Please retry.');
+ window.__welfareDemoHydrationState={...demoHydration,viewReady:true,ready:true,completedAt:new Date().toISOString()};
  $('login').classList.add('hidden');$('dashboard').classList.remove('hidden');
  hidePageLoader();
 }
@@ -4284,6 +4322,7 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
  console.log('Entered Staff ID:',staffId);
  console.log('School code:',code);
  try{
+  if(!await window.__welfarePortalStartupPromise)throw new Error('The portal is still initializing. Refresh the page and try again.');
   await waitForPortalStartup();
   if(!staffId||!password)throw new Error('Enter your Staff ID and password.');
   const {data:result,error:invokeError}=await withPortalTimeout(client.functions.invoke('teacher-sign-in',{
@@ -4375,7 +4414,7 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
     if(window.__teacherDashboardLedgerTimer){clearInterval(window.__teacherDashboardLedgerTimer);window.__teacherDashboardLedgerTimer=null;}
     await client.auth.signOut();teacherDash.classList.add('hidden');$('login').classList.remove('hidden');
    });
-  }else renderTeacherDashboard(p,school);
+  }else await renderTeacherDashboard(p,school);
  }catch(err){
   if(authSessionCreated)await withPortalTimeout(client.auth.signOut(),3000,'Sign-out cleanup timed out.').catch(()=>{});
   $('login').classList.remove('hidden');$('dashboard').classList.add('hidden');
@@ -4386,7 +4425,7 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
  }
 });
 $('teacherForgotPreview').addEventListener('click',()=>{ $('teacherLoginMessage').className='muted';$('teacherLoginMessage').textContent='For secure recovery, contact your school administrator to verify your identity and reset your account.';});
-$('loginForm').addEventListener('submit',async e=>{e.preventDefault();showPageLoader('Signing in & loading school records...');$('loginError').textContent='Signing in & loading school records...';$('loginError').className='muted';$('loginBtn').disabled=true;$('loginBtn').textContent='Signing in & loading records…';window.__welfareWorkflowReadySchoolId=null;window.__welfareWorkflowReadyUserId=null;window.__welfareTenantHydrationState=null;let authenticated=false;try{await waitForPortalStartup();const {data,error}=await withPortalTimeout(client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value}),10000,'Administrator sign-in timed out. Please check your connection and try again.');if(error||!data.user)throw new Error('credentials');authenticated=true;if(data.session?.access_token&&data.session?.refresh_token){const {error:sessionSetError}=await withPortalTimeout(client.auth.setSession({access_token:data.session.access_token,refresh_token:data.session.refresh_token}),12000,'Administrator session setup timed out.');if(sessionSetError)throw new Error('Your credentials were accepted, but the secure administrator session could not be established. Please sign in again.');}await showDashboard();}catch(err){if(!authenticated){$('loginError').textContent='Sign-in failed. Check your administrator email and password, or use the password setup link from your invitation.';await withPortalTimeout(client.auth.signOut(),3000,'Session cleanup timed out.').catch(()=>{});}else{$('login').classList.remove('hidden');$('dashboard').classList.add('hidden');$('loginError').textContent='Your credentials were accepted, but school verification or dashboard loading failed. Check that this URL uses your registered school code and that your administrator account is assigned to that school. Your session has been preserved.';}}finally{$('loginBtn').disabled=!!code&&!/^[A-Z0-9-]{3,32}$/.test(code);$('loginBtn').textContent='Sign in securely';hidePageLoader();}});
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();showPageLoader('Signing in & loading school records...');$('loginError').textContent='Signing in & loading school records...';$('loginError').className='muted';$('loginBtn').disabled=true;$('loginBtn').textContent='Signing in & loading records…';window.__welfareWorkflowReadySchoolId=null;window.__welfareWorkflowReadyUserId=null;window.__welfareTenantHydrationState=null;let authenticated=false;try{if(!await window.__welfarePortalStartupPromise)throw new Error('The portal is still initializing. Refresh the page and try again.');await waitForPortalStartup();const {data,error}=await withPortalTimeout(client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value}),10000,'Administrator sign-in timed out. Please check your connection and try again.');if(error||!data.user)throw new Error('credentials');authenticated=true;if(data.session?.access_token&&data.session?.refresh_token){const {error:sessionSetError}=await withPortalTimeout(client.auth.setSession({access_token:data.session.access_token,refresh_token:data.session.refresh_token}),12000,'Administrator session setup timed out.');if(sessionSetError)throw new Error('Your credentials were accepted, but the secure administrator session could not be established. Please sign in again.');}await showDashboard();}catch(err){if(!authenticated){$('loginError').textContent='Sign-in failed. Check your administrator email and password, or use the password setup link from your invitation.';await withPortalTimeout(client.auth.signOut(),3000,'Session cleanup timed out.').catch(()=>{});}else{$('login').classList.remove('hidden');$('dashboard').classList.add('hidden');$('loginError').textContent='Your credentials were accepted, but school verification or dashboard loading failed. Check that this URL uses your registered school code and that your administrator account is assigned to that school. Your session has been preserved.';}}finally{$('loginBtn').disabled=!!code&&!/^[A-Z0-9-]{3,32}$/.test(code);$('loginBtn').textContent='Sign in securely';hidePageLoader();}});
 $('forgotPassword').addEventListener('click',async()=>{
  const email=$('email').value.trim();
  $('loginError').textContent='';
