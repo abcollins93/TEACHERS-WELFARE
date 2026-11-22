@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_VERSION='twf-pwa-shell-v50-mobile-stability';
+const CACHE_VERSION='twf-pwa-shell-v51-mobile-stability';
 const STATEMENT_CACHE='twf-cached-statements-v1';
 const NETWORK_TIMEOUT_MS=10000;
 const STATIC_TIMEOUT_MS=9000;
@@ -53,7 +53,7 @@ self.addEventListener('install',event=>{
    const cache=await caches.open(CACHE_VERSION);
    // Keep the currently active worker if the matching portal/workflow bundle
    // cannot be fetched. A mixed shell must never become the active version.
-   const critical=['./school-portal.html','./school-portal-workflows.js?v=20261122-mobile-stability-v22','./pwa.js'];
+   const critical=['./school-portal.html','./school-portal-workflows.js?v=20261122-mobile-stability-v22','./demo-sandbox.js?v=20261122-mobile-stability-v22','./pwa.js','./g.html'];
    await Promise.all(critical.map(async path=>{
      const request=new Request(new URL(path,self.registration.scope),{cache:'reload'});
      const response=await timedFetch(request,STATIC_TIMEOUT_MS);
