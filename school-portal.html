@@ -4564,7 +4564,10 @@ if(isDemoMode){
   const label=button.querySelector('span')?.textContent?.trim()||'Selected section';
   placeholder.innerHTML='<div style="display:flex;align-items:center;gap:10px"><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i><div><strong></strong><div class="muted">Opening your school workspace…</div></div></div>';
   placeholder.querySelector('strong').textContent=label;
-  host.insertBefore(placeholder,document.getElementById('workflows')||null);
+  // The workflow root is mounted as a sibling of the dashboard layout,
+  // not necessarily a child of this content column. Append locally so the
+  // placeholder insertion can never throw a NotFoundError on first-load taps.
+  host.appendChild(placeholder);
   pendingPlaceholder=placeholder;
   viewIds.forEach(id=>{const view=document.getElementById(id);if(view&&!view.contains(placeholder))hideView(view);});
   revealView(placeholder,true);
