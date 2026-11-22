@@ -4661,10 +4661,21 @@ if(isDemoMode){
       target.style.setProperty('visibility','visible','important');
       target.removeAttribute('aria-hidden');
       if(registerPanel){
-        registerPanel.classList.remove('hidden');
+        // The live teacher register is mounted inside #workflows, beside (not
+        // inside) the Admin Panel. Reveal its full ancestor chain as well;
+        // otherwise the register itself is visible in the DOM but trapped
+        // beneath a still-hidden workflow wrapper.
+        let registerAncestor=registerPanel;
+        while(registerAncestor&&registerAncestor!==dashboardRoot){
+          registerAncestor.classList.remove('hidden');
+          registerAncestor.removeAttribute('hidden');
+          registerAncestor.style.removeProperty('display');
+          registerAncestor.style.removeProperty('visibility');
+          registerAncestor.removeAttribute('aria-hidden');
+          registerAncestor=registerAncestor.parentElement;
+        }
         registerPanel.style.setProperty('display','block','important');
         registerPanel.style.setProperty('visibility','visible','important');
-        registerPanel.removeAttribute('aria-hidden');
       }
     }
     if (requestedId === 'wfAdminPanel') {
