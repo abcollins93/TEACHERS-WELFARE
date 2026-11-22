@@ -1276,9 +1276,9 @@ const initSchoolWorkflowsInternal=async function(client,school,refresh){
   if(!sourceTeacher&&profileTeachers.length){sourceTeacher=profileTeachers[0];selectedProfileTeacherId=String(sourceTeacher.id);if(profileSelect)profileSelect.value=selectedProfileTeacherId;}
   if(!sourceTeacher){
    const nameNode=$('tpName');if(nameNode)nameNode.textContent=tr.error?'Teacher profile could not be loaded':'No teacher profiles are registered for this school.';
-   const personalNode=$('tpPersonalRows');if(personalNode)personalNode.innerHTML='<div class="tp-field"><small>PROFILE STATUS</small><strong>'+(tr.error?'The school teacher register could not be reached.':'No teacher records were returned.')+'</strong></div><button type="button" class="wf-table-action" data-wf-retry-profile>Retry loading profile</button>';
-   const professionalNode=$('tpProfessionalRows');if(professionalNode)professionalNode.innerHTML='';
-   const financeNode=$('tpFinanceRows');if(financeNode)financeNode.innerHTML='<div class="tp-finance"><span>Financial history</span><strong class="finance-empty">Unavailable</strong></div>';
+   const personalNode=$('tpPersonalRows');setHTMLIfChanged(personalNode,'<div class="tp-field"><small>PROFILE STATUS</small><strong>'+(tr.error?'The school teacher register could not be reached.':'No teacher records were returned.')+'</strong></div><button type="button" class="wf-table-action" data-wf-retry-profile>Retry loading profile</button>');
+   const professionalNode=$('tpProfessionalRows');setHTMLIfChanged(professionalNode,'');
+   const financeNode=$('tpFinanceRows');setHTMLIfChanged(financeNode,'<div class="tp-finance"><span>Financial history</span><strong class="finance-empty">Unavailable</strong></div>');
    const avatarNode=$('tpAvatar');if(avatarNode)avatarNode.textContent='—';
    const statusNode=$('tpStatus');if(statusNode)statusNode.textContent='Unavailable';
    return false;
@@ -1289,32 +1289,35 @@ const initSchoolWorkflowsInternal=async function(client,school,refresh){
   const recent=[...tc].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')))[0];
   const parts=String(t.name||'').trim().split(/\s+/).filter(Boolean),initials=parts.slice(0,2).map(x=>x[0]).join('').toUpperCase()||'—';
   const setText=(id,value)=>{const node=$(id);if(node)node.textContent=String(value??'—');};
-  const status=$('tpStatus');if(status){status.textContent=t.is_active===false?'Inactive':'Active';status.style.cssText+=';background:'+(t.is_active===false?'#fee2e2':'#dcfce7')+';color:'+(t.is_active===false?'#b91c1c':'#166534');}
+  const status=$('tpStatus');if(status){status.textContent=t.is_active===false?'Inactive':'Active';status.style.background=t.is_active===false?'#fee2e2':'#dcfce7';status.style.color=t.is_active===false?'#b91c1c':'#166534';}
   const profileAvatar=$('tpAvatar');
   if(profileAvatar){
-   profileAvatar.textContent=initials;profileAvatar.style.overflow='hidden';
+   profileAvatar.style.overflow='hidden';
+   const existingPhoto=profileAvatar.querySelector('img');
    if(t.passport){
-    const photo=document.createElement('img');photo.src=t.passport;photo.alt='Passport photograph of '+String(t.name||'teacher');photo.loading='eager';photo.decoding='async';
-    photo.style.cssText='display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit';
-    photo.onerror=()=>{photo.remove();profileAvatar.textContent=initials;};profileAvatar.replaceChildren(photo);
-   }
+    if(!existingPhoto||existingPhoto.getAttribute('src')!==String(t.passport)){
+     const photo=document.createElement('img');photo.src=t.passport;photo.alt='Passport photograph of '+String(t.name||'teacher');photo.loading='eager';photo.decoding='async';
+     photo.style.cssText='display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit';
+     photo.onerror=()=>{photo.remove();profileAvatar.textContent=initials;};profileAvatar.replaceChildren(photo);
+    }
+   }else if(existingPhoto||profileAvatar.textContent!==initials)profileAvatar.textContent=initials;
   }
   setText('tpName',t.name||'—');setText('tpRank',t.rank||'—');setText('tpStaffId','Staff ID: '+t.id);
   setText('tpRegistration',profileDate(t.registration_date||t.created_at||t.date_registered));setText('tpMembership',t.membership_type||t.membership||'—');
-  const personal=$('tpPersonalRows');if(personal)personal.innerHTML=profileRows([['FULL NAME',t.name],['PHONE NUMBER',t.phone],['SCHOOL / INSTITUTION',school.name],['DISTRICT & REGION',[school.district,school.region].filter(Boolean).join(' · ')]]);
-  const professional=$('tpProfessionalRows');if(professional)professional.innerHTML=profileRows([['Staff ID',t.id],['Professional Rank',t.rank],['CLASS / SUBJECT',t.class_name],['Employer',t.employer||school.employer]]);
-  const finance=$('tpFinanceRows');if(finance)finance.innerHTML=[
+  const personal=$('tpPersonalRows');setHTMLIfChanged(personal,profileRows([['FULL NAME',t.name],['PHONE NUMBER',t.phone],['SCHOOL / INSTITUTION',school.name],['DISTRICT & REGION',[school.district,school.region].filter(Boolean).join(' · ')]]));
+  const professional=$('tpProfessionalRows');setHTMLIfChanged(professional,profileRows([['Staff ID',t.id],['Professional Rank',t.rank],['CLASS / SUBJECT',t.class_name],['Employer',t.employer||school.employer]]));
+  const finance=$('tpFinanceRows');const financeHtml=[
    '<div class="tp-finance"><span>Total Dues Contributed</span><strong class="finance-positive">'+esc(profileMoney(dues))+'</strong></div>',
    '<div class="tp-finance"><span>Total Welfare Payouts Received</span><strong class="finance-payout">'+esc(profileMoney(paid))+'</strong></div>',
    '<div class="tp-finance"><span>Total Payments Recorded</span><strong>'+(tc.length?String(tc.length):'0 Payments')+'</strong></div>',
    '<div class="tp-finance"><span>Most Recent Contribution</span><strong'+(recent?'':' class="finance-empty"')+'>'+esc(recent?profileDate(recent.date):'—')+'</strong></div>'
-  ].join('');
+  ].join('');setHTMLIfChanged($('tpFinanceRows'),financeHtml);
   return true;
  };
- if(profileSelect){profileSelect.innerHTML=getProfileTeacherRows().map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name||t.id)+' ('+esc(t.id)+')</option>').join('');profileSelect.value=selectedProfileTeacherId;profileSelect.addEventListener('change',()=>{selectedProfileTeacherId=profileSelect.value;renderSelectedTeacherProfile();});}
- $('teacherProfileViewer')?.addEventListener('click',async event=>{const retry=event.target.closest('[data-wf-retry-profile]');if(!retry)return;retry.disabled=true;retry.textContent='Retrying…';try{await window.__welfareEnsureTeacherRegisterLoaded(ctx.school_code);msg('wfTeacherMsg','Teacher profile refreshed successfully.');}catch(error){retry.disabled=false;retry.textContent='Retry loading profile';const statusNode=$('tpPersonalRows')?.querySelector('strong');if(statusNode)statusNode.textContent=error?.message||'The profile could not be loaded. Please retry.';}});
- $('teacherProfilePrint')?.addEventListener('click',()=>window.print());
- $('tpEditContact')?.addEventListener('click',()=>wfNotice('To update official contact details, contact the Executive Administrator.'));
+ if(profileSelect){const profileOptions=getProfileTeacherRows().map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name||t.id)+' ('+esc(t.id)+')</option>').join('');setHTMLIfChanged(profileSelect,profileOptions);profileSelect.value=selectedProfileTeacherId;profileSelect.onchange=()=>{selectedProfileTeacherId=profileSelect.value;renderSelectedTeacherProfile();};}
+ const profileViewer=$('teacherProfileViewer');if(profileViewer)profileViewer.onclick=async event=>{const retry=event.target.closest('[data-wf-retry-profile]');if(!retry)return;retry.disabled=true;retry.textContent='Retrying…';try{await window.__welfareEnsureTeacherRegisterLoaded(ctx.school_code);msg('wfTeacherMsg','Teacher profile refreshed successfully.');}catch(error){retry.disabled=false;retry.textContent='Retry loading profile';const statusNode=$('tpPersonalRows')?.querySelector('strong');if(statusNode)statusNode.textContent=error?.message||'The profile could not be loaded. Please retry.';}};
+ const profilePrint=$('teacherProfilePrint');if(profilePrint)profilePrint.onclick=()=>window.print();
+ const editContact=$('tpEditContact');if(editContact)editContact.onclick=()=>wfNotice('To update official contact details, contact the Executive Administrator.');
  renderSelectedTeacherProfile();
  // A synchronous cached render is the first response to Profile viewer navigation.
  // Network-backed roster and ledger refreshes are deliberately kept separate.
@@ -1322,7 +1325,8 @@ const initSchoolWorkflowsInternal=async function(client,school,refresh){
   const profileTeachers=getProfileTeacherRows();
   if(!selectedProfileTeacherId&&profileTeachers[0])selectedProfileTeacherId=String(profileTeachers[0].id);
   if(profileSelect){
-   profileSelect.innerHTML=profileTeachers.map(row=>'<option value="'+esc(row.id)+'">'+esc(row.name||row.id)+' ('+esc(row.id)+')</option>').join('');
+   const profileOptions=profileTeachers.map(row=>'<option value="'+esc(row.id)+'">'+esc(row.name||row.id)+' ('+esc(row.id)+')</option>').join('');
+   setHTMLIfChanged(profileSelect,profileOptions);
    profileSelect.value=selectedProfileTeacherId;
   }
   const rendered=renderSelectedTeacherProfile();
