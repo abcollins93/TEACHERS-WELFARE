@@ -2310,10 +2310,49 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  $('wfBroadcastClear').onclick=async()=>{if(!await wfConfirm('Clear this school’s current announcement?'))return;$('wfBroadcastText').value='';await saveBroadcast('');};
 
  let auditRows=[];
- async function loadAudit(){
-   const {data,error}=await client.from('audit_logs').select('time_string,actor_name,action,details,status,category').eq('school_id',ctx.id).order('created_at',{ascending:false}).limit(300);
-   if(error){msg('wfAuditMsg','Audit history is unavailable under the current school permissions.',true);$('wfAuditRows').innerHTML='<tr><td colspan="5">No audit records could be loaded.</td></tr>';return;}
-   auditRows=data||[];lastAuditRenderKey='';renderAudit();
+ let auditLoadPromise=null,auditLoaded=false;
+ function setAuditCardState(state,message){
+   const status=$('wfAuditMsg'),rows=$('wfAuditRows'),panel=$('wfAuditPanel');
+   if(!status||!rows||!panel)return;
+   status.textContent=message||'';
+   status.className=state==='error'?'error':'muted';
+   let retry=$('wfAuditRetryButton');
+   if(state==='error'){
+     if(!retry){
+       retry=document.createElement('button');retry.id='wfAuditRetryButton';retry.type='button';
+       retry.className='secondary';retry.style.cssText='display:inline-flex;align-items:center;gap:7px;margin:8px 0 0;min-height:36px';
+       retry.textContent='Retry audit history';
+       retry.addEventListener('click',()=>{retry.disabled=true;retry.textContent='Retrying…';loadAudit(true).finally(()=>{if(document.getElementById('wfAuditRetryButton')){retry.disabled=false;retry.textContent='Retry audit history';}});});
+       status.insertAdjacentElement('afterend',retry);
+     }
+     retry.hidden=false;
+   }else if(retry){retry.hidden=true;retry.disabled=false;retry.textContent='Retry audit history';}
+   if(state==='loading')rows.innerHTML='<tr><td colspan="5"><span role="status" aria-live="polite"><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Loading audit history…</span></td></tr>';
+   else if(state==='error')rows.innerHTML='<tr><td colspan="5">Audit history could not be loaded. Your other school sections remain available.</td></tr>';
+ }
+ async function loadAudit(forceRetry=false){
+   if(auditLoaded&&!forceRetry)return true;
+   if(auditLoadPromise&&!forceRetry)return auditLoadPromise;
+   setAuditCardState('loading','Loading audit history in the background…');
+   auditLoadPromise=(async()=>{
+     let timer;
+     try{
+       const request=client.from('audit_logs').select('time_string,actor_name,action,details,status,category').eq('school_id',ctx.id).order('created_at',{ascending:false}).limit(300);
+       const result=await Promise.race([request,new Promise((_,reject)=>{timer=window.setTimeout(()=>reject(new Error('Audit history request timed out.')),12000);})]);
+       if(result?.error)throw result.error;
+       auditRows=result?.data||[];lastAuditRenderKey='';renderAudit();auditLoaded=true;
+       setAuditCardState('ready',auditRows.length+' audit records loaded.');
+       return true;
+     }catch(error){
+       console.warn('[School Welfare] Secondary audit hydration deferred:',error?.message||error);
+       setAuditCardState('error','Audit history is taking longer than expected or is unavailable. Retry here; sign-in and other sections are unaffected.');
+       return false;
+     }finally{
+       if(timer)window.clearTimeout(timer);
+       auditLoadPromise=null;
+     }
+   })();
+   return auditLoadPromise;
  }
  let lastAuditRenderKey='';
  function renderAudit(){
@@ -2705,6 +2744,9 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    if(!(standardMonthlyDues>0)){
     const fallbackRate=Number(window.resolveSchoolMonthlyDues?.(ctx,window.schoolSettings,cons)||ctx.monthly_dues||0);
     if(Number.isFinite(fallbackRate)&&fallbackRate>0)standardMonthlyDues=fallbackRate;
+   }
+   if(!Number.isFinite(Number(standardMonthlyDues))||Number(standardMonthlyDues)<=0){
+    throw new Error('The active STANDARD MONTHLY DUES rate could not be verified for this school. No administrator workspace was opened. Ask the school administrator to confirm the configured dues rate, then retry.');
    }
    const resolvedDuesInput=$('wfMonthlyDues');
    if(resolvedDuesInput&&standardMonthlyDues>0)resolvedDuesInput.value=standardMonthlyDues;
