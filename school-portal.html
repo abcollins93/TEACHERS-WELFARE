@@ -780,16 +780,22 @@ body:has(#login:not(.hidden)) .app-header-group{display:none!important}
 </style>
 <script id="admin-header-height-refresh">
 (function(){
- function refreshHeaderHeight(){
-  const group=document.querySelector('.app-header-group');
-  if(!group)return;
-  const visible=group.offsetParent!==null && getComputedStyle(group).display!=='none';
-  if(visible)document.documentElement.style.setProperty('--unified-header-height',Math.ceil(group.getBoundingClientRect().height)+'px');
+ let pending=false;
+ function scheduleHeaderHeight(){
+  if(pending)return;
+  pending=true;
+  window.requestAnimationFrame(()=>{
+   pending=false;
+   const group=document.querySelector('.app-header-group');
+   if(!group)return;
+   const height=group.getBoundingClientRect().height;
+   if(height>0)document.documentElement.style.setProperty('--unified-header-height',Math.ceil(height)+'px');
+  });
  }
- window.addEventListener('load',refreshHeaderHeight,{once:true});
- window.addEventListener('resize',refreshHeaderHeight,{passive:true});
+ window.addEventListener('load',scheduleHeaderHeight,{once:true});
+ window.addEventListener('resize',scheduleHeaderHeight,{passive:true});
  if('ResizeObserver' in window){
-  const start=()=>{const group=document.querySelector('.app-header-group');if(group)new ResizeObserver(refreshHeaderHeight).observe(group);refreshHeaderHeight();};
+  const start=()=>{const group=document.querySelector('.app-header-group');if(group)new ResizeObserver(scheduleHeaderHeight).observe(group);scheduleHeaderHeight();};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
  }
 })();
@@ -4826,22 +4832,29 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
   group.appendChild(top);
   group.appendChild(admin);
   const dashboard=document.getElementById('dashboard');
-  function update(){
-   const login=document.getElementById('login');
-   const signedIn=!!(dashboard&&!dashboard.classList.contains('hidden'));
-   group.style.display=signedIn?'flex':'none';
-   if(login&&!login.classList.contains('hidden'))group.style.display='none';
-   const height=Math.ceil(group.getBoundingClientRect().height);
-   document.documentElement.style.setProperty('--unified-header-height',height+'px');
+  let updatePending=false;
+  function scheduleUpdate(){
+   if(updatePending)return;
+   updatePending=true;
+   window.requestAnimationFrame(()=>{
+    updatePending=false;
+    const login=document.getElementById('login');
+    const signedIn=!!(dashboard&&!dashboard.classList.contains('hidden'));
+    group.style.display=signedIn?'flex':'none';
+    if(login&&!login.classList.contains('hidden'))group.style.display='none';
+    const height=group.getBoundingClientRect().height;
+    if(height>0)document.documentElement.style.setProperty('--unified-header-height',Math.ceil(height)+'px');
+   });
   }
-  if('ResizeObserver' in window){new ResizeObserver(update).observe(group);}
-  if(dashboard&&'MutationObserver' in window)new MutationObserver(update).observe(dashboard,{attributes:true,attributeFilter:['class']});
+  if('ResizeObserver' in window){new ResizeObserver(scheduleUpdate).observe(group);}
+  if(dashboard&&'MutationObserver' in window)new MutationObserver(scheduleUpdate).observe(dashboard,{attributes:true,attributeFilter:['class']});
   const login=document.getElementById('login');
-  if(login&&'MutationObserver' in window)new MutationObserver(update).observe(login,{attributes:true,attributeFilter:['class']});
-  window.addEventListener('resize',update,{passive:true});
-  update();
+  if(login&&'MutationObserver' in window)new MutationObserver(scheduleUpdate).observe(login,{attributes:true,attributeFilter:['class']});
+  window.addEventListener('resize',scheduleUpdate,{passive:true});
+  scheduleUpdate();
  }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupUnifiedHeader,{once:true});else setupUnifiedHeader();
+ const scheduleSetup=()=>window.requestAnimationFrame(()=>window.requestAnimationFrame(setupUnifiedHeader));
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',scheduleSetup,{once:true});else scheduleSetup();
 })();
 </script>
 
