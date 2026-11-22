@@ -2848,6 +2848,7 @@ async function renderTeacherDashboard(profile,school){
   return !rowKeys.length||rowKeys.some(key=>loggedInTeacherKeys.includes(key));
  };
  let activeTeacherContributionRows=teacherContributionRows.filter(row=>isMyTeacherContribution(row)&&isActiveTeacherContribution(row));
+ window.__welfareRenderFinancialCharts?.({contributions:activeTeacherContributionRows,payouts,scope:'Your personal ledger'});
  const activeTeacherContributionCount=()=>activeTeacherContributionRows.length;
  const totalC=activeTeacherContributionRows.reduce((sum,x)=>sum+Number(x.amount||0),0);
  const totalP=payouts.reduce((sum,x)=>sum+Number(x.amount||0),0);
@@ -3087,6 +3088,7 @@ async function renderTeacherDashboard(profile,school){
    if(!freshSchoolFundSummary.error){schoolFundBalance=Number(freshSchoolFundSummary.data?.[0]?.total_fund_balance||0);schoolFundSummaryError=false;}else schoolFundSummaryError=true;
    if(!freshRegisteredMemberCount.error){$('teacherCount').textContent=String(Number(freshRegisteredMemberCount.data||0));}else $('teacherCount').textContent='Unavailable';
    activeTeacherContributionRows=teacherContributionRows.filter(row=>isMyTeacherContribution(row)&&isActiveTeacherContribution(row));
+   window.__welfareRenderFinancialCharts?.({contributions:activeTeacherContributionRows,payouts,scope:'Your personal ledger'});
    scheduleTeacherProgressUpdate();
    const refreshedConTotal=activeTeacherContributionRows.reduce((sum,row)=>sum+Number(row.amount||0),0);
    const refreshedOwnPayoutTotal=payouts.reduce((sum,row)=>sum+Number(row.amount||0),0);
