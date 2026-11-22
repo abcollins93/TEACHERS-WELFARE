@@ -7400,5 +7400,55 @@ input[type="tel"], input[inputmode="numeric"], input[inputmode="decimal"] { font
 }
 </style>
 
+
+<style id="primary-total-fund-balance-card">
+/* Primary fund summary: intentionally distinct without changing metric-grid geometry. */
+#schoolOverview .metric-featured.metric-balance,
+#schoolOverview .metric.metric-balance{
+  position:relative!important;
+  min-height:128px!important;
+  background:#10233F!important;
+  color:#fff!important;
+  border:1px solid #C6A04A!important;
+  border-left:6px solid #C6A04A!important;
+  border-radius:16px!important;
+  box-shadow:0 10px 26px rgba(16,35,63,.2),inset 0 0 0 1px rgba(198,160,74,.12)!important;
+}
+#schoolOverview .metric-balance .metric-icon{
+  background:rgba(198,160,74,.16)!important;
+  color:#E6C778!important;
+  border:1px solid rgba(198,160,74,.48)!important;
+}
+#schoolOverview .metric-balance .metric-label{
+  color:#E6C778!important;
+  font-weight:900!important;
+  letter-spacing:.075em!important;
+}
+#schoolOverview .metric-balance .metric-content strong{
+  color:#fff!important;
+  font-size:clamp(1.22rem,2vw,1.72rem)!important;
+  font-weight:900!important;
+  letter-spacing:-.025em!important;
+  font-variant-numeric:tabular-nums lining-nums!important;
+  font-feature-settings:"tnum" 1,"lnum" 1!important;
+}
+#schoolOverview .metric-balance .metric-note,
+#schoolOverview .metric-balance .metric-note-positive{
+  color:#F1E6C9!important;
+}
+#schoolOverview .metric-balance .metric-note i{color:#C6A04A!important}
+.dark #schoolOverview .metric-featured.metric-balance,
+.dark #schoolOverview .metric.metric-balance{
+  background:#10233F!important;
+  border-color:#C6A04A!important;
+  color:#fff!important;
+  box-shadow:0 10px 26px rgba(0,0,0,.28),inset 0 0 0 1px rgba(198,160,74,.16)!important;
+}
+@media(max-width:560px){
+  #schoolOverview .metric-balance.metric-featured{min-height:110px!important}
+  #schoolOverview .metric-balance .metric-content strong{font-size:clamp(1.05rem,4.2vw,1.3rem)!important}
+}
+</style>
+
 </body>
 </html>
