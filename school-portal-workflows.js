@@ -2,7 +2,7 @@
 (function(){
 'use strict';
 window.__welfareWorkflowBundleState='loading';
-window.__welfareWorkflowBundleVersion='20261121-workflow-recovery-v21';
+window.__welfareWorkflowBundleVersion='20261122-startup-responsive-v22';
 const $=id=>document.getElementById(id);
 
 /* Shared badge and numeric treatment for workflow-rendered content. */
@@ -805,14 +805,9 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  window.__welfareCurrentSchool=school;
  try{
  workflowStage='administrator workspace mounting';
- // Yield the main thread before mounting large admin tables, audit panels and matrix UI.
- await new Promise(resolve=>{
-  // DEMO becomes touch-ready immediately after first paint; live tenants keep
-  // the longer idle window for their network-backed workflow initialization.
-  if(isLocalDemo)window.setTimeout(resolve,32);
-  else if('requestIdleCallback' in window)window.requestIdleCallback(()=>resolve(),{timeout:900});
-  else window.setTimeout(resolve,80);
- });
+ // Yield for two browser paints, then continue without waiting for an
+ // idle callback that can be postponed indefinitely on busy mobile devices.
+ await new Promise(resolve=>window.requestAnimationFrame(()=>window.requestAnimationFrame(resolve)));
  if(isLocalDemo&&window.__welfareDemoRole!=='admin')return false;
  // Rebuild workflow markup on refresh so handlers always use the latest school-scoped data.
  const existingWorkflows=$('workflows');const retainedRoster=$('schoolTeachers');const overview=$('schoolOverview');if(existingWorkflows&&retainedRoster&&existingWorkflows.contains(retainedRoster)&&overview?.parentElement)overview.parentElement.insertBefore(retainedRoster,overview.nextElementSibling);retainedRoster?.querySelector('#wfTeacherRegisterPanel')?.remove();if(existingWorkflows)existingWorkflows.remove();
@@ -893,13 +888,25 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  // This workflow-only preference read must not stall account Settings or the
  // rest of the administrator workspace. Use the saved value when it responds;
  // otherwise keep the safe zero/default and allow the workflow to finish mounting.
- const initialDuesResult=await Promise.race([
-  client.from('system_settings').select('value').eq('school_id',ctx.id).eq('key','standard_dues').maybeSingle(),
-  new Promise(resolve=>setTimeout(()=>resolve({data:null,error:{message:'Timed out while loading standard monthly dues.'}}),8000))
- ]);
- const {data:initialDuesSetting,error:initialDuesError}=initialDuesResult||{};
- if(!initialDuesError&&initialDuesSetting){standardMonthlyDues=Number(initialDuesSetting.value||0);$('wfMonthlyDues').value=standardMonthlyDues;if(standardMonthlyDues>0)window.updateSchoolMonthlyDuesMetric?.(standardMonthlyDues);}
- else if(initialDuesError)console.warn('[School settings] Could not load saved standard monthly dues:',initialDuesError.message);
+ // Load the configured rate independently. This optional dashboard
+ // metadata must never hold workflow mounting or the first profile render.
+ void (async()=>{
+  let timer;
+  try{
+   const initialDuesResult=await Promise.race([
+    client.from('system_settings').select('value').eq('school_id',ctx.id).eq('key','standard_dues').maybeSingle(),
+    new Promise(resolve=>{timer=setTimeout(()=>resolve({data:null,error:{message:'Timed out while loading standard monthly dues.'}}),8000);})
+   ]);
+   const {data:initialDuesSetting,error:initialDuesError}=initialDuesResult||{};
+   if(!initialDuesError&&initialDuesSetting){
+    standardMonthlyDues=Number(initialDuesSetting.value||0);
+    const duesInput=$('wfMonthlyDues');
+    if(duesInput)duesInput.value=standardMonthlyDues;
+    if(standardMonthlyDues>0)window.updateSchoolMonthlyDuesMetric?.(standardMonthlyDues);
+   }else if(initialDuesError)console.warn('[School settings] Could not load saved standard monthly dues:',initialDuesError.message);
+  }catch(error){console.warn('[School settings] Monthly dues hydration deferred:',error?.message||error);}
+  finally{if(timer)clearTimeout(timer);}
+ })();
  // Capture the monthly dues form submit before any browser-level form navigation can occur.
  const duesForm=$('wfDuesForm');
  if(duesForm){
