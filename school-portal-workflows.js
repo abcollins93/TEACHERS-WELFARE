@@ -1289,14 +1289,14 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  };
  const renderSelectedTeacherProfile=()=>{
   const profileTeachers=getProfileTeacherRows();
-  if(!selectedProfileTeacherId&&profileTeachers.length)selectedProfileTeacherId=String(profileTeachers[0].id);
+  if(!selectedProfileTeacherId&&profileTeachers.length)selectedProfileTeacherId=String(chooseInitialProfileTeacher(profileTeachers)?.id||'');
   let sourceTeacher=profileTeachers.find(x=>String(x.id)===String(selectedProfileTeacherId));
   // A stale selection (for example after a roster refresh or account switch)
   // must never leave the profile viewer blank while tenant-scoped rows exist.
-  if(!sourceTeacher&&profileTeachers.length){sourceTeacher=profileTeachers[0];selectedProfileTeacherId=String(sourceTeacher.id);if(profileSelect)profileSelect.value=selectedProfileTeacherId;}
+  if(!sourceTeacher&&profileTeachers.length){sourceTeacher=chooseInitialProfileTeacher(profileTeachers)||profileTeachers[0];selectedProfileTeacherId=String(sourceTeacher.id);if(profileSelect)profileSelect.value=selectedProfileTeacherId;}
   if(!sourceTeacher){
    const nameNode=$('tpName');if(nameNode)nameNode.textContent=tr.error?'Teacher profile could not be loaded':'No teacher profiles are registered for this school.';
-   const personalNode=$('tpPersonalRows');if(personalNode)personalNode.innerHTML='<div class="tp-field"><small>PROFILE STATUS</small><strong>'+(tr.error?'The school teacher register could not be reached.':'No teacher records were returned.')+'</strong></div><button type="button" class="wf-table-action" data-wf-retry-profile>Retry loading profile</button>';
+   const personalNode=$('tpPersonalRows');if(personalNode)personalNode.innerHTML='<div class="tp-field"><small>PROFILE STATUS</small><strong>'+(tr.error?'The school teacher register could not be reached.':'No teacher records are registered for this school yet.')+'</strong></div>'+(tr.error?'<button type="button" class="wf-table-action" data-wf-retry-profile>Retry loading profile</button>':'');
    const professionalNode=$('tpProfessionalRows');if(professionalNode)professionalNode.innerHTML='';
    const financeNode=$('tpFinanceRows');if(financeNode)financeNode.innerHTML='<div class="tp-finance"><span>Financial history</span><strong class="finance-empty">Unavailable</strong></div>';
    const avatarNode=$('tpAvatar');if(avatarNode)avatarNode.textContent='—';
@@ -1340,7 +1340,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  // Network-backed roster and ledger refreshes are deliberately kept separate.
  window.__welfareRenderAdminProfileViewer=()=>{
   const profileTeachers=getProfileTeacherRows();
-  if(!selectedProfileTeacherId&&profileTeachers[0])selectedProfileTeacherId=String(profileTeachers[0].id);
+  if(!selectedProfileTeacherId&&profileTeachers[0])selectedProfileTeacherId=String(chooseInitialProfileTeacher(profileTeachers)?.id||'');
   if(profileSelect){
    profileSelect.innerHTML=profileTeachers.map(row=>'<option value="'+esc(row.id)+'">'+esc(row.name||row.id)+' ('+esc(row.id)+')</option>').join('');
    profileSelect.value=selectedProfileTeacherId;
@@ -1371,7 +1371,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    const financialReady=await refreshWorkflow();
    if(!financialReady)console.warn('[School Welfare] Profile viewer financial history is incomplete; retry the contribution/payout sections.');
   }
-  if(!selectedProfileTeacherId||!teachers.some(item=>String(item.id)===String(selectedProfileTeacherId)))selectedProfileTeacherId=teachers[0]?String(teachers[0].id):'';
+  if(!selectedProfileTeacherId||!teachers.some(item=>String(item.id)===String(selectedProfileTeacherId)))selectedProfileTeacherId=String(chooseInitialProfileTeacher(teachers)?.id||'');
   if(profileSelect)profileSelect.value=selectedProfileTeacherId;
   window.__welfareRenderAdminProfileViewer();
   return !!teachers.length;
@@ -1525,7 +1525,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    window.__welfareTeacherRegisterState={schoolId:String(ctx.id||''),schoolCode:String(ctx.school_code||ctx.schoolCode||'').toUpperCase(),rows:teachers};
    tr={data:teachers,error:null};
    teacherById.clear();teachers.forEach(row=>teacherById.set(String(row.id),row));
-   if(!selectedProfileTeacherId||!teachers.some(row=>String(row.id)===String(selectedProfileTeacherId)))selectedProfileTeacherId=teachers[0]?String(teachers[0].id):'';
+   if(!selectedProfileTeacherId||!teachers.some(row=>String(row.id)===String(selectedProfileTeacherId)))selectedProfileTeacherId=String(chooseInitialProfileTeacher(teachers)?.id||'');
    renderTeacherTables();
    if(profileSelect){profileSelect.innerHTML=teachers.map(row=>'<option value="'+esc(row.id)+'">'+esc(row.name||row.id)+' ('+esc(row.id)+')</option>').join('');profileSelect.value=selectedProfileTeacherId;}
    const teacherOptions='<option value="">Choose teacher</option>'+teachers.filter(row=>row.is_active!==false).map(row=>'<option value="'+esc(row.id)+'">'+esc(row.name)+' ('+esc(row.id)+')</option>').join('');
