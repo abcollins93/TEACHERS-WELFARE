@@ -4444,16 +4444,14 @@ if(isDemoMode){
     if (!control || control.matches('.navbtn[data-target]')) return;
     if (control.matches('a, [role="link"], #sidebarLogout, .sidebar-account-out')) closeSidebar();
   });
-  // Touch navigation closes the drawer and marks the destination on pointer-down.
-  // The delegated click below remains the single authority for switching panels.
+  // Pointer-down is visual feedback only. Never close or move the drawer here:
+  // doing so can move the tapped button out from under the finger before the
+  // browser dispatches its click event, cancelling navigation on touch devices.
+  // The delegated click handler below closes the drawer and activates the view
+  // together, after the browser has successfully recognized the tap.
   document.addEventListener('pointerdown',function(event){
-    const button=event.target.closest('.navbtn[data-target]');
+    const button=event.target.closest?.('.navbtn[data-target]');
     if(!button)return;
-    closeSidebar();
-    document.querySelectorAll('.sidebar .navbtn[data-target]').forEach(item=>{
-      const active=item===button;item.classList.toggle('active',active);
-      if(active)item.setAttribute('aria-current','page');else item.removeAttribute('aria-current');
-    });
     button.classList.add('is-pressed');
   },{capture:true,passive:true});
   const clearPressed=event=>{const button=event.target.closest?.('.navbtn.is-pressed');if(button)button.classList.remove('is-pressed');};
