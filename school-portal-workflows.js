@@ -1875,7 +1875,7 @@ const initSchoolWorkflowsInternal=async function(client,school,refresh){
   renderPayoutLedger();$('wfPayoutSearch').addEventListener('input',()=>frameRender($('wfPayRows'),renderPayoutLedger));
   // Reload transaction data in place; keep the authenticated dashboard and
   // currently selected section mounted after a contribution or payout is saved.
-  const refreshWorkflow=async()=>{
+  const refreshWorkflowOnce=async()=>{
     const [nextCon,nextPay,nextRev]=await Promise.all([
       loadSource('contribution ledger refresh',()=>client.from('contributions').select('id,teacher_id,amount,date,reference').eq('school_id',ctx.id).order('date',{ascending:false})),
       loadSource('payout ledger refresh',()=>client.from('payouts').select('id,teacher_id,amount,date,reason,reference').eq('school_id',ctx.id).order('date',{ascending:false})),
@@ -1908,6 +1908,13 @@ const initSchoolWorkflowsInternal=async function(client,school,refresh){
     }));
     void refreshAdminActivityTicker().catch(error=>console.warn('[Administrator activity ticker] Refresh deferred:',error?.message||error));
     return !cr.error&&!pr.error;
+  };
+  let workflowRefreshPromise=null,workflowRefreshQueued=false;
+  const refreshWorkflow=()=>{
+    workflowRefreshQueued=true;
+    if(workflowRefreshPromise)return workflowRefreshPromise;
+    workflowRefreshPromise=(async()=>{let result=true;do{workflowRefreshQueued=false;result=await refreshWorkflowOnce();}while(workflowRefreshQueued);return result;})().finally(()=>{workflowRefreshPromise=null;});
+    return workflowRefreshPromise;
   };
   window.__welfareRefreshAdminWorkspace=refreshWorkflow;
   $('teacherCount').textContent=tr.error?'Unavailable':String(teachers.filter(t=>t.is_active!==false).length);
