@@ -7513,6 +7513,40 @@ header.top::before,header.top::after,.app-header-group>header.top::before,.app-h
   z-index:2147483645!important;background:#10233F!important;background-color:#10233F!important;
   background-image:none!important;opacity:1!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;
 }
+
+/* Force every visible fixed-header paint surface and its background strip to opaque navy. */
+.app-header-group,
+.app-header-group::before,
+.app-header-group::after,
+.app-header-group>header.top,
+.app-header-group>.overview-top,
+.app-header-group>header.top::before,
+.app-header-group>header.top::after,
+.app-header-group>.overview-top::before,
+.app-header-group>.overview-top::after,
+header.top,
+header.top::before,
+header.top::after,
+#dashboard .overview-top,
+#dashboard .overview-top::before,
+#dashboard .overview-top::after{
+  background:#10233F!important;
+  background-color:#10233F!important;
+  background-image:none!important;
+  opacity:1!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+.app-header-group{z-index:2147483647!important;isolation:isolate!important}
+.app-header-group>header.top,
+.app-header-group>.overview-top,
+header.top,
+#dashboard .overview-top{
+  position:relative!important;
+  z-index:2147483646!important;
+  isolation:isolate!important;
+}
+.app-header-group>header.top{position:fixed!important;top:0!important;left:0!important;right:0!important}
 </style>
 
 </body>
