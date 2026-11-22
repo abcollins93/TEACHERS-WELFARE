@@ -158,6 +158,19 @@
  }
  function activeCon(){const rev=new Set(reversals.filter(x=>x.transaction_type==='contribution').map(x=>String(x.transaction_id)));return contributions.filter(x=>{const status=String(x.status||x.transaction_status||x.reversal_status||'').toLowerCase(),flagged=v=>v===true||['true','t','1','yes'].includes(String(v??'').trim().toLowerCase());return !rev.has(String(x.id))&&!flagged(x.is_reversed)&&!flagged(x.reversed)&&!['reversed','inactive','deleted','cancelled','canceled','void','archived'].includes(status)&&!x.reversed_at&&!x.reversedAt;});}
  function activePay(){const rev=new Set(reversals.filter(x=>x.transaction_type==='payout').map(x=>String(x.transaction_id)));return payouts.filter(x=>{const status=String(x.status||x.transaction_status||'').toLowerCase(),flagged=v=>v===true||['true','t','1','yes'].includes(String(v??'').trim().toLowerCase());return !rev.has(String(x.id))&&!flagged(x.is_reversed)&&!flagged(x.reversed)&&!['reversed','inactive','deleted','cancelled','canceled','void','archived'].includes(status)&&!x.reversed_at&&!x.reversedAt;});}
+
+ const ensureDemoFundBalanceCard=()=>{
+  const value=document.getElementById('netTotal'),card=value?.closest('.metric');
+  if(!card)return;
+  card.classList.add('metric-featured','metric-balance');
+  const label=card.querySelector('.metric-label');if(label)label.textContent='TOTAL FUND BALANCE';
+  let note=card.querySelector('.metric-note');
+  if(!note){note=document.createElement('span');note.className='metric-note metric-note-positive';card.querySelector('.metric-content')?.appendChild(note);}
+  if(note&&!note.textContent.trim())note.textContent='After all active payouts';
+ };
+ ensureDemoFundBalanceCard();
+ document.addEventListener('DOMContentLoaded',ensureDemoFundBalanceCard,{once:true});
+ window.addEventListener('welfare-workflows-ready',ensureDemoFundBalanceCard);
  const summary=()=>{
   const activeContributions=activeCon(),activePayouts=activePay();
   const contributionTotal=activeContributions.reduce((sum,row)=>sum+Number(row.amount||0),0);
