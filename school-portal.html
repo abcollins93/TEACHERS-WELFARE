@@ -3786,6 +3786,7 @@ async function showDashboardInternal(){
  // dashboard query failures or workflow startup must never prevent the Settings view mounting.
  void startAccountSettingsInitialization(client,school,'admin');
  window.__welfareWorkflowLastError=null;
+ document.getElementById('adminWorkflowMountError')?.remove();
  const mountAdminWorkflows=async(timeout=15000)=>{
   const ready=await waitForSchoolWorkflows(timeout);
   if(!ready)throw new Error('Workflow bundle is not ready yet.');
