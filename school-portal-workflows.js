@@ -1173,11 +1173,11 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   const identity=profileIdentity(),userId=String(identity.id||identity.user_id||'').trim();
   const email=String(identity.email||'').trim().toLowerCase();
   const metadata=identity.user_metadata||{};
-  const fullName=String(metadata.full_name||metadata.name||identity.full_name||identity.name||'').trim().toLowerCase().replace(/\\s+/g,' ');
+  const fullName=String(metadata.full_name||metadata.name||identity.full_name||identity.name||'').trim().toLowerCase().replace(/\s+/g,' ');
   const matched=list.find(row=>{
    const ids=[row.auth_user_id,row.user_id,row.authUserId,row.userId,row.id].map(value=>String(value||'').trim()).filter(Boolean);
    const emails=[row.email,row.email_address,row.contact_email].map(value=>String(value||'').trim().toLowerCase()).filter(Boolean);
-   const names=[row.name,row.full_name,row.fullName].map(value=>String(value||'').trim().toLowerCase().replace(/\\s+/g,' ')).filter(Boolean);
+   const names=[row.name,row.full_name,row.fullName].map(value=>String(value||'').trim().toLowerCase().replace(/\s+/g,' ')).filter(Boolean);
    return (userId&&ids.includes(userId))||(email&&emails.includes(email))||(fullName&&names.includes(fullName));
   });
   return matched||list.find(row=>row.is_active!==false)||list[0]||null;
