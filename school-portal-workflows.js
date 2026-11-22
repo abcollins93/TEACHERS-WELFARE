@@ -4,6 +4,8 @@
 window.__welfareWorkflowBundleState='loading';
 window.__welfareWorkflowBundleVersion='20261121-workflow-recovery-v21';
 const $=id=>document.getElementById(id);
+let activeWorkflowInitialization=null;
+let activeWorkflowInitializationKey='';
 
 /* Shared badge and numeric treatment for workflow-rendered content. */
 (function(){
@@ -26,7 +28,9 @@ const $=id=>document.getElementById(id);
 .navbtn.is-pressed{opacity:.86}
 @media(hover:none) and (pointer:coarse){
  html,body{scroll-behavior:auto!important;overscroll-behavior-x:none}
- body{background-image:none}
+ body{background-image:none!important}
+ #schoolOverview .portal-hero:before,#schoolOverview .portal-hero:after{filter:none!important}
+ #dashboard .panel,#dashboard .metric,#workflows .panel,#wfAdminPanel .panel{box-shadow:0 1px 4px rgba(11,29,58,.04)!important}
  #dashboard,.sidebar,.dash-layout,.table-wrap,.wf-admin-quick-pills,.wf-dues-matrix-scroll,[data-scroll-container]{-webkit-overflow-scrolling:touch}
  #dashboard .panel,#dashboard .metric,#dashboard .support,#workflows .panel,#wfAdminPanel .panel,.teacher-dashboard-ledger-card,.teacher-dashboard-profile,.teacher-profile-accent,#teacherProfileViewer,#wfTeacherPanel,.wf-payout-view,#wfReportsPanel.wf-reports-view{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:0 1px 5px rgba(11,29,58,.045)!important}
  #dashboard .panel,#dashboard .metric,#dashboard .support,#workflows .panel{transform:none!important}
@@ -774,7 +778,7 @@ async function audit(client,ctx,action,details,teacherId){
  if(error){console.warn('Audit log insert failed',error.message);return false;}
  return true;
 }
-window.initSchoolWorkflows=async function(client,school,refresh){
+async function performSchoolWorkflows(client,school,refresh){
  let workflowStage='administrator session verification';
  window.__welfareWorkflowLastError=null;
  const awaitWorkflowAuth=(value,ms,label)=>{let timer;return Promise.race([Promise.resolve(value),new Promise((_,reject)=>{timer=window.setTimeout(()=>reject(new Error(label||'The request timed out.')),ms);})]).finally(()=>{if(timer)window.clearTimeout(timer);});};
@@ -784,6 +788,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const workflowSchoolKey=String(school?.id||'');
  const workflowSchoolCode=String(school?.school_code||school?.schoolCode||'').trim().toUpperCase();
  let workflowUserId='demo-local-admin';
+ try{
  if(!isLocalDemo){
   if(!workflowSchoolKey||!workflowSchoolCode)throw new Error('The verified school ID or school code is missing. Refresh the school gateway and retry.');
   const requestedCodeRaw=String(new URLSearchParams(location.search).get('c')||'').trim().toUpperCase();
@@ -803,7 +808,6 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  if(window.__welfareWorkflowReadySchoolId&&window.__welfareWorkflowReadySchoolId!==workflowSchoolKey){window.__welfareWorkflowReadySchoolId=null;window.__welfareWorkflowReadyUserId=null;}
  window.__welfareCurrentRole='admin';
  window.__welfareCurrentSchool=school;
- try{
  workflowStage='administrator workspace mounting';
  // Yield the main thread before mounting large admin tables, audit panels and matrix UI.
  await new Promise(resolve=>{
@@ -2663,6 +2667,17 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    if(window.__welfareWorkflowReadySchoolId===workflowSchoolKey){window.__welfareWorkflowReadySchoolId=null;window.__welfareWorkflowReadyUserId=null;}
    return false;
  }
+}
+window.initSchoolWorkflows=function(client,school,refresh){
+ const key=[String(school?.id||''),String(school?.school_code||school?.schoolCode||''),client?.__welfareDemo?String(window.__welfareDemoRole||'admin'):'live'].join('::');
+ if(activeWorkflowInitialization&&activeWorkflowInitializationKey===key)return activeWorkflowInitialization;
+ activeWorkflowInitializationKey=key;
+ const task=Promise.resolve().then(()=>performSchoolWorkflows(client,school,refresh));
+ const tracked=task.finally(()=>{
+  if(activeWorkflowInitialization===tracked){activeWorkflowInitialization=null;activeWorkflowInitializationKey='';}
+ });
+ activeWorkflowInitialization=tracked;
+ return tracked;
 };
 window.__welfareWorkflowBundleState='ready';
 window.dispatchEvent(new Event('welfare-workflows-ready'));
