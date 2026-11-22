@@ -4571,10 +4571,15 @@ if(isDemoMode){
   if(pendingObserver)pendingObserver.disconnect();
   if(pendingMountedListener){window.removeEventListener('welfare-workspace-mounted',pendingMountedListener);pendingMountedListener=null;}
   const attempt=()=>{
-   if(sequence!==navigationSequence){pendingObserver?.disconnect();return;}
+   if(sequence!==navigationSequence){
+    pendingObserver?.disconnect();pendingObserver=null;
+    if(pendingMountedListener){window.removeEventListener('welfare-workspace-mounted',pendingMountedListener);pendingMountedListener=null;}
+    return;
+   }
    const target=document.getElementById(targetId);
    if(target){
     pendingObserver?.disconnect();pendingObserver=null;
+    if(pendingMountedListener){window.removeEventListener('welfare-workspace-mounted',pendingMountedListener);pendingMountedListener=null;}
     placeholder.remove();pendingPlaceholder=null;
     activateDestination(button,targetId,target,sequence);
    }
