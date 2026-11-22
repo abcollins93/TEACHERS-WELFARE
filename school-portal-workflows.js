@@ -817,10 +817,21 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  // idle callback that can be postponed indefinitely on busy mobile devices.
  await new Promise(resolve=>window.requestAnimationFrame(()=>window.requestAnimationFrame(resolve)));
  if(isLocalDemo&&window.__welfareDemoRole!=='admin')return false;
- // Rebuild workflow markup on refresh so handlers always use the latest school-scoped data.
- const existingWorkflows=$('workflows');const retainedRoster=$('schoolTeachers');const overview=$('schoolOverview');if(existingWorkflows&&retainedRoster&&existingWorkflows.contains(retainedRoster)&&overview?.parentElement)overview.parentElement.insertBefore(retainedRoster,overview.nextElementSibling);retainedRoster?.querySelector('#wfTeacherRegisterPanel')?.remove();if(existingWorkflows)existingWorkflows.remove();
- workflowStage='administrator section construction';
- addUI();
+ // The complete section shell is pre-mounted before login. Reuse it on the
+ // first authenticated session; rebuild only on later account/tenant changes
+ // so delegated controls are not bound more than once.
+ const existingWorkflows=$('workflows');
+ if(existingWorkflows&&window.__welfareWorkflowShellPreloaded&&!window.__welfareWorkflowShellInitializedForAuth){
+  window.__welfareWorkflowShellInitializedForAuth=true;
+ }else{
+  const retainedRoster=$('schoolTeachers'),overview=$('schoolOverview');
+  if(existingWorkflows&&retainedRoster&&existingWorkflows.contains(retainedRoster)&&overview?.parentElement)overview.parentElement.insertBefore(retainedRoster,overview.nextElementSibling);
+  retainedRoster?.querySelector('#wfTeacherRegisterPanel')?.remove();
+  if(existingWorkflows)existingWorkflows.remove();
+  workflowStage='administrator section construction';
+  addUI();
+  window.__welfareWorkflowShellInitializedForAuth=true;
+ }
  const workflowMountNode=$('workflows');
  const adminPanelNode=$('wfAdminPanel');
  if(!workflowMountNode||!adminPanelNode)throw new Error('Admin Panel markup could not be mounted in the dashboard.');
@@ -2701,7 +2712,20 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    return false;
  }
 };
-window.__welfareWorkflowBundleState='ready';
-window.__welfareWorkflowBundleReady=true;
-window.dispatchEvent(new Event('welfare-workflows-ready'));
+// Build all workflow section containers and year selectors before the gateway
+// accepts a sign-in attempt. Tenant records and authenticated handlers are
+// attached later, while the dashboard remains hidden behind the login gate.
+try{
+ if(!document.getElementById('workflows')){
+  addUI();
+  window.__welfareWorkflowShellPreloaded=true;
+ }
+ window.__welfareWorkflowShellReady=!!document.getElementById('workflows');
+}catch(shellError){
+ window.__welfareWorkflowShellError=String(shellError?.message||shellError||'Workflow section shell could not be prepared.');
+ console.error('[School Welfare] Pre-login workflow shell initialization failed:',shellError);
+}
+window.__welfareWorkflowBundleState=window.__welfareWorkflowShellReady?'ready':'error';
+window.__welfareWorkflowBundleReady=!!window.__welfareWorkflowShellReady;
+window.dispatchEvent(new Event(window.__welfareWorkflowShellReady?'welfare-workflows-ready':'welfare-workflows-load-error'));
 })();
