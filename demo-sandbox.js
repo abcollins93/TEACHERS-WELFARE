@@ -331,4 +331,19 @@
   }
   return window.__welfareRenderAdminProfileViewer?.()??false;
  };
+ // DEMO uses the same explicit sidebar router as live school tenants. Re-sync
+ // after role/workspace changes so the demo administrator and member menus
+ // always point at their own permitted destinations.
+ function syncDemoSidebar(){
+  if(String(new URLSearchParams(window.location.search).get('c')||'').trim().toUpperCase()!=='DEMO')return;
+  document.querySelectorAll('#schoolSidebar .navbtn[data-target]').forEach(button=>{
+   if(!button.hasAttribute('type'))button.type='button';
+  });
+  window.__welfareSyncSidebarNavigation?.();
+ }
+ window.addEventListener('welfare-workflows-ready',syncDemoSidebar);
+ window.addEventListener('welfare-workspace-mounted',syncDemoSidebar);
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',syncDemoSidebar,{once:true});
+ else window.requestAnimationFrame(syncDemoSidebar);
+
 })();
