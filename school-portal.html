@@ -5470,9 +5470,9 @@ window.downloadWelfareBlob=function(blob,fileName,statusNode,successText,sourceB
  const filename=(String(fileName||'Welfare_Statement_Report').replace(/\.pdf$/i,'')||'Welfare_Statement_Report')+'.pdf';
  const pdfBlob=blob.type==='application/pdf'?blob:new Blob([blob],{type:'application/pdf'});
  const pdfOwner=sourceButton?.closest('.wf-report-card')||statusNode||sourceButton||document.body;
- const previousPdfUrl=window.__welfareTenantPdfUrlByOwner.get(pdfOwner);
- if(previousPdfUrl){URL.revokeObjectURL(previousPdfUrl);window.__welfareTenantPdfUrls.delete(previousPdfUrl);}
- const url=window.URL.createObjectURL(pdfBlob);window.__welfareTenantPdfUrlByOwner.set(pdfOwner,url);window.__welfareTenantPdfUrls.add(url);
+ const previousPdfEntry=window.__welfareTenantPdfUrlByOwner.get(pdfOwner);
+ if(previousPdfEntry){clearTimeout(previousPdfEntry.timer);URL.revokeObjectURL(previousPdfEntry.url);window.__welfareTenantPdfUrls.delete(previousPdfEntry.url);}
+ const url=window.URL.createObjectURL(pdfBlob),pdfUrlEntry={url,timer:null};window.__welfareTenantPdfUrlByOwner.set(pdfOwner,pdfUrlEntry);window.__welfareTenantPdfUrls.add(url);
  const link=document.createElement('a');
  link.href=url;
  link.setAttribute('download',filename);
@@ -5512,7 +5512,7 @@ window.downloadWelfareBlob=function(blob,fileName,statusNode,successText,sourceB
    if(button)button.insertAdjacentElement('afterend',fallback);
    else document.body.appendChild(fallback);
  }
- setTimeout(()=>{URL.revokeObjectURL(url);window.__welfareTenantPdfUrls.delete(url);if(window.__welfareTenantPdfUrlByOwner.get(pdfOwner)===url)window.__welfareTenantPdfUrlByOwner.delete(pdfOwner);},10*60*1000);
+ pdfUrlEntry.timer=setTimeout(()=>{URL.revokeObjectURL(url);window.__welfareTenantPdfUrls.delete(url);if(window.__welfareTenantPdfUrlByOwner.get(pdfOwner)===pdfUrlEntry)window.__welfareTenantPdfUrlByOwner.delete(pdfOwner);},10*60*1000);
  return url;
 };
 window.__tenantWelfarePdfGenerator=window.generateTenantWelfarePdf;
