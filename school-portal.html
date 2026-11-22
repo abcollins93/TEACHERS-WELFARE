@@ -1,6 +1,42 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title id="documentTitle">School Welfare Portal</title><script id="welfare-pdf-signatory-renderer-bootstrap">
+<title id="documentTitle">School Welfare Portal</title><script id="welfare-nonblocking-ui-scheduler">
+/* Defer non-critical DOM work until active touch/scroll motion settles.
+   This scheduler never reads layout and never delays direct tap/navigation handlers. */
+(function(){
+ if(window.__welfareUiScheduler)return;
+ const queue=new Map();let lastScrollAt=0,touchActive=false,flushPending=false;
+ const now=()=>window.performance&&typeof performance.now==='function'?performance.now():Date.now();
+ const interacting=()=>touchActive||(now()-lastScrollAt)<180;
+ const requestFlush=()=>{
+  if(flushPending||!queue.size)return;
+  flushPending=true;
+  requestAnimationFrame(()=>{
+   flushPending=false;
+   if(interacting()){window.setTimeout(requestFlush,100);return;}
+   const next=queue.entries().next();
+   if(next.done)return;
+   queue.delete(next.value[0]);
+   try{next.value[1]();}catch(error){window.setTimeout(()=>{throw error;},0);}
+   if(queue.size)requestFlush();
+  });
+ };
+ const schedule=(task,key)=>{
+  if(typeof task!=='function')return;
+  queue.set(key||task,task);
+  if(!interacting())requestFlush();
+ };
+ const noteScroll=()=>{lastScrollAt=now();};
+ document.addEventListener('scroll',noteScroll,{capture:true,passive:true});
+ document.addEventListener('touchstart',()=>{touchActive=true;},{capture:true,passive:true});
+ const endTouch=()=>{touchActive=false;lastScrollAt=now();window.setTimeout(requestFlush,190);};
+ document.addEventListener('touchend',endTouch,{capture:true,passive:true});
+ document.addEventListener('touchcancel',endTouch,{capture:true,passive:true});
+ window.__welfareUiScheduler={schedule,isInteracting:interacting,get pendingCount(){return queue.size;}};
+ window.__welfareScheduleNonCritical=schedule;
+})();
+</script>
+<script id="welfare-pdf-signatory-renderer-bootstrap">
 /* Keep PDF exports safe even before the account-settings module finishes loading. */
 (function(){
  'use strict';
@@ -2038,7 +2074,12 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
 #mobile-nav-overlay,.sidebar{overscroll-behavior:contain}
 @media(max-width:950px){.sidebar{overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}}
 </style>
-</head><body>
+<style id="welfare-scroll-touch-performance">
+:where(button,a,[role="button"],[role="tab"],.navbtn,.tab,.toggle,.password-toggle,[data-action],[data-card-action],[data-chart-value],.wf-chart-mark,#mobileNavToggle,#themeToggle,#sidebarCollapse){touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+:where(.table-wrap,.table-responsive,.wf-financial-chart-scroll,.wf-dues-matrix-scroll,.wf-admin-quick-pills,[data-scroll-container],.sidebar .sidebar-nav){-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.wf-financial-chart-scroll{touch-action:pan-x pan-y}
+@media(hover:none) and (pointer:coarse){html,body{scroll-behavior:auto!important;overscroll-behavior-x:none}#dashboard,.dash-layout,.sidebar,.table-wrap,.table-responsive,[data-scroll-container]{-webkit-overflow-scrolling:touch}}
+</style></head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading Teachers Welfare Portal" aria-hidden="false">
  <div class="page-loader-card">
