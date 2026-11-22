@@ -54,7 +54,7 @@
 (function(){
  const query=new URLSearchParams(window.location.search);
  if(query.has('c')&&String(query.get('c')||'').trim().toUpperCase()==='DEMO'){
-  document.write('<script src="./demo-sandbox.js?v=20261121-workflow-recovery-v21"><\/script>');
+  document.write('<script src="./demo-sandbox.js?v=20261122-startup-responsive-v22"><\/script>');
  }
 })();
 </script><script>
@@ -2027,6 +2027,11 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
  .metric { border-radius: 14px; }
 }
 </style>
+<style id="welfare-first-interaction-css">
+:where(#mobileNavToggle,#sidebarCollapse,.sidebar .navbtn,.navbtn,.password-toggle,button,a,[role="button"],[role="tab"]){touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+#mobile-nav-overlay,.sidebar{overscroll-behavior:contain}
+@media(max-width:950px){.sidebar{overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}}
+</style>
 </head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading Teachers Welfare Portal" aria-hidden="false">
@@ -2398,14 +2403,18 @@ tenantIdentityDeadline=withPortalTimeout(
  console.warn('[School Welfare] Tenant identity initialization recovered:',error?.message||error);
  blockTenantAccess('School gateway unavailable','We could not verify this school’s access status in time. Reload the school link or contact the platform administrator.');
 });
+// Visual readiness is independent of network-backed tenant verification.
+// The gateway can be displayed immediately; auth and directory checks still
+// run before any protected dashboard data is revealed.
 const finishInitialPortalLoad=()=>{
- Promise.resolve(tenantIdentityDeadline||tenantIdentityReady).finally(()=>{
+ window.requestAnimationFrame(()=>window.requestAnimationFrame(()=>{
   if(pageLoaderTimer)window.clearTimeout(pageLoaderTimer);
-  pageLoaderTimer=window.setTimeout(hidePageLoader,250);
- });
+  pageLoaderTimer=null;
+  hidePageLoader();
+ }));
 };
-if(document.readyState==='complete')finishInitialPortalLoad();
-else window.addEventListener('load',finishInitialPortalLoad,{once:true});
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',finishInitialPortalLoad,{once:true});
+else finishInitialPortalLoad();
 if(code&&!/^[A-Z0-9-]{3,32}$/.test(code)){ $('loginError').textContent='This gateway link is missing a valid school code. Please use the link provided by your school platform administrator.';$('loginBtn').disabled=true; }
 function displayWelfareReason(reason){const value=String(reason??'').trim();return value?value.replace(/^Bereavement Assistance$/i,'Condolence Support'):'—';}
 window.displayWelfareReason=displayWelfareReason;
@@ -3486,11 +3495,20 @@ function setHeaderProfile(user, displayName, roleLabel, photoUrl) {
 // The workflow bundle is loaded after this inline script. Auth session restoration can
 // resolve first on fast connections, so wait for the bundle before mounting any sections.
 async function waitForSchoolWorkflows(timeoutMs=12000){
- const started=Date.now();
- while(typeof window.initSchoolWorkflows!=='function' && Date.now()-started<timeoutMs){
-  await new Promise(resolve=>window.setTimeout(resolve,50));
- }
- return typeof window.initSchoolWorkflows==='function';
+ if(typeof window.initSchoolWorkflows==='function')return true;
+ return new Promise(resolve=>{
+  let settled=false;
+  const finish=()=>{
+   if(settled)return;
+   settled=true;
+   window.clearTimeout(timer);
+   window.removeEventListener('welfare-workflows-ready',finish);
+   resolve(typeof window.initSchoolWorkflows==='function');
+  };
+  const timer=window.setTimeout(finish,timeoutMs);
+  window.addEventListener('welfare-workflows-ready',finish,{once:true});
+  if(typeof window.initSchoolWorkflows==='function')finish();
+ });
 }
 // Account Settings must initialize independently of dashboard data and workflow startup.
 // Keep one initialization promise per authenticated tenant/role to avoid duplicate setup.
@@ -3585,8 +3603,8 @@ function scheduleDemoAdminWorkflows(school){
    console.warn('[DEMO] Admin tools are still available for retry:',error?.message||error);
    demoWorkflowMountPromise=null;resolve(false);
   });
-  if('requestIdleCallback' in window)window.requestIdleCallback(run,{timeout:900});
-  else window.setTimeout(run,60);
+  // Avoid an idle callback that can be postponed on busy mobile browsers.
+  window.requestAnimationFrame(()=>window.requestAnimationFrame(run));
  }).then(result=>{
   if(!result)demoWorkflowMountPromise=null;
   window.__welfareWorkflowMountPromise=demoWorkflowMountPromise;
@@ -3785,8 +3803,8 @@ async function showDashboardInternal(){
       if(!ready)throw new Error('Workflow bundle unavailable after waiting for script initialization.');
       return window.initSchoolWorkflows(client,school,showDashboard);
     }).then(resolve,reject);
-    if('requestIdleCallback' in window)window.requestIdleCallback(schedule,{timeout:1200});
-    else window.setTimeout(schedule,180);
+    // Mount after the first two paints instead of waiting for an idle slot.
+    window.requestAnimationFrame(()=>window.requestAnimationFrame(schedule));
   }).then(result=>{
     if(result===false)throw new Error('Workflow module reported incomplete initialization.');
   }).catch(workflowError=>{
@@ -3797,7 +3815,7 @@ async function showDashboardInternal(){
     if(dashboard){
      if(!notice){notice=document.createElement('section');notice.id='adminWorkflowMountError';notice.className='panel';notice.style.cssText='border:1px solid #f0b4b4;background:#fff7f7;color:#8f1d24;padding:14px 16px;margin:12px 0';dashboard.insertBefore(notice,dashboard.firstChild);}
      const diagnostic=window.__welfareWorkflowLastError;const diagnosticMessage=diagnostic?.message||workflowError?.message||'Secure data loading failed';const diagnosticStage=diagnostic?.stage?' ['+diagnostic.stage+']':'';notice.replaceChildren(document.createTextNode('Administrator sections could not finish loading: '+String(diagnosticMessage)+diagnosticStage+'. '));
-     const retry=document.createElement('button');retry.type='button';retry.className='secondary';retry.textContent='Retry loading administrator sections';retry.addEventListener('click',async()=>{window.__welfareWorkflowLastError=null;retry.disabled=true;retry.textContent='Retrying…';notice.firstChild.textContent='Retrying secure administrator data… ';try{let ready=await waitForSchoolWorkflows(12000);if(!ready){const recoveryScript=document.createElement('script');recoveryScript.src='./school-portal-workflows.js?v=20261121-workflow-recovery-v21&retry='+Date.now();recoveryScript.async=true;recoveryScript.onload=()=>{window.__welfareWorkflowScriptLoaded=true};recoveryScript.onerror=()=>{window.__welfareWorkflowScriptError='Workflow bundle could not be downloaded'};document.head.appendChild(recoveryScript);ready=await waitForSchoolWorkflows(15000);}if(!ready)throw new Error(window.__welfareWorkflowScriptError||'The workflow bundle could not be reloaded. Check your connection and retry.');const result=await window.initSchoolWorkflows(client,school,showDashboard);if(result){notice.remove();window.__welfareWorkflowMountPromise=Promise.resolve(true);}else throw new Error('The administrator workspace could not be initialized.');}catch(retryError){const diagnostic=window.__welfareWorkflowLastError;notice.firstChild.textContent=String(diagnostic?.message||retryError?.message||'Administrator data is still unavailable.')+(diagnostic?.stage?' ['+diagnostic.stage+']':'')+'. ';retry.disabled=false;retry.textContent='Retry loading administrator sections';}});notice.appendChild(retry);
+     const retry=document.createElement('button');retry.type='button';retry.className='secondary';retry.textContent='Retry loading administrator sections';retry.addEventListener('click',async()=>{window.__welfareWorkflowLastError=null;retry.disabled=true;retry.textContent='Retrying…';notice.firstChild.textContent='Retrying secure administrator data… ';try{let ready=await waitForSchoolWorkflows(12000);if(!ready){const recoveryScript=document.createElement('script');recoveryScript.src='./school-portal-workflows.js?v=20261122-startup-responsive-v22&retry='+Date.now();recoveryScript.async=true;recoveryScript.onload=()=>{window.__welfareWorkflowScriptLoaded=true};recoveryScript.onerror=()=>{window.__welfareWorkflowScriptError='Workflow bundle could not be downloaded'};document.head.appendChild(recoveryScript);ready=await waitForSchoolWorkflows(15000);}if(!ready)throw new Error(window.__welfareWorkflowScriptError||'The workflow bundle could not be reloaded. Check your connection and retry.');const result=await window.initSchoolWorkflows(client,school,showDashboard);if(result){notice.remove();window.__welfareWorkflowMountPromise=Promise.resolve(true);}else throw new Error('The administrator workspace could not be initialized.');}catch(retryError){const diagnostic=window.__welfareWorkflowLastError;notice.firstChild.textContent=String(diagnostic?.message||retryError?.message||'Administrator data is still unavailable.')+(diagnostic?.stage?' ['+diagnostic.stage+']':'')+'. ';retry.disabled=false;retry.textContent='Retry loading administrator sections';}});notice.appendChild(retry);
     }
     return false;
   });
@@ -4379,7 +4397,7 @@ if(isDemoMode){
 }
 })();
 </script>
-<script src="school-portal-workflows.js?v=20261121-workflow-recovery-v21" onload="window.__welfareWorkflowScriptLoaded=true" onerror="window.__welfareWorkflowScriptError='Initial workflow bundle request failed';(function(){var s=document.createElement('script');s.src='./school-portal-workflows.js?v=20261121-workflow-recovery-v21&retry='+Date.now();s.async=true;s.onload=function(){window.__welfareWorkflowScriptLoaded=true};s.onerror=function(){window.__welfareWorkflowScriptError='Workflow bundle could not be downloaded'};document.head.appendChild(s)})()"></script>
+<script src="school-portal-workflows.js?v=20261122-startup-responsive-v22" onload="window.__welfareWorkflowScriptLoaded=true" onerror="window.__welfareWorkflowScriptError='Initial workflow bundle request failed';(function(){var s=document.createElement('script');s.src='./school-portal-workflows.js?v=20261122-startup-responsive-v22&retry='+Date.now();s.async=true;s.onload=function(){window.__welfareWorkflowScriptLoaded=true};s.onerror=function(){window.__welfareWorkflowScriptError='Workflow bundle could not be downloaded'};document.head.appendChild(s)})()"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
