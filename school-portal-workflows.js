@@ -908,10 +908,14 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    const {data:initialDuesSetting,error:initialDuesError}=initialDuesResult||{};
    if(!initialDuesError&&initialDuesSetting){
     standardMonthlyDues=Number(initialDuesSetting.value||0);
-    const duesInput=$('wfMonthlyDues');
-    if(duesInput)duesInput.value=standardMonthlyDues;
-    if(standardMonthlyDues>0)window.updateSchoolMonthlyDuesMetric?.(standardMonthlyDues);
    }else if(initialDuesError)console.warn('[School settings] Could not load saved standard monthly dues:',initialDuesError.message);
+   if(!(standardMonthlyDues>0)){
+    const fallbackRate=Number(window.resolveSchoolMonthlyDues?.(ctx,window.schoolSettings,cons)||ctx.monthly_dues||0);
+    if(Number.isFinite(fallbackRate)&&fallbackRate>0)standardMonthlyDues=fallbackRate;
+   }
+   const duesInput=$('wfMonthlyDues');
+   if(duesInput&&standardMonthlyDues>0)duesInput.value=standardMonthlyDues;
+   if(standardMonthlyDues>0)window.updateSchoolMonthlyDuesMetric?.(standardMonthlyDues);
   }catch(error){console.warn('[School settings] Monthly dues hydration deferred:',error?.message||error);}
   finally{if(timer)clearTimeout(timer);}
  })();
