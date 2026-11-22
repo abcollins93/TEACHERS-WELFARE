@@ -1883,10 +1883,16 @@ const initSchoolWorkflowsInternal=async function(client,school,refresh){
     $('netTotal').textContent=(cr.error||pr.error)?'Unavailable':'GH₵ '+money(totalCon-totalPay);
     const monthKey=getDashboardMonthKey();
     if($('monthlyContributionTotal'))$('monthlyContributionTotal').textContent=cr.error?'Unavailable':'GH₵ '+money(activeCons.filter(item=>String(item.date||'').slice(0,7)===monthKey).reduce((sum,item)=>sum+Number(item.amount||0),0));
-    renderContributionLedger();
-    renderDuesMatrix();
-    renderPayoutLedger();
-    renderSelectedTeacherProfile();
+    // Commit related ledger/profile DOM work together on the next paint. Each
+    // renderer also skips unchanged row markup, so unchanged data causes no
+    // large-table teardown/rebuild.
+    await new Promise(resolve=>requestAnimationFrame(()=>{
+      renderContributionLedger();
+      renderDuesMatrix();
+      renderPayoutLedger();
+      renderSelectedTeacherProfile();
+      resolve();
+    }));
     void refreshAdminActivityTicker().catch(error=>console.warn('[Administrator activity ticker] Refresh deferred:',error?.message||error));
     return !cr.error&&!pr.error;
   };
