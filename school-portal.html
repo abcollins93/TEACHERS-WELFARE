@@ -2518,7 +2518,7 @@ window.getLoggedInTeacherData=async function(profile,school){
 };
 async function renderTeacherDashboard(profile,school){
  if(window.WelfareDemo&&window.__welfareDemoTeacherWorkspaceReady){
-  window.__welfareCurrentRole='teacher';window.__welfareCurrentSchool=school;
+  window.__welfareCurrentRole='teacher';window.__welfareSyncSidebarNavigation?.();window.__welfareCurrentSchool=school;
   $('login').classList.add('hidden');$('dashboard').classList.remove('hidden');
   if($('teacherDashboardProfile'))$('teacherDashboardProfile').hidden=false;
   if($('teacherDashboardLedgers'))$('teacherDashboardLedgers').hidden=false;
@@ -2528,7 +2528,7 @@ async function renderTeacherDashboard(profile,school){
   $('workflows')?.classList.add('hidden');
   return;
  }
- window.__welfareCurrentRole='teacher';
+ window.__welfareCurrentRole='teacher';window.__welfareSyncSidebarNavigation?.();
  window.__welfareCurrentSchool=school;
  window.__welfareMemberProfileReady=new Promise(resolve=>{window.__welfareResolveMemberProfileReady=resolve;});
  const {data:{user}}=await withPortalTimeout(client.auth.getUser(),12000,'Your member session could not be refreshed in time.');
@@ -3618,7 +3618,7 @@ function scheduleDemoAdminWorkflows(school){
   if(!result)demoWorkflowMountPromise=null;
   window.__welfareWorkflowMountPromise=demoWorkflowMountPromise;
   if(demoRole==='teacher'){
-   window.__welfareCurrentRole='teacher';
+   window.__welfareCurrentRole='teacher';window.__welfareSyncSidebarNavigation?.();
    const activityTicker=document.getElementById('adminActivityTicker');
    if(activityTicker)activityTicker.classList.add('hidden');
    document.body.classList.remove('admin-activity-ticker-active');
@@ -3654,7 +3654,7 @@ function showDemoDashboard(){
  $('schoolMeta').textContent='DEMO · Basic · Kumasi Metro · Ashanti Region';
  setTenantFooter(school);
  if(demoRole==='teacher'){
-  window.__welfareCurrentRole='teacher';
+  window.__welfareCurrentRole='teacher';window.__welfareSyncSidebarNavigation?.();
   const activityTicker=document.getElementById('adminActivityTicker');
   if(activityTicker)activityTicker.classList.add('hidden');
   document.body.classList.remove('admin-activity-ticker-active');
@@ -3686,7 +3686,7 @@ function showDemoDashboard(){
   else window.setTimeout(render,80);
   return;
  }
- window.__welfareCurrentRole='admin';
+ window.__welfareCurrentRole='admin';window.__welfareSyncSidebarNavigation?.();
  const activityTicker=document.getElementById('adminActivityTicker');
  if(activityTicker){activityTicker.classList.remove('hidden');document.body.classList.add('admin-activity-ticker-active');}
  $('teacherContributionGap')?.remove();$('teacherStandardMonthlyDues')?.remove();
@@ -3773,7 +3773,7 @@ async function showDashboardInternal(){
   $('loginError').textContent='Your administrator account is not linked to a school gateway. Open the school-specific invitation link or contact the platform administrator.';
   window.finishTenantSkeletons?.();$('login').classList.remove('hidden');$('dashboard').classList.add('hidden');return;
  }
- window.__welfareCurrentRole='admin';
+ window.__welfareCurrentRole='admin';window.__welfareSyncSidebarNavigation?.();
  if(window.__teacherDashboardLedgerTimer){clearInterval(window.__teacherDashboardLedgerTimer);window.__teacherDashboardLedgerTimer=null;}
  if($('teacherDashboardProfile'))$('teacherDashboardProfile').hidden=true;
  if($('teacherDashboardLedgers'))$('teacherDashboardLedgers').hidden=true;
@@ -4252,7 +4252,7 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
   const teacherFirstName=String(teacherName||staffId).trim().split(/\s+/)[0]||'Teacher';
   const greeting=document.getElementById('dashboardGreeting');
   if(greeting)greeting.textContent='Hi, '+teacherFirstName+'!';
-  window.__welfareCurrentRole='teacher';
+  window.__welfareCurrentRole='teacher';window.__welfareSyncSidebarNavigation?.();
   window.__welfareTeacherDisplayName=teacherName;
   setHeaderProfile(sessionData.user,teacherName,'Teacher',teacherAvatar);
   $('login').classList.add('hidden');
