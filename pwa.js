@@ -122,26 +122,32 @@ function showPwaInstallNotice(tenantLabel){
  injectTenantManifest();
  if(typeof MutationObserver!=='undefined'){
    var observeSchoolIdentity=function(){
-     ['schoolName','loginSchoolName'].forEach(function(id){
-       var node=document.getElementById(id);
-       if(!node)return;
-       var update=function(){
-         if(new URLSearchParams(location.search).get('c')?.trim().toUpperCase()==='DEMO')return;
-         var value=(node.textContent||'').trim();
-         if(value&&value!=='School gateway unavailable'&&value!=='Loading...'){
-           persistTenantName(value);
-           injectTenantManifest();
-           var labelNode=installButton&&installButton.querySelector('.welfare-pwa-install-label');
-           if(labelNode&&!isInstalled){
-             var buttonLabel='Install '+safeTenantLabel()+' Portal';
-             labelNode.textContent=buttonLabel;
-             installButton.setAttribute('aria-label',buttonLabel);
-           }
-         }
-       };
-       update();
-       new MutationObserver(update).observe(node,{childList:true,characterData:true,subtree:true});
-     });
+     if(window.__welfarePwaIdentityObserver)return;
+     var nodes=['schoolName','loginSchoolName'].map(function(id){return document.getElementById(id);}).filter(Boolean);
+     if(!nodes.length)return;
+     var lastObservedSchoolIdentity='';
+     var update=function(){
+       if(new URLSearchParams(location.search).get('c')?.trim().toUpperCase()==='DEMO')return;
+       var value='';
+       for(var i=0;i<nodes.length;i++){
+         var candidate=(nodes[i].textContent||'').trim();
+         if(candidate&&candidate!=='School gateway unavailable'&&candidate!=='Loading...'){value=candidate;break;}
+       }
+       if(!value||value===lastObservedSchoolIdentity)return;
+       lastObservedSchoolIdentity=value;
+       persistTenantName(value);
+       injectTenantManifest();
+       var labelNode=installButton&&installButton.querySelector('.welfare-pwa-install-label');
+       if(labelNode&&!isInstalled){
+         var buttonLabel='Install '+safeTenantLabel()+' Portal';
+         labelNode.textContent=buttonLabel;
+         installButton.setAttribute('aria-label',buttonLabel);
+       }
+     };
+     var observer=new MutationObserver(update);
+     nodes.forEach(function(node){observer.observe(node,{childList:true,characterData:true,subtree:true});});
+     window.__welfarePwaIdentityObserver=observer;
+     update();
    };
    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',observeSchoolIdentity,{once:true});
    else observeSchoolIdentity();
@@ -153,9 +159,8 @@ function showPwaInstallNotice(tenantLabel){
      var appScope=new URL('./',pageUrl);
      // Registration already schedules the browser-managed update check. Avoid
      // issuing a second explicit update request on every page load.
-     navigator.serviceWorker.register(swUrl.href,{scope:appScope.href,updateViaCache:'none'}).then(function(registration){
-       // Request a fresh worker-script check after deploying a workflow recovery.
-       return registration.update().then(function(){window.__welfareServiceWorkerUpdateChecked=true;}).catch(function(error){console.warn('[Welfare Portal PWA] Background service-worker update check deferred:',error);});
+     navigator.serviceWorker.register(swUrl.href,{scope:appScope.href,updateViaCache:'none'}).then(function(){
+       window.__welfareServiceWorkerRegistered=true;
      }).catch(function(error){
        console.warn('[Welfare Portal PWA] Service worker registration failed:',error);
      });

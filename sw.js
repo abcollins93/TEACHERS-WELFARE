@@ -1,8 +1,11 @@
 'use strict';
-const CACHE_VERSION='twf-pwa-shell-v49-workflow-recovery';
+const CACHE_VERSION='twf-pwa-shell-v50-main-thread-stability';
 const STATEMENT_CACHE='twf-cached-statements-v1';
 const NETWORK_TIMEOUT_MS=8000;
 const STATIC_TIMEOUT_MS=6500;
+let shellCachePromise=null,cdnCachePromise=null;
+function openShellCache(){if(!shellCachePromise)shellCachePromise=caches.open(CACHE_VERSION).catch(error=>{shellCachePromise=null;throw error;});return shellCachePromise;}
+function openCdnCache(){if(!cdnCachePromise)cdnCachePromise=caches.open('twf-pwa-cdn-v1').catch(error=>{cdnCachePromise=null;throw error;});return cdnCachePromise;}
 function isJavaScriptAssetResponse(response){
  if(!response||!response.ok)return false;
  const type=String(response.headers.get('content-type')||'').toLowerCase();
@@ -28,13 +31,13 @@ const SHELL_ASSETS=[
  './',
  './index.html',
  './school-portal.html',
- './demo-sandbox.js?v=20261121-workflow-recovery-v21',
+ './demo-sandbox.js?v=20261122-main-thread-stability-v22',
  './set-password.html',
  './g.html',
  './offline.html',
  './manifest.json',
  './pwa.js',
- './school-portal-workflows.js?v=20261121-workflow-recovery-v21',
+ './school-portal-workflows.js?v=20261122-main-thread-stability-v22',
  './icons/welfare-portal.svg'
 ];
 const CDN_ASSETS=[
@@ -50,7 +53,7 @@ const CDN_ASSETS=[
 ];
 self.addEventListener('install',event=>{
  event.waitUntil((async()=>{
-   const cache=await caches.open(CACHE_VERSION);
+   const cache=await openShellCache();
    // Cache each same-origin shell asset independently. A single missing file
    // must not make the entire install fail on a weak mobile connection.
    await Promise.allSettled(SHELL_ASSETS.map(async path=>{
@@ -79,7 +82,7 @@ self.addEventListener('fetch',event=>{
    const trustedStaticHosts=['cdnjs.cloudflare.com','cdn.jsdelivr.net','cdn.tailwindcss.com','fonts.googleapis.com','fonts.gstatic.com'];
    if(!trustedStaticHosts.includes(url.hostname)||!['script','style','font','image'].includes(request.destination))return;
    event.respondWith((async()=>{
-     const cache=await caches.open('twf-pwa-cdn-v1');
+     const cache=await openCdnCache();
      const cached=await cache.match(request);
      if(cached)return cached;
      try{
@@ -92,7 +95,7 @@ self.addEventListener('fetch',event=>{
  }
  if(request.mode==='navigate'){
    event.respondWith((async()=>{
-     const cache=await caches.open(CACHE_VERSION);
+     const cache=await openShellCache();
      try{
        const response=await timedFetch(new Request(request,{cache:'no-store'}));
        if(response&&response.ok)cache.put(request,response.clone()).catch(()=>{});
@@ -109,7 +112,7 @@ self.addEventListener('fetch',event=>{
  }
  if(/\/school-portal-workflows\.js$/i.test(url.pathname)){
    event.respondWith((async()=>{
-     const cache=await caches.open(CACHE_VERSION);
+     const cache=await openShellCache();
      try{
        const response=await timedFetch(new Request(request,{cache:'no-store'}),STATIC_TIMEOUT_MS);
        if(response&&response.ok){const scriptType=String(response.headers.get('content-type')||'').toLowerCase();if(scriptType.includes('javascript')||scriptType.includes('ecmascript')||scriptType.includes('text/plain')){cache.put(request,response.clone()).catch(()=>{});return response;}}return (await cache.match(request))||Response.error();
@@ -122,7 +125,7 @@ self.addEventListener('fetch',event=>{
  }
  if(/\/pwa\.js$/i.test(url.pathname)){
    event.respondWith((async()=>{
-     const cache=await caches.open(CACHE_VERSION);
+     const cache=await openShellCache();
      try{
        const response=await fetch(request,{cache:'no-store'});
        if(response&&response.ok)cache.put(request,response.clone()).catch(()=>{});
@@ -135,7 +138,7 @@ self.addEventListener('fetch',event=>{
  }
  if(['script','style','image','font','manifest'].includes(request.destination)||/\.(?:js|css|svg|png|webp|ico|woff2?)$/i.test(url.pathname)){
    event.respondWith((async()=>{
-     const cache=await caches.open(CACHE_VERSION);
+     const cache=await openShellCache();
      const cached=await cache.match(request);
      if(cached)return cached;
      try{

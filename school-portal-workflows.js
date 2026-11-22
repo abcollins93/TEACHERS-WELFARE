@@ -2,8 +2,12 @@
 (function(){
 'use strict';
 window.__welfareWorkflowBundleState='loading';
-window.__welfareWorkflowBundleVersion='20261121-workflow-recovery-v21';
+window.__welfareWorkflowBundleVersion='20261122-main-thread-stability-v22';
 const $=id=>document.getElementById(id);
+const setHTMLIfChanged=(node,html)=>{if(node&&node.innerHTML!==html)node.innerHTML=html;};
+const activePdfObjectUrls=window.__welfarePdfObjectUrls||(window.__welfarePdfObjectUrls=new Set());
+const pdfObjectUrlByOwner=window.__welfarePdfObjectUrlByOwner||(window.__welfarePdfObjectUrlByOwner=new WeakMap());
+if(!window.__welfarePdfUrlCleanupBound){window.__welfarePdfUrlCleanupBound=true;window.addEventListener('pagehide',()=>{activePdfObjectUrls.forEach(url=>URL.revokeObjectURL(url));activePdfObjectUrls.clear();});}
 
 /* Shared badge and numeric treatment for workflow-rendered content. */
 (function(){
@@ -182,7 +186,11 @@ const downloadWorkflowBlob=(blob,fileName,statusId,successText,viewLabel,sourceB
  const isPdf=/\.pdf$/i.test(String(fileName||''))||/pdf/i.test(String(viewLabel||''))||/PDF/i.test(String(successText||''));
  const filename=isPdf?(String(fileName||'Welfare_Statement_Report').replace(/\.pdf$/i,'')||'Welfare_Statement_Report')+'.pdf':String(fileName||'download');
  const downloadBlob=isPdf&&blob.type!=='application/pdf'?new Blob([blob],{type:'application/pdf'}):blob;
- const url=window.URL.createObjectURL(downloadBlob),link=document.createElement('a');
+ const pdfOwner=sourceButton?.closest('.wf-report-card')||$(statusId)||sourceButton||document.body;
+ const previousPdfEntry=pdfObjectUrlByOwner.get(pdfOwner);
+ if(previousPdfEntry){clearTimeout(previousPdfEntry.timer);URL.revokeObjectURL(previousPdfEntry.url);activePdfObjectUrls.delete(previousPdfEntry.url);}
+ const url=window.URL.createObjectURL(downloadBlob),pdfUrlEntry={url,timer:null};pdfObjectUrlByOwner.set(pdfOwner,pdfUrlEntry);activePdfObjectUrls.add(url);
+ const link=document.createElement('a');
  link.href=url;
  link.setAttribute('download',filename);
  document.body.appendChild(link);
@@ -218,7 +226,7 @@ const downloadWorkflowBlob=(blob,fileName,statusId,successText,viewLabel,sourceB
    status.appendChild(document.createTextNode(' '));
    status.appendChild(fallback);
  }
- setTimeout(()=>URL.revokeObjectURL(url),10*60*1000);
+ pdfUrlEntry.timer=setTimeout(()=>{URL.revokeObjectURL(url);activePdfObjectUrls.delete(url);if(pdfObjectUrlByOwner.get(pdfOwner)===pdfUrlEntry)pdfObjectUrlByOwner.delete(pdfOwner);},10*60*1000);
 };
 
 // Tenant names and details are supplied by the authenticated school record.
@@ -774,7 +782,8 @@ async function audit(client,ctx,action,details,teacherId){
  if(error){console.warn('Audit log insert failed',error.message);return false;}
  return true;
 }
-window.initSchoolWorkflows=async function(client,school,refresh){
+const initSchoolWorkflowsInternal=async function(client,school,refresh){
+ const workflowMountGeneration=(window.__welfareWorkflowMountGeneration||0)+1;window.__welfareWorkflowMountGeneration=workflowMountGeneration;
  let workflowStage='administrator session verification';
  window.__welfareWorkflowLastError=null;
  const awaitWorkflowAuth=(value,ms,label)=>{let timer;return Promise.race([Promise.resolve(value),new Promise((_,reject)=>{timer=window.setTimeout(()=>reject(new Error(label||'The request timed out.')),ms);})]).finally(()=>{if(timer)window.clearTimeout(timer);});};
@@ -799,6 +808,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   workflowUserId=String(identity.data.user.id);
   if(window.__welfareAdminSessionUserId&&String(window.__welfareAdminSessionUserId)!==workflowUserId)throw new Error('The active administrator account changed. Refresh the portal before continuing.');
  }
+ if(window.__welfareWorkflowMountGeneration!==workflowMountGeneration)return false;
  if(workflowSchoolKey&&window.__welfareWorkflowReadySchoolId===workflowSchoolKey&&window.__welfareWorkflowReadyUserId===workflowUserId&&$('workflows')&&$('wfAdminPanel')&&$('teacherProfileViewer')&&$('schoolTeachers')&&$('wfAdminContributionPanel')&&$('wfAdminPayoutPanel'))return true;
  if(window.__welfareWorkflowReadySchoolId&&window.__welfareWorkflowReadySchoolId!==workflowSchoolKey){window.__welfareWorkflowReadySchoolId=null;window.__welfareWorkflowReadyUserId=null;}
  window.__welfareCurrentRole='admin';
@@ -813,6 +823,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   else if('requestIdleCallback' in window)window.requestIdleCallback(()=>resolve(),{timeout:900});
   else window.setTimeout(resolve,80);
  });
+ if(window.__welfareWorkflowMountGeneration!==workflowMountGeneration)return false;
  if(isLocalDemo&&window.__welfareDemoRole!=='admin')return false;
  // Rebuild workflow markup on refresh so handlers always use the latest school-scoped data.
  const existingWorkflows=$('workflows');const retainedRoster=$('schoolTeachers');const overview=$('schoolOverview');if(existingWorkflows&&retainedRoster&&existingWorkflows.contains(retainedRoster)&&overview?.parentElement)overview.parentElement.insertBefore(retainedRoster,overview.nextElementSibling);retainedRoster?.querySelector('#wfTeacherRegisterPanel')?.remove();if(existingWorkflows)existingWorkflows.remove();
@@ -951,7 +962,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     #adminActivityTicker .admin-ticker-brand-copy small{font-size:.58rem;letter-spacing:.08em;color:#aebed2;font-weight:700}
     #adminActivityTicker .admin-ticker-indicator{width:6px;height:6px;border-radius:50%;background:#50dfa8;box-shadow:0 0 0 4px rgba(80,223,168,.13);animation:adminTickerPulse 2.6s ease-in-out infinite}
     #adminActivityTicker .admin-ticker-window{position:relative;z-index:1;min-width:0;flex:1;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent)}
-    #adminActivityTicker .admin-ticker-track{display:flex;width:max-content;align-items:center;animation:continuousScroll 360s linear infinite!important;will-change:transform}
+    #adminActivityTicker .admin-ticker-track{display:flex;width:max-content;align-items:center;transform:translate3d(0,0,0);backface-visibility:hidden;animation:continuousScroll 360s linear infinite!important;will-change:transform}
     #adminActivityTicker .admin-ticker-track:hover{animation-play-state:paused!important}
     #adminActivityTicker.is-paused .admin-ticker-track{animation-play-state:paused!important}
     #adminActivityTicker .admin-ticker-group{display:flex;flex:0 0 auto;align-items:center;gap:38px;padding-right:38px;white-space:nowrap}
@@ -983,20 +994,25 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    adminTickerControl.innerHTML='<i class="fa-solid '+(paused?'fa-play':'fa-pause')+'" aria-hidden="true"></i>';
  });
  workflowStage='administrator activity feed setup';
- const refreshAdminActivityTicker=async()=>{
-   const {data:rows,error}=await client.from('audit_logs')
-     .select('created_at,time_string,actor_name,action,details,status')
-     .eq('school_id',ctx.id).order('created_at',{ascending:false}).limit(50);
-   if(error){adminTicker.classList.add('hidden');console.warn('[Administrator activity ticker] Feed unavailable:',error.message);return;}
-   const primary=document.getElementById('adminTickerItems'),clone=document.getElementById('adminTickerItemsClone');
-   if(!rows?.length){adminTicker.classList.add('hidden');if(primary)primary.innerHTML='';if(clone)clone.innerHTML='';return;}
-   adminTicker.classList.remove('hidden');
-   const items=rows.map(row=>{
-     const stamp=row.created_at?new Date(row.created_at).toLocaleString('en-GH',{dateStyle:'medium',timeStyle:'short'}):(row.time_string||'');
-     const detail=String(row.details||'').trim();
-     return '<span class="admin-ticker-item"><b>'+esc(row.actor_name||'Administrator')+'</b><span>'+esc(row.action||'Activity recorded')+(detail?' · '+esc(detail):'')+'</span><time class="admin-ticker-time">'+esc(stamp)+'</time></span>';
-   }).join('');
-   if(primary&&clone){primary.innerHTML=items;clone.innerHTML=items;}
+ let adminTickerRefreshPromise=null;
+ const refreshAdminActivityTicker=()=>{
+   if(adminTickerRefreshPromise)return adminTickerRefreshPromise;
+   adminTickerRefreshPromise=(async()=>{
+     const {data:rows,error}=await client.from('audit_logs')
+       .select('created_at,time_string,actor_name,action,details,status')
+       .eq('school_id',ctx.id).order('created_at',{ascending:false}).limit(50);
+     if(error){adminTicker.classList.add('hidden');console.warn('[Administrator activity ticker] Feed unavailable:',error.message);return;}
+     const primary=document.getElementById('adminTickerItems'),clone=document.getElementById('adminTickerItemsClone');
+     if(!rows?.length){adminTicker.classList.add('hidden');if(primary&&primary.innerHTML)primary.innerHTML='';if(clone&&clone.innerHTML)clone.innerHTML='';return;}
+     adminTicker.classList.remove('hidden');
+     const items=rows.map(row=>{
+       const stamp=row.created_at?new Date(row.created_at).toLocaleString('en-GH',{dateStyle:'medium',timeStyle:'short'}):(row.time_string||'');
+       const detail=String(row.details||'').trim();
+       return '<span class="admin-ticker-item"><b>'+esc(row.actor_name||'Administrator')+'</b><span>'+esc(row.action||'Activity recorded')+(detail?' · '+esc(detail):'')+'</span><time class="admin-ticker-time">'+esc(stamp)+'</time></span>';
+     }).join('');
+     if(primary&&clone){if(primary.innerHTML!==items)primary.innerHTML=items;if(clone.innerHTML!==items)clone.innerHTML=items;}
+   })().finally(()=>{adminTickerRefreshPromise=null;});
+   return adminTickerRefreshPromise;
  };
  void refreshAdminActivityTicker().catch(error=>console.warn('[Administrator activity ticker] Initial feed deferred:',error?.message||error));
  if(!isLocalDemo)window.__adminActivityTickerTimer=setInterval(()=>{
@@ -1048,6 +1064,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    loadSource('transaction reversals',()=>client.from('transaction_reversals').select('transaction_type,transaction_id,reason,created_at').eq('school_id',school.id)),
    loadSource('teacher login accounts',()=>client.from('teacher_accounts').select('auth_user_id,teacher_id,school_id,must_change_password,active').eq('school_id',school.id).eq('active',true))
  ]);
+ if(window.__welfareWorkflowMountGeneration!==workflowMountGeneration)return false;
  if(tr.error)tr=await teacherQuery('id,name,phone,rank,class_name,is_active,passport,created_at');
  if(tr.error)tr=await teacherQuery('id,name,phone,rank,class_name,is_active,passport');
  if(tr.error)tr=await teacherQuery('id,name,phone,rank,class_name,passport');
@@ -1085,6 +1102,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   return !reversed.has('payout:'+item.id)&&!['reversed','inactive','deleted','cancelled','canceled','void','archived'].includes(status)&&!reversedFlag&&!item.reversed_at&&!item.reversedAt;
  };
  let activeCons=cons.filter(isActiveContributionRecord), activePays=pays.filter(isActivePayoutRecord);
+ let workflowDataRevision=0,lastContributionRenderKey='',lastDuesMatrixRenderKey='';
  // Expand year options using only the active tenant's loaded ledgers.
  window.populateReportYearSelectors([...activeCons,...activePays]);
  const demoLatestMonthKey=isLocalDemo?cons.reduce((latest,row)=>String(row.date||'')>latest?String(row.date||''):latest,'').slice(0,7):'';
@@ -1262,9 +1280,9 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   if(!sourceTeacher&&profileTeachers.length){sourceTeacher=profileTeachers[0];selectedProfileTeacherId=String(sourceTeacher.id);if(profileSelect)profileSelect.value=selectedProfileTeacherId;}
   if(!sourceTeacher){
    const nameNode=$('tpName');if(nameNode)nameNode.textContent=tr.error?'Teacher profile could not be loaded':'No teacher profiles are registered for this school.';
-   const personalNode=$('tpPersonalRows');if(personalNode)personalNode.innerHTML='<div class="tp-field"><small>PROFILE STATUS</small><strong>'+(tr.error?'The school teacher register could not be reached.':'No teacher records were returned.')+'</strong></div><button type="button" class="wf-table-action" data-wf-retry-profile>Retry loading profile</button>';
-   const professionalNode=$('tpProfessionalRows');if(professionalNode)professionalNode.innerHTML='';
-   const financeNode=$('tpFinanceRows');if(financeNode)financeNode.innerHTML='<div class="tp-finance"><span>Financial history</span><strong class="finance-empty">Unavailable</strong></div>';
+   const personalNode=$('tpPersonalRows');setHTMLIfChanged(personalNode,'<div class="tp-field"><small>PROFILE STATUS</small><strong>'+(tr.error?'The school teacher register could not be reached.':'No teacher records were returned.')+'</strong></div><button type="button" class="wf-table-action" data-wf-retry-profile>Retry loading profile</button>');
+   const professionalNode=$('tpProfessionalRows');setHTMLIfChanged(professionalNode,'');
+   const financeNode=$('tpFinanceRows');setHTMLIfChanged(financeNode,'<div class="tp-finance"><span>Financial history</span><strong class="finance-empty">Unavailable</strong></div>');
    const avatarNode=$('tpAvatar');if(avatarNode)avatarNode.textContent='—';
    const statusNode=$('tpStatus');if(statusNode)statusNode.textContent='Unavailable';
    return false;
@@ -1275,32 +1293,35 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   const recent=[...tc].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')))[0];
   const parts=String(t.name||'').trim().split(/\s+/).filter(Boolean),initials=parts.slice(0,2).map(x=>x[0]).join('').toUpperCase()||'—';
   const setText=(id,value)=>{const node=$(id);if(node)node.textContent=String(value??'—');};
-  const status=$('tpStatus');if(status){status.textContent=t.is_active===false?'Inactive':'Active';status.style.cssText+=';background:'+(t.is_active===false?'#fee2e2':'#dcfce7')+';color:'+(t.is_active===false?'#b91c1c':'#166534');}
+  const status=$('tpStatus');if(status){status.textContent=t.is_active===false?'Inactive':'Active';status.style.background=t.is_active===false?'#fee2e2':'#dcfce7';status.style.color=t.is_active===false?'#b91c1c':'#166534';}
   const profileAvatar=$('tpAvatar');
   if(profileAvatar){
-   profileAvatar.textContent=initials;profileAvatar.style.overflow='hidden';
+   profileAvatar.style.overflow='hidden';
+   const existingPhoto=profileAvatar.querySelector('img');
    if(t.passport){
-    const photo=document.createElement('img');photo.src=t.passport;photo.alt='Passport photograph of '+String(t.name||'teacher');photo.loading='eager';photo.decoding='async';
-    photo.style.cssText='display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit';
-    photo.onerror=()=>{photo.remove();profileAvatar.textContent=initials;};profileAvatar.replaceChildren(photo);
-   }
+    if(!existingPhoto||existingPhoto.getAttribute('src')!==String(t.passport)){
+     const photo=document.createElement('img');photo.src=t.passport;photo.alt='Passport photograph of '+String(t.name||'teacher');photo.loading='eager';photo.decoding='async';
+     photo.style.cssText='display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit';
+     photo.onerror=()=>{photo.remove();profileAvatar.textContent=initials;};profileAvatar.replaceChildren(photo);
+    }
+   }else if(existingPhoto||profileAvatar.textContent!==initials)profileAvatar.textContent=initials;
   }
   setText('tpName',t.name||'—');setText('tpRank',t.rank||'—');setText('tpStaffId','Staff ID: '+t.id);
   setText('tpRegistration',profileDate(t.registration_date||t.created_at||t.date_registered));setText('tpMembership',t.membership_type||t.membership||'—');
-  const personal=$('tpPersonalRows');if(personal)personal.innerHTML=profileRows([['FULL NAME',t.name],['PHONE NUMBER',t.phone],['SCHOOL / INSTITUTION',school.name],['DISTRICT & REGION',[school.district,school.region].filter(Boolean).join(' · ')]]);
-  const professional=$('tpProfessionalRows');if(professional)professional.innerHTML=profileRows([['Staff ID',t.id],['Professional Rank',t.rank],['CLASS / SUBJECT',t.class_name],['Employer',t.employer||school.employer]]);
-  const finance=$('tpFinanceRows');if(finance)finance.innerHTML=[
+  const personal=$('tpPersonalRows');setHTMLIfChanged(personal,profileRows([['FULL NAME',t.name],['PHONE NUMBER',t.phone],['SCHOOL / INSTITUTION',school.name],['DISTRICT & REGION',[school.district,school.region].filter(Boolean).join(' · ')]]));
+  const professional=$('tpProfessionalRows');setHTMLIfChanged(professional,profileRows([['Staff ID',t.id],['Professional Rank',t.rank],['CLASS / SUBJECT',t.class_name],['Employer',t.employer||school.employer]]));
+  const finance=$('tpFinanceRows');const financeHtml=[
    '<div class="tp-finance"><span>Total Dues Contributed</span><strong class="finance-positive">'+esc(profileMoney(dues))+'</strong></div>',
    '<div class="tp-finance"><span>Total Welfare Payouts Received</span><strong class="finance-payout">'+esc(profileMoney(paid))+'</strong></div>',
    '<div class="tp-finance"><span>Total Payments Recorded</span><strong>'+(tc.length?String(tc.length):'0 Payments')+'</strong></div>',
    '<div class="tp-finance"><span>Most Recent Contribution</span><strong'+(recent?'':' class="finance-empty"')+'>'+esc(recent?profileDate(recent.date):'—')+'</strong></div>'
-  ].join('');
+  ].join('');setHTMLIfChanged($('tpFinanceRows'),financeHtml);
   return true;
  };
- if(profileSelect){profileSelect.innerHTML=getProfileTeacherRows().map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name||t.id)+' ('+esc(t.id)+')</option>').join('');profileSelect.value=selectedProfileTeacherId;profileSelect.addEventListener('change',()=>{selectedProfileTeacherId=profileSelect.value;renderSelectedTeacherProfile();});}
- $('teacherProfileViewer')?.addEventListener('click',async event=>{const retry=event.target.closest('[data-wf-retry-profile]');if(!retry)return;retry.disabled=true;retry.textContent='Retrying…';try{await window.__welfareEnsureTeacherRegisterLoaded(ctx.school_code);msg('wfTeacherMsg','Teacher profile refreshed successfully.');}catch(error){retry.disabled=false;retry.textContent='Retry loading profile';const statusNode=$('tpPersonalRows')?.querySelector('strong');if(statusNode)statusNode.textContent=error?.message||'The profile could not be loaded. Please retry.';}});
- $('teacherProfilePrint')?.addEventListener('click',()=>window.print());
- $('tpEditContact')?.addEventListener('click',()=>wfNotice('To update official contact details, contact the Executive Administrator.'));
+ if(profileSelect){const profileOptions=getProfileTeacherRows().map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name||t.id)+' ('+esc(t.id)+')</option>').join('');setHTMLIfChanged(profileSelect,profileOptions);profileSelect.value=selectedProfileTeacherId;profileSelect.onchange=()=>{selectedProfileTeacherId=profileSelect.value;renderSelectedTeacherProfile();};}
+ const profileViewer=$('teacherProfileViewer');if(profileViewer)profileViewer.onclick=async event=>{const retry=event.target.closest('[data-wf-retry-profile]');if(!retry)return;retry.disabled=true;retry.textContent='Retrying…';try{await window.__welfareEnsureTeacherRegisterLoaded(ctx.school_code);msg('wfTeacherMsg','Teacher profile refreshed successfully.');}catch(error){retry.disabled=false;retry.textContent='Retry loading profile';const statusNode=$('tpPersonalRows')?.querySelector('strong');if(statusNode)statusNode.textContent=error?.message||'The profile could not be loaded. Please retry.';}};
+ const profilePrint=$('teacherProfilePrint');if(profilePrint)profilePrint.onclick=()=>window.print();
+ const editContact=$('tpEditContact');if(editContact)editContact.onclick=()=>wfNotice('To update official contact details, contact the Executive Administrator.');
  renderSelectedTeacherProfile();
  // A synchronous cached render is the first response to Profile viewer navigation.
  // Network-backed roster and ledger refreshes are deliberately kept separate.
@@ -1308,7 +1329,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   const profileTeachers=getProfileTeacherRows();
   if(!selectedProfileTeacherId&&profileTeachers[0])selectedProfileTeacherId=String(profileTeachers[0].id);
   if(profileSelect){
-   profileSelect.innerHTML=profileTeachers.map(row=>'<option value="'+esc(row.id)+'">'+esc(row.name||row.id)+' ('+esc(row.id)+')</option>').join('');
+   const profileOptions=profileTeachers.map(row=>'<option value="'+esc(row.id)+'">'+esc(row.name||row.id)+' ('+esc(row.id)+')</option>').join('');
+   setHTMLIfChanged(profileSelect,profileOptions);
    profileSelect.value=selectedProfileTeacherId;
   }
   const rendered=renderSelectedTeacherProfile();
@@ -1460,7 +1482,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    return {activated,label:passwordSet?'Password Set':activated?'Login Active':'Not Activated'};
  };
  const renderTeacherTables=()=>{const q=String($('wfTeacherSearch')?.value||'').trim().toLowerCase();const visible=teachers.filter(t=>[t.id,t.name,t.phone,t.rank,t.class_name,t.membership_type,t.employer].some(v=>String(v||'').toLowerCase().includes(q)));
- $('wfManageTeacherRows').innerHTML=tr.error?'<tr><td colspan="9">Teacher register could not be loaded. Check the school connection and permissions, then <button type="button" class="wf-table-action" data-wf-retry-roster>Retry loading</button>.</td></tr>':visible.length?visible.map(t=>{const login=teacherLoginState(t);return '<tr><td class="wf-staff-id-cell"><span class="wf-staff-id-badge">'+esc(t.id)+'</span></td><td class="teacher-name-cell">'+esc(t.name)+'</td><td class="wf-phone-cell">'+esc(t.phone||'—')+'</td><td class="wf-accent-cell wf-rank-cell"><span class="wf-rank-badge">'+esc(t.rank||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-class-accent">'+esc(t.class_name||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-membership-badge">'+esc(t.membership_type||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-employer-badge">'+esc(t.employer||'—')+'</span></td><td><span class="wf-teacher-status '+(t.is_active===false?'inactive':'active')+'">'+(t.is_active===false?'Inactive':'Active')+'</span><br><span class="wf-login-status '+(login.activated?'active':'pending')+'">'+esc(login.label)+'</span></td><td><button type="button" class="wf-table-action wf-action-view" data-view-profile="'+esc(t.id)+'">View profile</button> <button type="button" class="wf-table-action wf-action-edit" data-wf-edit="'+esc(t.id)+'">Edit</button> <button type="button" class="wf-table-action '+(login.activated?'wf-action-reset':'wf-action-primary')+'" data-wf-activate="'+esc(t.id)+'">'+(login.activated?'✓ Reset login':'Activate login')+'</button> '+(t.is_active===false?'<button type="button" class="wf-table-action wf-action-primary" data-wf-restore="'+esc(t.id)+'">Restore</button>':'<button type="button" class="wf-table-action wf-action-danger" data-wf-remove="'+esc(t.id)+'">Deactivate</button>')+'</td></tr>';}).join(''):'<tr><td colspan="9">No matching teachers.</td></tr>';};
+ const html=tr.error?'<tr><td colspan="9">Teacher register could not be loaded. Check the school connection and permissions, then <button type="button" class="wf-table-action" data-wf-retry-roster>Retry loading</button>.</td></tr>':visible.length?visible.map(t=>{const login=teacherLoginState(t);return '<tr><td class="wf-staff-id-cell"><span class="wf-staff-id-badge">'+esc(t.id)+'</span></td><td class="teacher-name-cell">'+esc(t.name)+'</td><td class="wf-phone-cell">'+esc(t.phone||'—')+'</td><td class="wf-accent-cell wf-rank-cell"><span class="wf-rank-badge">'+esc(t.rank||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-class-accent">'+esc(t.class_name||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-membership-badge">'+esc(t.membership_type||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-employer-badge">'+esc(t.employer||'—')+'</span></td><td><span class="wf-teacher-status '+(t.is_active===false?'inactive':'active')+'">'+(t.is_active===false?'Inactive':'Active')+'</span><br><span class="wf-login-status '+(login.activated?'active':'pending')+'">'+esc(login.label)+'</span></td><td><button type="button" class="wf-table-action wf-action-view" data-view-profile="'+esc(t.id)+'">View profile</button> <button type="button" class="wf-table-action wf-action-edit" data-wf-edit="'+esc(t.id)+'">Edit</button> <button type="button" class="wf-table-action '+(login.activated?'wf-action-reset':'wf-action-primary')+'" data-wf-activate="'+esc(t.id)+'">'+(login.activated?'✓ Reset login':'Activate login')+'</button> '+(t.is_active===false?'<button type="button" class="wf-table-action wf-action-primary" data-wf-restore="'+esc(t.id)+'">Restore</button>':'<button type="button" class="wf-table-action wf-action-danger" data-wf-remove="'+esc(t.id)+'">Deactivate</button>')+'</td></tr>';}).join(''):'<tr><td colspan="9">No matching teachers.</td></tr>';
+ setHTMLIfChanged($('wfManageTeacherRows'),html);};
  renderTeacherTables();
  // Expose an awaited, tenant-bound register hydration path for executive PDF exports.
  // It reloads source records instead of trusting a possibly stale or empty DOM table.
@@ -1488,6 +1511,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    loginAccounts=new Map((accountResult.data||[]).map(account=>[String(account.teacher_id),account]));
    teachers=normalizedRows.map(row=>{const account=loginAccounts.get(String(row.id));return {...row,auth_user_id:account?.auth_user_id||null,login_activated:!!account?.auth_user_id,must_change_password:account?.must_change_password??null};});
    tr={data:teachers,error:null};
+   workflowDataRevision++;lastDuesMatrixRenderKey='';
    window.__welfareTeacherRegisterState={schoolId:String(ctx.id||''),schoolCode:String(ctx.school_code||ctx.schoolCode||'').toUpperCase(),rows:teachers};
    tr={data:teachers,error:null};
    teacherById.clear();teachers.forEach(row=>teacherById.set(String(row.id),row));
@@ -1572,36 +1596,39 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const reversalCell=(type,x)=>reversed.has(type+':'+x.id)?'<strong class="wf-reversed-label">REVERSED</strong> <span class="muted">· '+esc(reversals.find(r=>r.transaction_type===type&&String(r.transaction_id)===String(x.id))?.reason||'Reason recorded')+'</span>':'<button type="button" class="wf-reverse-action" data-wf-reverse="'+type+'" data-wf-id="'+esc(x.id)+'"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Reverse</button>';
  const renderContributionLedger=()=>{
     const q=String($('wfLedgerSearch')?.value||'').trim().toLowerCase(),month=$('wfLedgerMonth')?.value||'';
+    const renderKey=q+'|'+month+'|'+workflowDataRevision;if(renderKey===lastContributionRenderKey)return;lastContributionRenderKey=renderKey;
     const rows=cons.filter(x=>(!month||String(x.date||'').startsWith(month))&&[x.teacher_id,x.reference,teacherById.get(String(x.teacher_id))?.name].some(v=>String(v||'').toLowerCase().includes(q))).sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||String(a.id||'').localeCompare(String(b.id||'')));
     const totalCon=activeCons.reduce((n,x)=>n+Number(x.amount||0),0),totalPay=activePays.reduce((n,x)=>n+Number(x.amount||0),0);
     $('wfConTotal').textContent=cr.error?'Unavailable':'GH₵ '+money(totalCon);
     $('wfConDisbursement').textContent=pr.error?'Unavailable':'GH₵ '+money(totalPay);
     $('wfConNet').textContent=(cr.error||pr.error)?'Unavailable':'GH₵ '+money(totalCon-totalPay);
     let runningTotal=0;
-    $('wfConRows').innerHTML=cr.error?'<tr><td colspan="7">Contribution records could not be loaded. Check school account permissions and <button type="button" class="wf-table-action" data-wf-retry-ledgers>Retry loading</button>.</td></tr>':rows.length?rows.map(x=>{
+    const contributionRowsHtml=cr.error?'<tr><td colspan="7">Contribution records could not be loaded. Check school account permissions and <button type="button" class="wf-table-action" data-wf-retry-ledgers>Retry loading</button>.</td></tr>':rows.length?rows.map(x=>{
      const d=String(x.date||''),monthYear=d.length>=7?new Date(d+'T00:00:00').toLocaleDateString('en-GB',{month:'short',year:'numeric'}):'—';
      const reversedEntry=reversed.has('contribution:'+x.id);
      if(!reversedEntry)runningTotal+=Number(x.amount||0);
      const action=reversedEntry?'<span class="wf-admin-pill">Reversed</span>':'<button type="button" class="secondary" data-wf-reverse="contribution" data-wf-id="'+esc(x.id)+'">Reverse</button>';
      return '<tr><td>'+teacherLabel(x.teacher_id)+'</td><td>'+esc(monthYear)+'</td><td>'+esc(x.reference||'—')+'</td><td>GH₵ '+money(x.amount)+'</td><td class="wf-payout-amount">GH₵ '+money(runningTotal)+'</td><td>'+esc(d||'—')+'</td><td>'+action+'</td></tr>';
     }).join(''):'<tr><td colspan="7">No matching contributions.</td></tr>';
+    setHTMLIfChanged($('wfConRows'),contributionRowsHtml);
   };
   renderContributionLedger();$('wfLedgerSearch').addEventListener('input',()=>frameRender($('wfConRows'),renderContributionLedger));$('wfLedgerMonth').addEventListener('change',()=>frameRender($('wfConRows'),renderContributionLedger));
   const renderDuesMatrix=()=>{
     const rowsHost=$('wfDuesMatrixRows'),status=$('wfDuesMatrixStatus');
     if(!rowsHost)return;
     if(tr.error||cr.error||rr.error){
-      rowsHost.innerHTML='<tr><td colspan="13">The teacher register, contribution ledger, or reversal status could not be verified. The matrix is unavailable to avoid showing incorrect paid status.</td></tr>';
+      setHTMLIfChanged(rowsHost,'<tr><td colspan="13">The teacher register, contribution ledger, or reversal status could not be verified. The matrix is unavailable to avoid showing incorrect paid status.</td></tr>');
       if(status)status.textContent='Unavailable — check school data access and refresh.';
       return;
     }
     const year=String($('wfDuesMatrixYear')?.value||'');
     if(!/^\d{4}$/.test(year)){
-      rowsHost.innerHTML='<tr><td colspan="13">Choose a valid reporting year.</td></tr>';
+      setHTMLIfChanged(rowsHost,'<tr><td colspan="13">Choose a valid reporting year.</td></tr>');
       if(status)status.textContent='';
       return;
     }
     const query=String($('wfDuesMatrixSearch')?.value||'').trim().toLowerCase();
+    const renderKey=year+'|'+query+'|'+workflowDataRevision;if(renderKey===lastDuesMatrixRenderKey)return;lastDuesMatrixRenderKey=renderKey;
     const roster=teachers.filter(teacher=>teacher.is_active!==false&&[
       teacher.name,teacher.id,teacher.staff_id,teacher.staffId
     ].some(value=>String(value??'').toLowerCase().includes(query)));
@@ -1614,11 +1641,11 @@ window.initSchoolWorkflows=async function(client,school,refresh){
       totals.set(key,(totals.get(key)||0)+Number(item.amount||0));
     });
     if(!roster.length){
-      rowsHost.innerHTML='<tr><td colspan="13">'+(query?'No active members match this search.':'No active members are registered for this school.')+'</td></tr>';
+      setHTMLIfChanged(rowsHost,'<tr><td colspan="13">'+(query?'No active members match this search.':'No active members are registered for this school.')+'</td></tr>');
       if(status)status.textContent='0 teachers shown · '+year;
       return;
     }
-    rowsHost.innerHTML=roster.map(teacher=>{
+    const duesMatrixRowsHtml=roster.map(teacher=>{
       const name=esc(teacher.name||'Unnamed member'),staffId=esc(teacher.staff_id||teacher.staffId||teacher.id||'—');
       const cells=Array.from({length:12},(_,index)=>{
         const amount=totals.get(String(teacher.id)+'|'+(index+1))||0;
@@ -1626,6 +1653,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
       }).join('');
       return '<tr><td><span class="wf-dues-matrix-teacher">'+name+'<small>Staff ID: '+staffId+'</small></span></td>'+cells+'</tr>';
     }).join('');
+    setHTMLIfChanged(rowsHost,duesMatrixRowsHtml);
     const yearRecords=activeCons.filter(item=>String(item.date||'').slice(0,4)===year).length;
     if(status)status.textContent=roster.length+' active member'+(roster.length===1?'':'s')+' shown · '+year+' · '+yearRecords+' active contribution record'+(yearRecords===1?'':'s');
   };
@@ -1841,18 +1869,19 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     $('wfPayoutTotal').textContent=pr.error?'Unavailable':'GH₵ '+money(totalPayout);
     $('wfPayoutCurrentFund').textContent=(cr.error||pr.error)?'Unavailable':'GH₵ '+money(currentFund);
     $('wfPayoutActiveMembers').textContent=tr.error?'Unavailable':String(activeMembers);
-    $('wfPayRows').innerHTML=pr.error?'<tr><td colspan="6">Payout records could not be loaded. Check the school account permissions and <button type="button" class="wf-table-action" data-wf-retry-ledgers>Retry loading</button>.</td></tr>':rows.length?rows.map(x=>{const rawDate=String(x.date||'');const displayDate=rawDate&&/^\d{4}-\d{2}-\d{2}/.test(rawDate)?new Date(rawDate.slice(0,10)+'T00:00:00').toLocaleDateString('en-GB'):(rawDate||'—');return '<tr><td class="wf-payout-reference">'+esc(x.reference||'—')+'</td><td class="wf-payout-beneficiary">'+teacherLabel(x.teacher_id)+'</td><td>'+esc(window.displayWelfareReason(x.reason||'Welfare support'))+'</td><td class="wf-payout-amount">GH₵ '+money(x.amount)+'</td><td>'+esc(displayDate)+'</td><td>'+reversalCell('payout',x)+'</td></tr>'}).join(''):'<tr><td colspan="6">No matching payouts.</td></tr>';
+    const payoutRowsHtml=pr.error?'<tr><td colspan="6">Payout records could not be loaded. Check the school account permissions and <button type="button" class="wf-table-action" data-wf-retry-ledgers>Retry loading</button>.</td></tr>':rows.length?rows.map(x=>{const rawDate=String(x.date||'');const displayDate=rawDate&&/^\d{4}-\d{2}-\d{2}/.test(rawDate)?new Date(rawDate.slice(0,10)+'T00:00:00').toLocaleDateString('en-GB'):(rawDate||'—');return '<tr><td class="wf-payout-reference">'+esc(x.reference||'—')+'</td><td class="wf-payout-beneficiary">'+teacherLabel(x.teacher_id)+'</td><td>'+esc(window.displayWelfareReason(x.reason||'Welfare support'))+'</td><td class="wf-payout-amount">GH₵ '+money(x.amount)+'</td><td>'+esc(displayDate)+'</td><td>'+reversalCell('payout',x)+'</td></tr>'}).join(''):'<tr><td colspan="6">No matching payouts.</td></tr>';
+    setHTMLIfChanged($('wfPayRows'),payoutRowsHtml);
   };
   renderPayoutLedger();$('wfPayoutSearch').addEventListener('input',()=>frameRender($('wfPayRows'),renderPayoutLedger));
   // Reload transaction data in place; keep the authenticated dashboard and
   // currently selected section mounted after a contribution or payout is saved.
-  const refreshWorkflow=async()=>{
+  const refreshWorkflowOnce=async()=>{
     const [nextCon,nextPay,nextRev]=await Promise.all([
       loadSource('contribution ledger refresh',()=>client.from('contributions').select('id,teacher_id,amount,date,reference').eq('school_id',ctx.id).order('date',{ascending:false})),
       loadSource('payout ledger refresh',()=>client.from('payouts').select('id,teacher_id,amount,date,reason,reference').eq('school_id',ctx.id).order('date',{ascending:false})),
       loadSource('transaction reversals refresh',()=>client.from('transaction_reversals').select('transaction_type,transaction_id,reason,created_at').eq('school_id',ctx.id))
     ]);
-    cr=nextCon;pr=nextPay;rr=nextRev;payoutDataRevision++;lastPayoutRenderKey='';
+    cr=nextCon;pr=nextPay;rr=nextRev;workflowDataRevision++;lastContributionRenderKey='';lastDuesMatrixRenderKey='';payoutDataRevision++;lastPayoutRenderKey='';
     cons=nextCon.data||[];pays=nextPay.data||[];reversals=nextRev.data||[];
     reversed.clear();
     reversals.forEach(item=>reversed.add(item.transaction_type+':'+item.transaction_id));
@@ -1867,12 +1896,25 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     $('netTotal').textContent=(cr.error||pr.error)?'Unavailable':'GH₵ '+money(totalCon-totalPay);
     const monthKey=getDashboardMonthKey();
     if($('monthlyContributionTotal'))$('monthlyContributionTotal').textContent=cr.error?'Unavailable':'GH₵ '+money(activeCons.filter(item=>String(item.date||'').slice(0,7)===monthKey).reduce((sum,item)=>sum+Number(item.amount||0),0));
-    renderContributionLedger();
-    renderDuesMatrix();
-    renderPayoutLedger();
-    renderSelectedTeacherProfile();
+    // Commit related ledger/profile DOM work together on the next paint. Each
+    // renderer also skips unchanged row markup, so unchanged data causes no
+    // large-table teardown/rebuild.
+    await new Promise(resolve=>requestAnimationFrame(()=>{
+      renderContributionLedger();
+      renderDuesMatrix();
+      renderPayoutLedger();
+      renderSelectedTeacherProfile();
+      resolve();
+    }));
     void refreshAdminActivityTicker().catch(error=>console.warn('[Administrator activity ticker] Refresh deferred:',error?.message||error));
     return !cr.error&&!pr.error;
+  };
+  let workflowRefreshPromise=null,workflowRefreshQueued=false;
+  const refreshWorkflow=()=>{
+    workflowRefreshQueued=true;
+    if(workflowRefreshPromise)return workflowRefreshPromise;
+    workflowRefreshPromise=(async()=>{let result=true;do{workflowRefreshQueued=false;result=await refreshWorkflowOnce();}while(workflowRefreshQueued);return result;})().finally(()=>{workflowRefreshPromise=null;});
+    return workflowRefreshPromise;
   };
   window.__welfareRefreshAdminWorkspace=refreshWorkflow;
   $('teacherCount').textContent=tr.error?'Unavailable':String(teachers.filter(t=>t.is_active!==false).length);
@@ -2281,7 +2323,8 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    if(renderKey===lastAuditRenderKey)return;
    lastAuditRenderKey=renderKey;
    const rows=auditRows.filter(x=>(!cat||x.category===cat)&&[x.time_string,x.actor_name,x.action,x.details,x.status,x.category].some(v=>String(v||'').toLowerCase().includes(q)));
-   $('wfAuditRows').innerHTML=rows.length?rows.map(x=>'<tr><td>'+esc(x.time_string||'—')+'</td><td>'+esc(x.actor_name||'—')+'</td><td>'+esc(x.action||'—')+'</td><td>'+esc(x.details||'—')+'</td><td>'+esc(x.status||'—')+'</td></tr>').join(''):'<tr><td colspan="5">No matching audit entries.</td></tr>';
+   const auditRowsHtml=rows.length?rows.map(x=>'<tr><td>'+esc(x.time_string||'—')+'</td><td>'+esc(x.actor_name||'—')+'</td><td>'+esc(x.action||'—')+'</td><td>'+esc(x.details||'—')+'</td><td>'+esc(x.status||'—')+'</td></tr>' ).join(''):'<tr><td colspan="5">No matching audit entries.</td></tr>';
+   setHTMLIfChanged($('wfAuditRows'),auditRowsHtml);
    msg('wfAuditMsg',rows.length+' audit entr'+(rows.length===1?'y':'ies')+' shown.');
  }
  $('wfAuditSearch').addEventListener('input',()=>frameRender($('wfAuditRows'),renderAudit));$('wfAuditCategory').addEventListener('change',()=>frameRender($('wfAuditRows'),renderAudit));
@@ -2653,6 +2696,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  if(retry){retry.disabled=true;const ok=await refreshWorkflow();if(!ok)wfNotice('The contribution or payout ledger is still unavailable. Check your connection and retry.');return;}
  const b=e.target.closest('[data-wf-reverse]');if(!b)return;const type=b.dataset.wfReverse,id=b.dataset.wfId;const rows=type==='contribution'?cons:pays;const tx=rows.find(x=>String(x.id)===String(id));if(!tx||reversed.has(type+':'+id))return;const reason=await requestReversalReason(type);if(!reason||!reason.trim())return;if(!await wfConfirm('Confirm reversal of GH₵ '+money(tx.amount)+'? The original transaction will remain visible and be excluded from active totals.'))return;const {data:{user}}=await client.auth.getUser();const {error}=await client.from('transaction_reversals').insert({school_id:ctx.id,transaction_type:type,transaction_id:id,teacher_id:tx.teacher_id,amount:tx.amount,transaction_date:tx.date,reason:reason.trim(),reversed_by:user?.email||'School administrator'});if(error){wfNotice(error.code==='23505'?'This transaction has already been reversed.':'Reversal was not saved. Check school permissions and reversal-table policies.');return;}const ok=await audit(client,ctx,'Reverse '+type,'Original transaction '+id+'; GH₵ '+Number(tx.amount).toFixed(2)+'; reason: '+reason.trim(),tx.teacher_id);await refreshWorkflow();if(!ok)wfNotice('Reversal saved, but the audit entry failed.');});
  $('wfPayout').onsubmit=async e=>{e.preventDefault();const teacher_id=$('wfPayTeacher').value,amount=Number($('wfPayAmount').value);if(!teacher_id||!Number.isFinite(amount)||amount<=0)return msg('wfPayMsg','Choose a teacher and enter a positive amount.',true);const activeContributions=cons.filter(x=>!reversed.has('contribution:'+String(x.id))).reduce((sum,x)=>sum+Number(x.amount||0),0);const activePayouts=pays.filter(x=>!reversed.has('payout:'+String(x.id))).reduce((sum,x)=>sum+Number(x.amount||0),0);const available=Math.round((activeContributions-activePayouts)*100)/100;if(amount>available+0.001)return msg('wfPayMsg','Payout exceeds the available school fund balance of GH₵ '+money(Math.max(0,available))+'. Reverse or reconcile records before proceeding.',true);const confirmation=await wfConfirm('Confirm welfare payout of GH₵ '+amount.toFixed(2)+'? Available balance after payout: GH₵ '+money(available-amount)+'.',{responseMode:'optional',placeholder:'Optional note for the audit trail…'});if(!confirmation||confirmation.confirmed===false)return;const adminNote=confirmation.response||'No additional note supplied; action confirmed by school administrator.';const row={teacher_id,amount,date:$('wfPayDate').value,reason:$('wfPayReason').value.trim(),reference:$('wfPayRef').value.trim()||null,school_id:ctx.id};msg('wfPayMsg','Saving…');const {error}=await client.rpc('record_school_welfare_payout',{p_school_id:ctx.id,p_teacher_id:teacher_id,p_amount:amount,p_date:row.date,p_reason:row.reason,p_reference:row.reference});if(error){console.warn('Secure payout RPC failed',error.code,error.message);return msg('wfPayMsg',error.code==='23514'?'Payout was not saved: the available school fund balance may be insufficient, or the amount/reason/date is invalid. Refresh the ledger and check the details.':'Payout was not saved. The secure database check failed; no payout was recorded. Check administrator access and try again.',true);}const auditOk=await audit(client,ctx,'Record payout','GH₵ '+amount.toFixed(2)+' — '+row.reason+'; admin note: '+adminNote,teacher_id);$('wfPayout').reset();$('wfPayDate').value=today();await refreshWorkflow();msg('wfPayMsg',auditOk?'Payout recorded.':'Payout saved, but the audit entry failed. Notify the platform administrator.',!auditOk);};
+   if(window.__welfareWorkflowMountGeneration!==workflowMountGeneration)return false;
    if(workflowSchoolKey){window.__welfareWorkflowReadySchoolId=workflowSchoolKey;window.__welfareWorkflowReadyUserId=workflowUserId;}
    return true;
  }catch(error){
@@ -2663,6 +2707,21 @@ window.initSchoolWorkflows=async function(client,school,refresh){
    if(window.__welfareWorkflowReadySchoolId===workflowSchoolKey){window.__welfareWorkflowReadySchoolId=null;window.__welfareWorkflowReadyUserId=null;}
    return false;
  }
+};
+// Concurrent login, retry and dashboard-mount triggers share one in-flight
+// initialization per client and tenant. The internal ready check still handles
+// later calls after the promise settles.
+const workflowInitializationPromises=new WeakMap();
+window.initSchoolWorkflows=function(client,school,refresh){
+ if(!client||typeof client!=='object')return Promise.resolve(false);
+ let tenantPromises=workflowInitializationPromises.get(client);
+ if(!tenantPromises){tenantPromises=new Map();workflowInitializationPromises.set(client,tenantPromises);}
+ const key=String(school?.id||'')+'|'+String(school?.school_code||school?.schoolCode||'').trim().toUpperCase();
+ const pending=tenantPromises.get(key);
+ if(pending)return pending;
+ const promise=Promise.resolve().then(()=>initSchoolWorkflowsInternal(client,school,refresh)).finally(()=>{if(tenantPromises.get(key)===promise)tenantPromises.delete(key);});
+ tenantPromises.set(key,promise);
+ return promise;
 };
 window.__welfareWorkflowBundleState='ready';
 window.dispatchEvent(new Event('welfare-workflows-ready'));
