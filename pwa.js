@@ -125,10 +125,12 @@ function showPwaInstallNotice(tenantLabel){
      ['schoolName','loginSchoolName'].forEach(function(id){
        var node=document.getElementById(id);
        if(!node)return;
+       var lastObservedName='';
        var update=function(){
          if(new URLSearchParams(location.search).get('c')?.trim().toUpperCase()==='DEMO')return;
          var value=(node.textContent||'').trim();
-         if(value&&value!=='School gateway unavailable'&&value!=='Loading...'){
+         if(value&&value!=='School gateway unavailable'&&value!=='Loading...'&&value!==lastObservedName){
+           lastObservedName=value;
            persistTenantName(value);
            injectTenantManifest();
            var labelNode=installButton&&installButton.querySelector('.welfare-pwa-install-label');
@@ -154,8 +156,9 @@ function showPwaInstallNotice(tenantLabel){
      // Registration already schedules the browser-managed update check. Avoid
      // issuing a second explicit update request on every page load.
      navigator.serviceWorker.register(swUrl.href,{scope:appScope.href,updateViaCache:'none'}).then(function(registration){
-       // Request a fresh worker-script check after deploying a workflow recovery.
-       return registration.update().then(function(){window.__welfareServiceWorkerUpdateChecked=true;}).catch(function(error){console.warn('[Welfare Portal PWA] Background service-worker update check deferred:',error);});
+       // Registration performs the browser-managed update check. Avoid a second
+       // explicit update request on every visit, especially on mobile networks.
+       window.__welfareServiceWorkerUpdateChecked=true;
      }).catch(function(error){
        console.warn('[Welfare Portal PWA] Service worker registration failed:',error);
      });
