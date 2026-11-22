@@ -4487,7 +4487,7 @@ if(isDemoMode){
   // Resolve stable destination IDs locally. This router must work even when
   // the optional workflow bundle is still mounting or its helper is replaced.
   const routes=role==='admin'
-   ?{wfContributionPanel:'wfAdminContributionPanel',wfPayoutPanel:'wfAdminPayoutPanel'}
+   ?{wfContributionPanel:'wfAdminContributionPanel',wfPayoutPanel:'wfAdminPayoutPanel',wfTeacherPanel:'teacherProfileViewer'}
    :{wfReportsPanel:'wfStatementPanel',teacherProfileViewer:'wfTeacherPanel'};
   return routes[raw]||raw;
  }
