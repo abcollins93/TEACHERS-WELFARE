@@ -151,11 +151,12 @@ function showPwaInstallNotice(tenantLabel){
    window.addEventListener('load',function(){
      var swUrl=new URL('./sw.js',pageUrl);
      var appScope=new URL('./',pageUrl);
-     // Registration already schedules the browser-managed update check. Avoid
-     // issuing a second explicit update request on every page load.
+     // Registration performs the browser-managed update check. Avoid a
+     // second update request on every load; it adds mobile network work.
      navigator.serviceWorker.register(swUrl.href,{scope:appScope.href,updateViaCache:'none'}).then(function(registration){
-       // Request a fresh worker-script check after deploying a workflow recovery.
-       return registration.update().then(function(){window.__welfareServiceWorkerUpdateChecked=true;}).catch(function(error){console.warn('[Welfare Portal PWA] Background service-worker update check deferred:',error);});
+       window.__welfareServiceWorkerRegistered=true;
+       window.__welfareServiceWorkerUpdateChecked=true;
+       return registration;
      }).catch(function(error){
        console.warn('[Welfare Portal PWA] Service worker registration failed:',error);
      });
