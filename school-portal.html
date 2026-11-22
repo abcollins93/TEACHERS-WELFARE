@@ -3678,14 +3678,16 @@ function setDemoMetricNote(id,note){
  if(!noteNode){noteNode=document.createElement('span');noteNode.className='metric-note demo-metric-note';content.appendChild(noteNode);}
  noteNode.textContent=note;
 }
-function showDemoDashboard(){
+async function showDemoDashboard(){
  const school=window.WelfareDemo.school;
+ if(typeof window.WelfareDemo?.hydrateStartup!=='function')throw new Error('The isolated DEMO startup module is unavailable.');
+ const demoHydration=await window.WelfareDemo.hydrateStartup(demoRole);
  const generation=(window.__welfareDemoViewGeneration||0)+1;
  window.__welfareDemoViewGeneration=generation;
  window.__welfareDemoRole=demoRole;
  updateDemoBanner();
- $('login').classList.add('hidden');$('dashboard').classList.remove('hidden');
- hidePageLoader();
+ // Keep the gateway visible until the isolated DEMO data and role workspace are ready.
+ $('login').classList.remove('hidden');$('dashboard').classList.add('hidden');
  $('schoolName').textContent=school.name;$('brand').textContent=school.name;$('sideSchoolName').textContent=school.name;
  $('sideSchoolCode').textContent='DEMO · Basic · Kumasi Metro · Ashanti Region';
  $('schoolDescription').textContent='Explore the sample welfare records and portal features for '+school.name+'.';
@@ -3709,19 +3711,15 @@ function showDemoDashboard(){
    if($('teacherDashboardProfile'))$('teacherDashboardProfile').hidden=false;
    if($('teacherDashboardLedgers'))$('teacherDashboardLedgers').hidden=false;
    document.getElementById('teacherWorkspace')?.classList.remove('hidden');
+   $('login').classList.add('hidden');$('dashboard').classList.remove('hidden');hidePageLoader();
    return;
   }
   const teacher=window.WelfareDemo.teachers[0];
   window.WelfareDemo.setTeacher(0);
   const profile={...teacher,teacher_id:teacher.id,school_id:school.id};
-  const render=()=>{
-   if(generation!==window.__welfareDemoViewGeneration||demoRole!=='teacher')return;
-   Promise.resolve(renderTeacherDashboard(profile,school)).then(()=>{
-    if(generation===window.__welfareDemoViewGeneration&&demoRole==='teacher')updateDemoBanner();
-   }).catch(error=>console.warn('[DEMO] Teacher view rendered with a recoverable issue:',error?.message||error));
-  };
-  if('requestIdleCallback' in window)window.requestIdleCallback(render,{timeout:700});
-  else window.setTimeout(render,80);
+  if(generation!==window.__welfareDemoViewGeneration||demoRole!=='teacher')return;
+  await renderTeacherDashboard(profile,school);
+  if(generation===window.__welfareDemoViewGeneration&&demoRole==='teacher')updateDemoBanner();
   return;
  }
  window.__welfareCurrentRole='admin';window.__welfareSyncSidebarNavigation?.();
@@ -3759,7 +3757,10 @@ function showDemoDashboard(){
  setDemoMetricNote('contributionTotal',summary.contributionCount+' active non-reversed records');
  setDemoMetricNote('payoutTotal',summary.payoutCount+' active payouts');
  const overview=$('schoolOverview');overview?.classList.remove('hidden');
- scheduleDemoAdminWorkflows(school);
+ const mounted=await scheduleDemoAdminWorkflows(school);
+ if(!mounted||!window.__welfareTenantHydrationState?.ready)throw new Error('The DEMO administrator records and sections could not finish loading. Please retry.');
+ $('login').classList.add('hidden');$('dashboard').classList.remove('hidden');
+ hidePageLoader();
 }
 
 async function showDashboardInternal(){
