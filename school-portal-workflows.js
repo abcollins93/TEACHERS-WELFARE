@@ -2,7 +2,7 @@
 (function(){
 'use strict';
 window.__welfareWorkflowBundleState='loading';
-window.__welfareWorkflowBundleVersion='20261122-sidebar-navigation-v24';
+window.__welfareWorkflowBundleVersion='20261122-sidebar-navigation-v25';
 const $=id=>document.getElementById(id);
 // Stable route IDs are independent of sidebar labels and presentation text.
 window.__welfareResolvePortalViewTarget=(rawTarget,role)=>{
