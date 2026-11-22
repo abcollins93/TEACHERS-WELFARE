@@ -54,7 +54,7 @@
 (function(){
  const query=new URLSearchParams(window.location.search);
  if(query.has('c')&&String(query.get('c')||'').trim().toUpperCase()==='DEMO'){
-  document.write('<script src="./demo-sandbox.js?v=20261121-workflow-recovery-v21"><\/script>');
+  document.write('<script src="./demo-sandbox.js?v=20261122-main-thread-stability-v22"><\/script>');
  }
 })();
 </script><script>
@@ -3053,7 +3053,10 @@ async function renderTeacherDashboard(profile,school){
   if(event.target.closest('[data-teacher-dashboard-statement]'))document.getElementById('teacherStatementDownload')?.click();
  };
  if(window.__teacherDashboardLedgerTimer)clearInterval(window.__teacherDashboardLedgerTimer);
+ let teacherLedgerRefreshInFlight=false;
  window.__teacherDashboardLedgerTimer=setInterval(async()=>{
+  if(teacherLedgerRefreshInFlight||document.visibilityState!=='visible'||navigator.onLine===false)return;
+  teacherLedgerRefreshInFlight=true;
   try{
    const [freshCon,freshOwnPay,freshSchoolPay,freshContributionFeed,freshSchoolFundSummary,freshRegisteredMemberCount]=await Promise.all([
     client.rpc('get_my_teacher_contributions'),
@@ -3086,6 +3089,7 @@ async function renderTeacherDashboard(profile,school){
    if(!schoolFundSummaryError){$('netTotal').textContent='GH₵ '+money(schoolFundBalance);$('teacherConNet').textContent=cash(schoolFundBalance);$('teacherCurrentFund').textContent=cash(schoolFundBalance);}
    renderTeacherDashboardLedgers();
   }catch(error){console.warn('[Teacher dashboard] Ledger refresh failed:',error?.message||error);}
+  finally{teacherLedgerRefreshInFlight=false;}
  },30000);
  const firstProfileValue=(...values)=>values.find(value=>value!==null&&value!==undefined&&String(value).trim()!=='')??'';
  const profilePhone=firstProfileValue(teacherRecord?.phone,profile.phone);
@@ -3797,7 +3801,7 @@ async function showDashboardInternal(){
     if(dashboard){
      if(!notice){notice=document.createElement('section');notice.id='adminWorkflowMountError';notice.className='panel';notice.style.cssText='border:1px solid #f0b4b4;background:#fff7f7;color:#8f1d24;padding:14px 16px;margin:12px 0';dashboard.insertBefore(notice,dashboard.firstChild);}
      const diagnostic=window.__welfareWorkflowLastError;const diagnosticMessage=diagnostic?.message||workflowError?.message||'Secure data loading failed';const diagnosticStage=diagnostic?.stage?' ['+diagnostic.stage+']':'';notice.replaceChildren(document.createTextNode('Administrator sections could not finish loading: '+String(diagnosticMessage)+diagnosticStage+'. '));
-     const retry=document.createElement('button');retry.type='button';retry.className='secondary';retry.textContent='Retry loading administrator sections';retry.addEventListener('click',async()=>{window.__welfareWorkflowLastError=null;retry.disabled=true;retry.textContent='Retrying…';notice.firstChild.textContent='Retrying secure administrator data… ';try{let ready=await waitForSchoolWorkflows(12000);if(!ready){const recoveryScript=document.createElement('script');recoveryScript.src='./school-portal-workflows.js?v=20261121-workflow-recovery-v21&retry='+Date.now();recoveryScript.async=true;recoveryScript.onload=()=>{window.__welfareWorkflowScriptLoaded=true};recoveryScript.onerror=()=>{window.__welfareWorkflowScriptError='Workflow bundle could not be downloaded'};document.head.appendChild(recoveryScript);ready=await waitForSchoolWorkflows(15000);}if(!ready)throw new Error(window.__welfareWorkflowScriptError||'The workflow bundle could not be reloaded. Check your connection and retry.');const result=await window.initSchoolWorkflows(client,school,showDashboard);if(result){notice.remove();window.__welfareWorkflowMountPromise=Promise.resolve(true);}else throw new Error('The administrator workspace could not be initialized.');}catch(retryError){const diagnostic=window.__welfareWorkflowLastError;notice.firstChild.textContent=String(diagnostic?.message||retryError?.message||'Administrator data is still unavailable.')+(diagnostic?.stage?' ['+diagnostic.stage+']':'')+'. ';retry.disabled=false;retry.textContent='Retry loading administrator sections';}});notice.appendChild(retry);
+     const retry=document.createElement('button');retry.type='button';retry.className='secondary';retry.textContent='Retry loading administrator sections';retry.addEventListener('click',async()=>{window.__welfareWorkflowLastError=null;retry.disabled=true;retry.textContent='Retrying…';notice.firstChild.textContent='Retrying secure administrator data… ';try{let ready=await waitForSchoolWorkflows(12000);if(!ready){const recoveryScript=document.createElement('script');recoveryScript.src='./school-portal-workflows.js?v=20261122-main-thread-stability-v22&retry='+Date.now();recoveryScript.async=true;recoveryScript.onload=()=>{window.__welfareWorkflowScriptLoaded=true};recoveryScript.onerror=()=>{window.__welfareWorkflowScriptError='Workflow bundle could not be downloaded'};document.head.appendChild(recoveryScript);ready=await waitForSchoolWorkflows(15000);}if(!ready)throw new Error(window.__welfareWorkflowScriptError||'The workflow bundle could not be reloaded. Check your connection and retry.');const result=await window.initSchoolWorkflows(client,school,showDashboard);if(result){notice.remove();window.__welfareWorkflowMountPromise=Promise.resolve(true);}else throw new Error('The administrator workspace could not be initialized.');}catch(retryError){const diagnostic=window.__welfareWorkflowLastError;notice.firstChild.textContent=String(diagnostic?.message||retryError?.message||'Administrator data is still unavailable.')+(diagnostic?.stage?' ['+diagnostic.stage+']':'')+'. ';retry.disabled=false;retry.textContent='Retry loading administrator sections';}});notice.appendChild(retry);
     }
     return false;
   });
@@ -4379,7 +4383,7 @@ if(isDemoMode){
 }
 })();
 </script>
-<script src="school-portal-workflows.js?v=20261121-workflow-recovery-v21" onload="window.__welfareWorkflowScriptLoaded=true" onerror="window.__welfareWorkflowScriptError='Initial workflow bundle request failed';(function(){var s=document.createElement('script');s.src='./school-portal-workflows.js?v=20261121-workflow-recovery-v21&retry='+Date.now();s.async=true;s.onload=function(){window.__welfareWorkflowScriptLoaded=true};s.onerror=function(){window.__welfareWorkflowScriptError='Workflow bundle could not be downloaded'};document.head.appendChild(s)})()"></script>
+<script src="school-portal-workflows.js?v=20261122-main-thread-stability-v22" onload="window.__welfareWorkflowScriptLoaded=true" onerror="window.__welfareWorkflowScriptError='Initial workflow bundle request failed';(function(){var s=document.createElement('script');s.src='./school-portal-workflows.js?v=20261122-main-thread-stability-v22&retry='+Date.now();s.async=true;s.onload=function(){window.__welfareWorkflowScriptLoaded=true};s.onerror=function(){window.__welfareWorkflowScriptError='Workflow bundle could not be downloaded'};document.head.appendChild(s)})()"></script>
 <script>
 /* Resilient sidebar navigation and automatic mobile-drawer closing. */
 (function(){
@@ -4751,8 +4755,10 @@ if(isDemoMode){
     input.dataset.visibilityToggleReady='true';
   }
   function initializePasswordFields(root){
-    if(root.matches?.('input[type="password"]'))initializePasswordField(root);
-    root.querySelectorAll?.('input[type="password"]').forEach(initializePasswordField);
+    if(!root)return;
+    if(root.matches?.('input[type="password"]')){initializePasswordField(root);return;}
+    if(!root.querySelector?.('input[type="password"]'))return;
+    root.querySelectorAll('input[type="password"]').forEach(initializePasswordField);
   }
   initializePasswordFields(document);
   const passwordObserver=new MutationObserver(records=>{
@@ -5450,11 +5456,17 @@ window.generateTenantWelfarePdf=async function(o){
  }finally{host.remove();}
  return {documentId:id,blob:pdfBlob,filename};
 };
+window.__welfareTenantPdfUrls=window.__welfareTenantPdfUrls||new Set();
+window.__welfareTenantPdfUrlByOwner=window.__welfareTenantPdfUrlByOwner||new WeakMap();
+if(!window.__welfareTenantPdfUrlCleanupBound){window.__welfareTenantPdfUrlCleanupBound=true;window.addEventListener('pagehide',function(){window.__welfareTenantPdfUrls.forEach(function(url){URL.revokeObjectURL(url);});window.__welfareTenantPdfUrls.clear();});}
 window.downloadWelfareBlob=function(blob,fileName,statusNode,successText,sourceButton=null){
  if(!(blob instanceof Blob))throw new Error('The generated file is unavailable.');
  const filename=(String(fileName||'Welfare_Statement_Report').replace(/\.pdf$/i,'')||'Welfare_Statement_Report')+'.pdf';
  const pdfBlob=blob.type==='application/pdf'?blob:new Blob([blob],{type:'application/pdf'});
- const url=window.URL.createObjectURL(pdfBlob);
+ const pdfOwner=sourceButton?.closest('.wf-report-card')||statusNode||sourceButton||document.body;
+ const previousPdfUrl=window.__welfareTenantPdfUrlByOwner.get(pdfOwner);
+ if(previousPdfUrl){URL.revokeObjectURL(previousPdfUrl);window.__welfareTenantPdfUrls.delete(previousPdfUrl);}
+ const url=window.URL.createObjectURL(pdfBlob);window.__welfareTenantPdfUrlByOwner.set(pdfOwner,url);window.__welfareTenantPdfUrls.add(url);
  const link=document.createElement('a');
  link.href=url;
  link.setAttribute('download',filename);
@@ -5494,7 +5506,7 @@ window.downloadWelfareBlob=function(blob,fileName,statusNode,successText,sourceB
    if(button)button.insertAdjacentElement('afterend',fallback);
    else document.body.appendChild(fallback);
  }
- setTimeout(()=>URL.revokeObjectURL(url),10*60*1000);
+ setTimeout(()=>{URL.revokeObjectURL(url);window.__welfareTenantPdfUrls.delete(url);if(window.__welfareTenantPdfUrlByOwner.get(pdfOwner)===url)window.__welfareTenantPdfUrlByOwner.delete(pdfOwner);},10*60*1000);
  return url;
 };
 window.__tenantWelfarePdfGenerator=window.generateTenantWelfarePdf;
@@ -6182,8 +6194,8 @@ body.sidebar-open{overflow:hidden}
 }
 .animate-continuous-ticker:hover{animation-play-state:paused!important}
 @keyframes continuousScroll{
-  0%{transform:translateX(0)}
-  100%{transform:translateX(-50%)}
+  0%{transform:translate3d(0,0,0)}
+  100%{transform:translate3d(-50%,0,0)}
 }
 @media(prefers-reduced-motion:reduce){
   .animate-continuous-ticker{animation:none!important}
