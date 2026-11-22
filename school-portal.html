@@ -3557,7 +3557,12 @@ async function waitForPortalStartup(){
  if(window.__welfareSidebarNavigationReady)return true;
  await new Promise((resolve,reject)=>{
   let settled=false;
-  const finish=()=>{if(settled)return;settled=true;clearTimeout(timer);window.removeEventListener('welfare-sidebar-navigation-ready',finish);resolve(true);};
+  const finish=()=>{
+   if(settled)return;
+   settled=true;clearTimeout(timer);window.removeEventListener('welfare-sidebar-navigation-ready',finish);
+   if(!window.__welfareSidebarNavigationReady)reject(new Error(window.__welfareWorkflowShellError||'The portal sections or navigation could not finish initializing. Refresh the page and try again.'));
+   else resolve(true);
+  };
   const timer=setTimeout(()=>{if(settled)return;settled=true;window.removeEventListener('welfare-sidebar-navigation-ready',finish);reject(new Error('The portal navigation is still initializing. Refresh the page and try again.'));},15000);
   window.addEventListener('welfare-sidebar-navigation-ready',finish,{once:true});
   if(window.__welfareSidebarNavigationReady)finish();
