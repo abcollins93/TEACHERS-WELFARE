@@ -5653,20 +5653,29 @@ window.generateTenantWelfarePdf=async function(options){
 
 <script id="single-tenant-header-height-controller">
 (function(){
+ let framePending=false;
  function updateHeaderHeight(){
+  framePending=false;
   const header=document.querySelector('header.top');
   if(!header)return;
-  const visible=header.offsetParent!==null&&getComputedStyle(header).display!=='none';
-  if(visible)document.documentElement.style.setProperty('--single-header-height',Math.ceil(header.getBoundingClientRect().height)+'px');
+  // One grouped geometry read per animation frame; never force layout in
+  // the DOM-ready task or repeatedly during a resize/mutation burst.
+  const height=header.getBoundingClientRect().height;
+  if(height>0)document.documentElement.style.setProperty('--single-header-height',Math.ceil(height)+'px');
+ }
+ function scheduleHeaderHeight(){
+  if(framePending)return;
+  framePending=true;
+  window.requestAnimationFrame(updateHeaderHeight);
  }
  function init(){
   const header=document.querySelector('header.top');
   if(!header)return;
-  if('ResizeObserver' in window)new ResizeObserver(updateHeaderHeight).observe(header);
+  if('ResizeObserver' in window)new ResizeObserver(scheduleHeaderHeight).observe(header);
   const login=document.getElementById('login');
-  if(login&&'MutationObserver' in window)new MutationObserver(updateHeaderHeight).observe(login,{attributes:true,attributeFilter:['class']});
-  window.addEventListener('resize',updateHeaderHeight,{passive:true});
-  updateHeaderHeight();
+  if(login&&'MutationObserver' in window)new MutationObserver(scheduleHeaderHeight).observe(login,{attributes:true,attributeFilter:['class']});
+  window.addEventListener('resize',scheduleHeaderHeight,{passive:true});
+  scheduleHeaderHeight();
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
