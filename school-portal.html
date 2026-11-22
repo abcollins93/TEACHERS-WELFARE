@@ -3026,23 +3026,26 @@ async function renderTeacherDashboard(profile,school){
  const cash=v=>'GH₵ '+money(v);
  const renderTeacherDashboardLedgers=()=>{
   const contributionBody=$('teacherDashboardContributionRows'),payoutBody=$('teacherDashboardPayoutRows');
+  const setRowsIfChanged=(node,html)=>{if(node&&node.innerHTML!==html)node.innerHTML=html;};
   if(contributionBody){
-   contributionBody.innerHTML=contributionLoadError
+   const contributionHtml=contributionLoadError
     ?'<tr><td colspan="6">Your personal contribution records could not be loaded securely.</td></tr>'
     :teacherContributionRows.length?teacherContributionRows.map(x=>{
       const raw=String(x.contribution_date||''),month=raw.length>=7?new Date(raw.slice(0,10)+'T00:00:00').toLocaleDateString('en-GB',{month:'long',year:'numeric'}):'—',isReversed=!!x.is_reversed;
       return '<tr><td>'+escapeHtml(month)+'</td><td>'+escapeHtml(x.reference||'—')+'</td><td class="teacher-dashboard-contribution-amount">'+escapeHtml(cash(x.amount))+'</td><td>'+escapeHtml(date(raw))+'</td><td><span class="teacher-dashboard-status'+(isReversed?' reversed':'')+'">'+(isReversed?'Reversed':'Recorded')+'</span></td><td><button type="button" class="teacher-dashboard-action" data-teacher-dashboard-statement>Statement</button></td></tr>';
      }).join('')
     :'<tr><td colspan="6">No personal contributions have been recorded yet.</td></tr>';
+   setRowsIfChanged(contributionBody,contributionHtml);
   }
   if(payoutBody){
-   payoutBody.innerHTML=schoolPayoutLoadError
+   const payoutHtml=schoolPayoutLoadError
     ?'<tr><td colspan="6">School-wide payout records could not be loaded. Please try again later.</td></tr>'
     :schoolPayoutRows.length?schoolPayoutRows.map(x=>{
       const isReversed=!!x.is_reversed;
       return '<tr><td>'+escapeHtml(x.reference||'—')+'</td><td class="teacher-dashboard-beneficiary">'+escapeHtml(x.beneficiary||'Former member')+'</td><td>'+escapeHtml(window.displayWelfareReason(x.reason||'Welfare support'))+'</td><td class="teacher-dashboard-payout-amount">'+escapeHtml(cash(x.amount))+'</td><td>'+escapeHtml(date(x.payout_date))+'</td><td><span class="teacher-dashboard-status'+(isReversed?' reversed':'')+'">'+(isReversed?'Reversed':'Disbursed')+'</span></td></tr>';
      }).join('')
     :'<tr><td colspan="6">No school-wide welfare payouts have been recorded yet.</td></tr>';
+   setRowsIfChanged(payoutBody,payoutHtml);
   }
   const contributionState=$('teacherDashboardContributionState'),payoutState=$('teacherDashboardPayoutState');
   if(contributionState)contributionState.textContent=contributionLoadError?'Personal records unavailable':activeTeacherContributionCount()+' active personal record(s)';
