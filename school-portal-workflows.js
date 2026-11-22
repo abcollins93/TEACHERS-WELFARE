@@ -991,20 +991,25 @@ const initSchoolWorkflowsInternal=async function(client,school,refresh){
    adminTickerControl.innerHTML='<i class="fa-solid '+(paused?'fa-play':'fa-pause')+'" aria-hidden="true"></i>';
  });
  workflowStage='administrator activity feed setup';
- const refreshAdminActivityTicker=async()=>{
-   const {data:rows,error}=await client.from('audit_logs')
-     .select('created_at,time_string,actor_name,action,details,status')
-     .eq('school_id',ctx.id).order('created_at',{ascending:false}).limit(50);
-   if(error){adminTicker.classList.add('hidden');console.warn('[Administrator activity ticker] Feed unavailable:',error.message);return;}
-   const primary=document.getElementById('adminTickerItems'),clone=document.getElementById('adminTickerItemsClone');
-   if(!rows?.length){adminTicker.classList.add('hidden');if(primary)primary.innerHTML='';if(clone)clone.innerHTML='';return;}
-   adminTicker.classList.remove('hidden');
-   const items=rows.map(row=>{
-     const stamp=row.created_at?new Date(row.created_at).toLocaleString('en-GH',{dateStyle:'medium',timeStyle:'short'}):(row.time_string||'');
-     const detail=String(row.details||'').trim();
-     return '<span class="admin-ticker-item"><b>'+esc(row.actor_name||'Administrator')+'</b><span>'+esc(row.action||'Activity recorded')+(detail?' · '+esc(detail):'')+'</span><time class="admin-ticker-time">'+esc(stamp)+'</time></span>';
-   }).join('');
-   if(primary&&clone){primary.innerHTML=items;clone.innerHTML=items;}
+ let adminTickerRefreshPromise=null;
+ const refreshAdminActivityTicker=()=>{
+   if(adminTickerRefreshPromise)return adminTickerRefreshPromise;
+   adminTickerRefreshPromise=(async()=>{
+     const {data:rows,error}=await client.from('audit_logs')
+       .select('created_at,time_string,actor_name,action,details,status')
+       .eq('school_id',ctx.id).order('created_at',{ascending:false}).limit(50);
+     if(error){adminTicker.classList.add('hidden');console.warn('[Administrator activity ticker] Feed unavailable:',error.message);return;}
+     const primary=document.getElementById('adminTickerItems'),clone=document.getElementById('adminTickerItemsClone');
+     if(!rows?.length){adminTicker.classList.add('hidden');if(primary&&primary.innerHTML)primary.innerHTML='';if(clone&&clone.innerHTML)clone.innerHTML='';return;}
+     adminTicker.classList.remove('hidden');
+     const items=rows.map(row=>{
+       const stamp=row.created_at?new Date(row.created_at).toLocaleString('en-GH',{dateStyle:'medium',timeStyle:'short'}):(row.time_string||'');
+       const detail=String(row.details||'').trim();
+       return '<span class="admin-ticker-item"><b>'+esc(row.actor_name||'Administrator')+'</b><span>'+esc(row.action||'Activity recorded')+(detail?' · '+esc(detail):'')+'</span><time class="admin-ticker-time">'+esc(stamp)+'</time></span>';
+     }).join('');
+     if(primary&&clone){if(primary.innerHTML!==items)primary.innerHTML=items;if(clone.innerHTML!==items)clone.innerHTML=items;}
+   })().finally(()=>{adminTickerRefreshPromise=null;});
+   return adminTickerRefreshPromise;
  };
  void refreshAdminActivityTicker().catch(error=>console.warn('[Administrator activity ticker] Initial feed deferred:',error?.message||error));
  if(!isLocalDemo)window.__adminActivityTickerTimer=setInterval(()=>{
