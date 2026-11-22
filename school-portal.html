@@ -4460,8 +4460,11 @@ if(isDemoMode){
   document.addEventListener('click',clearPressed,{passive:true});
   // The primary navigation handler above owns open/close state. Avoid a
   // second click listener that could reopen the backdrop after it is closed.
+  // Capture navigation taps before any page-level handler can stop bubbling.
+  // This is particularly important on mobile, where nested controls may have
+  // their own click handlers; navigation must always receive the recognized tap.
   document.addEventListener('click', function(event){
-    const button = event.target.closest('.navbtn[data-target]');
+    const button = event.target?.closest?.('#schoolSidebar .navbtn[data-target]');
     if (!button) return;
     event.preventDefault();
     // Close the mobile drawer immediately. If a workflow view is still mounting,
@@ -4733,7 +4736,7 @@ if(isDemoMode){
     }
     button.dataset.mountAttempts = '0';
     window.__welfareActivePortalView = requestedId;
-  });
+  }, {capture:true});
 })();
 </script>
 <style>
