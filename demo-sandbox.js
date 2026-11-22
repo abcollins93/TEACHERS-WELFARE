@@ -42,7 +42,8 @@
 @media(hover:none) and (pointer:coarse){
  html,body{scroll-behavior:auto!important;overscroll-behavior-x:none}
  body{background-image:none}
- #dashboard,.sidebar,.dash-layout,.table-wrap,.wf-admin-quick-pills,.wf-dues-matrix-scroll,[data-scroll-container]{-webkit-overflow-scrolling:touch}
+ #dashboard,.sidebar,.dash-layout,.table-wrap,.wf-admin-quick-pills,.wf-dues-matrix-scroll,[data-scroll-container]{-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+ #mobileNavToggle,.sidebar .navbtn,.sidebar-close{touch-action:manipulation;pointer-events:auto}
  #dashboard .panel,#dashboard .metric,#dashboard .support,#workflows .panel,#wfAdminPanel .panel,.teacher-dashboard-ledger-card,.teacher-dashboard-profile,.teacher-profile-accent,#teacherProfileViewer,#wfTeacherPanel,.wf-payout-view,#wfReportsPanel.wf-reports-view{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:0 1px 5px rgba(11,29,58,.045)!important}
  #dashboard .panel,#dashboard .metric,#dashboard .support,#workflows .panel{transform:none!important}
  #dashboard .overview-top,header.top,#mobile-nav-overlay{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
