@@ -2,7 +2,7 @@
 (function(){
 'use strict';
 window.__welfareWorkflowBundleState='loading';
-window.__welfareWorkflowBundleVersion='20261122-mobile-stability-v22';
+window.__welfareWorkflowBundleVersion='20261121-workflow-recovery-v21';
 const $=id=>document.getElementById(id);
 let activeWorkflowInitialization=null;
 let activeWorkflowInitializationKey='';
@@ -814,7 +814,7 @@ async function performSchoolWorkflows(client,school,refresh){
   // DEMO becomes touch-ready immediately after first paint; live tenants keep
   // the longer idle window for their network-backed workflow initialization.
   if(isLocalDemo)window.setTimeout(resolve,32);
-  else if('requestIdleCallback' in window)window.requestIdleCallback(()=>resolve(),{timeout:250});
+  else if('requestIdleCallback' in window)window.requestIdleCallback(()=>resolve(),{timeout:900});
   else window.setTimeout(resolve,80);
  });
  if(isLocalDemo&&window.__welfareDemoRole!=='admin')return false;
