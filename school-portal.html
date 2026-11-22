@@ -2080,7 +2080,7 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
 </header>
 <main>
 <section id="login" class="panel narrow"><div class="gateway-brand"><div class="gateway-icon"><i class="fa-solid fa-graduation-cap"></i></div><div class="eyebrow"><span class="gateway-live-dot" aria-hidden="true"></span>Protected school gateway · Live</div><h2 id="loginSchoolName">School name</h2><div class="gateway-school-badge">Welfare Fund Portal Gateway</div></div><p class="muted" style="text-align:center;margin:0 0 24px">School gateway code: <strong id="codeLabel"></strong><br>Sign in with your registered school account.</p><p class="eyebrow" style="margin-top:0">School administrator access</p><p class="muted">Use the email invitation and password created for your school administrator account.</p>
-<form id="loginForm"><label for="email">Administrator email</label><input id="email" type="email" autocomplete="username" required><label for="password">Password</label><div class="password-field"><input id="password" type="password" autocomplete="current-password" required><button type="button" class="password-toggle" data-password-target="password" aria-label="Show password" aria-pressed="false" title="Show password"><i class="fa-solid fa-eye" aria-hidden="true"></i></button></div><p id="loginError" class="error" role="alert"></p><button id="loginBtn" type="submit"><i class="fa-solid fa-right-to-bracket"></i> &nbsp;Sign in securely</button><button id="forgotPassword" type="button" class="secondary" style="width:100%;margin-top:8px">Forgot password?</button></form>
+<form id="loginForm"><label for="email">Administrator email</label><input id="email" type="email" autocomplete="username" required><label for="password">Password</label><div class="password-field"><input id="password" type="password" autocomplete="current-password" required><button type="button" class="password-toggle" data-password-target="password" aria-label="Show password" aria-pressed="false" title="Show password"><i class="fa-solid fa-eye" aria-hidden="true"></i></button></div><p id="loginError" class="error" role="alert"></p><button id="loginBtn" type="submit" disabled><i class="fa-solid fa-right-to-bracket"></i> &nbsp;Sign in securely</button><button id="forgotPassword" type="button" class="secondary" style="width:100%;margin-top:8px">Forgot password?</button></form>
 <div class="teacher-login-divider" aria-hidden="true"><span>OR</span></div>
 <section id="teacherLoginMockup" class="teacher-login-card" aria-labelledby="teacherLoginTitle">
 <div class="eyebrow">Teacher access</div><h3 id="teacherLoginTitle" style="margin:7px 0">Teacher sign in</h3>
@@ -2088,7 +2088,7 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
 <form id="teacherLoginForm"><label for="teacherStaffId">Staff Number / ID</label><input id="teacherStaffId" name="staffId" autocomplete="username" maxlength="80" placeholder="Enter your Staff ID" required>
 <label for="teacherPreviewPassword">Password / Passcode</label><div class="password-field"><input id="teacherPreviewPassword" name="password" type="password" autocomplete="current-password" placeholder="First login: enter your Staff ID" required><button type="button" class="password-toggle" data-password-target="teacherPreviewPassword" aria-label="Show password" aria-pressed="false" title="Show password"><i class="fa-solid fa-eye" aria-hidden="true"></i></button></div>
 <p id="teacherLoginMessage" class="muted" role="status" aria-live="polite">First login password: your Staff ID. You will be asked to create a new password after signing in.</p>
-<button id="teacherLoginButton" type="submit" class="secondary" style="width:100%">Secure Teacher Sign In</button><button id="teacherForgotPreview" type="button" class="secondary" style="width:100%;margin-top:8px">Forgot password?</button></form></section>
+<button id="teacherLoginButton" type="submit" class="secondary" disabled style="width:100%">Secure Teacher Sign In</button><button id="teacherForgotPreview" type="button" class="secondary" style="width:100%;margin-top:8px">Forgot password?</button></form></section>
 </section>
 <section id="dashboard" class="hidden"><div class="dash-layout"><aside class="sidebar" id="schoolSidebar"><div class="sidebar-brand"><div class="sidebar-brand-mark"><i class="fa-solid fa-graduation-cap"></i></div><div class="sidebar-brand-copy"><strong id="sideSchoolName">School dashboard</strong><small>TEACHERS WELFARE FUND</small></div><button id="sidebarCollapse" class="sidebar-close" type="button" aria-label="Collapse sidebar" aria-expanded="true"><i class="fa-solid fa-xmark"></i></button></div><div class="sidebar-section-label">Main menu</div><button class="navbtn active" data-target="schoolOverview"><i class="fa-solid fa-chart-pie"></i><span>Dashboard</span></button><button class="navbtn" data-target="wfTeacherPanel"><i class="fa-solid fa-user-circle"></i><span>Teacher profile</span></button>
 <button class="navbtn" data-target="teacherProfileViewer"><i class="fa-solid fa-id-card"></i><span>Profile viewer</span></button><button class="navbtn" data-target="schoolTeachers"><i class="fa-solid fa-users"></i><span>Teachers &amp; Members</span></button><button class="navbtn" data-target="wfContributionPanel"><i class="fa-solid fa-money-bill-wave"></i><span>Contributions</span></button><button class="navbtn" data-target="wfPayoutPanel"><i class="fa-solid fa-hand-holding-heart"></i><span>Welfare &amp; Payouts</span></button><button class="navbtn" data-target="wfReportsPanel"><i class="fa-solid fa-file-invoice-dollar"></i><span>Statements &amp; Reports</span></button><div class="sidebar-section-label sidebar-admin-label">Administration</div><button class="navbtn" data-target="wfAdminPanel"><i class="fa-solid fa-user-shield"></i><span>Admin panel</span></button><button class="navbtn" data-target="wfAuditPanel"><i class="fa-solid fa-clipboard-list"></i><span>Audit trail dashboard</span></button><button type="button" class="navbtn" id="sidebarLogout"><i class="fa-solid fa-right-from-bracket"></i><span>Sign out</span></button><div class="sidebar-account"><div class="sidebar-account-mark"><i class="fa-solid fa-user-shield"></i></div><div class="sidebar-account-copy"><strong>School Administrator</strong><small id="sideSchoolCode">Verified school account</small></div></div></aside><div><div class="panel" id="schoolOverview">
@@ -2566,8 +2566,10 @@ async function renderTeacherDashboard(profile,school){
   }catch(_){}
  }
  window.__welfareTeacherDisplayName=teacherName;
- $('login').classList.add('hidden');
- $('dashboard').classList.remove('hidden');
+ // Keep the gateway visible while the authenticated member workspace and
+ // financial cards are hydrated. The reveal occurs after all renderers finish.
+ $('login').classList.remove('hidden');
+ $('dashboard').classList.add('hidden');
  $('teacherDashboard')?.classList.add('hidden');
  setTenantFooter(school);
  $('schoolName').textContent=school.name;$('brand').textContent=school.name;
@@ -3401,6 +3403,8 @@ async function renderTeacherDashboard(profile,school){
  // The member Settings panel is initialized independently; do not hold the
  // teacher dashboard or sign-in completion on PDF signatory/settings loading.
  void startAccountSettingsInitialization(client,school,'teacher');
+ // All authenticated profile, contact and financial views have now rendered.
+ $('login').classList.add('hidden');$('dashboard').classList.remove('hidden');
  showLoginWelcome(teacherName,'Teacher',school.name);
  window.finishTenantSkeletons?.();
  resetInactivityTimer();
@@ -3537,6 +3541,22 @@ async function waitForSchoolWorkflows(){
   if(typeof window.initSchoolWorkflows==='function'||window.__welfareWorkflowScriptError)finish();
  });
 }
+// Login controls stay disabled until the workflow bundle and delegated sidebar
+// router have both completed their page-load initialization.
+async function waitForPortalStartup(){
+ const workflowReady=await waitForSchoolWorkflows();
+ if(!workflowReady)throw new Error('The portal workflow module could not be initialized. Refresh the page and try again.');
+ if(window.__welfareSidebarNavigationReady)return true;
+ await new Promise((resolve,reject)=>{
+  let settled=false;
+  const finish=()=>{if(settled)return;settled=true;clearTimeout(timer);window.removeEventListener('welfare-sidebar-navigation-ready',finish);resolve(true);};
+  const timer=setTimeout(()=>{if(settled)return;settled=true;window.removeEventListener('welfare-sidebar-navigation-ready',finish);reject(new Error('The portal navigation is still initializing. Refresh the page and try again.'));},15000);
+  window.addEventListener('welfare-sidebar-navigation-ready',finish,{once:true});
+  if(window.__welfareSidebarNavigationReady)finish();
+ });
+ return true;
+}
+window.__welfareWaitForPortalStartup=waitForPortalStartup;
 // Account Settings must initialize independently of dashboard data and workflow startup.
 // Keep one initialization promise per authenticated tenant/role to avoid duplicate setup.
 function resolveSchoolMonthlyDues(school,settingsRows,contributionRows){
@@ -3743,6 +3763,7 @@ function showDemoDashboard(){
 }
 
 async function showDashboardInternal(){
+ await waitForPortalStartup();
  if(isDemoMode){await showDemoDashboard();return;}
  await tenantIdentityReady;
  if(gatewayAccessBlocked){
@@ -3815,7 +3836,9 @@ async function showDashboardInternal(){
  window.__welfareCurrentSchool=school;
  setHeaderProfile(user, user.user_metadata?.full_name || user.user_metadata?.name || user.email || 'School Administrator', 'School Administrator', user.user_metadata?.avatar_url || user.user_metadata?.picture || null);
  setTenantFooter(school);
- $('login').classList.add('hidden');$('dashboard').classList.remove('hidden');
+ // Keep the gateway visible while authenticated tenant records and workflow
+ // views hydrate. The workspace is revealed only at the atomic commit point.
+ $('login').classList.remove('hidden');$('dashboard').classList.add('hidden');
  resetInactivityTimer();
  $('schoolName').textContent=school.name;$('brand').textContent=school.name;$('sideSchoolName').textContent=school.name;$('sideSchoolCode').textContent=[school.school_code,school.school_type,school.district,school.region].filter(Boolean).join(' · ');$('schoolDescription').textContent='Providing mutual financial support, social welfare benefits, and fully transparent monthly record-keeping for '+school.name+'.';
  $('schoolMeta').textContent=[school.school_code,school.school_type,school.district,school.region].filter(Boolean).join(' · ');
@@ -3859,8 +3882,12 @@ async function showDashboardInternal(){
    readDashboardSource(client.from('payouts').select('date').eq('school_id',school.id).order('date',{ascending:false}).limit(1),'Latest payout date')
   ])
  ]);
+ const requiredHydrationFailures=[['teacher register',teachersRes],['contribution ledger',contribRes],['payout ledger',payoutsRes],['transaction reversals',reversalsRes]].filter(([,result])=>result?.error);
+ if(requiredHydrationFailures.length){
+  const failed=requiredHydrationFailures.map(([label])=>label).join(', ');
+  throw new Error('Your credentials were accepted, but the school '+failed+' could not be loaded. Check the connection and school access, then sign in again.');
+ }
  const teachers=teachersRes.data||[], contributions=contribRes.data||[], payouts=payoutsRes.data||[], reversals=reversalsRes.data||[];
- [teachersRes,contribRes,payoutsRes,reversalsRes].filter(result=>result.error).forEach(result=>console.warn('[School Welfare] Partial tenant dashboard hydration:',result.error?.message||result.error));
  const reversedContributions=new Set(reversals.filter(r=>r.transaction_type==='contribution').map(r=>String(r.transaction_id)));
  const resolvedMonthlyDues=window.resolveSchoolMonthlyDues?.(school,duesSettingsRes?.data,contributions.filter(row=>!reversedContributions.has(String(row.id))));
  if(resolvedMonthlyDues)window.updateSchoolMonthlyDuesMetric?.(resolvedMonthlyDues);
@@ -4204,6 +4231,17 @@ $('lastActivity').textContent=latestActivity.some(item=>item.error)?'Unavailable
   }catch(error){console.error('[School Welfare] School summary PDF failed:',error);progress.textContent=error?.message||'The school PDF could not be generated. Please try again.';progress.className='error';}
   finally{schoolPdfButton.disabled=false;schoolPdfButton.removeAttribute('aria-busy');schoolPdfButton.innerHTML=originalButtonHtml;}
  };
+ // Do not expose a partially mounted workspace. initSchoolWorkflows resolves
+ // only after its tenant-scoped register, ledgers, profile viewer and handlers
+ // have been hydrated and attached.
+ const workflowReady=await withPortalTimeout(workflowMount,60000,'The school sections are taking longer than expected to initialize.');
+ if(!workflowReady||window.__welfareWorkflowReadySchoolId!==String(school.id||'')){
+  const detail=window.__welfareWorkflowLastError?.message||'The school sections could not be initialized.';
+  throw new Error(detail+' Please retry sign-in after checking your connection.');
+ }
+ if(!teachers.length&&Number($('teacherCount')?.textContent||0)>0)throw new Error('The school teacher register did not finish rendering. Please retry sign-in.');
+ $('login').classList.add('hidden');$('dashboard').classList.remove('hidden');
+ resetInactivityTimer();
  showLoginWelcome('Admin','School Administrator',school.name);
 }
 async function showDashboard(){
@@ -4219,7 +4257,9 @@ async function showDashboard(){
 }
 $('teacherLoginForm').addEventListener('submit',async e=>{
  e.preventDefault();
- showPageLoader('Verifying teacher account');
+ showPageLoader('Signing in & loading school records...');
+ $('teacherLoginMessage').className='muted';
+ $('teacherLoginMessage').textContent='Signing in & loading school records...';
  const staffId=String($('teacherStaffId').value??'').trim();
  const password=$('teacherPreviewPassword').value; // Do not trim custom passwords.
  const message=$('teacherLoginMessage'),button=$('teacherLoginButton');
@@ -4229,6 +4269,7 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
  console.log('Entered Staff ID:',staffId);
  console.log('School code:',code);
  try{
+  await waitForPortalStartup();
   if(!staffId||!password)throw new Error('Enter your Staff ID and password.');
   const {data:result,error:invokeError}=await withPortalTimeout(client.functions.invoke('teacher-sign-in',{
    body:{school_code:code,staff_id:staffId,password}
@@ -4273,7 +4314,6 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
   window.__welfareCurrentRole='teacher';window.__welfareSyncSidebarNavigation?.();
   window.__welfareTeacherDisplayName=teacherName;
   setHeaderProfile(sessionData.user,teacherName,'Teacher',teacherAvatar);
-  $('login').classList.add('hidden');
   let teacherDash=document.getElementById('teacherDashboard');
   if(!teacherDash){
    teacherDash=document.createElement('section');teacherDash.id='teacherDashboard';teacherDash.className='panel';
@@ -4281,6 +4321,7 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
   }
   if(p.must_change_password){
    teacherDash.innerHTML='<h2>Set a new password</h2><p class="muted">For your security, change your temporary password before opening your records.</p><form id="teacherChangePasswordForm"><label for="teacherNewPassword">New password</label><div class="password-field"><input id="teacherNewPassword" type="password" minlength="6" maxlength="128" autocomplete="new-password" required><button type="button" class="password-toggle" data-password-target="teacherNewPassword" aria-label="Show password" aria-pressed="false" title="Show password"><i class="fa-solid fa-eye" aria-hidden="true"></i></button></div><label for="teacherConfirmPassword">Confirm new password</label><div class="password-field"><input id="teacherConfirmPassword" type="password" minlength="6" maxlength="128" autocomplete="new-password" required><button type="button" class="password-toggle" data-password-target="teacherConfirmPassword" aria-label="Show password" aria-pressed="false" title="Show password"><i class="fa-solid fa-eye" aria-hidden="true"></i></button></div><p id="teacherChangeMessage" role="status" aria-live="polite"></p><button class="primary" type="submit">Save new password</button></form><button id="teacherSignOut" class="secondary" style="margin-top:12px">Sign out</button>';
+   $('login').classList.add('hidden');
    teacherDash.classList.remove('hidden');
    document.getElementById('teacherChangePasswordForm').addEventListener('submit',async ev=>{
     ev.preventDefault();
@@ -4322,6 +4363,7 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
   }else renderTeacherDashboard(p,school);
  }catch(err){
   if(authSessionCreated)await withPortalTimeout(client.auth.signOut(),3000,'Sign-out cleanup timed out.').catch(()=>{});
+  $('login').classList.remove('hidden');$('dashboard').classList.add('hidden');
   message.className='error';
   message.textContent=err?.message||'Teacher sign-in was not accepted. Confirm your Staff ID and temporary password with your school administrator.';
  }finally{
@@ -4329,7 +4371,7 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
  }
 });
 $('teacherForgotPreview').addEventListener('click',()=>{ $('teacherLoginMessage').className='muted';$('teacherLoginMessage').textContent='For secure recovery, contact your school administrator to verify your identity and reset your account.';});
-$('loginForm').addEventListener('submit',async e=>{e.preventDefault();showPageLoader('Signing you in securely');$('loginError').textContent='';$('loginError').className='error';$('loginBtn').disabled=true;$('loginBtn').textContent='Signing in…';let authenticated=false;try{const {data,error}=await withPortalTimeout(client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value}),10000,'Administrator sign-in timed out. Please check your connection and try again.');if(error||!data.user)throw new Error('credentials');authenticated=true;if(data.session?.access_token&&data.session?.refresh_token){const {error:sessionSetError}=await withPortalTimeout(client.auth.setSession({access_token:data.session.access_token,refresh_token:data.session.refresh_token}),12000,'Administrator session setup timed out.');if(sessionSetError)throw new Error('Your credentials were accepted, but the secure administrator session could not be established. Please sign in again.');}await showDashboard();}catch(err){if(!authenticated){$('loginError').textContent='Sign-in failed. Check your administrator email and password, or use the password setup link from your invitation.';await withPortalTimeout(client.auth.signOut(),3000,'Session cleanup timed out.').catch(()=>{});}else{$('login').classList.remove('hidden');$('dashboard').classList.add('hidden');$('loginError').textContent='Your credentials were accepted, but school verification or dashboard loading failed. Check that this URL uses your registered school code and that your administrator account is assigned to that school. Your session has been preserved.';}}finally{$('loginBtn').disabled=!!code&&!/^[A-Z0-9-]{3,32}$/.test(code);$('loginBtn').textContent='Sign in securely';hidePageLoader();}});
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();showPageLoader('Signing in & loading school records...');$('loginError').textContent='Signing in & loading school records...';$('loginError').className='muted';$('loginBtn').disabled=true;$('loginBtn').textContent='Signing in & loading records…';let authenticated=false;try{await waitForPortalStartup();const {data,error}=await withPortalTimeout(client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value}),10000,'Administrator sign-in timed out. Please check your connection and try again.');if(error||!data.user)throw new Error('credentials');authenticated=true;if(data.session?.access_token&&data.session?.refresh_token){const {error:sessionSetError}=await withPortalTimeout(client.auth.setSession({access_token:data.session.access_token,refresh_token:data.session.refresh_token}),12000,'Administrator session setup timed out.');if(sessionSetError)throw new Error('Your credentials were accepted, but the secure administrator session could not be established. Please sign in again.');}await showDashboard();}catch(err){if(!authenticated){$('loginError').textContent='Sign-in failed. Check your administrator email and password, or use the password setup link from your invitation.';await withPortalTimeout(client.auth.signOut(),3000,'Session cleanup timed out.').catch(()=>{});}else{$('login').classList.remove('hidden');$('dashboard').classList.add('hidden');$('loginError').textContent='Your credentials were accepted, but school verification or dashboard loading failed. Check that this URL uses your registered school code and that your administrator account is assigned to that school. Your session has been preserved.';}}finally{$('loginBtn').disabled=!!code&&!/^[A-Z0-9-]{3,32}$/.test(code);$('loginBtn').textContent='Sign in securely';hidePageLoader();}});
 $('forgotPassword').addEventListener('click',async()=>{
  const email=$('email').value.trim();
  $('loginError').textContent='';
@@ -7340,5 +7382,25 @@ input[type="tel"], input[inputmode="numeric"], input[inputmode="decimal"] { font
 }
 @media(prefers-reduced-motion:reduce){:where(button,a,[role="button"],[role="tab"],.navbtn,.tab,.toggle,.password-toggle,[data-action]){transition:none!important}}
 </style>
+<script>
+/* This runs after the workflow bundle and the delegated sidebar router. */
+(function(){
+ const ready=typeof window.initSchoolWorkflows==='function'&&typeof window.__welfareSyncSidebarNavigation==='function';
+ window.__welfareSidebarNavigationReady=ready;
+ if(ready){
+  const adminButton=document.getElementById('loginBtn');
+  const teacherButton=document.getElementById('teacherLoginButton');
+  if(adminButton)adminButton.disabled=false;
+  if(teacherButton)teacherButton.disabled=false;
+ }else{
+  const adminError=document.getElementById('loginError');
+  const teacherMessage=document.getElementById('teacherLoginMessage');
+  const message='Portal startup is incomplete. Refresh the page before signing in.';
+  if(adminError)adminError.textContent=message;
+  if(teacherMessage)teacherMessage.textContent=message;
+ }
+ window.dispatchEvent(new Event('welfare-sidebar-navigation-ready'));
+})();
+</script>
 </body>
 </html>
