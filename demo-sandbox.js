@@ -4,6 +4,13 @@
  const demoQuery=new URLSearchParams(window.location.search);
  if(!demoQuery.has('c')||String(demoQuery.get('c')||'').trim().toUpperCase()!=='DEMO')return;
 
+ // DEMO uses the same explicit destination map as live role-scoped navigation.
+ window.__welfareResolvePortalViewTarget=(rawTarget,role)=>{
+  const target=String(rawTarget||'');
+  if(role==='admin')return ({wfContributionPanel:'wfAdminContributionPanel',wfPayoutPanel:'wfAdminPayoutPanel'})[target]||target;
+  return ({wfReportsPanel:'wfStatementPanel'})[target]||target;
+ };
+
  // DEMO-safe fallback for reporting year controls. The live workflow module
  // replaces this with its tenant-ledger-aware implementation when initialized.
  if(typeof window.populateReportYearSelectors!=='function'){
