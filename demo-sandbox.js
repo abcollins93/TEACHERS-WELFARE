@@ -328,6 +328,7 @@
  // workflow renderers own the actual cards; this bridge only invokes the
  // already-authenticated profile renderer without starting a network request.
  window.__welfareDemoRenderProfileViewer=()=>{
+  window.__welfareSetRoleMarker?.(window.__welfareDemoRole==='teacher'?'member':'admin');
   if(window.__welfareDemoRole==='teacher'){
    const rendered=window.__welfareRefreshMemberProfileViewer?.();
    if(rendered===true)return true;
