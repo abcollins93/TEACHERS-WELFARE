@@ -50,15 +50,38 @@ window.addEventListener('welfare-workflows-ready',ensurePrimaryFundBalanceCard);
  };
  const monthRange=keys=>{if(!keys.length)return [];const sorted=keys.slice().sort(),[sy,sm]=sorted[0].split('-').map(Number),[ey,em]=sorted[sorted.length-1].split('-').map(Number),out=[];let y=sy,m=sm;while(y<ey||(y===ey&&m<=em)){out.push(y+'-'+String(m).padStart(2,'0'));m++;if(m===13){m=1;y++;}if(out.length>240)break;}return out;};
  const bindReadout=card=>{const readout=card.querySelector('.wf-financial-chart-readout');card.querySelectorAll('[data-chart-value]').forEach(mark=>{const show=()=>{if(readout)readout.textContent=mark.getAttribute('data-chart-value')||'';};mark.addEventListener('click',show);mark.addEventListener('focus',show);mark.addEventListener('mouseenter',show);});};
- const isAdminChartView=()=>window.__welfareCurrentRole==='admin'||document.body.classList.contains('admin-activity-ticker-active');
- const removeAdminFundHistory=()=>{if(!isAdminChartView())return;document.querySelectorAll('#wfFundBalanceHistory,[id="wfFundBalanceHistory"],.wf-financial-chart-card').forEach(node=>{if(node.id==='wfFundBalanceHistory'||node.querySelector?.('#wfFundBalanceHistory'))node.remove();});};
+ const isAdminChartView=()=>{
+  const role=String(window.__welfareCurrentRole||document.body.dataset.welfareRole||'').trim().toLowerCase();
+  const ticker=document.getElementById('adminActivityTicker');
+  const dashboard=document.getElementById('dashboard');
+  return role==='admin'||role==='administrator'||role==='school_admin'||
+   document.body.classList.contains('admin-activity-ticker-active')||
+   (ticker&&!ticker.classList.contains('hidden')&&getComputedStyle(ticker).display!=='none')||
+   !!dashboard?.classList.contains('admin-workspace-open');
+ };
+ const removeAdminFundHistory=()=>{
+  if(!isAdminChartView())return false;
+  document.body.dataset.welfareRole='admin';
+  document.querySelectorAll('#welfareFinancialCharts #wfFundBalanceHistory,#wfFundBalanceHistory').forEach(node=>node.remove());
+  return true;
+ };
  if(!window.__welfareAdminFundHistoryGuard){
   window.__welfareAdminFundHistoryGuard=true;
-  const guardAdminFundHistory=()=>removeAdminFundHistory();
-  const adminChartObserver=new MutationObserver(guardAdminFundHistory);
-  adminChartObserver.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+  const adminChartObserver=new MutationObserver(records=>{
+   if(!isAdminChartView())return;
+   for(const record of records){
+    if(record.type!=='childList')continue;
+    for(const node of record.addedNodes){
+     if(node.nodeType!==1)continue;
+     if(node.id==='wfFundBalanceHistory'||node.querySelector?.('#wfFundBalanceHistory')){removeAdminFundHistory();return;}
+    }
+   }
+  });
+  adminChartObserver.observe(document.body,{childList:true,subtree:true});
   window.__welfareAdminFundHistoryObserver=adminChartObserver;
-  guardAdminFundHistory();
+  window.addEventListener('welfare-workflows-ready',removeAdminFundHistory);
+  window.addEventListener('welfare-workspace-mounted',removeAdminFundHistory);
+  removeAdminFundHistory();
  }
  const renderNow=({contributions=[],payouts=[],scope='School ledger'}={})=>{
   window.__welfareFinancialChartPending={contributions,payouts,scope};
@@ -72,11 +95,12 @@ window.addEventListener('welfare-workflows-ready',ensurePrimaryFundBalanceCard);
   if(con.length&&keys.length){const vals=keys.map(key=>({key,total:conTotals.get(key)||0})),max=Math.max(...vals.map(x=>x.total),0),base=166,plotH=132,step=560/vals.length,bw=Math.max(5,Math.min(28,step*.56));let body='<line x1="22" y1="'+base+'" x2="584" y2="'+base+'" stroke="#cbd5e1"/>';vals.forEach((v,i)=>{const height=max?(v.total/max)*plotH:0,x=30+i*step+(step-bw)/2,y=base-height,label=v.key.slice(5)+' / '+v.key.slice(0,4);body+='<rect class="wf-chart-mark" tabindex="0" role="button" aria-label="'+esc(label+' '+cash(v.total))+'" data-chart-value="'+esc(label+' · '+cash(v.total))+'" x="'+x.toFixed(2)+'" y="'+y.toFixed(2)+'" width="'+bw.toFixed(2)+'" height="'+height.toFixed(2)+'" rx="4" fill="#C6A04A"><title>'+esc(label+' · '+cash(v.total))+'</title></rect><text x="'+(x+bw/2).toFixed(2)+'" y="188" text-anchor="middle">'+v.key.slice(5)+'</text>';});trendBody=svg('Monthly contribution trend in Ghana cedis',body,Math.max(600,vals.length*48+40));trendReadout=keys.length+' dated month(s) · Tap a bar for exact GH₵ total.';}
   let compareBody=empty,compareReadout='Select a month to compare actual contributions and payouts.';
   if(keys.length&&(con.length||pay.length)){const vals=keys.map(key=>({key,con:conTotals.get(key)||0,pay:payTotals.get(key)||0})),max=Math.max(...vals.flatMap(x=>[x.con,x.pay]),0),base=166,plotH=132,step=560/vals.length,bw=Math.max(5,Math.min(15,step*.38));let body='<line x1="22" y1="'+base+'" x2="584" y2="'+base+'" stroke="#cbd5e1"/>';vals.forEach((v,i)=>{const center=30+i*step+step/2,h1=max?v.con/max*plotH:0,h2=max?v.pay/max*plotH:0,x1=center-bw-1,x2=center+1,label=v.key.slice(5)+' / '+v.key.slice(0,4),read=label+' · Contributions '+cash(v.con)+' · Payouts '+cash(v.pay);body+='<rect class="wf-chart-mark" tabindex="0" role="button" data-chart-value="'+esc(read)+'" aria-label="'+esc(read)+'" x="'+x1.toFixed(2)+'" y="'+(base-h1).toFixed(2)+'" width="'+bw.toFixed(2)+'" height="'+h1.toFixed(2)+'" rx="3" fill="#C6A04A"><title>'+esc('Contributions '+cash(v.con))+'</title></rect><rect class="wf-chart-mark" tabindex="0" role="button" data-chart-value="'+esc(read)+'" aria-label="'+esc(read)+'" x="'+x2.toFixed(2)+'" y="'+(base-h2).toFixed(2)+'" width="'+bw.toFixed(2)+'" height="'+h2.toFixed(2)+'" rx="3" fill="#25845B"><title>'+esc('Payouts '+cash(v.pay))+'</title></rect><text x="'+center.toFixed(2)+'" y="188" text-anchor="middle">'+v.key.slice(5)+'</text>';});compareBody=svg('Monthly contributions compared with welfare payouts',body,Math.max(640,vals.length*48+48));compareReadout=keys.length+' dated month(s) · Tap either series for both exact totals.';}
-  const adminDashboard=window.__welfareCurrentRole==='admin'||document.body.classList.contains('admin-activity-ticker-active');
+  const adminDashboard=isAdminChartView();
   let balanceBody=empty,balanceReadout='Select a point to inspect the cumulative running balance.';
   const events=[...con.map((row,index)=>({date:row.__date,type:'contribution',amount:amount(row),index})),...pay.map((row,index)=>({date:row.__date,type:'payout',amount:amount(row),index}))].sort((a,b)=>a.date.localeCompare(b.date)||(a.type===b.type?a.index-b.index:a.type==='contribution'?-1:1));
   if(events.length&&!adminDashboard){let running=0;const points=events.map(event=>{running+=event.type==='contribution'?event.amount:-event.amount;return {...event,balance:running};});const min=Math.min(0,...points.map(p=>p.balance)),max=Math.max(0,...points.map(p=>p.balance)),span=max-min||1,plotWidth=Math.max(640,points.length*52+112),plotHeight=210,left=56,right=plotWidth-56,top=42,bottom=150,axisY=174,coords=points.map((p,i)=>({x:points.length===1?plotWidth/2:left+i*(right-left)/(points.length-1),y:bottom-((p.balance-min)/span)*(bottom-top),...p})),line=coords.map((p,i)=>(i?'L':'M')+p.x.toFixed(2)+' '+p.y.toFixed(2)).join(' ');let body='<line x1="28" y1="'+axisY+'" x2="'+(plotWidth-28)+'" y2="'+axisY+'" stroke="#94A3B8" stroke-width="1.5"/><line x1="28" y1="'+top+'" x2="28" y2="'+bottom+'" stroke="#94A3B8" stroke-width="1.25"/><path d="'+line+'" fill="none" stroke="#E0B84F" stroke-width="3.25" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/>';coords.forEach(p=>{const label=p.date+' · '+(p.type==='contribution'?'Contribution +':'Payout −')+cash(p.amount)+' · Running net '+cash(p.balance);body+='<circle class="wf-chart-mark" tabindex="0" role="button" aria-label="'+esc(label)+'" data-chart-value="'+esc(label)+'" cx="'+p.x.toFixed(2)+'" cy="'+p.y.toFixed(2)+'" r="7" fill="#10233F" stroke="#E0B84F" stroke-width="2" vector-effect="non-scaling-stroke"><title>'+esc(label)+'</title></circle>';});if(coords.length===1){const p=coords[0];body+='<text x="'+p.x.toFixed(2)+'" y="202" text-anchor="middle">'+p.date.slice(5)+'</text>';}else{[coords[0],coords[coords.length-1]].forEach((p,i)=>{body+='<text x="'+p.x.toFixed(2)+'" y="202" text-anchor="'+(i===0?'start':'end')+'">'+p.date.slice(5)+'</text>';});}balanceBody=svg('Cumulative running net balance from dated ledger entries',body,plotWidth,plotWidth,plotHeight,true);balanceReadout=points.length+' dated transaction(s) · Running total '+cash(running)+' · Tap a point for exact value.';}
   host.innerHTML=card('wfMonthlyContributionTrend','Monthly contribution trend','Recorded contributions by month',trendBody,trendReadout)+card('wfPayoutComparison','Payout comparison','Monthly contributions vs. welfare payouts',compareBody,compareReadout,'<div class="wf-financial-chart-legend"><span><i style="background:#C6A04A"></i>Contributions</span><span><i style="background:#25845B"></i>Payouts</span></div>')+(adminDashboard?'':card('wfFundBalanceHistory','Fund-balance history','Running total from dated ledger entries',balanceBody,balanceReadout));
+  if(adminDashboard)host.querySelector('#wfFundBalanceHistory')?.remove();
   removeAdminFundHistory();host.dataset.scope=scope;host.querySelectorAll('.wf-financial-chart-card').forEach(bindReadout);
  };
  const render=payload=>{
