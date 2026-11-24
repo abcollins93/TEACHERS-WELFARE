@@ -60,7 +60,12 @@ window.addEventListener('welfare-workflows-ready',ensurePrimaryFundBalanceCard);
    !!dashboard?.classList.contains('admin-workspace-open');
  };
  const removeAdminFundHistory=()=>{
-  if(!isAdminChartView())return false;
+  if(!isAdminChartView()){
+   const role=String(window.__welfareCurrentRole||'').trim().toLowerCase();
+   if(role==='teacher'||role==='member')document.body.dataset.welfareRole='member';
+   else if(document.body.dataset.welfareRole==='admin')delete document.body.dataset.welfareRole;
+   return false;
+  }
   document.body.dataset.welfareRole='admin';
   document.querySelectorAll('#welfareFinancialCharts #wfFundBalanceHistory,#wfFundBalanceHistory').forEach(node=>node.remove());
   return true;
