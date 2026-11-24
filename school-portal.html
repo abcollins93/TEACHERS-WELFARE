@@ -7659,5 +7659,60 @@ html.dark body #welfareFinancialCharts .wf-financial-chart-empty{background:#102
 html.dark body #welfareFinancialCharts .wf-financial-chart-scroll{background:transparent!important}
 html.dark body #welfareFinancialCharts .wf-financial-chart-plot text,html.dark body #welfareFinancialCharts .wf-financial-chart-plot tspan{fill:#F8FAFC!important;color:#F8FAFC!important;opacity:1!important;stroke:#0B1D3A!important;paint-order:stroke fill!important}
 </style>
+<style id="welfare-final-admin-chart-dark-header-guard">
+/* Final dashboard chart contrast and Admin-only removal guard. */
+html.dark body #welfareFinancialCharts .wf-financial-chart-card,
+body.dark #welfareFinancialCharts .wf-financial-chart-card,
+body.dark-mode #welfareFinancialCharts .wf-financial-chart-card{
+ background:#0B1D3A!important;background-color:#0B1D3A!important;color:#F8FAFC!important;
+ border:1px solid #49617F!important;opacity:1!important;filter:none!important;
+}
+html.dark body #welfareFinancialCharts .wf-financial-chart-head h3,
+body.dark #welfareFinancialCharts .wf-financial-chart-head h3,
+body.dark-mode #welfareFinancialCharts .wf-financial-chart-head h3{
+ color:#FFE08A!important;opacity:1!important;text-shadow:none!important;
+}
+html.dark body #welfareFinancialCharts .wf-financial-chart-head p,
+body.dark #welfareFinancialCharts .wf-financial-chart-head p,
+body.dark-mode #welfareFinancialCharts .wf-financial-chart-head p{
+ color:#E2E8F0!important;opacity:1!important;text-shadow:none!important;
+}
+html.dark body #welfareFinancialCharts .wf-financial-chart-readout,
+body.dark #welfareFinancialCharts .wf-financial-chart-readout,
+body.dark-mode #welfareFinancialCharts .wf-financial-chart-readout{
+ background:#142B4A!important;color:#FFFFFF!important;border:1px solid #49617F!important;opacity:1!important;
+}
+html.dark body #welfareFinancialCharts .wf-financial-chart-legend,
+html.dark body #welfareFinancialCharts .wf-financial-chart-legend span,
+body.dark #welfareFinancialCharts .wf-financial-chart-legend,
+body.dark #welfareFinancialCharts .wf-financial-chart-legend span,
+body.dark-mode #welfareFinancialCharts .wf-financial-chart-legend,
+body.dark-mode #welfareFinancialCharts .wf-financial-chart-legend span{
+ color:#F8FAFC!important;opacity:1!important;
+}
+html.dark body #welfareFinancialCharts .wf-financial-chart-plot text,
+html.dark body #welfareFinancialCharts .wf-financial-chart-plot tspan,
+body.dark #welfareFinancialCharts .wf-financial-chart-plot text,
+body.dark #welfareFinancialCharts .wf-financial-chart-plot tspan,
+body.dark-mode #welfareFinancialCharts .wf-financial-chart-plot text,
+body.dark-mode #welfareFinancialCharts .wf-financial-chart-plot tspan{
+ fill:#F8FAFC!important;color:#F8FAFC!important;opacity:1!important;
+}
+body.admin-activity-ticker-active #welfareFinancialCharts #wfFundBalanceHistory,
+html body.admin-activity-ticker-active #welfareFinancialCharts #wfFundBalanceHistory{
+ display:none!important;visibility:hidden!important;pointer-events:none!important;
+}
+.app-header-group,.app-header-group::before,
+.app-header-group>header.top,.app-header-group>.overview-top,
+.app-header-group .overview-top::before,.app-header-group header.top::before{
+ background:#10233F!important;background-color:#10233F!important;background-image:none!important;
+ opacity:1!important;filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
+.app-header-group{position:fixed!important;z-index:2147483647!important;isolation:isolate!important;overflow:visible!important}
+.app-header-group>header.top,.app-header-group>.overview-top{
+ position:relative!important;z-index:2147483646!important;opacity:1!important;isolation:isolate!important;
+}
+.app-header-group *{opacity:1!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+</style>
 </body>
 </html>
