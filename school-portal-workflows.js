@@ -903,6 +903,9 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const existingWorkflows=$('workflows');const retainedRoster=$('schoolTeachers');const overview=$('schoolOverview');if(existingWorkflows&&retainedRoster&&existingWorkflows.contains(retainedRoster)&&overview?.parentElement)overview.parentElement.insertBefore(retainedRoster,overview.nextElementSibling);retainedRoster?.querySelector('#wfTeacherRegisterPanel')?.remove();if(existingWorkflows)existingWorkflows.remove();
  workflowStage='administrator section construction';
  addUI();
+ // Re-render shared dashboard charts after the Admin hub exists, so the Admin-only
+ // chart exclusion is applied even if the first chart render ran during early hydration.
+ if(window.__welfareFinancialChartPending)window.__welfareRenderFinancialCharts?.(window.__welfareFinancialChartPending);
  const workflowMountNode=$('workflows');
  const adminPanelNode=$('wfAdminPanel');
  if(!workflowMountNode||!adminPanelNode)throw new Error('Admin Panel markup could not be mounted in the dashboard.');
