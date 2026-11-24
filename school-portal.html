@@ -7714,5 +7714,70 @@ html body.admin-activity-ticker-active #welfareFinancialCharts #wfFundBalanceHis
 }
 .app-header-group *{opacity:1!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 </style>
+
+<style id="welfare-final-dashboard-visibility-theme-header-fix">
+/* Admin-only chart exclusion: role marker is set by the shared chart renderer. */
+body[data-welfare-role="admin"] #welfareFinancialCharts #wfFundBalanceHistory,
+body[data-welfare-role="admin"] #wfFundBalanceHistory{display:none!important;visibility:hidden!important;pointer-events:none!important}
+/* High-contrast chart surfaces and text in the actual html.dark theme state. */
+html.dark #welfareFinancialCharts .wf-financial-chart-card,
+body.dark #welfareFinancialCharts .wf-financial-chart-card,
+body.dark-mode #welfareFinancialCharts .wf-financial-chart-card{
+ background:#0B1D3A!important;background-color:#0B1D3A!important;color:#F8FAFC!important;
+ border:1px solid #49617F!important;opacity:1!important;filter:none!important
+}
+html.dark #welfareFinancialCharts .wf-financial-chart-head h3,
+body.dark #welfareFinancialCharts .wf-financial-chart-head h3,
+body.dark-mode #welfareFinancialCharts .wf-financial-chart-head h3{
+ color:#FFE08A!important;opacity:1!important;text-shadow:none!important;font-weight:900!important
+}
+html.dark #welfareFinancialCharts .wf-financial-chart-head p,
+body.dark #welfareFinancialCharts .wf-financial-chart-head p,
+body.dark-mode #welfareFinancialCharts .wf-financial-chart-head p{
+ color:#E2E8F0!important;opacity:1!important;text-shadow:none!important;font-weight:700!important
+}
+html.dark #welfareFinancialCharts .wf-financial-chart-readout,
+body.dark #welfareFinancialCharts .wf-financial-chart-readout,
+body.dark-mode #welfareFinancialCharts .wf-financial-chart-readout{
+ background:#142B4A!important;background-color:#142B4A!important;color:#FFFFFF!important;border:1px solid #49617F!important;opacity:1!important
+}
+html.dark #welfareFinancialCharts .wf-financial-chart-legend,
+html.dark #welfareFinancialCharts .wf-financial-chart-legend span,
+body.dark #welfareFinancialCharts .wf-financial-chart-legend,
+body.dark #welfareFinancialCharts .wf-financial-chart-legend span,
+body.dark-mode #welfareFinancialCharts .wf-financial-chart-legend,
+body.dark-mode #welfareFinancialCharts .wf-financial-chart-legend span{color:#F8FAFC!important;opacity:1!important}
+html.dark #welfareFinancialCharts .wf-financial-chart-plot text,
+html.dark #welfareFinancialCharts .wf-financial-chart-plot tspan,
+body.dark #welfareFinancialCharts .wf-financial-chart-plot text,
+body.dark #welfareFinancialCharts .wf-financial-chart-plot tspan,
+body.dark-mode #welfareFinancialCharts .wf-financial-chart-plot text,
+body.dark-mode #welfareFinancialCharts .wf-financial-chart-plot tspan{
+ fill:#F8FAFC!important;color:#F8FAFC!important;opacity:1!important;font-weight:800!important
+}
+html.dark #welfareFinancialCharts .wf-financial-chart-empty,
+body.dark #welfareFinancialCharts .wf-financial-chart-empty,
+body.dark-mode #welfareFinancialCharts .wf-financial-chart-empty{
+ background:#10233F!important;color:#F8FAFC!important;border-color:#718096!important
+}
+/* Keep the two-part sticky school header fully opaque above scrolling content. */
+.app-header-group{
+ position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;
+ z-index:2147483647!important;isolation:isolate!important;opacity:1!important;
+ background:#10233F!important;background-color:#10233F!important;background-image:none!important;
+ filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important
+}
+.app-header-group::before,
+.app-header-group>header.top,
+.app-header-group>.overview-top,
+.app-header-group .overview-top::before,
+.app-header-group header.top::before{
+ background:#10233F!important;background-color:#10233F!important;background-image:none!important;
+ opacity:1!important;filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important
+}
+.app-header-group>header.top,.app-header-group>.overview-top{
+ position:relative!important;z-index:2147483646!important;isolation:isolate!important
+}
+</style>
 </body>
 </html>
