@@ -158,7 +158,7 @@
  }
  function activeCon(){const rev=new Set(reversals.filter(x=>x.transaction_type==='contribution').map(x=>String(x.transaction_id)));return contributions.filter(x=>{const status=String(x.status||x.transaction_status||x.reversal_status||'').toLowerCase(),flagged=v=>v===true||['true','t','1','yes'].includes(String(v??'').trim().toLowerCase());return !rev.has(String(x.id))&&!flagged(x.is_reversed)&&!flagged(x.reversed)&&!['reversed','inactive','deleted','cancelled','canceled','void','archived'].includes(status)&&!x.reversed_at&&!x.reversedAt;});}
  function activePay(){const rev=new Set(reversals.filter(x=>x.transaction_type==='payout').map(x=>String(x.transaction_id)));return payouts.filter(x=>{const status=String(x.status||x.transaction_status||'').toLowerCase(),flagged=v=>v===true||['true','t','1','yes'].includes(String(v??'').trim().toLowerCase());return !rev.has(String(x.id))&&!flagged(x.is_reversed)&&!flagged(x.reversed)&&!['reversed','inactive','deleted','cancelled','canceled','void','archived'].includes(status)&&!x.reversed_at&&!x.reversedAt;});}
- function financialChartData(role,teacherId){const mine=String(role||'admin')==='teacher';window.__welfareSetRoleMarker?.(mine?'member':'admin');const id=String(teacherId||teachers[activeTeacherIndex]?.id||'');return {contributions:clone(activeCon().filter(row=>!mine||String(row.teacher_id)===id)),payouts:clone(activePay().filter(row=>!mine||String(row.teacher_id)===id)),scope:mine?'DEMO personal ledger':'DEMO school ledger'};}
+ function financialChartData(role,teacherId){const mine=String(role||'admin')==='teacher';window.__welfareSetRoleMarker?.(mine?'member':'admin');window.__welfareChartViewRole=mine?'member':'admin';const id=String(teacherId||teachers[activeTeacherIndex]?.id||'');return {contributions:clone(activeCon().filter(row=>!mine||String(row.teacher_id)===id)),payouts:clone(activePay().filter(row=>!mine||String(row.teacher_id)===id)),scope:mine?'DEMO personal ledger':'DEMO school ledger'};}
 
  const ensureDemoFundBalanceCardNow=()=>{
   const value=document.getElementById('netTotal'),card=value?.closest('.metric');
@@ -328,7 +328,7 @@
  // workflow renderers own the actual cards; this bridge only invokes the
  // already-authenticated profile renderer without starting a network request.
  window.__welfareDemoRenderProfileViewer=()=>{
-  window.__welfareSetRoleMarker?.(window.__welfareDemoRole==='teacher'?'member':'admin');
+  window.__welfareSetRoleMarker?.(window.__welfareDemoRole==='teacher'?'member':'admin');window.__welfareChartViewRole=window.__welfareDemoRole==='teacher'?'member':'admin';
   if(window.__welfareDemoRole==='teacher'){
    const rendered=window.__welfareRefreshMemberProfileViewer?.();
    if(rendered===true)return true;
