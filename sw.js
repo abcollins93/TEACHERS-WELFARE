@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_VERSION='twf-pwa-shell-v52-sidebar-placeholder-fix';
+const CACHE_VERSION='twf-pwa-shell-v53-role-chart-header-fix';
 const STATEMENT_CACHE='twf-cached-statements-v1';
 const NETWORK_TIMEOUT_MS=8000;
 const STATIC_TIMEOUT_MS=6500;
@@ -28,13 +28,13 @@ const SHELL_ASSETS=[
  './',
  './index.html',
  './school-portal.html',
- './demo-sandbox.js?v=20261122-sidebar-navigation-v24',
+ './demo-sandbox.js?v=20261125-role-chart-header-v26',
  './set-password.html',
  './g.html',
  './offline.html',
  './manifest.json',
  './pwa.js',
- './school-portal-workflows.js?v=20261122-sidebar-navigation-v24',
+ './school-portal-workflows.js?v=20261125-role-chart-header-v26',
  './icons/welfare-portal.svg'
 ];
 const CDN_ASSETS=[
