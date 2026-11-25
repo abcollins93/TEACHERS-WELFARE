@@ -92,8 +92,12 @@ window.addEventListener('welfare-workflows-ready',ensurePrimaryFundBalanceCard);
   window.addEventListener('welfare-workspace-mounted',removeAdminFundHistory);
   removeAdminFundHistory();
  }
- const renderNow=({contributions=[],payouts=[],scope='School ledger'}={})=>{
-  const renderRole=currentChartRole();
+ const renderNow=({contributions=[],payouts=[],scope='School ledger'}={},requestedRole='')=>{
+  // Resolve the role at execution time too: a scheduled render must never outlive
+  // an Admin transition or overwrite a newer Admin view with a stale Member render.
+  const liveRoles=[document.documentElement?.dataset.welfareRole,document.body?.dataset.welfareRole,$('dashboard')?.dataset.welfareRole].map(value=>String(value||'').trim().toLowerCase());
+  const liveAdmin=liveRoles.some(role=>['admin','administrator','school_admin'].includes(role));
+  const renderRole=liveAdmin?'admin':(requestedRole==='admin'?'admin':(requestedRole==='member'?'member':currentChartRole()));
   if(renderRole)setChartRole(renderRole);
   const adminDashboard=renderRole==='admin';
   if(adminDashboard){setChartRole('admin');document.querySelectorAll('#wfFundBalanceHistory').forEach(node=>node.remove());}
@@ -118,13 +122,15 @@ window.addEventListener('welfare-workflows-ready',ensurePrimaryFundBalanceCard);
   removeAdminFundHistory();host.dataset.scope=scope;host.querySelectorAll('.wf-financial-chart-card').forEach(bindReadout);
  };
  const render=(payload,roleHint)=>{
-  if(roleHint)setChartRole(roleHint);
-  else if(currentChartRole())setChartRole(currentChartRole());
+  const requestedRole=roleHint==='admin'||roleHint==='member'?roleHint:currentChartRole();
+  if(requestedRole)setChartRole(requestedRole);
   window.__welfareFinancialChartPending=payload||window.__welfareFinancialChartPending;
   const snapshot=window.__welfareFinancialChartPending;
   if(!snapshot)return;
+  // Synchronously purge an old Member card as soon as an Admin render is requested.
+  if(requestedRole==='admin')document.querySelectorAll('#wfFundBalanceHistory').forEach(node=>node.remove());
   const host=document.getElementById('welfareFinancialCharts');
-  const run=()=>renderNow(snapshot);
+  const run=()=>renderNow(snapshot,requestedRole);
   const scheduler=window.__welfareUiScheduler;
   if(scheduler)scheduler.schedule(run,host||renderNow);
   else requestAnimationFrame(run);
