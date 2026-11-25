@@ -6,7 +6,7 @@
 (function(){
  window.__welfareSetRoleMarker=window.__welfareSetRoleMarker||function(role){
  const value=(role==='admin'||role==='administrator'||role==='school_admin')?'admin':'member';
- window.__welfareCurrentRole=value==='admin'?'admin':'teacher';
+ window.__welfareCurrentRole=value==='admin'?'admin':'teacher';window.__welfareChartViewRole=value;
  [document.documentElement,document.body,document.getElementById('dashboard'),document.querySelector('main')].filter(Boolean).forEach(root=>{
   root.dataset.welfareRole=value;root.classList.toggle('welfare-role-admin',value==='admin');root.classList.toggle('welfare-role-member',value==='member');
  });
