@@ -122,7 +122,9 @@ window.addEventListener('welfare-workflows-ready',ensurePrimaryFundBalanceCard);
   removeAdminFundHistory();host.dataset.scope=scope;host.querySelectorAll('.wf-financial-chart-card').forEach(bindReadout);
  };
  const render=(payload,roleHint)=>{
-  const requestedRole=roleHint==='admin'||roleHint==='member'?roleHint:currentChartRole();
+  const rootRoles=[document.documentElement?.dataset.welfareRole,document.body?.dataset.welfareRole,$('dashboard')?.dataset.welfareRole].map(value=>String(value||'').trim().toLowerCase());
+  const rootSaysAdmin=rootRoles.some(role=>['admin','administrator','school_admin'].includes(role));
+  const requestedRole=rootSaysAdmin?'admin':(roleHint==='admin'||roleHint==='member'?roleHint:currentChartRole());
   if(requestedRole)setChartRole(requestedRole);
   window.__welfareFinancialChartPending=payload||window.__welfareFinancialChartPending;
   const snapshot=window.__welfareFinancialChartPending;
