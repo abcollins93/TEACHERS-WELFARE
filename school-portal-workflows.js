@@ -961,7 +961,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  addUI();
  // Re-render shared dashboard charts after the Admin hub exists, so the Admin-only
  // chart exclusion is applied even if the first chart render ran during early hydration.
- if(window.__welfareFinancialChartPending)window.__welfareSetRoleMarker?.('admin');window.__welfareRenderFinancialCharts?.(window.__welfareFinancialChartPending,'admin');
+ if(window.__welfareFinancialChartPending){window.__welfareSetRoleMarker?.('admin');window.__welfareRenderFinancialCharts?.(window.__welfareFinancialChartPending,'admin');}
  const workflowMountNode=$('workflows');
  const adminPanelNode=$('wfAdminPanel');
  if(!workflowMountNode||!adminPanelNode)throw new Error('Admin Panel markup could not be mounted in the dashboard.');
