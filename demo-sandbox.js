@@ -158,9 +158,9 @@
  }
  function activeCon(){const rev=new Set(reversals.filter(x=>x.transaction_type==='contribution').map(x=>String(x.transaction_id)));return contributions.filter(x=>{const status=String(x.status||x.transaction_status||x.reversal_status||'').toLowerCase(),flagged=v=>v===true||['true','t','1','yes'].includes(String(v??'').trim().toLowerCase());return !rev.has(String(x.id))&&!flagged(x.is_reversed)&&!flagged(x.reversed)&&!['reversed','inactive','deleted','cancelled','canceled','void','archived'].includes(status)&&!x.reversed_at&&!x.reversedAt;});}
  function activePay(){const rev=new Set(reversals.filter(x=>x.transaction_type==='payout').map(x=>String(x.transaction_id)));return payouts.filter(x=>{const status=String(x.status||x.transaction_status||'').toLowerCase(),flagged=v=>v===true||['true','t','1','yes'].includes(String(v??'').trim().toLowerCase());return !rev.has(String(x.id))&&!flagged(x.is_reversed)&&!flagged(x.reversed)&&!['reversed','inactive','deleted','cancelled','canceled','void','archived'].includes(status)&&!x.reversed_at&&!x.reversedAt;});}
- function financialChartData(role,teacherId){const mine=String(role||'admin')==='teacher',id=String(teacherId||teachers[activeTeacherIndex]?.id||'');return {contributions:clone(activeCon().filter(row=>!mine||String(row.teacher_id)===id)),payouts:clone(activePay().filter(row=>!mine||String(row.teacher_id)===id)),scope:mine?'DEMO personal ledger':'DEMO school ledger'};}
+ function financialChartData(role,teacherId){const mine=String(role||'admin')==='teacher';window.__welfareSetRoleMarker?.(mine?'member':'admin');window.__welfareChartViewRole=mine?'member':'admin';const id=String(teacherId||teachers[activeTeacherIndex]?.id||'');return {contributions:clone(activeCon().filter(row=>!mine||String(row.teacher_id)===id)),payouts:clone(activePay().filter(row=>!mine||String(row.teacher_id)===id)),scope:mine?'DEMO personal ledger':'DEMO school ledger'};}
 
- const ensureDemoFundBalanceCard=()=>{
+ const ensureDemoFundBalanceCardNow=()=>{
   const value=document.getElementById('netTotal'),card=value?.closest('.metric');
   if(!card)return;
   card.classList.add('metric-featured','metric-balance');
@@ -168,6 +168,12 @@
   let note=card.querySelector('.metric-note');
   if(!note){note=document.createElement('span');note.className='metric-note metric-note-positive';card.querySelector('.metric-content')?.appendChild(note);}
   if(note&&!note.textContent.trim())note.textContent='After all active payouts';
+ };
+ const ensureDemoFundBalanceCard=()=>{
+  const card=document.getElementById('netTotal')?.closest('.metric')||document.body;
+  const run=()=>ensureDemoFundBalanceCardNow();
+  if(window.__welfareUiScheduler)window.__welfareUiScheduler.schedule(run,card);
+  else run();
  };
  ensureDemoFundBalanceCard();
  document.addEventListener('DOMContentLoaded',ensureDemoFundBalanceCard,{once:true});
@@ -322,6 +328,7 @@
  // workflow renderers own the actual cards; this bridge only invokes the
  // already-authenticated profile renderer without starting a network request.
  window.__welfareDemoRenderProfileViewer=()=>{
+  window.__welfareSetRoleMarker?.(window.__welfareDemoRole==='teacher'?'member':'admin');window.__welfareChartViewRole=window.__welfareDemoRole==='teacher'?'member':'admin';
   if(window.__welfareDemoRole==='teacher'){
    const rendered=window.__welfareRefreshMemberProfileViewer?.();
    if(rendered===true)return true;
@@ -362,9 +369,10 @@
   });
   window.__welfareSyncSidebarNavigation?.();
  }
- window.addEventListener('welfare-workflows-ready',syncDemoSidebar);
- window.addEventListener('welfare-workspace-mounted',syncDemoSidebar);
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',syncDemoSidebar,{once:true});
- else window.requestAnimationFrame(syncDemoSidebar);
+ const scheduleDemoSidebarSync=()=>window.__welfareScheduleNonCritical?window.__welfareScheduleNonCritical(syncDemoSidebar,document.getElementById('schoolSidebar')||syncDemoSidebar):syncDemoSidebar();
+ window.addEventListener('welfare-workflows-ready',scheduleDemoSidebarSync);
+ window.addEventListener('welfare-workspace-mounted',scheduleDemoSidebarSync);
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',scheduleDemoSidebarSync,{once:true});
+ else scheduleDemoSidebarSync();
 
 })();

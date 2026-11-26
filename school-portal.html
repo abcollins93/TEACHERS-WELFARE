@@ -1,6 +1,50 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title id="documentTitle">School Welfare Portal</title><script id="welfare-pdf-signatory-renderer-bootstrap">
+<title id="documentTitle">School Welfare Portal</title><script id="welfare-nonblocking-ui-scheduler">
+/* Defer non-critical DOM work until active touch/scroll motion settles.
+   This scheduler never reads layout and never delays direct tap/navigation handlers. */
+(function(){
+ window.__welfareSetRoleMarker=window.__welfareSetRoleMarker||function(role){
+ const value=(role==='admin'||role==='administrator'||role==='school_admin')?'admin':'member';
+ window.__welfareCurrentRole=value==='admin'?'admin':'teacher';window.__welfareChartViewRole=value;
+ [document.documentElement,document.body,document.getElementById('dashboard'),document.querySelector('main')].filter(Boolean).forEach(root=>{
+  root.dataset.welfareRole=value;root.classList.toggle('welfare-role-admin',value==='admin');root.classList.toggle('welfare-role-member',value==='member');
+ });
+ return value;
+};
+ if(window.__welfareUiScheduler)return;
+ const queue=new Map();let lastScrollAt=0,touchActive=false,flushPending=false;
+ const now=()=>window.performance&&typeof performance.now==='function'?performance.now():Date.now();
+ const interacting=()=>touchActive||(now()-lastScrollAt)<180;
+ const requestFlush=()=>{
+  if(flushPending||!queue.size)return;
+  flushPending=true;
+  requestAnimationFrame(()=>{
+   flushPending=false;
+   if(interacting()){window.setTimeout(requestFlush,100);return;}
+   const next=queue.entries().next();
+   if(next.done)return;
+   queue.delete(next.value[0]);
+   try{next.value[1]();}catch(error){window.setTimeout(()=>{throw error;},0);}
+   if(queue.size)requestFlush();
+  });
+ };
+ const schedule=(task,key)=>{
+  if(typeof task!=='function')return;
+  queue.set(key||task,task);
+  if(!interacting())requestFlush();
+ };
+ const noteScroll=()=>{lastScrollAt=now();};
+ document.addEventListener('scroll',noteScroll,{capture:true,passive:true});
+ document.addEventListener('touchstart',()=>{touchActive=true;},{capture:true,passive:true});
+ const endTouch=()=>{touchActive=false;lastScrollAt=now();window.setTimeout(requestFlush,190);};
+ document.addEventListener('touchend',endTouch,{capture:true,passive:true});
+ document.addEventListener('touchcancel',endTouch,{capture:true,passive:true});
+ window.__welfareUiScheduler={schedule,isInteracting:interacting,get pendingCount(){return queue.size;}};
+ window.__welfareScheduleNonCritical=schedule;
+})();
+</script>
+<script id="welfare-pdf-signatory-renderer-bootstrap">
 /* Keep PDF exports safe even before the account-settings module finishes loading. */
 (function(){
  'use strict';
@@ -54,7 +98,7 @@
 (function(){
  const query=new URLSearchParams(window.location.search);
  if(query.has('c')&&String(query.get('c')||'').trim().toUpperCase()==='DEMO'){
-  document.write('<script src="./demo-sandbox.js?v=20261122-sidebar-navigation-v25"><\/script>');
+  document.write('<script src="./demo-sandbox.js?v=20261125-role-chart-header-v26"><\/script>');
  }
 })();
 </script><script>
@@ -2038,7 +2082,12 @@ body:has(#login:not(.hidden)) header.top{display:none!important}
 #mobile-nav-overlay,.sidebar{overscroll-behavior:contain}
 @media(max-width:950px){.sidebar{overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}}
 </style>
-</head><body>
+<style id="welfare-scroll-touch-performance">
+:where(button,a,[role="button"],[role="tab"],.navbtn,.tab,.toggle,.password-toggle,[data-action],[data-card-action],[data-chart-value],.wf-chart-mark,#mobileNavToggle,#themeToggle,#sidebarCollapse){touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+:where(.table-wrap,.table-responsive,.wf-financial-chart-scroll,.wf-dues-matrix-scroll,.wf-admin-quick-pills,[data-scroll-container],.sidebar .sidebar-nav){-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.wf-financial-chart-scroll{touch-action:pan-x pan-y}
+@media(hover:none) and (pointer:coarse){html,body{scroll-behavior:auto!important;overscroll-behavior-x:none}#dashboard,.dash-layout,.sidebar,.table-wrap,.table-responsive,[data-scroll-container]{-webkit-overflow-scrolling:touch}}
+</style></head><body>
 <div id="mobile-nav-overlay" aria-hidden="true"></div>
 <div id="page-loader" role="status" aria-live="polite" aria-label="Loading Teachers Welfare Portal" aria-hidden="false">
  <div class="page-loader-card">
@@ -2520,7 +2569,7 @@ window.getLoggedInTeacherData=async function(profile,school){
 };
 async function renderTeacherDashboard(profile,school){
  if(window.WelfareDemo&&window.__welfareDemoTeacherWorkspaceReady){
-  window.__welfareCurrentRole='teacher';window.__welfareSyncSidebarNavigation?.();window.__welfareCurrentSchool=school;
+  window.__welfareCurrentRole='teacher';window.__welfareSetRoleMarker?.('member');window.__welfareSyncSidebarNavigation?.();window.__welfareCurrentSchool=school;
   $('login').classList.add('hidden');$('dashboard').classList.remove('hidden');
   if($('teacherDashboardProfile'))$('teacherDashboardProfile').hidden=false;
   if($('teacherDashboardLedgers'))$('teacherDashboardLedgers').hidden=false;
@@ -2530,7 +2579,7 @@ async function renderTeacherDashboard(profile,school){
   $('workflows')?.classList.add('hidden');
   return;
  }
- window.__welfareCurrentRole='teacher';window.__welfareSyncSidebarNavigation?.();
+ window.__welfareCurrentRole='teacher';window.__welfareSetRoleMarker?.('member');window.__welfareSyncSidebarNavigation?.();
  window.__welfareCurrentSchool=school;
  window.__welfareMemberProfileReady=new Promise(resolve=>{window.__welfareResolveMemberProfileReady=resolve;});
  const {data:{user}}=await withPortalTimeout(client.auth.getUser(),12000,'Your member session could not be refreshed in time.');
@@ -2848,7 +2897,7 @@ async function renderTeacherDashboard(profile,school){
   return !rowKeys.length||rowKeys.some(key=>loggedInTeacherKeys.includes(key));
  };
  let activeTeacherContributionRows=teacherContributionRows.filter(row=>isMyTeacherContribution(row)&&isActiveTeacherContribution(row));
- window.__welfareFinancialChartPending={contributions:activeTeacherContributionRows,payouts,scope:'Your personal ledger'};window.__welfareRenderFinancialCharts?.(window.__welfareFinancialChartPending);
+ window.__welfareFinancialChartPending={contributions:activeTeacherContributionRows,payouts,scope:'Your personal ledger'};window.__welfareSetRoleMarker?.('member');window.__welfareRenderFinancialCharts?.(window.__welfareFinancialChartPending,'member');
  const activeTeacherContributionCount=()=>activeTeacherContributionRows.length;
  const totalC=activeTeacherContributionRows.reduce((sum,x)=>sum+Number(x.amount||0),0);
  const totalP=payouts.reduce((sum,x)=>sum+Number(x.amount||0),0);
@@ -3088,7 +3137,7 @@ async function renderTeacherDashboard(profile,school){
    if(!freshSchoolFundSummary.error){schoolFundBalance=Number(freshSchoolFundSummary.data?.[0]?.total_fund_balance||0);schoolFundSummaryError=false;}else schoolFundSummaryError=true;
    if(!freshRegisteredMemberCount.error){$('teacherCount').textContent=String(Number(freshRegisteredMemberCount.data||0));}else $('teacherCount').textContent='Unavailable';
    activeTeacherContributionRows=teacherContributionRows.filter(row=>isMyTeacherContribution(row)&&isActiveTeacherContribution(row));
-   window.__welfareRenderFinancialCharts?.({contributions:activeTeacherContributionRows,payouts,scope:'Your personal ledger'});
+   window.__welfareSetRoleMarker?.('member');window.__welfareRenderFinancialCharts?.({contributions:activeTeacherContributionRows,payouts,scope:'Your personal ledger'},'member');
    scheduleTeacherProgressUpdate();
    const refreshedConTotal=activeTeacherContributionRows.reduce((sum,row)=>sum+Number(row.amount||0),0);
    const refreshedOwnPayoutTotal=payouts.reduce((sum,row)=>sum+Number(row.amount||0),0);
@@ -3640,7 +3689,7 @@ function scheduleDemoAdminWorkflows(school){
   if(!result)demoWorkflowMountPromise=null;
   window.__welfareWorkflowMountPromise=demoWorkflowMountPromise;
   if(demoRole==='teacher'){
-   window.__welfareCurrentRole='teacher';window.__welfareSyncSidebarNavigation?.();
+   window.__welfareCurrentRole='teacher';window.__welfareSetRoleMarker?.('member');window.__welfareSyncSidebarNavigation?.();
    const activityTicker=document.getElementById('adminActivityTicker');
    if(activityTicker)activityTicker.classList.add('hidden');
    document.body.classList.remove('admin-activity-ticker-active');
@@ -3676,7 +3725,7 @@ function showDemoDashboard(){
  $('schoolMeta').textContent='DEMO · Basic · Kumasi Metro · Ashanti Region';
  setTenantFooter(school);
  if(demoRole==='teacher'){
-  window.__welfareCurrentRole='teacher';window.__welfareSyncSidebarNavigation?.();
+  window.__welfareCurrentRole='teacher';window.__welfareSetRoleMarker?.('member');window.__welfareSyncSidebarNavigation?.();
   const activityTicker=document.getElementById('adminActivityTicker');
   if(activityTicker)activityTicker.classList.add('hidden');
   document.body.classList.remove('admin-activity-ticker-active');
@@ -3694,7 +3743,7 @@ function showDemoDashboard(){
    if($('teacherDashboardLedgers'))$('teacherDashboardLedgers').hidden=false;
    document.getElementById('teacherWorkspace')?.classList.remove('hidden');
    window.__welfareFinancialChartPending=window.WelfareDemo.financialChartData('teacher');
-   window.__welfareRenderFinancialCharts?.(window.__welfareFinancialChartPending);
+   window.__welfareSetRoleMarker?.('member');window.__welfareRenderFinancialCharts?.(window.__welfareFinancialChartPending,'member');
    return;
   }
   const teacher=window.WelfareDemo.teachers[0];
@@ -3705,7 +3754,7 @@ function showDemoDashboard(){
    Promise.resolve(renderTeacherDashboard(profile,school)).then(()=>{
     if(generation===window.__welfareDemoViewGeneration&&demoRole==='teacher'){
      window.__welfareFinancialChartPending=window.WelfareDemo.financialChartData('teacher',profile.id);
-     window.__welfareRenderFinancialCharts?.(window.__welfareFinancialChartPending);
+     window.__welfareSetRoleMarker?.('member');window.__welfareRenderFinancialCharts?.(window.__welfareFinancialChartPending,'member');
      updateDemoBanner();
     }
    }).catch(error=>console.warn('[DEMO] Teacher view rendered with a recoverable issue:',error?.message||error));
@@ -3714,7 +3763,7 @@ function showDemoDashboard(){
   else window.setTimeout(render,80);
   return;
  }
- window.__welfareCurrentRole='admin';window.__welfareSyncSidebarNavigation?.();
+ window.__welfareCurrentRole='admin';window.__welfareSetRoleMarker?.('admin');window.__welfareSyncSidebarNavigation?.();
  const activityTicker=document.getElementById('adminActivityTicker');
  if(activityTicker){activityTicker.classList.remove('hidden');document.body.classList.add('admin-activity-ticker-active');}
  $('teacherContributionGap')?.remove();$('teacherStandardMonthlyDues')?.remove();
@@ -3732,7 +3781,7 @@ function showDemoDashboard(){
  const activeCon=window.WelfareDemo.activeCon(),activePay=window.WelfareDemo.activePay();
  const summary=window.WelfareDemo.summary();
  window.__welfareFinancialChartPending=window.WelfareDemo.financialChartData('admin');
- window.__welfareRenderFinancialCharts?.(window.__welfareFinancialChartPending);
+ window.__welfareSetRoleMarker?.('admin');window.__welfareRenderFinancialCharts?.(window.__welfareFinancialChartPending,'admin');
  const latestMonth=summary.latestMonth||'2026-03';
  const latestMonthLabel=new Date(latestMonth+'-01T00:00:00').toLocaleDateString('en-GH',{month:'short',year:'numeric'});
  $('teacherCount').textContent=String(summary.teacherCount);
@@ -3803,7 +3852,7 @@ async function showDashboardInternal(){
   $('loginError').textContent='Your administrator account is not linked to a school gateway. Open the school-specific invitation link or contact the platform administrator.';
   window.finishTenantSkeletons?.();$('login').classList.remove('hidden');$('dashboard').classList.add('hidden');return;
  }
- window.__welfareCurrentRole='admin';window.__welfareSyncSidebarNavigation?.();
+ window.__welfareCurrentRole='admin';window.__welfareSetRoleMarker?.('admin');window.__welfareSyncSidebarNavigation?.();
  if(window.__teacherDashboardLedgerTimer){clearInterval(window.__teacherDashboardLedgerTimer);window.__teacherDashboardLedgerTimer=null;}
  if($('teacherDashboardProfile'))$('teacherDashboardProfile').hidden=true;
  if($('teacherDashboardLedgers'))$('teacherDashboardLedgers').hidden=true;
@@ -3854,7 +3903,7 @@ async function showDashboardInternal(){
     if(dashboard){
      if(!notice){notice=document.createElement('section');notice.id='adminWorkflowMountError';notice.className='panel';notice.style.cssText='border:1px solid #f0b4b4;background:#fff7f7;color:#8f1d24;padding:14px 16px;margin:12px 0';dashboard.insertBefore(notice,dashboard.firstChild);}
      const diagnostic=window.__welfareWorkflowLastError;const diagnosticMessage=diagnostic?.message||workflowError?.message||'Secure data loading failed';const diagnosticStage=diagnostic?.stage?' ['+diagnostic.stage+']':'';notice.replaceChildren(document.createTextNode('Administrator sections could not finish loading: '+String(diagnosticMessage)+diagnosticStage+'. '));
-     const retry=document.createElement('button');retry.type='button';retry.className='secondary';retry.textContent='Retry loading administrator sections';retry.addEventListener('click',async()=>{window.__welfareWorkflowLastError=null;retry.disabled=true;retry.textContent='Retrying…';notice.firstChild.textContent='Retrying secure administrator data… ';try{window.__welfareWorkflowScriptError=null;let ready=await waitForSchoolWorkflows();if(!ready){window.__welfareWorkflowScriptError=null;const recoveryScript=document.createElement('script');recoveryScript.src='./school-portal-workflows.js?v=20261122-sidebar-navigation-v25&retry='+Date.now();recoveryScript.async=true;recoveryScript.onload=()=>{window.__welfareWorkflowScriptLoaded=true};recoveryScript.onerror=()=>{window.__welfareWorkflowScriptError='Workflow bundle could not be downloaded';window.dispatchEvent(new Event('welfare-workflows-load-error'))};document.head.appendChild(recoveryScript);ready=await waitForSchoolWorkflows();}if(!ready)throw new Error(window.__welfareWorkflowScriptError||'The workflow bundle could not be reloaded. Check your connection and retry.');const result=await window.initSchoolWorkflows(client,school,showDashboard);if(result){notice.remove();window.__welfareWorkflowMountPromise=Promise.resolve(true);}else throw new Error('The administrator workspace could not be initialized.');}catch(retryError){const diagnostic=window.__welfareWorkflowLastError;notice.firstChild.textContent=String(diagnostic?.message||retryError?.message||'Administrator data is still unavailable.')+(diagnostic?.stage?' ['+diagnostic.stage+']':'')+'. ';retry.disabled=false;retry.textContent='Retry loading administrator sections';}});notice.appendChild(retry);
+     const retry=document.createElement('button');retry.type='button';retry.className='secondary';retry.textContent='Retry loading administrator sections';retry.addEventListener('click',async()=>{window.__welfareWorkflowLastError=null;retry.disabled=true;retry.textContent='Retrying…';notice.firstChild.textContent='Retrying secure administrator data… ';try{window.__welfareWorkflowScriptError=null;let ready=await waitForSchoolWorkflows();if(!ready){window.__welfareWorkflowScriptError=null;const recoveryScript=document.createElement('script');recoveryScript.src='./school-portal-workflows.js?v=20261125-role-chart-header-v26&retry='+Date.now();recoveryScript.async=true;recoveryScript.onload=()=>{window.__welfareWorkflowScriptLoaded=true};recoveryScript.onerror=()=>{window.__welfareWorkflowScriptError='Workflow bundle could not be downloaded';window.dispatchEvent(new Event('welfare-workflows-load-error'))};document.head.appendChild(recoveryScript);ready=await waitForSchoolWorkflows();}if(!ready)throw new Error(window.__welfareWorkflowScriptError||'The workflow bundle could not be reloaded. Check your connection and retry.');const result=await window.initSchoolWorkflows(client,school,showDashboard);if(result){notice.remove();window.__welfareWorkflowMountPromise=Promise.resolve(true);}else throw new Error('The administrator workspace could not be initialized.');}catch(retryError){const diagnostic=window.__welfareWorkflowLastError;notice.firstChild.textContent=String(diagnostic?.message||retryError?.message||'Administrator data is still unavailable.')+(diagnostic?.stage?' ['+diagnostic.stage+']':'')+'. ';retry.disabled=false;retry.textContent='Retry loading administrator sections';}});notice.appendChild(retry);
     }
     return false;
   });
@@ -4282,7 +4331,7 @@ $('teacherLoginForm').addEventListener('submit',async e=>{
   const teacherFirstName=String(teacherName||staffId).trim().split(/\s+/)[0]||'Teacher';
   const greeting=document.getElementById('dashboardGreeting');
   if(greeting)greeting.textContent='Hi, '+teacherFirstName+'!';
-  window.__welfareCurrentRole='teacher';window.__welfareSyncSidebarNavigation?.();
+  window.__welfareCurrentRole='teacher';window.__welfareSetRoleMarker?.('member');window.__welfareSyncSidebarNavigation?.();
   window.__welfareTeacherDisplayName=teacherName;
   setHeaderProfile(sessionData.user,teacherName,'Teacher',teacherAvatar);
   $('login').classList.add('hidden');
@@ -4436,7 +4485,7 @@ if(isDemoMode){
 }
 })();
 </script>
-<script src="school-portal-workflows.js?v=20261122-sidebar-navigation-v25" onload="window.__welfareWorkflowScriptLoaded=true" onerror="window.__welfareWorkflowInitialScriptFailed=true;(function(){var s=document.createElement('script');s.src='./school-portal-workflows.js?v=20261122-sidebar-navigation-v25&retry='+Date.now();s.async=true;s.onload=function(){window.__welfareWorkflowScriptLoaded=true};s.onerror=function(){window.__welfareWorkflowScriptError='Workflow bundle could not be downloaded';window.dispatchEvent(new Event('welfare-workflows-load-error'))};document.head.appendChild(s)})()"></script>
+<script src="school-portal-workflows.js?v=20261125-role-chart-header-v26" onload="window.__welfareWorkflowScriptLoaded=true" onerror="window.__welfareWorkflowInitialScriptFailed=true;(function(){var s=document.createElement('script');s.src='./school-portal-workflows.js?v=20261125-role-chart-header-v26&retry='+Date.now();s.async=true;s.onload=function(){window.__welfareWorkflowScriptLoaded=true};s.onerror=function(){window.__welfareWorkflowScriptError='Workflow bundle could not be downloaded';window.dispatchEvent(new Event('welfare-workflows-load-error'))};document.head.appendChild(s)})()"></script>
 <script>
 /* Unified, role-aware sidebar navigation for live tenants and DEMO. */
 (function(){
@@ -4853,6 +4902,9 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
   top.parentNode.insertBefore(group,top);
   group.appendChild(top);
   group.appendChild(admin);
+  // Keep the fixed header in the document's top stacking context, not inside
+  // dashboard/main stacking contexts where scrolled content can paint over it.
+  document.body.appendChild(group);
   const dashboard=document.getElementById('dashboard');
   let updatePending=false;
   function scheduleUpdate(){
@@ -5085,7 +5137,7 @@ window.generateTenantWelfarePdf=async function(o){
  }
  const qr='twfqr'+id;
  const sign='<div class="twf-final-signoff"><div class="twf-signatures"><div class="twf-qr"><div id="'+qr+'"></div></div></div></div>';
- const host=document.createElement('div');host.className='twf-pdf '+orientation+(statistics?' twf-payment-statistics':'');host.setAttribute('data-welfare-pdf-staging','');host.setAttribute('data-twf-statement-capture',id);host.style.cssText='display:none!important;position:absolute!important;left:-9999px!important;top:-9999px!important;width:0!important;height:0!important;overflow:hidden!important;pointer-events:none!important;background:#fff';window.applyWelfarePdfTenantWatermark(host,school.name,school);host.setAttribute('data-theme','light');host.style.colorScheme='light';host.innerHTML='<style>'+style+'</style><style>.twf-pdf{font:12px/1.4 Arial,sans-serif!important;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.twf-head h2{font-size:19px!important;line-height:1.12!important}.twf-head h1{font-size:25px!important;line-height:1.1!important}.twf-brand{font-size:12px!important}.twf-sub{font-size:12.5px!important;line-height:1.3!important}.twf-meta{font-size:11px!important;line-height:1.5!important}.twf-box h3,.twf-section{font-size:13px!important;line-height:1.25!important}.twf-details th,.twf-details td{font-size:10px!important;padding:8px 11px!important;line-height:1.35!important}.twf-table{font-size:10.2px!important;line-height:1.45!important}.twf-table th{font-size:10px!important;padding:7px 9px!important}.twf-table td{padding:7px 9px!important}.twf-metric small{font-size:9.5px!important}.twf-metric strong{font-size:15px!important;font-weight:800!important;line-height:1.2!important}.twf-disclaimer{font-size:8pt!important;font-weight:700!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;text-rendering:geometricPrecision!important}.twf-head-logo,.twf-photo,.twf-qr img,.twf-qr canvas{image-rendering:auto;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}</style><style>.twf-signatures{display:flex!important;justify-content:flex-end!important;align-items:flex-end!important;width:100%!important;max-width:100%!important;min-width:0!important}.twf-signatures .twf-qr{margin-left:auto!important;justify-self:auto!important;text-align:right!important}.twf-qr img,.twf-qr canvas{margin:0 0 2mm auto!important}.twf-pdf .twf-details{display:table!important;width:100%!important;max-width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;border:1px solid #000000!important;border-radius:6px!important;overflow:hidden!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf .twf-details th,.twf-pdf .twf-details td{border:1px solid #000000!important;padding:7px 10px!important;vertical-align:middle!important;overflow-wrap:anywhere!important;word-break:break-word!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf .twf-details th{text-align:left!important;background:#f8fafc!important;font-weight:700!important;white-space:nowrap!important}.twf-pdf .twf-details th:nth-child(1){width:17%!important}.twf-pdf .twf-details td:nth-child(2){width:33%!important;white-space:normal!important}.twf-pdf .twf-details th:nth-child(3){width:17%!important}.twf-pdf .twf-details td:nth-child(4){width:33%!important;white-space:normal!important}</style>'+head+body+sign+disclaimer;const pdfLightPaletteStyle=document.createElement('style');pdfLightPaletteStyle.textContent='.twf-pdf[data-theme="light"]{background:#ffffff!important;color:#17243a!important;color-scheme:light!important}.twf-pdf[data-theme="light"] .twf-metric{color:#17243a!important;border-color:#dbe3ee!important;box-shadow:none!important;filter:none!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf[data-theme="light"] .twf-metric.green{background:#ecfdf5!important;border-color:#a7f3d0!important}.twf-pdf[data-theme="light"] .twf-metric.red{background:#fff1f2!important;border-color:#fecdd3!important}.twf-pdf[data-theme="light"] .twf-metric.blue{background:#eff6ff!important;border-color:#bfdbfe!important}.twf-pdf[data-theme="light"] .twf-metric.gold{background:#fffbeb!important;border-color:#fde68a!important}.twf-pdf[data-theme="light"] .twf-metric small{color:#475569!important}.twf-pdf[data-theme="light"] .twf-metric strong{color:#102b4f!important}.twf-pdf[data-theme="light"] .twf-metric:before{filter:none!important}';host.appendChild(pdfLightPaletteStyle);document.body.appendChild(host);
+ const host=document.createElement('div');host.className='twf-pdf '+orientation+(statistics?' twf-payment-statistics':'');host.setAttribute('data-welfare-pdf-staging','');host.setAttribute('data-twf-statement-capture',id);host.style.cssText='display:none!important;position:absolute!important;left:-9999px!important;top:-9999px!important;width:0!important;height:0!important;overflow:hidden!important;pointer-events:none!important;background:#fff';window.applyWelfarePdfTenantWatermark(host,school.name,school);host.setAttribute('data-theme','light');host.style.colorScheme='light';host.innerHTML='<style>'+style+'</style><style>@page{size:A4 portrait;margin:0;background:#fff}.twf-pdf,.twf-pdf *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf{background:#fff!important;background-color:#fff!important;break-inside:auto;page-break-inside:auto}.twf-pdf tr,.twf-pdf tbody tr,.twf-pdf .twf-table tr{break-inside:avoid!important;page-break-inside:avoid!important}.twf-pdf thead,.twf-pdf .twf-table thead{display:table-header-group!important}.twf-pdf .twf-metric,.twf-pdf .twf-box,.twf-pdf .card-grid,.twf-pdf .twf-summary-section,.twf-pdf .twf-signatures,.twf-pdf .twf-final-signoff,.twf-pdf .twf-footer,.twf-pdf .twf-disclaimer{break-inside:avoid!important;page-break-inside:avoid!important}.twf-pdf .twf-table{break-inside:auto!important;page-break-inside:auto!important}.twf-pdf{orphans:3;widows:3}.twf-pdf{font:12px/1.4 Arial,sans-serif!important;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.twf-head h2{font-size:19px!important;line-height:1.12!important}.twf-head h1{font-size:25px!important;line-height:1.1!important}.twf-brand{font-size:12px!important}.twf-sub{font-size:12.5px!important;line-height:1.3!important}.twf-meta{font-size:11px!important;line-height:1.5!important}.twf-box h3,.twf-section{font-size:13px!important;line-height:1.25!important}.twf-details th,.twf-details td{font-size:10px!important;padding:8px 11px!important;line-height:1.35!important}.twf-table{font-size:10.2px!important;line-height:1.45!important}.twf-table th{font-size:10px!important;padding:7px 9px!important}.twf-table td{padding:7px 9px!important}.twf-metric small{font-size:9.5px!important}.twf-metric strong{font-size:15px!important;font-weight:800!important;line-height:1.2!important}.twf-disclaimer{font-size:8pt!important;font-weight:700!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;text-rendering:geometricPrecision!important}.twf-head-logo,.twf-photo,.twf-qr img,.twf-qr canvas{image-rendering:auto;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}</style><style>.twf-signatures{display:flex!important;justify-content:flex-end!important;align-items:flex-end!important;width:100%!important;max-width:100%!important;min-width:0!important}.twf-signatures .twf-qr{margin-left:auto!important;justify-self:auto!important;text-align:right!important}.twf-qr img,.twf-qr canvas{margin:0 0 2mm auto!important}.twf-pdf .twf-details{display:table!important;width:100%!important;max-width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;border:1px solid #000000!important;border-radius:6px!important;overflow:hidden!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf .twf-details th,.twf-pdf .twf-details td{border:1px solid #000000!important;padding:7px 10px!important;vertical-align:middle!important;overflow-wrap:anywhere!important;word-break:break-word!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf .twf-details th{text-align:left!important;background:#f8fafc!important;font-weight:700!important;white-space:nowrap!important}.twf-pdf .twf-details th:nth-child(1){width:17%!important}.twf-pdf .twf-details td:nth-child(2){width:33%!important;white-space:normal!important}.twf-pdf .twf-details th:nth-child(3){width:17%!important}.twf-pdf .twf-details td:nth-child(4){width:33%!important;white-space:normal!important}</style>'+head+body+sign+disclaimer;const pdfLightPaletteStyle=document.createElement('style');pdfLightPaletteStyle.textContent='.twf-pdf[data-theme="light"]{background:#ffffff!important;color:#17243a!important;color-scheme:light!important}.twf-pdf[data-theme="light"] .twf-metric{color:#17243a!important;border-color:#dbe3ee!important;box-shadow:none!important;filter:none!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf[data-theme="light"] .twf-metric.green{background:#ecfdf5!important;border-color:#a7f3d0!important}.twf-pdf[data-theme="light"] .twf-metric.red{background:#fff1f2!important;border-color:#fecdd3!important}.twf-pdf[data-theme="light"] .twf-metric.blue{background:#eff6ff!important;border-color:#bfdbfe!important}.twf-pdf[data-theme="light"] .twf-metric.gold{background:#fffbeb!important;border-color:#fde68a!important}.twf-pdf[data-theme="light"] .twf-metric small{color:#475569!important}.twf-pdf[data-theme="light"] .twf-metric strong{color:#102b4f!important}.twf-pdf[data-theme="light"] .twf-metric:before{filter:none!important}';host.appendChild(pdfLightPaletteStyle);document.body.appendChild(host);
  // The portal keeps PDF templates hidden globally. Override that guard only
  // for this attached, off-screen A4 capture surface.
  host.style.setProperty('display','block','important');
@@ -5308,7 +5360,7 @@ window.generateTenantWelfarePdf=async function(o){
   host.style.setProperty('display','none','important');
   host.style.setProperty('visibility','hidden','important');
   host.style.setProperty('opacity','0','important');
-  const pdfOptions={margin:[0,0,0,0],filename,image:{type:'png'},html2canvas:{scale:4,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0,windowWidth:Math.max(794,reportWidth,document.documentElement.clientWidth),windowHeight:Math.max(reportHeight,document.documentElement.clientHeight),width:reportWidth,height:reportHeight},jsPDF:{unit:'mm',format:'a4',orientation:'portrait',compress:true},pagebreak:{mode:statistics?['css']:['css','legacy'],avoid:['tr','.twf-metric','.twf-payment-row','.twf-signatures','.twf-final-signoff']}};let statementCloneDiagnostics={found:false,childElementCount:0,innerTextLength:0,headerDisplay:'missing',headerVisibility:'missing',headerColor:'missing',headerBackground:'missing'};
+  const pdfOptions={margin:[0,0,0,0],filename,image:{type:'png'},html2canvas:{scale:4,useCORS:true,letterRendering:true,allowTaint:false,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0,windowWidth:Math.max(794,reportWidth,document.documentElement.clientWidth),windowHeight:Math.max(reportHeight,document.documentElement.clientHeight),width:reportWidth,height:reportHeight},jsPDF:{unit:'mm',format:'a4',orientation:'portrait',compress:true},pagebreak:{mode:statistics?['css']:['css','legacy'],avoid:['tr','.twf-table tr','.twf-metric','.twf-box','.card-grid','.twf-summary-section','.twf-payment-row','.twf-signatures','.twf-final-signoff','.twf-footer','.twf-disclaimer']}};let statementCloneDiagnostics={found:false,childElementCount:0,innerTextLength:0,headerDisplay:'missing',headerVisibility:'missing',headerColor:'missing',headerBackground:'missing'};
   pdfOptions.html2canvas.onclone=(clonedDocument)=>{
    const clonedHost=clonedDocument.querySelector('[data-twf-statement-capture="'+id+'"]');
    if(!clonedHost)throw new Error('The statement node was not present in the html2canvas capture clone.');
@@ -7391,59 +7443,6 @@ input[type="tel"], input[inputmode="numeric"], input[inputmode="decimal"] { font
 </style>
 
 
-<style id="opaque-sticky-portal-header">
-/* Solid, fully opaque fixed header stack; content must scroll behind this layer. */
-.app-header-group,
-.app-header-group::before,
-.app-header-group::after{
-  background-color:#10233F!important;
-  background-image:none!important;
-  opacity:1!important;
-  -webkit-backdrop-filter:none!important;
-  backdrop-filter:none!important;
-}
-.app-header-group{
-  position:fixed!important;
-  top:0!important;
-  left:0!important;
-  right:0!important;
-  width:100%!important;
-  box-sizing:border-box!important;
-  z-index:2147483000!important;
-  isolation:isolate!important;
-  background:#10233F!important;
-  background-color:#10233F!important;
-  background-image:none!important;
-  opacity:1!important;
-}
-.app-header-group>header.top,
-.app-header-group>.overview-top,
-.app-header-group>*{
-  background-color:#10233F!important;
-  background-image:none!important;
-  opacity:1!important;
-  -webkit-backdrop-filter:none!important;
-  backdrop-filter:none!important;
-  position:relative!important;
-  z-index:2!important;
-}
-
-/* Final paint guard: each visible header row is independently opaque, not translucent. */
-.app-header-group>header.top,
-.app-header-group>.overview-top{
-  background:#10233F!important;
-  background-color:#10233F!important;
-  background-image:none!important;
-  opacity:1!important;
-  isolation:isolate!important;
-  z-index:2!important;
-  -webkit-backdrop-filter:none!important;
-  backdrop-filter:none!important;
-}
-.app-header-group{z-index:2147483000!important}
-</style>
-
-
 <style id="primary-total-fund-balance-card">
 /* Primary fund summary: intentionally distinct without changing metric-grid geometry. */
 #schoolOverview .metric-featured.metric-balance,
@@ -7493,5 +7492,24 @@ input[type="tel"], input[inputmode="numeric"], input[inputmode="decimal"] { font
 }
 </style>
 
-</body>
+
+<style id="welfare-final-chart-theme-and-header">
+html[data-welfare-role="admin"] #welfareFinancialCharts .wf-financial-chart-card,body[data-welfare-role="admin"] #welfareFinancialCharts .wf-financial-chart-card,#dashboard[data-welfare-role="admin"] #welfareFinancialCharts .wf-financial-chart-card,html[data-welfare-role="admin"] #wfMonthlyContributionTrend,html[data-welfare-role="admin"] #wfPayoutComparison,html[data-welfare-role="admin"] #wfFundBalanceHistory,body[data-welfare-role="admin"] #wfMonthlyContributionTrend,body[data-welfare-role="admin"] #wfPayoutComparison,body[data-welfare-role="admin"] #wfFundBalanceHistory{display:none!important;visibility:hidden!important;pointer-events:none!important}
+html:not(.dark) #welfareFinancialCharts .wf-financial-chart-card,body:not(.dark) #welfareFinancialCharts .wf-financial-chart-card{background:#fff!important;background-color:#fff!important;color:#10233F!important}
+html:not(.dark) #welfareFinancialCharts .wf-financial-chart-head h3,body:not(.dark) #welfareFinancialCharts .wf-financial-chart-head h3{color:#10233F!important}
+html:not(.dark) #welfareFinancialCharts .wf-financial-chart-head p,body:not(.dark) #welfareFinancialCharts .wf-financial-chart-head p{color:#475569!important}
+html:not(.dark) #welfareFinancialCharts .wf-financial-chart-readout,body:not(.dark) #welfareFinancialCharts .wf-financial-chart-readout{background:#F4F6F9!important;color:#10233F!important}
+:is(html.dark,body.dark) #welfareFinancialCharts .wf-financial-chart-card{background:#1E293B!important;background-color:#1E293B!important;background-image:none!important;color:#F8FAFC!important;border:1px solid #475569!important;box-shadow:0 8px 24px rgba(0,0,0,.28)!important;opacity:1!important;filter:none!important;color-scheme:dark}
+:is(html.dark,body.dark) #welfareFinancialCharts .wf-financial-chart-head,:is(html.dark,body.dark) #welfareFinancialCharts .wf-financial-chart-head h3{color:#FFE08A!important;opacity:1!important;font-weight:900!important;text-shadow:none!important}
+:is(html.dark,body.dark) #welfareFinancialCharts .wf-financial-chart-head p{color:#E2E8F0!important;opacity:1!important;font-weight:750!important;text-shadow:none!important}
+:is(html.dark,body.dark) #welfareFinancialCharts .wf-financial-chart-readout{background:#0F172A!important;color:#fff!important;border:1px solid #475569!important;opacity:1!important}
+:is(html.dark,body.dark) #welfareFinancialCharts .wf-financial-chart-legend,:is(html.dark,body.dark) #welfareFinancialCharts .wf-financial-chart-legend span{color:#F8FAFC!important;opacity:1!important;font-weight:800!important}
+:is(html.dark,body.dark) #welfareFinancialCharts .wf-financial-chart-plot text,:is(html.dark,body.dark) #welfareFinancialCharts .wf-financial-chart-plot tspan{fill:#F8FAFC!important;color:#F8FAFC!important;opacity:1!important;font-weight:800!important}
+:is(html.dark,body.dark) #welfareFinancialCharts .wf-financial-chart-empty{background:#0F172A!important;color:#F8FAFC!important;border-color:#64748B!important}
+.app-header-group{position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;z-index:2147483647!important;isolation:isolate!important;background:#10233F!important;background-color:#10233F!important;background-image:none!important;opacity:1!important;filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.app-header-group::before{content:""!important;position:absolute!important;inset:0!important;z-index:0!important;display:block!important;background:#10233F!important;background-color:#10233F!important;background-image:none!important;opacity:1!important;pointer-events:none!important}
+.app-header-group>header.top,.app-header-group>.overview-top{position:relative!important;z-index:1!important;isolation:isolate!important;opacity:1!important;background:#10233F!important;background-color:#10233F!important;background-image:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.app-header-group>header.top::before,.app-header-group>header.top::after,.app-header-group>.overview-top::before,.app-header-group>.overview-top::after{background:#10233F!important;background-color:#10233F!important;background-image:none!important;opacity:1!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.app-header-group>header.top>*,.app-header-group>.overview-top>*{position:relative;z-index:1}
+</style></body>
 </html>

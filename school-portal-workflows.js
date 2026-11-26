@@ -31,17 +31,86 @@ window.addEventListener('welfare-workflows-ready',ensurePrimaryFundBalanceCard);
  const cash=n=>'GH₵ '+Number(n||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
  const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const ns='http://www.w3.org/2000/svg';
- const svg=(label,body,minWidth=600)=>'<div class="wf-financial-chart-scroll" tabindex="0" role="region" aria-label="Scrollable chart: '+esc(label)+'"><svg class="wf-financial-chart-plot" style="width:'+Math.max(600,Math.ceil(minWidth))+'px;min-width:'+Math.max(600,Math.ceil(minWidth))+'px;max-width:none;height:220px" viewBox="0 0 600 220" preserveAspectRatio="none" role="img" aria-label="'+esc(label)+'" xmlns="'+ns+'">'+body+'</svg></div>';
+ const svg=(label,body,minWidth=640,viewBoxWidth=600,viewBoxHeight=220,proportional=false)=>{const width=Math.max(640,Math.ceil(minWidth)),height=Math.max(190,Math.ceil(viewBoxHeight)),plotStyle='display:block!important;box-sizing:content-box!important;width:'+width+'px!important;min-width:'+width+'px!important;max-width:none!important;height:'+height+'px!important;min-height:'+height+'px!important;max-height:'+height+'px!important;aspect-ratio:auto!important;flex:0 0 '+width+'px!important;align-self:flex-start!important;object-fit:fill!important',canvas=proportional?'<div class="wf-financial-chart-canvas" style="display:block!important;position:relative!important;width:'+width+'px!important;min-width:'+width+'px!important;max-width:none!important;height:'+height+'px!important;min-height:'+height+'px!important;max-height:'+height+'px!important;flex:none!important"><svg class="wf-financial-chart-plot" width="'+width+'" height="'+height+'" style="'+plotStyle+'" viewBox="0 0 '+viewBoxWidth+' '+viewBoxHeight+'" preserveAspectRatio="xMidYMid meet" role="img" aria-label="'+esc(label)+'" xmlns="'+ns+'">'+body+'</svg></div>':'<svg class="wf-financial-chart-plot" width="'+width+'" height="'+height+'" style="'+plotStyle+'" viewBox="0 0 '+viewBoxWidth+' '+viewBoxHeight+'" preserveAspectRatio="xMidYMid meet" role="img" aria-label="'+esc(label)+'" xmlns="'+ns+'">'+body+'</svg>';return '<div class="wf-financial-chart-scroll'+(proportional?' wf-financial-chart-scroll-wide':'')+'" '+(proportional?'style="display:block!important;position:relative!important;width:100%!important;min-width:0!important;height:'+height+'px!important;min-height:'+height+'px!important;max-height:'+height+'px!important;overflow-x:auto!important;overflow-y:hidden!important;-webkit-overflow-scrolling:touch!important;contain:layout paint!important" ':'')+'tabindex="0" role="region" aria-label="Scrollable chart: '+esc(label)+'">'+canvas+'</div>';};
  const empty='<div class="wf-financial-chart-empty">No dated ledger records available yet.</div>';
  const ensureStyles=()=>{
   if(document.getElementById('welfare-financial-chart-styles'))return;
   const style=document.createElement('style');style.id='welfare-financial-chart-styles';
-  style.textContent='#welfareFinancialCharts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:16px 0 20px}#welfareFinancialCharts .wf-financial-chart-card{min-width:0;background:#fff;border:1px solid #e3e8f0;border-radius:17px;padding:16px;box-shadow:0 5px 16px rgba(16,35,63,.055);color:#10233F}#welfareFinancialCharts .wf-financial-chart-card:last-child{grid-column:1/-1}.wf-financial-chart-head{margin-bottom:8px}.wf-financial-chart-head h3{font-size:1rem;font-weight:850;margin:0 0 4px;color:#10233F}.wf-financial-chart-head p{font-size:.8rem;color:#64748b;margin:0}.wf-financial-chart-scroll{width:100%;min-width:0;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x pan-y;scrollbar-width:thin;scrollbar-color:#cbd5e1 transparent}.wf-financial-chart-plot{width:100%;height:220px;display:block;flex:0 0 auto;overflow:visible;max-width:none;max-height:none}.wf-financial-chart-plot text{font-family:inherit;fill:#64748b;font-size:13px}.wf-financial-chart-readout{min-height:34px;margin-top:7px;padding:8px 10px;border-radius:10px;background:#F4F6F9;color:#10233F;font-size:.82rem;font-weight:750;font-variant-numeric:tabular-nums;line-height:1.35}.wf-financial-chart-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:.76rem;color:#475569}.wf-financial-chart-legend span{display:inline-flex;align-items:center;gap:6px}.wf-financial-chart-legend i{width:9px;height:9px;border-radius:3px;display:inline-block}.wf-financial-chart-empty{min-height:145px;display:grid;place-items:center;text-align:center;color:#64748b;background:#F4F6F9;border:1px dashed #cbd5e1;border-radius:12px;padding:18px;font-size:.84rem}#welfareFinancialCharts .wf-chart-mark{cursor:pointer;outline:none}#welfareFinancialCharts .wf-chart-mark:focus{stroke:#10233F;stroke-width:3}body.dark #welfareFinancialCharts .wf-financial-chart-card,body.dark-mode #welfareFinancialCharts .wf-financial-chart-card{background:#0b1d3a;border-color:#263b5c;color:#f4f6f9}body.dark #welfareFinancialCharts .wf-financial-chart-head h3,body.dark-mode #welfareFinancialCharts .wf-financial-chart-head h3{color:#f4f6f9}body.dark #welfareFinancialCharts .wf-financial-chart-readout,body.dark-mode #welfareFinancialCharts .wf-financial-chart-readout{background:#142b4a;color:#f4f6f9}body.dark #welfareFinancialCharts .wf-financial-chart-empty,body.dark-mode #welfareFinancialCharts .wf-financial-chart-empty{background:#10233F;border-color:#344967;color:#cbd5e1}@media(max-width:760px){#welfareFinancialCharts{grid-template-columns:minmax(0,1fr);gap:12px;margin:14px 0 18px}#welfareFinancialCharts .wf-financial-chart-card:last-child{grid-column:auto}#welfareFinancialCharts .wf-financial-chart-card{padding:13px} .wf-financial-chart-plot{max-height:none}}';
+  style.textContent=`
+   #welfareFinancialCharts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:16px 0 20px}
+   #welfareFinancialCharts .wf-financial-chart-card{min-width:0;background:#fff;border:1px solid #e3e8f0;border-radius:17px;padding:16px;box-shadow:0 5px 16px rgba(16,35,63,.055);color:#10233F}
+   #welfareFinancialCharts .wf-financial-chart-card:last-child{grid-column:1/-1}
+   .wf-financial-chart-head{margin-bottom:8px}.wf-financial-chart-head h3{font-size:1rem;font-weight:850;margin:0 0 4px;color:#10233F}.wf-financial-chart-head p{font-size:.8rem;color:#64748b;margin:0}
+   .wf-financial-chart-scroll{display:block;width:100%;max-width:100%;min-width:0;overflow-x:auto!important;overflow-y:hidden!important;-webkit-overflow-scrolling:touch!important;overscroll-behavior-x:contain;touch-action:pan-x pan-y;scrollbar-width:thin;scrollbar-color:#cbd5e1 transparent}
+   .wf-financial-chart-plot{display:block!important;flex:none!important;box-sizing:content-box!important;width:auto!important;height:auto!important;max-width:none!important;max-height:none!important;overflow:visible;align-self:flex-start}.wf-financial-chart-plot text{font-family:inherit;fill:#64748b;font-size:14px;font-weight:650}
+   .wf-financial-chart-readout{min-height:34px;margin-top:7px;padding:8px 10px;border-radius:10px;background:#F4F6F9;color:#10233F;font-size:.82rem;font-weight:750;font-variant-numeric:tabular-nums;line-height:1.35}
+   .wf-financial-chart-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:.76rem;color:#475569}.wf-financial-chart-legend span{display:inline-flex;align-items:center;gap:6px}.wf-financial-chart-legend i{width:9px;height:9px;border-radius:3px;display:inline-block}
+   .wf-financial-chart-empty{min-height:145px;display:grid;place-items:center;text-align:center;color:#64748b;background:#F4F6F9;border:1px dashed #cbd5e1;border-radius:12px;padding:18px;font-size:.84rem}
+   #welfareFinancialCharts .wf-chart-mark{cursor:pointer;outline:none}#welfareFinancialCharts .wf-chart-mark:focus{stroke:#10233F;stroke-width:3}
+   #welfareFinancialCharts #wfFundBalanceHistory .wf-financial-chart-scroll-wide{display:block!important;position:relative!important;width:100%!important;min-width:0!important;height:210px!important;min-height:210px!important;max-height:210px!important;overflow-x:auto!important;overflow-y:hidden!important;-webkit-overflow-scrolling:touch!important;overscroll-behavior-x:contain!important;contain:none!important;white-space:nowrap!important}
+   #welfareFinancialCharts #wfFundBalanceHistory .wf-financial-chart-canvas{display:inline-block!important;position:relative!important;width:max-content!important;min-width:max-content!important;max-width:none!important;height:210px!important;min-height:210px!important;max-height:210px!important;flex:none!important;vertical-align:top!important}
+   #welfareFinancialCharts #wfFundBalanceHistory svg.wf-financial-chart-plot{display:block!important;width:max-content!important;min-width:max-content!important;max-width:none!important;height:210px!important;min-height:210px!important;max-height:210px!important;aspect-ratio:auto!important;flex:none!important;overflow:visible!important}
+   @media(max-width:760px){#welfareFinancialCharts{grid-template-columns:minmax(0,1fr);gap:12px;margin:14px 0 18px}#welfareFinancialCharts .wf-financial-chart-card:last-child{grid-column:auto}#welfareFinancialCharts .wf-financial-chart-card{padding:13px}}
+  `;
   document.head.appendChild(style);
  };
  const monthRange=keys=>{if(!keys.length)return [];const sorted=keys.slice().sort(),[sy,sm]=sorted[0].split('-').map(Number),[ey,em]=sorted[sorted.length-1].split('-').map(Number),out=[];let y=sy,m=sm;while(y<ey||(y===ey&&m<=em)){out.push(y+'-'+String(m).padStart(2,'0'));m++;if(m===13){m=1;y++;}if(out.length>240)break;}return out;};
  const bindReadout=card=>{const readout=card.querySelector('.wf-financial-chart-readout');card.querySelectorAll('[data-chart-value]').forEach(mark=>{const show=()=>{if(readout)readout.textContent=mark.getAttribute('data-chart-value')||'';};mark.addEventListener('click',show);mark.addEventListener('focus',show);mark.addEventListener('mouseenter',show);});};
- const render=({contributions=[],payouts=[],scope='School ledger'}={})=>{
+ const setChartRole=role=>{
+  const normalized=/^(admin|administrator|school_admin)$/i.test(String(role||''))?'admin':/^(member|teacher)$/i.test(String(role||''))?'member':'';
+  if(!normalized)return '';
+  window.__welfareCurrentRole=normalized==='admin'?'admin':'teacher';
+  window.__welfareChartViewRole=normalized;
+  if(typeof window.__welfareSetRoleMarker==='function')window.__welfareSetRoleMarker(normalized);
+  else [document.documentElement,document.body,$('dashboard'),document.querySelector('main')].filter(Boolean).forEach(root=>{root.dataset.welfareRole=normalized;root.classList.toggle('welfare-role-admin',normalized==='admin');root.classList.toggle('welfare-role-member',normalized==='member');});
+  return normalized;
+ };
+ const currentChartRole=()=>{
+  const explicit=String(window.__welfareChartViewRole||'').trim().toLowerCase();
+  if(explicit==='admin'||explicit==='member')return explicit;
+  const roles=[document.documentElement?.dataset.welfareRole,document.body?.dataset.welfareRole,$('dashboard')?.dataset.welfareRole,window.__welfareCurrentRole].map(value=>String(value||'').trim().toLowerCase());
+  if(roles.some(role=>['admin','administrator','school_admin'].includes(role)))return 'admin';
+  if(roles.some(role=>['member','teacher'].includes(role)))return 'member';
+  return '';
+ };
+ const isAdminChartView=()=>currentChartRole()==='admin';
+ const adminChartSelector='#welfareFinancialCharts #wfMonthlyContributionTrend,#welfareFinancialCharts #wfPayoutComparison,#welfareFinancialCharts #wfFundBalanceHistory,#wfMonthlyContributionTrend,#wfPayoutComparison,#wfFundBalanceHistory';
+ const activeRootRole=()=>{
+  const roots=[document.documentElement,document.body,$('dashboard')].filter(Boolean);
+  const values=roots.map(root=>String(root.dataset.welfareRole||'').trim().toLowerCase());
+  if(values.some(role=>['admin','administrator','school_admin'].includes(role)))return 'admin';
+  if(values.some(role=>['member','teacher'].includes(role)))return 'member';
+  return currentChartRole();
+ };
+ const removeAdminDashboardCharts=()=>{
+  if(activeRootRole()!=='admin')return false;
+  setChartRole('admin');
+  document.querySelectorAll(adminChartSelector).forEach(node=>node.remove());
+  const host=$('welfareFinancialCharts');if(host)host.replaceChildren();
+  return true;
+ };
+ if(!window.__welfareAdminDashboardChartsGuard){
+  window.__welfareAdminDashboardChartsGuard=true;
+  const adminChartObserver=new MutationObserver(records=>{
+   if(activeRootRole()!=='admin')return;
+   if(records.some(record=>record.type==='childList'))removeAdminDashboardCharts();
+  });
+  adminChartObserver.observe(document.body,{childList:true,subtree:true});
+  window.__welfareAdminDashboardChartsObserver=adminChartObserver;
+  window.addEventListener('welfare-workflows-ready',removeAdminDashboardCharts);
+  window.addEventListener('welfare-workspace-mounted',removeAdminDashboardCharts);
+  removeAdminDashboardCharts();
+ }
+ const renderNow=({contributions=[],payouts=[],scope='School ledger'}={},requestedRole='')=>{
+  // Resolve the role at execution time too: a scheduled render must never outlive
+  // an Admin transition or overwrite a newer Admin view with a stale Member render.
+  const liveRoles=[document.documentElement?.dataset.welfareRole,document.body?.dataset.welfareRole,$('dashboard')?.dataset.welfareRole].map(value=>String(value||'').trim().toLowerCase());
+  const liveAdmin=liveRoles.some(role=>['admin','administrator','school_admin'].includes(role));
+  const renderRole=liveAdmin?'admin':(requestedRole==='admin'?'admin':(requestedRole==='member'?'member':currentChartRole()));
+  if(renderRole)setChartRole(renderRole);
+  const adminDashboard=renderRole==='admin';
+  if(adminDashboard){setChartRole('admin');const adminHost=$('welfareFinancialCharts');if(adminHost)adminHost.replaceChildren();removeAdminDashboardCharts();return;}
+  else if(renderRole==='member')setChartRole('member');
   window.__welfareFinancialChartPending={contributions,payouts,scope};
   const host=document.getElementById('welfareFinancialCharts');if(!host)return;ensureStyles();
   const con=(Array.isArray(contributions)?contributions:[]).filter(active).map(row=>({...row,__date:dateOf(row,'contribution')})).filter(row=>row.__date);
@@ -52,15 +121,35 @@ window.addEventListener('welfare-workflows-ready',ensurePrimaryFundBalanceCard);
   let trendBody=empty,trendReadout='Select a month to inspect its recorded total.';
   if(con.length&&keys.length){const vals=keys.map(key=>({key,total:conTotals.get(key)||0})),max=Math.max(...vals.map(x=>x.total),0),base=166,plotH=132,step=560/vals.length,bw=Math.max(5,Math.min(28,step*.56));let body='<line x1="22" y1="'+base+'" x2="584" y2="'+base+'" stroke="#cbd5e1"/>';vals.forEach((v,i)=>{const height=max?(v.total/max)*plotH:0,x=30+i*step+(step-bw)/2,y=base-height,label=v.key.slice(5)+' / '+v.key.slice(0,4);body+='<rect class="wf-chart-mark" tabindex="0" role="button" aria-label="'+esc(label+' '+cash(v.total))+'" data-chart-value="'+esc(label+' · '+cash(v.total))+'" x="'+x.toFixed(2)+'" y="'+y.toFixed(2)+'" width="'+bw.toFixed(2)+'" height="'+height.toFixed(2)+'" rx="4" fill="#C6A04A"><title>'+esc(label+' · '+cash(v.total))+'</title></rect><text x="'+(x+bw/2).toFixed(2)+'" y="188" text-anchor="middle">'+v.key.slice(5)+'</text>';});trendBody=svg('Monthly contribution trend in Ghana cedis',body,Math.max(600,vals.length*48+40));trendReadout=keys.length+' dated month(s) · Tap a bar for exact GH₵ total.';}
   let compareBody=empty,compareReadout='Select a month to compare actual contributions and payouts.';
-  if(keys.length&&(con.length||pay.length)){const vals=keys.map(key=>({key,con:conTotals.get(key)||0,pay:payTotals.get(key)||0})),max=Math.max(...vals.flatMap(x=>[x.con,x.pay]),0),base=166,plotH=132,step=560/vals.length,bw=Math.max(3,Math.min(13,step*.3));let body='<line x1="22" y1="'+base+'" x2="584" y2="'+base+'" stroke="#cbd5e1"/>';vals.forEach((v,i)=>{const center=30+i*step+step/2,h1=max?v.con/max*plotH:0,h2=max?v.pay/max*plotH:0,x1=center-bw-1,x2=center+1,label=v.key.slice(5)+' / '+v.key.slice(0,4),read=label+' · Contributions '+cash(v.con)+' · Payouts '+cash(v.pay);body+='<rect class="wf-chart-mark" tabindex="0" role="button" data-chart-value="'+esc(read)+'" aria-label="'+esc(read)+'" x="'+x1.toFixed(2)+'" y="'+(base-h1).toFixed(2)+'" width="'+bw.toFixed(2)+'" height="'+h1.toFixed(2)+'" rx="3" fill="#C6A04A"><title>'+esc('Contributions '+cash(v.con))+'</title></rect><rect class="wf-chart-mark" tabindex="0" role="button" data-chart-value="'+esc(read)+'" aria-label="'+esc(read)+'" x="'+x2.toFixed(2)+'" y="'+(base-h2).toFixed(2)+'" width="'+bw.toFixed(2)+'" height="'+h2.toFixed(2)+'" rx="3" fill="#25845B"><title>'+esc('Payouts '+cash(v.pay))+'</title></rect><text x="'+center.toFixed(2)+'" y="188" text-anchor="middle">'+v.key.slice(5)+'</text>';});compareBody=svg('Monthly contributions compared with welfare payouts',body,Math.max(600,vals.length*34+40));compareReadout=keys.length+' dated month(s) · Tap either series for both exact totals.';}
+  if(keys.length&&(con.length||pay.length)){const vals=keys.map(key=>({key,con:conTotals.get(key)||0,pay:payTotals.get(key)||0})),max=Math.max(...vals.flatMap(x=>[x.con,x.pay]),0),base=166,plotH=132,step=560/vals.length,bw=Math.max(5,Math.min(15,step*.38));let body='<line x1="22" y1="'+base+'" x2="584" y2="'+base+'" stroke="#cbd5e1"/>';vals.forEach((v,i)=>{const center=30+i*step+step/2,h1=max?v.con/max*plotH:0,h2=max?v.pay/max*plotH:0,x1=center-bw-1,x2=center+1,label=v.key.slice(5)+' / '+v.key.slice(0,4),read=label+' · Contributions '+cash(v.con)+' · Payouts '+cash(v.pay);body+='<rect class="wf-chart-mark" tabindex="0" role="button" data-chart-value="'+esc(read)+'" aria-label="'+esc(read)+'" x="'+x1.toFixed(2)+'" y="'+(base-h1).toFixed(2)+'" width="'+bw.toFixed(2)+'" height="'+h1.toFixed(2)+'" rx="3" fill="#C6A04A"><title>'+esc('Contributions '+cash(v.con))+'</title></rect><rect class="wf-chart-mark" tabindex="0" role="button" data-chart-value="'+esc(read)+'" aria-label="'+esc(read)+'" x="'+x2.toFixed(2)+'" y="'+(base-h2).toFixed(2)+'" width="'+bw.toFixed(2)+'" height="'+h2.toFixed(2)+'" rx="3" fill="#25845B"><title>'+esc('Payouts '+cash(v.pay))+'</title></rect><text x="'+center.toFixed(2)+'" y="188" text-anchor="middle">'+v.key.slice(5)+'</text>';});compareBody=svg('Monthly contributions compared with welfare payouts',body,Math.max(640,vals.length*48+48));compareReadout=keys.length+' dated month(s) · Tap either series for both exact totals.';}
   let balanceBody=empty,balanceReadout='Select a point to inspect the cumulative running balance.';
   const events=[...con.map((row,index)=>({date:row.__date,type:'contribution',amount:amount(row),index})),...pay.map((row,index)=>({date:row.__date,type:'payout',amount:amount(row),index}))].sort((a,b)=>a.date.localeCompare(b.date)||(a.type===b.type?a.index-b.index:a.type==='contribution'?-1:1));
-  if(events.length){let running=0;const points=events.map(event=>{running+=event.type==='contribution'?event.amount:-event.amount;return {...event,balance:running};});const min=Math.min(0,...points.map(p=>p.balance)),max=Math.max(0,...points.map(p=>p.balance)),span=max-min||1,left=36,right=580,top=18,bottom=166,coords=points.map((p,i)=>({x:points.length===1?(left+right)/2:left+i*(right-left)/(points.length-1),y:bottom-((p.balance-min)/span)*(bottom-top),...p})),line=coords.map((p,i)=>(i?'L':'M')+p.x.toFixed(2)+' '+p.y.toFixed(2)).join(' ');let body='<line x1="22" y1="'+bottom+'" x2="584" y2="'+bottom+'" stroke="#cbd5e1"/><path d="'+line+'" fill="none" stroke="#C6A04A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>';coords.forEach(p=>{const label=p.date+' · '+(p.type==='contribution'?'Contribution +':'Payout −')+cash(p.amount)+' · Running net '+cash(p.balance);body+='<circle class="wf-chart-mark" tabindex="0" role="button" aria-label="'+esc(label)+'" data-chart-value="'+esc(label)+'" cx="'+p.x.toFixed(2)+'" cy="'+p.y.toFixed(2)+'" r="7" fill="#10233F" stroke="#C6A04A" stroke-width="2"><title>'+esc(label)+'</title></circle>';});[coords[0],coords[coords.length-1]].forEach(p=>{body+='<text x="'+p.x.toFixed(2)+'" y="190" text-anchor="'+(p.x===left?'start':'end')+'">'+p.date.slice(5)+'</text>';});balanceBody=svg('Cumulative running net balance from dated ledger entries',body,Math.max(600,points.length*48+40));balanceReadout=points.length+' dated transaction(s) · Running total '+cash(running)+' · Tap a point for exact value.';}
-  host.innerHTML=card('wfMonthlyContributionTrend','Monthly contribution trend','Recorded contributions by month',trendBody,trendReadout)+card('wfPayoutComparison','Payout comparison','Monthly contributions vs. welfare payouts',compareBody,compareReadout,'<div class="wf-financial-chart-legend"><span><i style="background:#C6A04A"></i>Contributions</span><span><i style="background:#25845B"></i>Payouts</span></div>')+card('wfFundBalanceHistory','Fund-balance history','Running total from dated ledger entries',balanceBody,balanceReadout);host.dataset.scope=scope;host.querySelectorAll('.wf-financial-chart-card').forEach(bindReadout);
+  if(events.length&&renderRole==='member'){let running=0;const points=events.map(event=>{running+=event.type==='contribution'?event.amount:-event.amount;return {...event,balance:running};});const min=Math.min(0,...points.map(p=>p.balance)),max=Math.max(0,...points.map(p=>p.balance)),span=max-min||1,plotWidth=Math.max(640,points.length*52+112),plotHeight=210,left=56,right=plotWidth-56,top=42,bottom=150,axisY=174,coords=points.map((p,i)=>({x:points.length===1?plotWidth/2:left+i*(right-left)/(points.length-1),y:bottom-((p.balance-min)/span)*(bottom-top),...p})),line=coords.map((p,i)=>(i?'L':'M')+p.x.toFixed(2)+' '+p.y.toFixed(2)).join(' ');let body='<line x1="28" y1="'+axisY+'" x2="'+(plotWidth-28)+'" y2="'+axisY+'" stroke="#94A3B8" stroke-width="1.5"/><line x1="28" y1="'+top+'" x2="28" y2="'+bottom+'" stroke="#94A3B8" stroke-width="1.25"/><path d="'+line+'" fill="none" stroke="#E0B84F" stroke-width="3.25" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/>';coords.forEach(p=>{const label=p.date+' · '+(p.type==='contribution'?'Contribution +':'Payout −')+cash(p.amount)+' · Running net '+cash(p.balance);body+='<circle class="wf-chart-mark" tabindex="0" role="button" aria-label="'+esc(label)+'" data-chart-value="'+esc(label)+'" cx="'+p.x.toFixed(2)+'" cy="'+p.y.toFixed(2)+'" r="7" fill="#10233F" stroke="#E0B84F" stroke-width="2" vector-effect="non-scaling-stroke"><title>'+esc(label)+'</title></circle>';});if(coords.length===1){const p=coords[0];body+='<text x="'+p.x.toFixed(2)+'" y="202" text-anchor="middle">'+p.date.slice(5)+'</text>';}else{[coords[0],coords[coords.length-1]].forEach((p,i)=>{body+='<text x="'+p.x.toFixed(2)+'" y="202" text-anchor="'+(i===0?'start':'end')+'">'+p.date.slice(5)+'</text>';});}balanceBody=svg('Cumulative running net balance from dated ledger entries',body,plotWidth,plotWidth,plotHeight,true);balanceReadout=points.length+' dated transaction(s) · Running total '+cash(running)+' · Tap a point for exact value.';}
+  host.innerHTML=card('wfMonthlyContributionTrend','Monthly contribution trend','Recorded contributions by month',trendBody,trendReadout)+card('wfPayoutComparison','Payout comparison','Monthly contributions vs. welfare payouts',compareBody,compareReadout,'<div class="wf-financial-chart-legend"><span><i style="background:#C6A04A"></i>Contributions</span><span><i style="background:#25845B"></i>Payouts</span></div>')+(renderRole==='member'?card('wfFundBalanceHistory','Fund-balance history','Running total from dated ledger entries',balanceBody,balanceReadout):'');
+  if(renderRole!=='member')host.querySelector('#wfFundBalanceHistory')?.remove();
+  host.dataset.scope=scope;host.querySelectorAll('.wf-financial-chart-card').forEach(bindReadout);
+ };
+ const render=(payload,roleHint)=>{
+  const rootRoles=[document.documentElement?.dataset.welfareRole,document.body?.dataset.welfareRole,$('dashboard')?.dataset.welfareRole].map(value=>String(value||'').trim().toLowerCase());
+  const rootSaysAdmin=rootRoles.some(role=>['admin','administrator','school_admin'].includes(role));
+  const requestedRole=rootSaysAdmin?'admin':(roleHint==='admin'||roleHint==='member'?roleHint:currentChartRole());
+  if(requestedRole)setChartRole(requestedRole);
+  window.__welfareFinancialChartPending=payload||window.__welfareFinancialChartPending;
+  const snapshot=window.__welfareFinancialChartPending;
+  if(!snapshot)return;
+  // Synchronously purge an old Member card as soon as an Admin render is requested.
+  if(requestedRole==='admin')removeAdminDashboardCharts();
+  const host=document.getElementById('welfareFinancialCharts');
+  const run=()=>renderNow(snapshot,requestedRole);
+  const scheduler=window.__welfareUiScheduler;
+  if(scheduler)scheduler.schedule(run,host||renderNow);
+  else requestAnimationFrame(run);
  };
  window.__welfareRenderFinancialCharts=render;
+ window.__welfareRemoveAdminDashboardCharts=removeAdminDashboardCharts;
+ window.__welfareRemoveAdminFundHistory=removeAdminDashboardCharts;
  if(window.__welfareFinancialChartPending)render(window.__welfareFinancialChartPending);
- document.addEventListener('click',event=>{const nav=event.target.closest('.navbtn[data-target="schoolOverview"]');if(nav&&window.__welfareFinancialChartPending)window.requestAnimationFrame(()=>render(window.__welfareFinancialChartPending));},{passive:true});
+ document.addEventListener('click',event=>{const nav=event.target.closest('.navbtn[data-target="schoolOverview"]');if(nav&&window.__welfareFinancialChartPending)render(window.__welfareFinancialChartPending);},{passive:true});
 })();
 
 // Stable route IDs are independent of sidebar labels and presentation text.
@@ -111,11 +200,14 @@ const welfareCash=value=>'GH₵ '+money(value);
 window.formatWelfareCurrency=welfareCash;
 const today=()=>new Date().toISOString().slice(0,10);
 const frameRender=(function(){
- const pending=new WeakSet();
+ const pending=new WeakMap();
  return function(key,render){
-  if(!key||pending.has(key))return;
-  pending.add(key);
-  requestAnimationFrame(()=>{pending.delete(key);render();});
+  if(!key||typeof render!=='function'||pending.has(key))return;
+  const run=()=>{pending.delete(key);render();};
+  pending.set(key,run);
+  const scheduler=window.__welfareUiScheduler;
+  if(scheduler)scheduler.schedule(run,key);
+  else requestAnimationFrame(run);
  };
 })();
 
@@ -842,6 +934,7 @@ async function audit(client,ctx,action,details,teacherId){
  return true;
 }
 window.initSchoolWorkflows=async function(client,school,refresh){
+ window.__welfareSetRoleMarker?.('admin');
  let workflowStage='administrator session verification';
  window.__welfareWorkflowLastError=null;
  const awaitWorkflowAuth=(value,ms,label)=>{let timer;return Promise.race([Promise.resolve(value),new Promise((_,reject)=>{timer=window.setTimeout(()=>reject(new Error(label||'The request timed out.')),ms);})]).finally(()=>{if(timer)window.clearTimeout(timer);});};
@@ -871,7 +964,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  }
  if(workflowSchoolKey&&window.__welfareWorkflowReadySchoolId===workflowSchoolKey&&window.__welfareWorkflowReadyUserId===workflowUserId&&$('workflows')&&$('wfAdminPanel')&&$('teacherProfileViewer')&&$('schoolTeachers')&&$('wfAdminContributionPanel')&&$('wfAdminPayoutPanel'))return true;
  if(window.__welfareWorkflowReadySchoolId&&window.__welfareWorkflowReadySchoolId!==workflowSchoolKey){window.__welfareWorkflowReadySchoolId=null;window.__welfareWorkflowReadyUserId=null;}
- window.__welfareCurrentRole='admin';
+ window.__welfareCurrentRole='admin';window.__welfareSetRoleMarker?.('admin');
  window.__welfareCurrentSchool=school;
  try{
  workflowStage='administrator workspace mounting';
@@ -883,6 +976,9 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  const existingWorkflows=$('workflows');const retainedRoster=$('schoolTeachers');const overview=$('schoolOverview');if(existingWorkflows&&retainedRoster&&existingWorkflows.contains(retainedRoster)&&overview?.parentElement)overview.parentElement.insertBefore(retainedRoster,overview.nextElementSibling);retainedRoster?.querySelector('#wfTeacherRegisterPanel')?.remove();if(existingWorkflows)existingWorkflows.remove();
  workflowStage='administrator section construction';
  addUI();
+ // Re-render shared dashboard charts after the Admin hub exists, so the Admin-only
+ // chart exclusion is applied even if the first chart render ran during early hydration.
+ if(window.__welfareFinancialChartPending){window.__welfareSetRoleMarker?.('admin');window.__welfareRenderFinancialCharts?.(window.__welfareFinancialChartPending,'admin');}
  const workflowMountNode=$('workflows');
  const adminPanelNode=$('wfAdminPanel');
  if(!workflowMountNode||!adminPanelNode)throw new Error('Admin Panel markup could not be mounted in the dashboard.');
@@ -1162,7 +1258,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
   return !reversed.has('payout:'+item.id)&&!['reversed','inactive','deleted','cancelled','canceled','void','archived'].includes(status)&&!reversedFlag&&!item.reversed_at&&!item.reversedAt;
  };
  let activeCons=cons.filter(isActiveContributionRecord), activePays=pays.filter(isActivePayoutRecord);
- window.__welfareRenderFinancialCharts?.({contributions:activeCons,payouts:activePays,scope:'School ledger'});
+ window.__welfareSetRoleMarker?.('admin');window.__welfareRenderFinancialCharts?.({contributions:activeCons,payouts:activePays,scope:'School ledger'},'admin');
  // Expand year options using only the active tenant's loaded ledgers.
  window.populateReportYearSelectors([...activeCons,...activePays]);
  const demoLatestMonthKey=isLocalDemo?cons.reduce((latest,row)=>String(row.date||'')>latest?String(row.date||''):latest,'').slice(0,7):'';
@@ -1555,7 +1651,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
  };
  const renderTeacherTables=()=>{const q=String($('wfTeacherSearch')?.value||'').trim().toLowerCase();const visible=teachers.filter(t=>[t.id,t.name,t.phone,t.rank,t.class_name,t.membership_type,t.employer].some(v=>String(v||'').toLowerCase().includes(q)));
  $('wfManageTeacherRows').innerHTML=tr.error?'<tr><td colspan="9">Teacher register could not be loaded. Check the school connection and permissions, then <button type="button" class="wf-table-action" data-wf-retry-roster>Retry loading</button>.</td></tr>':visible.length?visible.map(t=>{const login=teacherLoginState(t);return '<tr><td class="wf-staff-id-cell"><span class="wf-staff-id-badge">'+esc(t.id)+'</span></td><td class="teacher-name-cell">'+esc(t.name)+'</td><td class="wf-phone-cell">'+esc(t.phone||'—')+'</td><td class="wf-accent-cell wf-rank-cell"><span class="wf-rank-badge">'+esc(t.rank||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-class-accent">'+esc(t.class_name||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-membership-badge">'+esc(t.membership_type||'—')+'</span></td><td class="wf-accent-cell"><span class="wf-employer-badge">'+esc(t.employer||'—')+'</span></td><td><span class="wf-teacher-status '+(t.is_active===false?'inactive':'active')+'">'+(t.is_active===false?'Inactive':'Active')+'</span><br><span class="wf-login-status '+(login.activated?'active':'pending')+'">'+esc(login.label)+'</span></td><td><button type="button" class="wf-table-action wf-action-view" data-view-profile="'+esc(t.id)+'">View profile</button> <button type="button" class="wf-table-action wf-action-edit" data-wf-edit="'+esc(t.id)+'">Edit</button> <button type="button" class="wf-table-action '+(login.activated?'wf-action-reset':'wf-action-primary')+'" data-wf-activate="'+esc(t.id)+'">'+(login.activated?'✓ Reset login':'Activate login')+'</button> '+(t.is_active===false?'<button type="button" class="wf-table-action wf-action-primary" data-wf-restore="'+esc(t.id)+'">Restore</button>':'<button type="button" class="wf-table-action wf-action-danger" data-wf-remove="'+esc(t.id)+'">Deactivate</button>')+'</td></tr>';}).join(''):'<tr><td colspan="9">No matching teachers.</td></tr>';};
- renderTeacherTables();
+ if(window.__welfareScheduleNonCritical)window.__welfareScheduleNonCritical(renderTeacherTables,$('wfManageTeacherRows'));else renderTeacherTables();
  // Expose an awaited, tenant-bound register hydration path for executive PDF exports.
  // It reloads source records instead of trusting a possibly stale or empty DOM table.
  let teacherRegisterReloadPromise=null;
@@ -1680,7 +1776,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
      return '<tr><td>'+teacherLabel(x.teacher_id)+'</td><td>'+esc(monthYear)+'</td><td>'+esc(x.reference||'—')+'</td><td>GH₵ '+money(x.amount)+'</td><td class="wf-payout-amount">GH₵ '+money(runningTotal)+'</td><td>'+esc(d||'—')+'</td><td>'+action+'</td></tr>';
     }).join(''):'<tr><td colspan="7">No matching contributions.</td></tr>';
   };
-  renderContributionLedger();$('wfLedgerSearch').addEventListener('input',()=>frameRender($('wfConRows'),renderContributionLedger));$('wfLedgerMonth').addEventListener('change',()=>frameRender($('wfConRows'),renderContributionLedger));
+  if(window.__welfareScheduleNonCritical)window.__welfareScheduleNonCritical(renderContributionLedger,$('wfConRows'));else renderContributionLedger();$('wfLedgerSearch').addEventListener('input',()=>frameRender($('wfConRows'),renderContributionLedger));$('wfLedgerMonth').addEventListener('change',()=>frameRender($('wfConRows'),renderContributionLedger));
   const renderDuesMatrix=()=>{
     const rowsHost=$('wfDuesMatrixRows'),status=$('wfDuesMatrixStatus');
     if(!rowsHost)return;
@@ -1723,7 +1819,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     const yearRecords=activeCons.filter(item=>String(item.date||'').slice(0,4)===year).length;
     if(status)status.textContent=roster.length+' active member'+(roster.length===1?'':'s')+' shown · '+year+' · '+yearRecords+' active contribution record'+(yearRecords===1?'':'s');
   };
-  renderDuesMatrix();
+  if(window.__welfareScheduleNonCritical)window.__welfareScheduleNonCritical(renderDuesMatrix,$('wfDuesMatrixRows'));else renderDuesMatrix();
   $('wfDuesMatrixYear')?.addEventListener('change',()=>frameRender($('wfDuesMatrixRows'),renderDuesMatrix));
    $('wfDuesMatrixSearch')?.addEventListener('input',()=>frameRender($('wfDuesMatrixRows'),renderDuesMatrix));
   const duesMatrixPdfButton=$('wfDuesMatrixPdf');
@@ -1937,7 +2033,7 @@ window.initSchoolWorkflows=async function(client,school,refresh){
     $('wfPayoutActiveMembers').textContent=tr.error?'Unavailable':String(activeMembers);
     $('wfPayRows').innerHTML=pr.error?'<tr><td colspan="6">Payout records could not be loaded. Check the school account permissions and <button type="button" class="wf-table-action" data-wf-retry-ledgers>Retry loading</button>.</td></tr>':rows.length?rows.map(x=>{const rawDate=String(x.date||'');const displayDate=rawDate&&/^\d{4}-\d{2}-\d{2}/.test(rawDate)?new Date(rawDate.slice(0,10)+'T00:00:00').toLocaleDateString('en-GB'):(rawDate||'—');return '<tr><td class="wf-payout-reference">'+esc(x.reference||'—')+'</td><td class="wf-payout-beneficiary">'+teacherLabel(x.teacher_id)+'</td><td>'+esc(window.displayWelfareReason(x.reason||'Welfare support'))+'</td><td class="wf-payout-amount">GH₵ '+money(x.amount)+'</td><td>'+esc(displayDate)+'</td><td>'+reversalCell('payout',x)+'</td></tr>'}).join(''):'<tr><td colspan="6">No matching payouts.</td></tr>';
   };
-  renderPayoutLedger();$('wfPayoutSearch').addEventListener('input',()=>frameRender($('wfPayRows'),renderPayoutLedger));
+  if(window.__welfareScheduleNonCritical)window.__welfareScheduleNonCritical(renderPayoutLedger,$('wfPayRows'));else renderPayoutLedger();$('wfPayoutSearch').addEventListener('input',()=>frameRender($('wfPayRows'),renderPayoutLedger));
   // Reload transaction data in place; keep the authenticated dashboard and
   // currently selected section mounted after a contribution or payout is saved.
   const refreshWorkflow=async()=>{
