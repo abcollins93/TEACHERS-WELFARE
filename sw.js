@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_VERSION='twf-pwa-shell-v53-role-chart-header-fix';
+const CACHE_VERSION='twf-pwa-shell-v54-admin-dashboard-charts-hidden';
 const STATEMENT_CACHE='twf-cached-statements-v1';
 const NETWORK_TIMEOUT_MS=8000;
 const STATIC_TIMEOUT_MS=6500;
