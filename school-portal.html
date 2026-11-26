@@ -5467,8 +5467,10 @@ window.generateTenantWelfarePdf=async function(o){
     const paginationHostRect=host.getBoundingClientRect();
     const contributionTable=individual?host.querySelector('.twf-member-contributions'):null;
     const contributionHeader=contributionTable?.querySelector('thead');
+    const contributionSectionHeading=contributionTable?.previousElementSibling?.matches('.twf-section')?contributionTable.previousElementSibling:null;
     const contributionTableRect=contributionTable?.getBoundingClientRect();
     const contributionHeaderRect=contributionHeader?.getBoundingClientRect();
+    const contributionSectionHeadingRect=contributionSectionHeading?.getBoundingClientRect();
     // html2canvas can round its output dimensions independently on each axis.
     // Use the actual vertical canvas scale so DOM row coordinates map exactly
     // to the captured pixels; a width-derived scale can drift at page edges.
@@ -5480,7 +5482,8 @@ window.generateTenantWelfarePdf=async function(o){
     const pagination={
      tableTop:contributionTableRect?(contributionTableRect.top-paginationHostRect.top)*canvasScaleY:null,
      tableBottom:contributionTableRect?(contributionTableRect.bottom-paginationHostRect.top)*canvasScaleY:null,
-     headerTop:contributionHeaderRect?(contributionHeaderRect.top-paginationHostRect.top)*canvasScaleY:null,
+     // Repeat both the numbered section label and the six-column thead.
+     headerTop:contributionHeaderRect?(Math.min(contributionHeaderRect.top,contributionSectionHeadingRect?.top??contributionHeaderRect.top)-paginationHostRect.top)*canvasScaleY:null,
      headerBottom:contributionHeaderRect?(contributionHeaderRect.bottom-paginationHostRect.top)*canvasScaleY:null,
      rowBounds:contributionRowBounds
     };
@@ -5592,15 +5595,18 @@ window.generateTenantWelfarePdf=async function(o){
    // when canvas/DOM scales differ slightly), and guarantees the next page
    // begins with that complete row rather than a clipped continuation.
    if(individual&&sourceY<tableBottom&&maxSourceEnd>tableTop){
-    const intersectedRow=rowBounds.find(row=>row.top<maxSourceEnd-1&&row.bottom>maxSourceEnd+1);
+    const intersectedRow=rowBounds.find(row=>row.top<=maxSourceEnd+2&&row.bottom>=maxSourceEnd-2);
     if(intersectedRow){
-     const rowStart=Math.max(sourceY+1,Math.floor(intersectedRow.top));
+     const rowStart=Math.floor(intersectedRow.top);
      const rowEnd=Math.ceil(intersectedRow.bottom);
-     sourceEnd=rowStart>sourceY+2?rowStart:Math.min(renderedCanvas.height,Math.max(maxSourceEnd,rowEnd));
+     // Keep the complete row together. If it cannot fit in the remaining
+     // page area, end immediately before it so it starts intact next page.
+     if(rowStart>sourceY+2)sourceEnd=rowStart;
+     else sourceEnd=Math.min(renderedCanvas.height,Math.max(maxSourceEnd,rowEnd));
     }
    }
    // Final safety check: never let the crop boundary remain inside a row.
-   const boundaryRow=individual?rowBounds.find(row=>row.top<sourceEnd-1&&row.bottom>sourceEnd+1):null;
+   const boundaryRow=individual?rowBounds.find(row=>row.top<=sourceEnd+2&&row.bottom>=sourceEnd-2):null;
    if(boundaryRow){
     const rowStart=Math.floor(boundaryRow.top);
     const rowEnd=Math.ceil(boundaryRow.bottom);
