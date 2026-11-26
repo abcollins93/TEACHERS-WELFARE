@@ -5137,7 +5137,7 @@ window.generateTenantWelfarePdf=async function(o){
  }
  const qr='twfqr'+id;
  const sign='<div class="twf-final-signoff"><div class="twf-signatures"><div class="twf-qr"><div id="'+qr+'"></div></div></div></div>';
- const host=document.createElement('div');host.className='twf-pdf '+orientation+(statistics?' twf-payment-statistics':'');host.setAttribute('data-welfare-pdf-staging','');host.setAttribute('data-twf-statement-capture',id);host.style.cssText='display:none!important;position:absolute!important;left:-9999px!important;top:-9999px!important;width:0!important;height:0!important;overflow:hidden!important;pointer-events:none!important;background:#fff';window.applyWelfarePdfTenantWatermark(host,school.name,school);host.setAttribute('data-theme','light');host.style.colorScheme='light';host.innerHTML='<style>'+style+'</style><style>@page{size:A4 portrait;margin:0;background:#fff}.twf-pdf,.twf-pdf *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf{background:#fff!important;background-color:#fff!important;break-inside:auto;page-break-inside:auto}.twf-pdf tr,.twf-pdf tbody tr,.twf-pdf .twf-table tr{break-inside:avoid!important;page-break-inside:avoid!important}.twf-pdf thead,.twf-pdf .twf-table thead{display:table-header-group!important}.twf-pdf .twf-metric,.twf-pdf .twf-box,.twf-pdf .card-grid,.twf-pdf .twf-summary-section,.twf-pdf .twf-signatures,.twf-pdf .twf-final-signoff,.twf-pdf .twf-footer,.twf-pdf .twf-disclaimer{break-inside:avoid!important;page-break-inside:avoid!important}.twf-pdf .twf-table{break-inside:auto!important;page-break-inside:auto!important}.twf-pdf{orphans:3;widows:3}.twf-pdf{font:12px/1.4 Arial,sans-serif!important;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.twf-head h2{font-size:19px!important;line-height:1.12!important}.twf-head h1{font-size:25px!important;line-height:1.1!important}.twf-brand{font-size:12px!important}.twf-sub{font-size:12.5px!important;line-height:1.3!important}.twf-meta{font-size:11px!important;line-height:1.5!important}.twf-box h3,.twf-section{font-size:13px!important;line-height:1.25!important}.twf-details th,.twf-details td{font-size:10px!important;padding:8px 11px!important;line-height:1.35!important}.twf-table{font-size:10.2px!important;line-height:1.45!important}.twf-table th{font-size:10px!important;padding:7px 9px!important}.twf-table td{padding:7px 9px!important}.twf-metric small{font-size:9.5px!important}.twf-metric strong{font-size:15px!important;font-weight:800!important;line-height:1.2!important}.twf-disclaimer{font-size:8pt!important;font-weight:700!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;text-rendering:geometricPrecision!important}.twf-head-logo,.twf-photo,.twf-qr img,.twf-qr canvas{image-rendering:auto;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}</style><style>.twf-signatures{display:flex!important;justify-content:flex-end!important;align-items:flex-end!important;width:100%!important;max-width:100%!important;min-width:0!important}.twf-signatures .twf-qr{margin-left:auto!important;justify-self:auto!important;text-align:right!important}.twf-qr img,.twf-qr canvas{margin:0 0 2mm auto!important}.twf-pdf .twf-details{display:table!important;width:100%!important;max-width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;border:1px solid #000000!important;border-radius:6px!important;overflow:hidden!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf .twf-details th,.twf-pdf .twf-details td{border:1px solid #000000!important;padding:7px 10px!important;vertical-align:middle!important;overflow-wrap:anywhere!important;word-break:break-word!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf .twf-details th{text-align:left!important;background:#f8fafc!important;font-weight:700!important;white-space:nowrap!important}.twf-pdf .twf-details th:nth-child(1){width:17%!important}.twf-pdf .twf-details td:nth-child(2){width:33%!important;white-space:normal!important}.twf-pdf .twf-details th:nth-child(3){width:17%!important}.twf-pdf .twf-details td:nth-child(4){width:33%!important;white-space:normal!important}</style>'+head+body+sign+disclaimer;const pdfLightPaletteStyle=document.createElement('style');pdfLightPaletteStyle.textContent='.twf-pdf[data-theme="light"]{background:#ffffff!important;color:#17243a!important;color-scheme:light!important}.twf-pdf[data-theme="light"] .twf-metric{color:#17243a!important;border-color:#dbe3ee!important;box-shadow:none!important;filter:none!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf[data-theme="light"] .twf-metric.green{background:#ecfdf5!important;border-color:#a7f3d0!important}.twf-pdf[data-theme="light"] .twf-metric.red{background:#fff1f2!important;border-color:#fecdd3!important}.twf-pdf[data-theme="light"] .twf-metric.blue{background:#eff6ff!important;border-color:#bfdbfe!important}.twf-pdf[data-theme="light"] .twf-metric.gold{background:#fffbeb!important;border-color:#fde68a!important}.twf-pdf[data-theme="light"] .twf-metric small{color:#475569!important}.twf-pdf[data-theme="light"] .twf-metric strong{color:#102b4f!important}.twf-pdf[data-theme="light"] .twf-metric:before{filter:none!important}';host.appendChild(pdfLightPaletteStyle);document.body.appendChild(host);
+ const host=document.createElement('div');host.className='twf-pdf '+orientation+(statistics?' twf-payment-statistics':'');host.setAttribute('data-welfare-pdf-staging','');host.setAttribute('data-twf-statement-capture',id);host.style.cssText='display:none!important;position:absolute!important;left:-9999px!important;top:-9999px!important;width:0!important;height:0!important;overflow:hidden!important;pointer-events:none!important;background:#fff';window.applyWelfarePdfTenantWatermark(host,school.name,school);host.setAttribute('data-theme','light');host.style.colorScheme='light';host.innerHTML='<style>'+style+'</style><style>@page{size:A4 portrait;margin:0;background:#fff}.twf-pdf,.twf-pdf *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf{background:#fff!important;background-color:#fff!important;break-inside:auto;page-break-inside:auto}.twf-pdf tr,.twf-pdf tbody tr,.twf-pdf .twf-table tr,.twf-pdf .twf-table th,.twf-pdf .twf-table td{break-inside:avoid!important;page-break-inside:avoid!important}.twf-pdf thead,.twf-pdf .twf-table thead{display:table-header-group!important}.twf-pdf .twf-metric,.twf-pdf .twf-box,.twf-pdf .card-grid,.twf-pdf .twf-summary-section,.twf-pdf .twf-signatures,.twf-pdf .twf-final-signoff,.twf-pdf .twf-footer,.twf-pdf .twf-disclaimer{break-inside:avoid!important;page-break-inside:avoid!important}.twf-pdf .twf-table{break-inside:auto!important;page-break-inside:auto!important}.twf-pdf{orphans:3;widows:3}.twf-pdf{font:12px/1.4 Arial,sans-serif!important;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.twf-head h2{font-size:19px!important;line-height:1.12!important}.twf-head h1{font-size:25px!important;line-height:1.1!important}.twf-brand{font-size:12px!important}.twf-sub{font-size:12.5px!important;line-height:1.3!important}.twf-meta{font-size:11px!important;line-height:1.5!important}.twf-box h3,.twf-section{font-size:13px!important;line-height:1.25!important}.twf-details th,.twf-details td{font-size:10px!important;padding:8px 11px!important;line-height:1.35!important}.twf-table{font-size:10.2px!important;line-height:1.45!important}.twf-table th{font-size:10px!important;padding:7px 9px!important}.twf-table td{padding:7px 9px!important}.twf-metric small{font-size:9.5px!important}.twf-metric strong{font-size:15px!important;font-weight:800!important;line-height:1.2!important}.twf-disclaimer{font-size:8pt!important;font-weight:700!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;text-rendering:geometricPrecision!important}.twf-head-logo,.twf-photo,.twf-qr img,.twf-qr canvas{image-rendering:auto;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}</style><style>.twf-signatures{display:flex!important;justify-content:flex-end!important;align-items:flex-end!important;width:100%!important;max-width:100%!important;min-width:0!important}.twf-signatures .twf-qr{margin-left:auto!important;justify-self:auto!important;text-align:right!important}.twf-qr img,.twf-qr canvas{margin:0 0 2mm auto!important}.twf-pdf .twf-details{display:table!important;width:100%!important;max-width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;border:1px solid #000000!important;border-radius:6px!important;overflow:hidden!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf .twf-details th,.twf-pdf .twf-details td{border:1px solid #000000!important;padding:7px 10px!important;vertical-align:middle!important;overflow-wrap:anywhere!important;word-break:break-word!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf .twf-details th{text-align:left!important;background:#f8fafc!important;font-weight:700!important;white-space:nowrap!important}.twf-pdf .twf-details th:nth-child(1){width:17%!important}.twf-pdf .twf-details td:nth-child(2){width:33%!important;white-space:normal!important}.twf-pdf .twf-details th:nth-child(3){width:17%!important}.twf-pdf .twf-details td:nth-child(4){width:33%!important;white-space:normal!important}</style>'+head+body+sign+disclaimer;const pdfLightPaletteStyle=document.createElement('style');pdfLightPaletteStyle.textContent='.twf-pdf[data-theme="light"]{background:#ffffff!important;color:#17243a!important;color-scheme:light!important}.twf-pdf[data-theme="light"] .twf-metric{color:#17243a!important;border-color:#dbe3ee!important;box-shadow:none!important;filter:none!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.twf-pdf[data-theme="light"] .twf-metric.green{background:#ecfdf5!important;border-color:#a7f3d0!important}.twf-pdf[data-theme="light"] .twf-metric.red{background:#fff1f2!important;border-color:#fecdd3!important}.twf-pdf[data-theme="light"] .twf-metric.blue{background:#eff6ff!important;border-color:#bfdbfe!important}.twf-pdf[data-theme="light"] .twf-metric.gold{background:#fffbeb!important;border-color:#fde68a!important}.twf-pdf[data-theme="light"] .twf-metric small{color:#475569!important}.twf-pdf[data-theme="light"] .twf-metric strong{color:#102b4f!important}.twf-pdf[data-theme="light"] .twf-metric:before{filter:none!important}';host.appendChild(pdfLightPaletteStyle);document.body.appendChild(host);
  // The portal keeps PDF templates hidden globally. Override that guard only
  // for this attached, off-screen A4 capture surface.
  host.style.setProperty('display','block','important');
@@ -5463,7 +5463,21 @@ window.generateTenantWelfarePdf=async function(o){
     const canvas=await window.html2canvas(host,pdfOptions.html2canvas);
     // Pass the already-rendered canvas to html2pdf only for A4 pagination and
     // PDF encoding; this prevents a second DOM capture from blanking the page.
-    const worker=window.html2pdf().set(pdfOptions).from(canvas);
+    // The populated DOM is captured once; row-aware A4 slicing is applied after capture.
+    const paginationHostRect=host.getBoundingClientRect();
+    const contributionTable=individual?host.querySelector('.twf-member-contributions'):null;
+    const contributionHeader=contributionTable?.querySelector('thead');
+    const contributionTableRect=contributionTable?.getBoundingClientRect();
+    const contributionHeaderRect=contributionHeader?.getBoundingClientRect();
+    const contributionRowBottoms=contributionTable?Array.from(contributionTable.querySelectorAll('tbody tr')).map(row=>(row.getBoundingClientRect().bottom-paginationHostRect.top)*(canvas.width/Math.max(1,paginationHostRect.width))):[];
+    const canvasScale=canvas.width/Math.max(1,paginationHostRect.width);
+    const pagination={
+     tableTop:contributionTableRect?(contributionTableRect.top-paginationHostRect.top)*canvasScale:null,
+     tableBottom:contributionTableRect?(contributionTableRect.bottom-paginationHostRect.top)*canvasScale:null,
+     headerTop:contributionHeaderRect?(contributionHeaderRect.top-paginationHostRect.top)*canvasScale:null,
+     headerBottom:contributionHeaderRect?(contributionHeaderRect.bottom-paginationHostRect.top)*canvasScale:null,
+     rowBottoms:contributionRowBottoms
+    };
    if(!canvas||canvas.width<100||canvas.height<100)throw new Error('Statement canvas dimensions are invalid.');
    // Pixel inspection is advisory only: getImageData can throw on a canvas
    // containing an image without CORS permission. DOM readiness and a real
@@ -5514,7 +5528,7 @@ window.generateTenantWelfarePdf=async function(o){
     throw new Error('The statement canvas appears blank after capture ('+details+').');
    }
     if(!statementContentReady())throw new Error('The populated statement node is no longer available.');
-    return {worker,canvas,pixelSamples};
+    return {canvas,pixelSamples,pagination};
    }finally{
     // Never leave the A4 staging/template visible in the live mobile portal.
     host.style.setProperty('display','none','important');
@@ -5548,10 +5562,51 @@ window.generateTenantWelfarePdf=async function(o){
    if(!statementContentReady())throw new Error('The populated statement could not be recovered after an image loading error. No blank PDF was created.');
    captured=await captureStatement();
   }
-  const pdfWorker=captured.worker;
   const renderedCanvas=captured.canvas;
-  const pdfResponse=await pdfWorker.toPdf().output('blob');
-  pdfBlob=pdfResponse instanceof Blob?pdfResponse:new Blob([pdfResponse],{type:'application/pdf'});
+  const PdfConstructor=window.jspdf?.jsPDF||window.jsPDF||window.jspdf?.default;
+  if(typeof PdfConstructor!=='function')throw new Error('The PDF drawing engine is unavailable. Please reload the portal and retry.');
+  const pdf=new PdfConstructor({orientation:'portrait',unit:'mm',format:'a4',compress:true});
+  const pageWidth=210,pageHeight=297;
+  const pagePixelHeight=Math.max(1,Math.floor(renderedCanvas.width*pageHeight/pageWidth));
+  const pagination=captured.pagination||{};
+  const tableTop=Number.isFinite(pagination.tableTop)?pagination.tableTop:Infinity;
+  const tableBottom=Number.isFinite(pagination.tableBottom)?pagination.tableBottom:-Infinity;
+  const headerTop=Number.isFinite(pagination.headerTop)?Math.max(0,Math.floor(pagination.headerTop)):0;
+  const headerBottom=Number.isFinite(pagination.headerBottom)?Math.min(renderedCanvas.height,Math.ceil(pagination.headerBottom)):0;
+  const headerHeight=Math.max(0,headerBottom-headerTop);
+  const rowBottoms=Array.isArray(pagination.rowBottoms)?pagination.rowBottoms:[];
+  let sourceY=0,page=0;
+  while(sourceY<renderedCanvas.height){
+   const repeatContributionHeader=individual&&page>0&&headerHeight>0&&sourceY>=tableTop-1&&sourceY<tableBottom-1;
+   const repeatedHeaderHeight=repeatContributionHeader?headerHeight:0;
+   const maxSourceEnd=Math.min(renderedCanvas.height,sourceY+pagePixelHeight-repeatedHeaderHeight);
+   let sourceEnd=maxSourceEnd;
+   // If the nominal page edge lands inside the contribution table, move it
+   // back to the last complete transaction row. This prevents raster cuts
+   // through borders/text and removes the dark horizontal split-row artifact.
+   if(individual&&sourceY<tableBottom&&maxSourceEnd>tableTop){
+    const safeRowEnds=rowBottoms.filter(y=>y>sourceY+2&&y<=maxSourceEnd-1);
+    if(safeRowEnds.length)sourceEnd=safeRowEnds[safeRowEnds.length-1];
+   }
+   if(sourceEnd<=sourceY)sourceEnd=Math.min(renderedCanvas.height,sourceY+Math.max(1,pagePixelHeight-repeatedHeaderHeight));
+   const sourceHeight=sourceEnd-sourceY;
+   const pageCanvas=document.createElement('canvas');
+   pageCanvas.width=renderedCanvas.width;
+   pageCanvas.height=Math.max(1,repeatedHeaderHeight+sourceHeight);
+   const pageContext=pageCanvas.getContext('2d');
+   pageContext.fillStyle='#ffffff';
+   pageContext.fillRect(0,0,pageCanvas.width,pageCanvas.height);
+   if(repeatContributionHeader){
+    pageContext.drawImage(renderedCanvas,0,headerTop,renderedCanvas.width,headerHeight,0,0,renderedCanvas.width,headerHeight);
+   }
+   pageContext.drawImage(renderedCanvas,0,sourceY,renderedCanvas.width,sourceHeight,0,repeatedHeaderHeight,renderedCanvas.width,sourceHeight);
+   if(page>0)pdf.addPage('a4','portrait');
+   const imageHeight=pageCanvas.height/renderedCanvas.width*pageWidth;
+   pdf.addImage(pageCanvas.toDataURL('image/png'),'PNG',0,0,pageWidth,imageHeight,undefined,'FAST');
+   sourceY=sourceEnd;
+   page++;
+  }
+  pdfBlob=pdf.output('blob');
   if(pdfBlob.size<5000)throw new Error('The generated statement PDF is unexpectedly small and may be blank. Please try again.');
   const pdfSignature=new Uint8Array(await pdfBlob.slice(0,5).arrayBuffer());
   if(String.fromCharCode(...pdfSignature)!=='%PDF-')throw new Error('The generated statement is not a valid PDF document. Please try again.');
