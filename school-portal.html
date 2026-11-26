@@ -5469,14 +5469,20 @@ window.generateTenantWelfarePdf=async function(o){
     const contributionHeader=contributionTable?.querySelector('thead');
     const contributionTableRect=contributionTable?.getBoundingClientRect();
     const contributionHeaderRect=contributionHeader?.getBoundingClientRect();
-    const contributionRowBottoms=contributionTable?Array.from(contributionTable.querySelectorAll('tbody tr')).map(row=>(row.getBoundingClientRect().bottom-paginationHostRect.top)*(canvas.width/Math.max(1,paginationHostRect.width))):[];
-    const canvasScale=canvas.width/Math.max(1,paginationHostRect.width);
+    // html2canvas can round its output dimensions independently on each axis.
+    // Use the actual vertical canvas scale so DOM row coordinates map exactly
+    // to the captured pixels; a width-derived scale can drift at page edges.
+    const canvasScaleY=canvas.height/Math.max(1,paginationHostRect.height);
+    const contributionRowBounds=contributionTable?Array.from(contributionTable.querySelectorAll('tbody tr')).map(row=>{
+     const rect=row.getBoundingClientRect();
+     return {top:(rect.top-paginationHostRect.top)*canvasScaleY,bottom:(rect.bottom-paginationHostRect.top)*canvasScaleY};
+    }).filter(row=>Number.isFinite(row.top)&&Number.isFinite(row.bottom)&&row.bottom>row.top):[];
     const pagination={
-     tableTop:contributionTableRect?(contributionTableRect.top-paginationHostRect.top)*canvasScale:null,
-     tableBottom:contributionTableRect?(contributionTableRect.bottom-paginationHostRect.top)*canvasScale:null,
-     headerTop:contributionHeaderRect?(contributionHeaderRect.top-paginationHostRect.top)*canvasScale:null,
-     headerBottom:contributionHeaderRect?(contributionHeaderRect.bottom-paginationHostRect.top)*canvasScale:null,
-     rowBottoms:contributionRowBottoms
+     tableTop:contributionTableRect?(contributionTableRect.top-paginationHostRect.top)*canvasScaleY:null,
+     tableBottom:contributionTableRect?(contributionTableRect.bottom-paginationHostRect.top)*canvasScaleY:null,
+     headerTop:contributionHeaderRect?(contributionHeaderRect.top-paginationHostRect.top)*canvasScaleY:null,
+     headerBottom:contributionHeaderRect?(contributionHeaderRect.bottom-paginationHostRect.top)*canvasScaleY:null,
+     rowBounds:contributionRowBounds
     };
    if(!canvas||canvas.width<100||canvas.height<100)throw new Error('Statement canvas dimensions are invalid.');
    // Pixel inspection is advisory only: getImageData can throw on a canvas
@@ -5574,19 +5580,31 @@ window.generateTenantWelfarePdf=async function(o){
   const headerTop=Number.isFinite(pagination.headerTop)?Math.max(0,Math.floor(pagination.headerTop)):0;
   const headerBottom=Number.isFinite(pagination.headerBottom)?Math.min(renderedCanvas.height,Math.ceil(pagination.headerBottom)):0;
   const headerHeight=Math.max(0,headerBottom-headerTop);
-  const rowBottoms=Array.isArray(pagination.rowBottoms)?pagination.rowBottoms:[];
+  const rowBounds=Array.isArray(pagination.rowBounds)?pagination.rowBounds:[];
   let sourceY=0,page=0;
   while(sourceY<renderedCanvas.height){
    const repeatContributionHeader=individual&&page>0&&headerHeight>0&&sourceY>=tableTop-1&&sourceY<tableBottom-1;
    const repeatedHeaderHeight=repeatContributionHeader?headerHeight:0;
    const maxSourceEnd=Math.min(renderedCanvas.height,sourceY+pagePixelHeight-repeatedHeaderHeight);
    let sourceEnd=maxSourceEnd;
-   // If the nominal page edge lands inside the contribution table, move it
-   // back to the last complete transaction row. This prevents raster cuts
-   // through borders/text and removes the dark horizontal split-row artifact.
+   // Snap a page edge to the START of any transaction row it would intersect.
+   // This is safer than choosing a prior row-bottom list (which can be empty
+   // when canvas/DOM scales differ slightly), and guarantees the next page
+   // begins with that complete row rather than a clipped continuation.
    if(individual&&sourceY<tableBottom&&maxSourceEnd>tableTop){
-    const safeRowEnds=rowBottoms.filter(y=>y>sourceY+2&&y<=maxSourceEnd-1);
-    if(safeRowEnds.length)sourceEnd=safeRowEnds[safeRowEnds.length-1];
+    const intersectedRow=rowBounds.find(row=>row.top<maxSourceEnd-1&&row.bottom>maxSourceEnd+1);
+    if(intersectedRow){
+     const rowStart=Math.max(sourceY+1,Math.floor(intersectedRow.top));
+     const rowEnd=Math.ceil(intersectedRow.bottom);
+     sourceEnd=rowStart>sourceY+2?rowStart:Math.min(renderedCanvas.height,Math.max(maxSourceEnd,rowEnd));
+    }
+   }
+   // Final safety check: never let the crop boundary remain inside a row.
+   const boundaryRow=individual?rowBounds.find(row=>row.top<sourceEnd-1&&row.bottom>sourceEnd+1):null;
+   if(boundaryRow){
+    const rowStart=Math.floor(boundaryRow.top);
+    const rowEnd=Math.ceil(boundaryRow.bottom);
+    sourceEnd=rowStart>sourceY+2?rowStart:Math.min(renderedCanvas.height,rowEnd);
    }
    if(sourceEnd<=sourceY)sourceEnd=Math.min(renderedCanvas.height,sourceY+Math.max(1,pagePixelHeight-repeatedHeaderHeight));
    const sourceHeight=sourceEnd-sourceY;
