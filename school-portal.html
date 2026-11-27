@@ -7516,5 +7516,33 @@ header.top{position:relative!important;z-index:2147483647!important;isolation:is
 .app-header-group>header.top,.app-header-group>.overview-top{position:relative!important;z-index:1!important;isolation:isolate!important;opacity:1!important;background:#10233F!important;background-color:#10233F!important;background-image:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 .app-header-group>header.top::before,.app-header-group>header.top::after,.app-header-group>.overview-top::before,.app-header-group>.overview-top::after{background:#10233F!important;background-color:#10233F!important;background-image:none!important;opacity:1!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 .app-header-group>header.top>*,.app-header-group>.overview-top>*{position:relative;z-index:1}
+
+/* Mobile financial chart layout: stack the Admin trend and payout cards
+   at full width; preserve the existing desktop two-column presentation. */
+@media (max-width: 700px){
+ #welfareFinancialCharts{
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-auto-flow:row!important;
+  width:100%!important;
+ }
+ #welfareFinancialCharts>.wf-financial-chart-card,
+ #welfareFinancialCharts .wf-financial-chart-card{
+  grid-column:1/-1!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+ }
+ #welfareFinancialCharts .wf-financial-chart-head,
+ #welfareFinancialCharts .wf-financial-chart-readout,
+ #welfareFinancialCharts .wf-financial-chart-legend{
+  max-width:100%!important;
+ }
+ #welfareFinancialCharts .wf-financial-chart-scroll{
+  width:100%!important;
+  max-width:100%!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+ }
+}
 </style></body>
 </html>
