@@ -324,6 +324,21 @@
  }
 
  window.WelfareDemo={school,teachers,contributions,payouts,announcements,client,months,activeCon,activePay,summary,financialChartData,openSchoolSetupModal,async loadTeacherRegister(schoolCode){if(String(schoolCode||'').trim().toUpperCase()!=='DEMO'||String(new URLSearchParams(window.location.search).get('c')||'').trim().toUpperCase()!=='DEMO')throw new Error('The DEMO teacher register is available only inside the isolated DEMO tenant.');const rows=clone(teachers).filter(row=>String(row.school_id||'')===String(school.id));window.__welfareTeacherRegisterState={schoolId:String(school.id),schoolCode:'DEMO',rows};return rows;},getCurrentTeacherProfile(){return window.__welfareDemoRole==='teacher'&&teachers[activeTeacherIndex]?clone(teachers[activeTeacherIndex]):null;},getTeacherProfile(teacherId){const row=teachers.find(item=>String(item.id)===String(teacherId));return row?clone(row):null;},getCurrentUser(){return currentAuthUser();},setTeacher(index){activeTeacherIndex=Math.max(0,Math.min(teachers.length-1,Number(index)||0));}};
+ // Rehydrate the shared financial charts from the isolated in-memory DEMO ledger
+ // whenever the DEMO workspace mounts or its role-specific view is restored.
+ const renderDemoFinancialCharts=()=>{
+  if(String(new URLSearchParams(window.location.search).get('c')||'').trim().toUpperCase()!=='DEMO')return false;
+  const member=window.__welfareDemoRole==='teacher',role=member?'member':'admin';
+  window.__welfareSetRoleMarker?.(role);
+  window.__welfareChartViewRole=role;
+  const payload=financialChartData(member?'teacher':'admin',member?teachers[activeTeacherIndex]?.id:null);
+  window.__welfareFinancialChartPending=payload;
+  if(typeof window.__welfareRenderFinancialCharts==='function')window.__welfareRenderFinancialCharts(payload,role);
+  return true;
+ };
+ window.addEventListener('welfare-workflows-ready',renderDemoFinancialCharts);
+ window.addEventListener('welfare-workspace-mounted',renderDemoFinancialCharts);
+ renderDemoFinancialCharts();
  // Keep DEMO profile navigation synchronous and role-scoped. The shared
  // workflow renderers own the actual cards; this bridge only invokes the
  // already-authenticated profile renderer without starting a network request.
