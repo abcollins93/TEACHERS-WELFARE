@@ -139,14 +139,38 @@ window.addEventListener('welfare-workflows-ready',ensurePrimaryFundBalanceCard);
   // Synchronously purge an old Member card as soon as an Admin render is requested.
   if(requestedRole==='admin')removeAdminDashboardCharts();
   const host=document.getElementById('welfareFinancialCharts');
-  const run=()=>renderNow(snapshot,requestedRole);
-  const scheduler=window.__welfareUiScheduler;
-  if(scheduler)scheduler.schedule(run,host||renderNow);
-  else requestAnimationFrame(run);
+  const run=()=>{
+   try{
+    renderNow(snapshot,requestedRole);
+    const renderedHost=document.getElementById('welfareFinancialCharts');
+    window.__welfareFinancialChartRenderState={role:requestedRole,hostFound:!!renderedHost,cardCount:renderedHost?.querySelectorAll('.wf-financial-chart-card').length||0,at:Date.now(),error:null};
+   }catch(error){
+    window.__welfareFinancialChartRenderState={role:requestedRole,hostFound:!!document.getElementById('welfareFinancialCharts'),cardCount:0,at:Date.now(),error:String(error?.message||error)};
+    console.error('[Welfare charts] Financial chart render failed:',error);
+   }
+  };
+  // Admin overview charts are a small, visible dashboard component. Do not
+  // route their first paint through the scroll/touch-deferred UI queue: on
+  // mobile that queue can remain paused while the user is actively scrolling.
+  if(requestedRole==='admin')requestAnimationFrame(run);
+  else{
+   const scheduler=window.__welfareUiScheduler;
+   if(scheduler)scheduler.schedule(run,host||renderNow);
+   else requestAnimationFrame(run);
+  }
  };
  window.__welfareRenderFinancialCharts=render;
  window.__welfareRemoveAdminDashboardCharts=removeAdminDashboardCharts;
  window.__welfareRemoveAdminFundHistory=removeAdminDashboardCharts;
+ // If Admin dashboard data arrived before the host was mounted, retry once
+ // the overview/workspace becomes available; DEMO and normal Admin share this.
+ const rerenderPendingAdminCharts=()=>{
+  if(currentChartRole()!=='admin'||!window.__welfareFinancialChartPending)return;
+  if(!document.getElementById('welfareFinancialCharts'))return;
+  render(window.__welfareFinancialChartPending,'admin');
+ };
+ window.addEventListener('welfare-workspace-mounted',rerenderPendingAdminCharts);
+ document.addEventListener('DOMContentLoaded',rerenderPendingAdminCharts,{once:true});
  if(window.__welfareFinancialChartPending)render(window.__welfareFinancialChartPending);
  document.addEventListener('click',event=>{const nav=event.target.closest('.navbtn[data-target="schoolOverview"]');if(nav&&window.__welfareFinancialChartPending)render(window.__welfareFinancialChartPending);},{passive:true});
 })();
