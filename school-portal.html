@@ -7720,7 +7720,9 @@ body.sidebar-open{overflow:hidden!important}
   window.addEventListener('resize',schedule,{passive:true});
   window.addEventListener('orientationchange',schedule,{passive:true});
   if('MutationObserver' in window){
-    documentObserver=new MutationObserver(attach);
+    documentObserver=new MutationObserver(()=>{
+      if(document.querySelector('.app-header-group')!==observedGroup) attach();
+    });
     documentObserver.observe(document.documentElement,{childList:true,subtree:true});
   }
 })();
