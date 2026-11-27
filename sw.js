@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_VERSION='twf-pwa-shell-v54-admin-dashboard-charts-hidden';
+const CACHE_VERSION='twf-pwa-shell-v56-admin-chart-direct-render';
 const STATEMENT_CACHE='twf-cached-statements-v1';
 const NETWORK_TIMEOUT_MS=8000;
 const STATIC_TIMEOUT_MS=6500;
@@ -28,13 +28,13 @@ const SHELL_ASSETS=[
  './',
  './index.html',
  './school-portal.html',
- './demo-sandbox.js?v=20261125-role-chart-header-v26',
+ './demo-sandbox.js?v=20261127-admin-financial-charts-v29',
  './set-password.html',
  './g.html',
  './offline.html',
  './manifest.json',
  './pwa.js',
- './school-portal-workflows.js?v=20261125-role-chart-header-v26',
+ './school-portal-workflows.js?v=20261127-admin-financial-charts-v29',
  './icons/welfare-portal.svg'
 ];
 const CDN_ASSETS=[

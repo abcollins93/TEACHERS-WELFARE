@@ -42,7 +42,7 @@ window.addEventListener('welfare-workflows-ready',ensurePrimaryFundBalanceCard);
    #welfareFinancialCharts .wf-financial-chart-card:last-child{grid-column:1/-1}
    .wf-financial-chart-head{margin-bottom:8px}.wf-financial-chart-head h3{font-size:1rem;font-weight:850;margin:0 0 4px;color:#10233F}.wf-financial-chart-head p{font-size:.8rem;color:#64748b;margin:0}
    .wf-financial-chart-scroll{display:block;width:100%;max-width:100%;min-width:0;overflow-x:auto!important;overflow-y:hidden!important;-webkit-overflow-scrolling:touch!important;overscroll-behavior-x:contain;touch-action:pan-x pan-y;scrollbar-width:thin;scrollbar-color:#cbd5e1 transparent}
-   .wf-financial-chart-plot{display:block!important;flex:none!important;box-sizing:content-box!important;width:auto!important;height:auto!important;max-width:none!important;max-height:none!important;overflow:visible;align-self:flex-start}.wf-financial-chart-plot text{font-family:inherit;fill:#64748b;font-size:14px;font-weight:650}
+    .wf-financial-chart-visual{display:block!important;width:100%!important;min-width:0!important;height:220px!important;min-height:220px!important;max-height:220px!important;overflow:hidden!important}.wf-financial-chart-plot{display:block!important;flex:none!important;box-sizing:border-box!important;width:auto!important;height:220px!important;min-height:220px!important;max-height:220px!important;max-width:none!important;overflow:visible;align-self:flex-start}.wf-financial-chart-plot text{font-family:inherit;fill:#64748b;font-size:14px;font-weight:650}
    .wf-financial-chart-readout{min-height:34px;margin-top:7px;padding:8px 10px;border-radius:10px;background:#F4F6F9;color:#10233F;font-size:.82rem;font-weight:750;font-variant-numeric:tabular-nums;line-height:1.35}
    .wf-financial-chart-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:.76rem;color:#475569}.wf-financial-chart-legend span{display:inline-flex;align-items:center;gap:6px}.wf-financial-chart-legend i{width:9px;height:9px;border-radius:3px;display:inline-block}
    .wf-financial-chart-empty{min-height:145px;display:grid;place-items:center;text-align:center;color:#64748b;background:#F4F6F9;border:1px dashed #cbd5e1;border-radius:12px;padding:18px;font-size:.84rem}
@@ -74,7 +74,7 @@ window.addEventListener('welfare-workflows-ready',ensurePrimaryFundBalanceCard);
   return '';
  };
  const isAdminChartView=()=>currentChartRole()==='admin';
- const adminChartSelector='#welfareFinancialCharts #wfMonthlyContributionTrend,#welfareFinancialCharts #wfPayoutComparison,#welfareFinancialCharts #wfFundBalanceHistory,#wfMonthlyContributionTrend,#wfPayoutComparison,#wfFundBalanceHistory';
+ const adminChartSelector='#welfareFinancialCharts #wfFundBalanceHistory,#wfFundBalanceHistory';
  const activeRootRole=()=>{
   const roots=[document.documentElement,document.body,$('dashboard')].filter(Boolean);
   const values=roots.map(root=>String(root.dataset.welfareRole||'').trim().toLowerCase());
@@ -86,7 +86,6 @@ window.addEventListener('welfare-workflows-ready',ensurePrimaryFundBalanceCard);
   if(activeRootRole()!=='admin')return false;
   setChartRole('admin');
   document.querySelectorAll(adminChartSelector).forEach(node=>node.remove());
-  const host=$('welfareFinancialCharts');if(host)host.replaceChildren();
   return true;
  };
  if(!window.__welfareAdminDashboardChartsGuard){
@@ -109,7 +108,7 @@ window.addEventListener('welfare-workflows-ready',ensurePrimaryFundBalanceCard);
   const renderRole=liveAdmin?'admin':(requestedRole==='admin'?'admin':(requestedRole==='member'?'member':currentChartRole()));
   if(renderRole)setChartRole(renderRole);
   const adminDashboard=renderRole==='admin';
-  if(adminDashboard){setChartRole('admin');const adminHost=$('welfareFinancialCharts');if(adminHost)adminHost.replaceChildren();removeAdminDashboardCharts();return;}
+  if(adminDashboard){setChartRole('admin');removeAdminDashboardCharts();}
   else if(renderRole==='member')setChartRole('member');
   window.__welfareFinancialChartPending={contributions,payouts,scope};
   const host=document.getElementById('welfareFinancialCharts');if(!host)return;ensureStyles();
@@ -117,11 +116,11 @@ window.addEventListener('welfare-workflows-ready',ensurePrimaryFundBalanceCard);
   const pay=(Array.isArray(payouts)?payouts:[]).filter(active).map(row=>({...row,__date:dateOf(row,'payout')})).filter(row=>row.__date);
   const conTotals=new Map(),payTotals=new Map();con.forEach(row=>{const k=row.__date.slice(0,7);conTotals.set(k,(conTotals.get(k)||0)+amount(row));});pay.forEach(row=>{const k=row.__date.slice(0,7);payTotals.set(k,(payTotals.get(k)||0)+amount(row));});
   const keys=monthRange([...conTotals.keys(),...payTotals.keys()]);
-  const card=(id,title,subtitle,body,readout,legend='')=>'<article class="wf-financial-chart-card" id="'+id+'"><header class="wf-financial-chart-head"><h3>'+title+'</h3><p>'+subtitle+'</p></header>'+body+'<div class="wf-financial-chart-readout" aria-live="polite">'+readout+'</div>'+legend+'</article>';
+  const card=(id,title,subtitle,body,readout,legend='')=>'<article class="wf-financial-chart-card" id="'+id+'"><header class="wf-financial-chart-head"><h3>'+title+'</h3><p>'+subtitle+'</p></header><div class="wf-financial-chart-visual">'+body+'</div><div class="wf-financial-chart-readout" aria-live="polite">'+readout+'</div>'+legend+'</article>';
   let trendBody=empty,trendReadout='Select a month to inspect its recorded total.';
-  if(con.length&&keys.length){const vals=keys.map(key=>({key,total:conTotals.get(key)||0})),max=Math.max(...vals.map(x=>x.total),0),base=166,plotH=132,step=560/vals.length,bw=Math.max(5,Math.min(28,step*.56));let body='<line x1="22" y1="'+base+'" x2="584" y2="'+base+'" stroke="#cbd5e1"/>';vals.forEach((v,i)=>{const height=max?(v.total/max)*plotH:0,x=30+i*step+(step-bw)/2,y=base-height,label=v.key.slice(5)+' / '+v.key.slice(0,4);body+='<rect class="wf-chart-mark" tabindex="0" role="button" aria-label="'+esc(label+' '+cash(v.total))+'" data-chart-value="'+esc(label+' · '+cash(v.total))+'" x="'+x.toFixed(2)+'" y="'+y.toFixed(2)+'" width="'+bw.toFixed(2)+'" height="'+height.toFixed(2)+'" rx="4" fill="#C6A04A"><title>'+esc(label+' · '+cash(v.total))+'</title></rect><text x="'+(x+bw/2).toFixed(2)+'" y="188" text-anchor="middle">'+v.key.slice(5)+'</text>';});trendBody=svg('Monthly contribution trend in Ghana cedis',body,Math.max(600,vals.length*48+40));trendReadout=keys.length+' dated month(s) · Tap a bar for exact GH₵ total.';}
+  if(con.length&&keys.length){const vals=keys.map(key=>({key,total:conTotals.get(key)||0})),max=Math.max(...vals.map(x=>x.total),0),base=166,plotH=132,plotWidth=Math.max(600,vals.length*48+40),step=(plotWidth-40)/vals.length,bw=Math.max(5,Math.min(28,step*.56));let body='<line x1="20" y1="'+base+'" x2="'+(plotWidth-20)+'" y2="'+base+'" stroke="#94A3B8" stroke-width="1.5"/>';vals.forEach((v,i)=>{const height=max?(v.total/max)*plotH:0,x=20+i*step+(step-bw)/2,y=base-height,label=v.key.slice(5)+' / '+v.key.slice(0,4);body+='<rect class="wf-chart-mark" tabindex="0" role="button" aria-label="'+esc(label+' '+cash(v.total))+'" data-chart-value="'+esc(label+' · '+cash(v.total))+'" x="'+x.toFixed(2)+'" y="'+y.toFixed(2)+'" width="'+bw.toFixed(2)+'" height="'+height.toFixed(2)+'" rx="4" fill="#C6A04A"><title>'+esc(label+' · '+cash(v.total))+'</title></rect><text x="'+(x+bw/2).toFixed(2)+'" y="188" text-anchor="middle">'+v.key.slice(5)+'</text>';});trendBody=svg('Monthly contribution trend in Ghana cedis',body,plotWidth,plotWidth,220);trendReadout=keys.length+' dated month(s) · Tap a bar for exact GH₵ total.';}
   let compareBody=empty,compareReadout='Select a month to compare actual contributions and payouts.';
-  if(keys.length&&(con.length||pay.length)){const vals=keys.map(key=>({key,con:conTotals.get(key)||0,pay:payTotals.get(key)||0})),max=Math.max(...vals.flatMap(x=>[x.con,x.pay]),0),base=166,plotH=132,step=560/vals.length,bw=Math.max(5,Math.min(15,step*.38));let body='<line x1="22" y1="'+base+'" x2="584" y2="'+base+'" stroke="#cbd5e1"/>';vals.forEach((v,i)=>{const center=30+i*step+step/2,h1=max?v.con/max*plotH:0,h2=max?v.pay/max*plotH:0,x1=center-bw-1,x2=center+1,label=v.key.slice(5)+' / '+v.key.slice(0,4),read=label+' · Contributions '+cash(v.con)+' · Payouts '+cash(v.pay);body+='<rect class="wf-chart-mark" tabindex="0" role="button" data-chart-value="'+esc(read)+'" aria-label="'+esc(read)+'" x="'+x1.toFixed(2)+'" y="'+(base-h1).toFixed(2)+'" width="'+bw.toFixed(2)+'" height="'+h1.toFixed(2)+'" rx="3" fill="#C6A04A"><title>'+esc('Contributions '+cash(v.con))+'</title></rect><rect class="wf-chart-mark" tabindex="0" role="button" data-chart-value="'+esc(read)+'" aria-label="'+esc(read)+'" x="'+x2.toFixed(2)+'" y="'+(base-h2).toFixed(2)+'" width="'+bw.toFixed(2)+'" height="'+h2.toFixed(2)+'" rx="3" fill="#25845B"><title>'+esc('Payouts '+cash(v.pay))+'</title></rect><text x="'+center.toFixed(2)+'" y="188" text-anchor="middle">'+v.key.slice(5)+'</text>';});compareBody=svg('Monthly contributions compared with welfare payouts',body,Math.max(640,vals.length*48+48));compareReadout=keys.length+' dated month(s) · Tap either series for both exact totals.';}
+  if(keys.length&&(con.length||pay.length)){const vals=keys.map(key=>({key,con:conTotals.get(key)||0,pay:payTotals.get(key)||0})),max=Math.max(...vals.flatMap(x=>[x.con,x.pay]),0),base=166,plotH=132,plotWidth=Math.max(640,vals.length*48+48),step=(plotWidth-40)/vals.length,bw=Math.max(5,Math.min(15,step*.38));let body='<line x1="20" y1="'+base+'" x2="'+(plotWidth-20)+'" y2="'+base+'" stroke="#94A3B8" stroke-width="1.5"/>';vals.forEach((v,i)=>{const center=20+i*step+step/2,h1=max?v.con/max*plotH:0,h2=max?v.pay/max*plotH:0,x1=center-bw-1,x2=center+1,label=v.key.slice(5)+' / '+v.key.slice(0,4),read=label+' · Contributions '+cash(v.con)+' · Payouts '+cash(v.pay);body+='<rect class="wf-chart-mark" tabindex="0" role="button" data-chart-value="'+esc(read)+'" aria-label="'+esc(read)+'" x="'+x1.toFixed(2)+'" y="'+(base-h1).toFixed(2)+'" width="'+bw.toFixed(2)+'" height="'+h1.toFixed(2)+'" rx="3" fill="#C6A04A"><title>'+esc('Contributions '+cash(v.con))+'</title></rect><rect class="wf-chart-mark" tabindex="0" role="button" data-chart-value="'+esc(read)+'" aria-label="'+esc(read)+'" x="'+x2.toFixed(2)+'" y="'+(base-h2).toFixed(2)+'" width="'+bw.toFixed(2)+'" height="'+h2.toFixed(2)+'" rx="3" fill="#25845B"><title>'+esc('Payouts '+cash(v.pay))+'</title></rect><text x="'+center.toFixed(2)+'" y="188" text-anchor="middle">'+v.key.slice(5)+'</text>';});compareBody=svg('Monthly contributions compared with welfare payouts',body,plotWidth,plotWidth,220);compareReadout=keys.length+' dated month(s) · Tap either series for both exact totals.';}
   let balanceBody=empty,balanceReadout='Select a point to inspect the cumulative running balance.';
   const events=[...con.map((row,index)=>({date:row.__date,type:'contribution',amount:amount(row),index})),...pay.map((row,index)=>({date:row.__date,type:'payout',amount:amount(row),index}))].sort((a,b)=>a.date.localeCompare(b.date)||(a.type===b.type?a.index-b.index:a.type==='contribution'?-1:1));
   if(events.length&&renderRole==='member'){let running=0;const points=events.map(event=>{running+=event.type==='contribution'?event.amount:-event.amount;return {...event,balance:running};});const min=Math.min(0,...points.map(p=>p.balance)),max=Math.max(0,...points.map(p=>p.balance)),span=max-min||1,plotWidth=Math.max(640,points.length*52+112),plotHeight=210,left=56,right=plotWidth-56,top=42,bottom=150,axisY=174,coords=points.map((p,i)=>({x:points.length===1?plotWidth/2:left+i*(right-left)/(points.length-1),y:bottom-((p.balance-min)/span)*(bottom-top),...p})),line=coords.map((p,i)=>(i?'L':'M')+p.x.toFixed(2)+' '+p.y.toFixed(2)).join(' ');let body='<line x1="28" y1="'+axisY+'" x2="'+(plotWidth-28)+'" y2="'+axisY+'" stroke="#94A3B8" stroke-width="1.5"/><line x1="28" y1="'+top+'" x2="28" y2="'+bottom+'" stroke="#94A3B8" stroke-width="1.25"/><path d="'+line+'" fill="none" stroke="#E0B84F" stroke-width="3.25" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/>';coords.forEach(p=>{const label=p.date+' · '+(p.type==='contribution'?'Contribution +':'Payout −')+cash(p.amount)+' · Running net '+cash(p.balance);body+='<circle class="wf-chart-mark" tabindex="0" role="button" aria-label="'+esc(label)+'" data-chart-value="'+esc(label)+'" cx="'+p.x.toFixed(2)+'" cy="'+p.y.toFixed(2)+'" r="7" fill="#10233F" stroke="#E0B84F" stroke-width="2" vector-effect="non-scaling-stroke"><title>'+esc(label)+'</title></circle>';});if(coords.length===1){const p=coords[0];body+='<text x="'+p.x.toFixed(2)+'" y="202" text-anchor="middle">'+p.date.slice(5)+'</text>';}else{[coords[0],coords[coords.length-1]].forEach((p,i)=>{body+='<text x="'+p.x.toFixed(2)+'" y="202" text-anchor="'+(i===0?'start':'end')+'">'+p.date.slice(5)+'</text>';});}balanceBody=svg('Cumulative running net balance from dated ledger entries',body,plotWidth,plotWidth,plotHeight,true);balanceReadout=points.length+' dated transaction(s) · Running total '+cash(running)+' · Tap a point for exact value.';}
@@ -140,14 +139,38 @@ window.addEventListener('welfare-workflows-ready',ensurePrimaryFundBalanceCard);
   // Synchronously purge an old Member card as soon as an Admin render is requested.
   if(requestedRole==='admin')removeAdminDashboardCharts();
   const host=document.getElementById('welfareFinancialCharts');
-  const run=()=>renderNow(snapshot,requestedRole);
-  const scheduler=window.__welfareUiScheduler;
-  if(scheduler)scheduler.schedule(run,host||renderNow);
-  else requestAnimationFrame(run);
+  const run=()=>{
+   try{
+    renderNow(snapshot,requestedRole);
+    const renderedHost=document.getElementById('welfareFinancialCharts');
+    window.__welfareFinancialChartRenderState={role:requestedRole,hostFound:!!renderedHost,cardCount:renderedHost?.querySelectorAll('.wf-financial-chart-card').length||0,at:Date.now(),error:null};
+   }catch(error){
+    window.__welfareFinancialChartRenderState={role:requestedRole,hostFound:!!document.getElementById('welfareFinancialCharts'),cardCount:0,at:Date.now(),error:String(error?.message||error)};
+    console.error('[Welfare charts] Financial chart render failed:',error);
+   }
+  };
+  // Admin overview charts are a small, visible dashboard component. Do not
+  // route their first paint through the scroll/touch-deferred UI queue: on
+  // mobile that queue can remain paused while the user is actively scrolling.
+  if(requestedRole==='admin')requestAnimationFrame(run);
+  else{
+   const scheduler=window.__welfareUiScheduler;
+   if(scheduler)scheduler.schedule(run,host||renderNow);
+   else requestAnimationFrame(run);
+  }
  };
  window.__welfareRenderFinancialCharts=render;
  window.__welfareRemoveAdminDashboardCharts=removeAdminDashboardCharts;
  window.__welfareRemoveAdminFundHistory=removeAdminDashboardCharts;
+ // If Admin dashboard data arrived before the host was mounted, retry once
+ // the overview/workspace becomes available; DEMO and normal Admin share this.
+ const rerenderPendingAdminCharts=()=>{
+  if(currentChartRole()!=='admin'||!window.__welfareFinancialChartPending)return;
+  if(!document.getElementById('welfareFinancialCharts'))return;
+  render(window.__welfareFinancialChartPending,'admin');
+ };
+ window.addEventListener('welfare-workspace-mounted',rerenderPendingAdminCharts);
+ document.addEventListener('DOMContentLoaded',rerenderPendingAdminCharts,{once:true});
  if(window.__welfareFinancialChartPending)render(window.__welfareFinancialChartPending);
  document.addEventListener('click',event=>{const nav=event.target.closest('.navbtn[data-target="schoolOverview"]');if(nav&&window.__welfareFinancialChartPending)render(window.__welfareFinancialChartPending);},{passive:true});
 })();
