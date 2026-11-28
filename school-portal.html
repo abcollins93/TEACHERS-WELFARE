@@ -7853,5 +7853,44 @@ body:has(#login:not(.hidden)) main{margin-top:0!important;padding-top:0!importan
 }
 #dashboard #schoolOverview .portal-hero{margin-top:0!important}
 </style>
+
+<style id="mobile-drawer-full-viewport-layering">
+/* Open mobile drawer overlays the complete fixed header stack and scrolls clear of the bottom ticker. */
+@media(max-width:950px){
+  #dashboard .sidebar{
+    position:fixed!important;
+    inset:0 auto 0 0!important;
+    top:0!important;
+    bottom:0!important;
+    height:100vh!important;
+    height:100dvh!important;
+    min-height:100vh!important;
+    max-height:100vh!important;
+    max-height:100dvh!important;
+    z-index:6000!important;
+    background:#030a16!important;
+    background-image:none!important;
+    opacity:1!important;
+    padding-top:16px!important;
+    padding-bottom:calc(104px + env(safe-area-inset-bottom, 0px))!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-gutter:stable;
+  }
+  #dashboard .sidebar.is-mobile-open{
+    z-index:6000!important;
+    transform:translate3d(0,0,0)!important;
+  }
+  #mobile-nav-overlay{
+    z-index:5900!important;
+  }
+  .app-header-group{
+    z-index:5000!important;
+  }
+}
+</style>
+
 </body>
 </html>
