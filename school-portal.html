@@ -98,7 +98,7 @@
 (function(){
  const query=new URLSearchParams(window.location.search);
  if(query.has('c')&&String(query.get('c')||'').trim().toUpperCase()==='DEMO'){
-  document.write('<script src="./demo-sandbox.js?v=20261127-admin-financial-charts-v29"><\/script>');
+  document.write('<script src="./demo-sandbox.js?v=20261128-header-gap-fix-v30"><\/script>');
  }
 })();
 </script><script>
@@ -3903,7 +3903,7 @@ async function showDashboardInternal(){
     if(dashboard){
      if(!notice){notice=document.createElement('section');notice.id='adminWorkflowMountError';notice.className='panel';notice.style.cssText='border:1px solid #f0b4b4;background:#fff7f7;color:#8f1d24;padding:14px 16px;margin:12px 0';dashboard.insertBefore(notice,dashboard.firstChild);}
      const diagnostic=window.__welfareWorkflowLastError;const diagnosticMessage=diagnostic?.message||workflowError?.message||'Secure data loading failed';const diagnosticStage=diagnostic?.stage?' ['+diagnostic.stage+']':'';notice.replaceChildren(document.createTextNode('Administrator sections could not finish loading: '+String(diagnosticMessage)+diagnosticStage+'. '));
-     const retry=document.createElement('button');retry.type='button';retry.className='secondary';retry.textContent='Retry loading administrator sections';retry.addEventListener('click',async()=>{window.__welfareWorkflowLastError=null;retry.disabled=true;retry.textContent='Retrying…';notice.firstChild.textContent='Retrying secure administrator data… ';try{window.__welfareWorkflowScriptError=null;let ready=await waitForSchoolWorkflows();if(!ready){window.__welfareWorkflowScriptError=null;const recoveryScript=document.createElement('script');recoveryScript.src='./school-portal-workflows.js?v=20261127-admin-financial-charts-v29&retry='+Date.now();recoveryScript.async=true;recoveryScript.onload=()=>{window.__welfareWorkflowScriptLoaded=true};recoveryScript.onerror=()=>{window.__welfareWorkflowScriptError='Workflow bundle could not be downloaded';window.dispatchEvent(new Event('welfare-workflows-load-error'))};document.head.appendChild(recoveryScript);ready=await waitForSchoolWorkflows();}if(!ready)throw new Error(window.__welfareWorkflowScriptError||'The workflow bundle could not be reloaded. Check your connection and retry.');const result=await window.initSchoolWorkflows(client,school,showDashboard);if(result){notice.remove();window.__welfareWorkflowMountPromise=Promise.resolve(true);}else throw new Error('The administrator workspace could not be initialized.');}catch(retryError){const diagnostic=window.__welfareWorkflowLastError;notice.firstChild.textContent=String(diagnostic?.message||retryError?.message||'Administrator data is still unavailable.')+(diagnostic?.stage?' ['+diagnostic.stage+']':'')+'. ';retry.disabled=false;retry.textContent='Retry loading administrator sections';}});notice.appendChild(retry);
+     const retry=document.createElement('button');retry.type='button';retry.className='secondary';retry.textContent='Retry loading administrator sections';retry.addEventListener('click',async()=>{window.__welfareWorkflowLastError=null;retry.disabled=true;retry.textContent='Retrying…';notice.firstChild.textContent='Retrying secure administrator data… ';try{window.__welfareWorkflowScriptError=null;let ready=await waitForSchoolWorkflows();if(!ready){window.__welfareWorkflowScriptError=null;const recoveryScript=document.createElement('script');recoveryScript.src='./school-portal-workflows.js?v=20261128-header-gap-fix-v30&retry='+Date.now();recoveryScript.async=true;recoveryScript.onload=()=>{window.__welfareWorkflowScriptLoaded=true};recoveryScript.onerror=()=>{window.__welfareWorkflowScriptError='Workflow bundle could not be downloaded';window.dispatchEvent(new Event('welfare-workflows-load-error'))};document.head.appendChild(recoveryScript);ready=await waitForSchoolWorkflows();}if(!ready)throw new Error(window.__welfareWorkflowScriptError||'The workflow bundle could not be reloaded. Check your connection and retry.');const result=await window.initSchoolWorkflows(client,school,showDashboard);if(result){notice.remove();window.__welfareWorkflowMountPromise=Promise.resolve(true);}else throw new Error('The administrator workspace could not be initialized.');}catch(retryError){const diagnostic=window.__welfareWorkflowLastError;notice.firstChild.textContent=String(diagnostic?.message||retryError?.message||'Administrator data is still unavailable.')+(diagnostic?.stage?' ['+diagnostic.stage+']':'')+'. ';retry.disabled=false;retry.textContent='Retry loading administrator sections';}});notice.appendChild(retry);
     }
     return false;
   });
@@ -4485,7 +4485,7 @@ if(isDemoMode){
 }
 })();
 </script>
-<script src="school-portal-workflows.js?v=20261127-admin-financial-charts-v29" onload="window.__welfareWorkflowScriptLoaded=true" onerror="window.__welfareWorkflowInitialScriptFailed=true;(function(){var s=document.createElement('script');s.src='./school-portal-workflows.js?v=20261127-admin-financial-charts-v29&retry='+Date.now();s.async=true;s.onload=function(){window.__welfareWorkflowScriptLoaded=true};s.onerror=function(){window.__welfareWorkflowScriptError='Workflow bundle could not be downloaded';window.dispatchEvent(new Event('welfare-workflows-load-error'))};document.head.appendChild(s)})()"></script>
+<script src="school-portal-workflows.js?v=20261128-header-gap-fix-v30" onload="window.__welfareWorkflowScriptLoaded=true" onerror="window.__welfareWorkflowInitialScriptFailed=true;(function(){var s=document.createElement('script');s.src='./school-portal-workflows.js?v=20261128-header-gap-fix-v30&retry='+Date.now();s.async=true;s.onload=function(){window.__welfareWorkflowScriptLoaded=true};s.onerror=function(){window.__welfareWorkflowScriptError='Workflow bundle could not be downloaded';window.dispatchEvent(new Event('welfare-workflows-load-error'))};document.head.appendChild(s)})()"></script>
 <script>
 /* Unified, role-aware sidebar navigation for live tenants and DEMO. */
 (function(){
@@ -4895,13 +4895,13 @@ body:has(#login:not(.hidden)) main{padding-top:0!important}
   const top=document.querySelector('header.top');
   const admin=document.querySelector('#dashboard .overview-top');
   const main=document.querySelector('main');
-  if(!top||!admin||!main||top.closest('.app-header-group'))return;
-  const group=document.createElement('header');
+  if(!top||!main||top.closest('.app-header-group'))return;
+  const group=document.createElement('div');
   group.className='app-header-group';
-  group.setAttribute('aria-label','School portal header');
+  group.setAttribute('role','group');group.setAttribute('aria-label','School portal header');
   top.parentNode.insertBefore(group,top);
   group.appendChild(top);
-  group.appendChild(admin);
+  if(admin)group.appendChild(admin);
   // Keep the fixed header in the document's top stacking context, not inside
   // dashboard/main stacking contexts where scrolled content can paint over it.
   document.body.appendChild(group);
@@ -7806,7 +7806,7 @@ body.sidebar-open{overflow:hidden!important}
   function measure(){
     pending=false;
     const current=document.querySelector('.app-header-group');
-    if(!current){root.style.setProperty('--welfare-live-header-height','120px');return;}
+    if(!current){const header=document.querySelector('header.top');const height=header?Math.ceil(header.getBoundingClientRect().height):72;root.style.setProperty('--welfare-live-header-height',Math.max(56,Math.min(160,height))+'px');return;}
     const rect=current.getBoundingClientRect();
     const height=Math.max(64,Math.min(260,Math.ceil(rect.height)));
     root.style.setProperty('--welfare-live-header-height',height+'px');
@@ -7839,5 +7839,19 @@ body.sidebar-open{overflow:hidden!important}
   }
 })();
 </script>
+
+<style id="welfare-single-header-gap-cascade-fix-2026-11-28">
+/* Final source of truth: one measured fixed header, one 8px content clearance.
+   The header group is valid even when this tenant has no separate overview bar. */
+html body:not(:has(#login:not(.hidden))) main{
+  margin-top:0!important;
+  padding-top:calc(var(--welfare-live-header-height,var(--single-header-height,72px)) + 8px)!important;
+}
+body:has(#login:not(.hidden)) main{margin-top:0!important;padding-top:0!important}
+#dashboard,#dashboard .dash-layout,#dashboard .dash-layout>div,#dashboard #schoolOverview{
+  margin-top:0!important;padding-top:0!important;
+}
+#dashboard #schoolOverview .portal-hero{margin-top:0!important}
+</style>
 </body>
 </html>
